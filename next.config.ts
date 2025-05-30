@@ -1,3 +1,6 @@
+/// <reference types="next" />
+/// <reference types="next/image-types/global" />
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
@@ -12,9 +15,11 @@ const nextConfig = {
     formats: ['image/webp', 'image/avif'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    dangerouslyAllowSVG: true,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
   experimental: {
-    optimizeCss: false, // Disable this temporarily to avoid critters issues
+    optimizeCss: true, // This is valid
   },
   // Handle build optimization
   typescript: {
@@ -23,7 +28,9 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: false,
   },
-  // Add headers for better caching
+  // Compress responses
+  compress: true,
+  // Add headers for better caching and security
   async headers() {
     return [
       {
@@ -45,6 +52,25 @@ const nextConfig = {
             key: 'X-Content-Type-Options',
             value: 'nosniff'
           },
+          {
+            key: 'Referrer-Policy',
+            value: 'origin-when-cross-origin'
+          },
+          // Cache static assets
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable'
+          }
+        ],
+      },
+      // Longer cache for images
+      {
+        source: '/images/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable'
+          }
         ],
       },
     ]
