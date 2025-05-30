@@ -128,8 +128,10 @@ function HorizontalGallery({ designs }: HorizontalGalleryProps) {
     onNext: () => scrollToImage('right'),
     onScrollUp: () => window.scrollBy({ top: -150, behavior: 'smooth' }),
     onScrollDown: () => window.scrollBy({ top: 150, behavior: 'smooth' }),
+    onAbout: () => router.push('/about'),
+    onWork: () => router.push('/'), // Stay on work page
+    onContact: () => router.push('/contact'),
     onEnter: () => {
-      // Open the currently focused/visible project
       const currentDesign = designs[currentIndex]
       if (currentDesign) {
         handleImageClick(currentDesign)

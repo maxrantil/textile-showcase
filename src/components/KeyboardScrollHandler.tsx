@@ -1,14 +1,19 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation'
 
 interface KeyboardScrollHandlerProps {
   scrollAmount?: number
+  enablePageNavigation?: boolean
 }
 
 export default function KeyboardScrollHandler({ 
-  scrollAmount = 150 
+  scrollAmount = 150,
+  enablePageNavigation = true
 }: KeyboardScrollHandlerProps) {
+  const router = useRouter()
+
   useKeyboardNavigation({
     onScrollUp: () => {
       console.log('Scroll up triggered!')
@@ -18,6 +23,10 @@ export default function KeyboardScrollHandler({
       console.log('Scroll down triggered!')
       window.scrollBy({ top: scrollAmount, behavior: 'smooth' })
     },
+    // Page navigation
+    onAbout: enablePageNavigation ? () => router.push('/about') : undefined,
+    onWork: enablePageNavigation ? () => router.push('/') : undefined,
+    onContact: enablePageNavigation ? () => router.push('/contact') : undefined,
     enabled: true
   })
 

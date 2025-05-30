@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react'
 import Link from 'next/link'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
+import KeyboardScrollHandler from '@/components/KeyboardScrollHandler'
 
 interface FormData {
   name: string
@@ -136,6 +137,10 @@ export default function ContactPage() {
   }
 
   return (
+    <>
+    {/* Separate component for page scrolling */}
+    <KeyboardScrollHandler />
+
     <div style={{ minHeight: '100vh', background: '#fafafa' }}>
       <div style={{ height: '100px' }} />
       
@@ -468,5 +473,6 @@ export default function ContactPage() {
         </div>
       </div>
     </div>
+    </>
   )
 }
