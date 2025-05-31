@@ -1,8 +1,12 @@
+// Update your project page to handle escape key properly
+// Add this to your ImageCarousel component in src/components/ImageCarousel.tsx
+
 'use client'
 
 import { useState, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import OptimizedImage from './OptimizedImage'
+import NavigationArrows from './NavigationArrows'
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation'
 import KeyboardScrollHandler from './KeyboardScrollHandler'
 
@@ -59,11 +63,18 @@ export default function ImageCarousel({
     }
   }, [allImages.length])
 
-  // Image navigation ONLY (arrows and h/l)
+  // FIXED: Image navigation with proper escape key handling
   useKeyboardNavigation({
     onPrevious: goToPrevious,
     onNext: goToNext,
-    onEscape: () => router.back(),
+    onEscape: () => {
+      console.log('Escape pressed - going back')
+      router.back()
+    },
+    onEnter: () => {
+      // Optional: do something when enter is pressed on project page
+      console.log('Enter pressed on project page')
+    },
     enabled: true
   })
 
@@ -75,6 +86,10 @@ export default function ImageCarousel({
     ]
     return indices.map(i => allImages[i]).filter(Boolean)
   }, [currentIndex, allImages])
+
+  // Determine if navigation arrows should be shown
+  const canScrollLeft = allImages.length > 1
+  const canScrollRight = allImages.length > 1
 
   return (
     <>
@@ -88,59 +103,43 @@ export default function ImageCarousel({
         maxWidth: '1200px',
         margin: '0 auto',
         padding: '0 40px',
-        marginTop: '80px'
+        marginTop: '80px',
+        position: 'relative'
       }}>
-        {/* Image Container */}
+        {/* Image Container with Navigation Arrows */}
         <div style={{ 
           display: 'flex',
           alignItems: 'center',
-          gap: '20px',
+          gap: '60px',
           marginBottom: '20px',
           width: '100%',
-          maxWidth: '900px'
+          maxWidth: '1000px',
+          justifyContent: 'space-between'
         }}>
-          {/* Left Arrow - only show if more than 1 image */}
-          {allImages.length > 1 && (
-            <button
-              onClick={goToPrevious}
-              style={{
-                background: 'rgba(255, 255, 255, 0.95)',
-                backdropFilter: 'blur(8px)',
-                border: '1px solid rgba(0,0,0,0.1)',
-                borderRadius: '50%',
-                width: '48px',
-                height: '48px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '18px',
-                color: '#333',
-                flexShrink: 0,
-                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                transition: 'all 0.3s ease'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 1)'
-                e.currentTarget.style.transform = 'scale(1.1)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.95)'
-                e.currentTarget.style.transform = 'scale(1)'
-              }}
-              aria-label="Previous image"
-            >
-              ←
-            </button>
+          {/* Navigation Arrows - only show if more than 1 image */}
+          {allImages.length > 1 ? (
+            <div style={{ flexShrink: 0 }}>
+              <NavigationArrows
+                canScrollLeft={canScrollLeft}
+                canScrollRight={false} // Only show left arrow here
+                onScrollLeft={goToPrevious}
+                onScrollRight={goToNext}
+                position="static"
+                size="large"
+                variant="default"
+              />
+            </div>
+          ) : (
+            <div style={{ width: '100px', flexShrink: 0 }} />
           )}
 
-          {/* Main Image Container */}
-          <div style={{ 
+          {/* Image */}
+          <div style={{
             flex: 1,
             display: 'flex',
-            flexDirection: 'column'
+            flexDirection: 'column',
+            maxWidth: '800px'
           }}>
-            {/* Image */}
             <div style={{
               width: '100%',
               height: '50vh',
@@ -177,39 +176,21 @@ export default function ImageCarousel({
             )}
           </div>
 
-          {/* Right Arrow - only show if more than 1 image */}
-          {allImages.length > 1 && (
-            <button
-              onClick={goToNext}
-              style={{
-                background: 'rgba(255, 255, 255, 0.95)',
-                backdropFilter: 'blur(8px)',
-                border: '1px solid rgba(0,0,0,0.1)',
-                borderRadius: '50%',
-                width: '48px',
-                height: '48px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '18px',
-                color: '#333',
-                flexShrink: 0,
-                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                transition: 'all 0.3s ease'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 1)'
-                e.currentTarget.style.transform = 'scale(1.1)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.95)'
-                e.currentTarget.style.transform = 'scale(1)'
-              }}
-              aria-label="Next image"
-            >
-              →
-            </button>
+          {/* Right Navigation Arrow */}
+          {allImages.length > 1 ? (
+            <div style={{ flexShrink: 0 }}>
+              <NavigationArrows
+                canScrollLeft={false} // Only show right arrow here
+                canScrollRight={canScrollRight}
+                onScrollLeft={goToPrevious}
+                onScrollRight={goToNext}
+                position="static"
+                size="large"
+                variant="default"
+              />
+            </div>
+          ) : (
+            <div style={{ width: '100px', flexShrink: 0 }} />
           )}
         </div>
 
@@ -343,23 +324,6 @@ export default function ImageCarousel({
             />
           ))}
         </div>
-
-        {/* Keyboard navigation hint */}
-        {allImages.length > 1 && (
-          <div style={{
-            position: 'fixed',
-            bottom: '20px',
-            right: '20px',
-            fontSize: '12px',
-            color: '#999',
-            backgroundColor: 'rgba(255,255,255,0.9)',
-            padding: '8px 12px',
-            borderRadius: '4px',
-            backdropFilter: 'blur(8px)'
-          }}>
-            Use ← → keys to navigate images, ↑ ↓ j k to scroll page
-          </div>
-        )}
       </div>
     </>
   )

@@ -7,7 +7,7 @@ interface NavigationArrowsProps {
   canScrollRight: boolean
   onScrollLeft: () => void
   onScrollRight: () => void
-  position?: 'fixed' | 'absolute'
+  position?: "fixed" | "absolute" | "static" | undefined
   size?: 'small' | 'medium' | 'large'
   variant?: 'default' | 'minimal' | 'bold'
 }
@@ -23,80 +23,132 @@ const NavigationArrows = memo(function NavigationArrows({
 }: NavigationArrowsProps) {
   // Size configurations
   const sizeConfig = {
-    small: { width: '40px', height: '40px', fontSize: '16px' },
-    medium: { width: '60px', height: '60px', fontSize: '20px' },
-    large: { width: '80px', height: '80px', fontSize: '24px' }
+    small: { width: '60px', height: '60px', triangleSize: '24px' },
+    medium: { width: '80px', height: '80px', triangleSize: '32px' },
+    large: { width: '100px', height: '100px', triangleSize: '40px' }
   }
   
   // Variant configurations
   const variantConfig = {
     default: {
-      background: 'rgba(255, 255, 255, 0.9)',
-      backdropFilter: 'blur(10px)',
-      border: 'none',
-      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-      color: '#333'
-    },
-    minimal: {
-      background: 'rgba(255, 255, 255, 0.7)',
-      backdropFilter: 'blur(5px)',
-      border: '1px solid rgba(0, 0, 0, 0.1)',
-      boxShadow: '0 4px 16px rgba(0, 0, 0, 0.08)',
-      color: '#333'
-    },
-    bold: {
-      background: '#333',
+      background: 'transparent',
       backdropFilter: 'none',
       border: 'none',
-      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
-      color: '#fff'
+      boxShadow: 'none',
+      triangleColor: '#f1f1f1', // Default grey
+      triangleColorHover: '#e6e6e6' // Grey for hover
+    },
+    minimal: {
+      background: 'transparent',
+      backdropFilter: 'none',
+      border: 'none',
+      boxShadow: 'none',
+      triangleColor: '#f1f1f1', // Default grey
+      triangleColorHover: '#e6e6e6' // Grey for hover
+    },
+    bold: {
+      background: 'transparent',
+      backdropFilter: 'none',
+      border: 'none',
+      boxShadow: 'none',
+      triangleColor: '#f1f1f1', // Default grey
+      triangleColorHover: '#e6e6e6' // Grey for hover
     }
   }
 
-  const baseStyle = {
-    ...sizeConfig[size],
-    ...variantConfig[variant],
+  const baseStyle: React.CSSProperties = {
+    width: sizeConfig[size].width,
+    height: sizeConfig[size].height,
+    background: variantConfig[variant].background,
+    backdropFilter: variantConfig[variant].backdropFilter,
+    border: variantConfig[variant].border,
+    boxShadow: variantConfig[variant].boxShadow,
     position,
     top: '50%',
     transform: 'translateY(-50%)',
     zIndex: position === 'fixed' ? 10 : 5,
-    borderRadius: '50%',
+    borderRadius: '0',
     cursor: 'pointer',
-    display: 'flex' as const,
-    alignItems: 'center' as const,
-    justifyContent: 'center' as const,
-    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-    userSelect: 'none' as const,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'none',
+    userSelect: 'none',
     WebkitTapHighlightColor: 'transparent',
-    outline: 'none'
+    outline: 'none',
+    padding: '0',
+    margin: '0'
+  }
+
+  // Triangle component for left arrow (pointing left)
+  const LeftTriangle = ({ size, color }: { size: string, color: string }) => {
+    const sizeNum = parseInt(size)
+    const verticalSize = `${Math.round(sizeNum * 1.5)}px`
+    const horizontalSize = `${Math.round(sizeNum * 1.5)}px`
+    
+    return (
+      <div
+        style={{
+          width: 0,
+          height: 0,
+          borderTop: `${verticalSize} solid transparent`,
+          borderBottom: `${verticalSize} solid transparent`,
+          borderRight: `${horizontalSize} solid ${color}`,
+          transition: 'border-color 0.2s ease'
+        }}
+        aria-hidden="true"
+      />
+    )
+  }
+
+  // Triangle component for right arrow (pointing right)
+  const RightTriangle = ({ size, color }: { size: string, color: string }) => {
+    const sizeNum = parseInt(size)
+    const verticalSize = `${Math.round(sizeNum * 1.5)}px`
+    const horizontalSize = `${Math.round(sizeNum * 1.5)}px`
+    
+    return (
+      <div
+        style={{
+          width: 0,
+          height: 0,
+          borderTop: `${verticalSize} solid transparent`,
+          borderBottom: `${verticalSize} solid transparent`,
+          borderLeft: `${horizontalSize} solid ${color}`,
+          transition: 'border-color 0.2s ease'
+        }}
+        aria-hidden="true"
+      />
+    )
   }
 
   const handleMouseEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
-    const target = e.currentTarget
-    if (variant === 'default' || variant === 'minimal') {
-      target.style.background = 'rgba(255, 255, 255, 1)'
-      target.style.transform = 'translateY(-50%) scale(1.1)'
-    } else {
-      target.style.background = '#000'
-      target.style.transform = 'translateY(-50%) scale(1.1)'
+    const triangle = e.currentTarget.querySelector('div') as HTMLElement
+    if (triangle) {
+      // Change triangle color on hover
+      const hoverColor = variantConfig[variant].triangleColorHover
+      if (triangle.style.borderRight) {
+        triangle.style.borderRightColor = hoverColor
+      }
+      if (triangle.style.borderLeft) {
+        triangle.style.borderLeftColor = hoverColor
+      }
     }
   }
 
   const handleMouseLeave = (e: React.MouseEvent<HTMLButtonElement>) => {
-    const target = e.currentTarget
-    target.style.background = variantConfig[variant].background
-    target.style.transform = 'translateY(-50%) scale(1)'
+    const triangle = e.currentTarget.querySelector('div') as HTMLElement
+    if (triangle) {
+      // Reset triangle color
+      const defaultColor = variantConfig[variant].triangleColor
+      if (triangle.style.borderRight) {
+        triangle.style.borderRightColor = defaultColor
+      }
+      if (triangle.style.borderLeft) {
+        triangle.style.borderLeftColor = defaultColor
+      }
+    }
   }
-
-  const handleFocus = (e: React.FocusEvent<HTMLButtonElement>) => {
-    e.currentTarget.style.outline = '2px solid #333'
-    e.currentTarget.style.outlineOffset = '2px'
-  }
-
-  const handleBlur = (e: React.FocusEvent<HTMLButtonElement>) => {
-    e.currentTarget.style.outline = 'none'
-  }
-
   return (
     <>
       {canScrollLeft && (
@@ -104,12 +156,9 @@ const NavigationArrows = memo(function NavigationArrows({
           onClick={onScrollLeft}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
-          onFocus={handleFocus}
-          onBlur={handleBlur}
           style={{ ...baseStyle, left: '20px' }}
           aria-label="Previous image"
           type="button"
-          // Add keyboard navigation
           onKeyDown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault()
@@ -117,15 +166,10 @@ const NavigationArrows = memo(function NavigationArrows({
             }
           }}
         >
-          <span 
-            style={{ 
-              display: 'inline-block',
-              transition: 'transform 0.2s ease'
-            }}
-            aria-hidden="true"
-          >
-            ←
-          </span>
+          <LeftTriangle 
+            size={sizeConfig[size].triangleSize} 
+            color={variantConfig[variant].triangleColor} 
+          />
         </button>
       )}
 
@@ -134,12 +178,9 @@ const NavigationArrows = memo(function NavigationArrows({
           onClick={onScrollRight}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
-          onFocus={handleFocus}
-          onBlur={handleBlur}
           style={{ ...baseStyle, right: '20px' }}
           aria-label="Next image"
           type="button"
-          // Add keyboard navigation
           onKeyDown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault()
@@ -147,15 +188,10 @@ const NavigationArrows = memo(function NavigationArrows({
             }
           }}
         >
-          <span 
-            style={{ 
-              display: 'inline-block',
-              transition: 'transform 0.2s ease'
-            }}
-            aria-hidden="true"
-          >
-            →
-          </span>
+          <RightTriangle 
+            size={sizeConfig[size].triangleSize} 
+            color={variantConfig[variant].triangleColor} 
+          />
         </button>
       )}
     </>

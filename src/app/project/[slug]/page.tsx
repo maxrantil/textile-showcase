@@ -3,8 +3,8 @@ import { notFound } from 'next/navigation'
 import { resilientFetch, queries, getOptimizedImageUrl } from '@/lib/sanity'
 import { TextileDesign } from '@/types/sanity'
 import ImageCarousel from '@/components/ImageCarousel'
+import BackButton from '@/components/BackButton'
 import { ErrorBoundary } from '@/components/LoadingSpinner'
-import Link from 'next/link'
 
 interface ProjectPageProps {
   params: Promise<{
@@ -149,13 +149,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
 
   return (
     <>
-      {/* Structured data */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(structuredData)
-        }}
-      />
+      {/* ... existing structured data and content ... */}
 
       <div style={{ minHeight: '100vh', background: '#fafafa' }}>
         {/* Header spacing */}
@@ -177,28 +171,13 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
           </ErrorBoundary>
         </div>
 
-        {/* Navigation back to gallery - Simple Link without event handlers */}
+        {/* Navigation back to gallery - Use BackButton component */}
         <div style={{ 
           textAlign: 'center', 
           paddingBottom: '40px',
           marginTop: '40px'
         }}>
-          <Link
-            href="/"
-            style={{
-              fontSize: '14px',
-              color: '#333',
-              textDecoration: 'none',
-              letterSpacing: '1px',
-              border: '1px solid #333',
-              padding: '12px 24px',
-              borderRadius: '6px',
-              display: 'inline-block',
-              transition: 'all 0.3s ease'
-            }}
-          >
-            ← Back to Gallery
-          </Link>
+          <BackButton />
         </div>
       </div>
     </>
