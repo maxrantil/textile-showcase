@@ -1,19 +1,18 @@
 'use client'
 
-import { memo, useMemo, useCallback, useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { memo, useMemo, useCallback, useEffect, useRef, useState } from 'react'
+import { useRouter, usePathname } from 'next/navigation'
 import { TextileDesign } from '@/types/sanity'
 import { useHorizontalScroll } from '@/hooks/useHorizontalScroll'
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation'
 import { scrollManager } from '@/lib/scrollManager'
 import { getImageDimensions, getOptimizedImageUrl } from '@/lib/sanity'
-import NavigationArrows from './NavigationArrows' // Your enhanced component
+import NavigationArrows from './NavigationArrows'
 
 interface HorizontalGalleryProps {
   designs: TextileDesign[]
 }
 
-// Memoized individual gallery item component
 const GalleryItem = memo(({ 
   design, 
   index, 
@@ -25,7 +24,6 @@ const GalleryItem = memo(({
   onClick: () => void
   isActive?: boolean
 }) => {
-  // Calculate dimensions based on image aspect ratio
   const imageDimensions = getImageDimensions(design.image)
   const fixedHeight = 70 // vh
   
@@ -47,7 +45,6 @@ const GalleryItem = memo(({
         e.currentTarget.style.transform = 'scale(1)'
       }}
     >
-      {/* Image container that adapts to image size - minimal styling */}
       <div style={{
         position: 'relative',
         boxShadow: '0 20px 40px rgba(0,0,0,0.15)',
@@ -107,136 +104,213 @@ GalleryItem.displayName = 'GalleryItem'
 
 function HorizontalGallery({ designs }: HorizontalGalleryProps) {
   const router = useRouter()
+  const pathname = usePathname()
   
-  // Real-time index ref for avoiding stale closures in keyboard navigation
   const realTimeCurrentIndex = useRef(0)
+  const restorationAttempted = useRef(false)
+  const isFirstMount = useRef(true)
+  const [isRestoring, setIsRestoring] = useState(true)
   
-  // Memoize designs
   const memoizedDesigns = useMemo(() => 
     designs.map((design, index) => ({ ...design, index })), 
     [designs]
   )
 
-  // Your existing scroll hook
   const {
     scrollContainerRef,
     canScrollLeft,
     canScrollRight,
     currentIndex,
+    setCurrentIndex,
     scrollToImage,
     scrollToIndex,
-    centerCurrentItem,
   } = useHorizontalScroll({ 
     itemCount: designs.length,
     onIndexChange: useCallback((index: number) => {
-      // Update real-time index immediately
       realTimeCurrentIndex.current = index
+      
+      // Update the current index in the DOM for the scroll manager
+      if (scrollContainerRef.current) {
+        scrollContainerRef.current.setAttribute('data-current-index', index.toString())
+      }
+      
+      console.log('📍 Current index changed to:', index)
     }, [designs.length])
   })
 
-  // Sync real-time index with current index
   useEffect(() => {
     realTimeCurrentIndex.current = currentIndex
   }, [currentIndex])
 
-  // Restore scroll position IMMEDIATELY on mount
+  // Index-based restoration that works across screen sizes
   useEffect(() => {
     const container = scrollContainerRef.current
-    if (container && designs.length > 0) {
-      const restored = scrollManager.restore(container)
+    if (!container || designs.length === 0) return
+
+    container.setAttribute('data-scroll-container', 'true')
+    container.setAttribute('data-current-index', '0')
+    restorationAttempted.current = false
+
+    const attemptRestore = (attempt: number = 1) => {
+      if (restorationAttempted.current) return
       
-      if (!restored) {
-        requestAnimationFrame(() => {
-          if (scrollContainerRef.current) {
-            scrollManager.restore(scrollContainerRef.current)
-          }
-        })
+      console.log(`🔄 Index restoration attempt ${attempt} for path: ${pathname}`)
+      
+      if (attempt === 1) {
+        scrollManager.debug()
+      }
+      
+      // Get the saved index
+      const savedIndex = scrollManager.getSavedIndex(pathname)
+      
+      if (savedIndex !== null && savedIndex >= 0 && savedIndex < designs.length) {
+        console.log('✅ Restoring to index:', savedIndex)
+        
+        // FIRST: Force update both the hook state and our refs immediately
+        setCurrentIndex(savedIndex)
+        realTimeCurrentIndex.current = savedIndex
+        container.setAttribute('data-current-index', savedIndex.toString())
+        
+        // THEN: Use instant scrolling for restoration to make it invisible
+        scrollToIndex(savedIndex, true) // true = instant
+        restorationAttempted.current = true
+        
+        // Show gallery after a brief delay to ensure scroll is complete
+        setTimeout(() => {
+          setIsRestoring(false)
+        }, 50)
+        
+      } else if (attempt < 3) {
+        // Try again with delay
+        const delay = 50 * attempt // Reduced delay for faster attempts
+        setTimeout(() => attemptRestore(attempt + 1), delay)
+      } else {
+        console.log('✅ Starting from beginning (index 0)')
+        
+        // FIRST: Force update both the hook state and our refs immediately
+        setCurrentIndex(0)
+        realTimeCurrentIndex.current = 0
+        container.setAttribute('data-current-index', '0')
+        
+        // THEN: Use instant scrolling
+        scrollToIndex(0, true) // true = instant
+        restorationAttempted.current = true
+        
+        // Show gallery after a brief delay
+        setTimeout(() => {
+          setIsRestoring(false)
+        }, 50)
       }
     }
-  }, [])
 
-  // Initialize real-time index when component mounts
+    // Start restoration attempts immediately - no delay for instant restoration
+    attemptRestore()
+
+  }, [pathname, designs.length, scrollToIndex])
+
   useEffect(() => {
     realTimeCurrentIndex.current = 0
+    isFirstMount.current = true
   }, [])
 
-  // Save scroll position periodically
+  // Save current index instead of scroll position
   useEffect(() => {
-    let scrollSaveTimeout: NodeJS.Timeout
+    const container = scrollContainerRef.current
+    if (!container) return
+
     let isNavigating = false
 
-    const handleScroll = () => {
-      if (isNavigating) return
+    const handleIndexChange = () => {
+      // Only save if restoration has been attempted and we're not navigating
+      if (!isNavigating && restorationAttempted.current && !isFirstMount.current) {
+        scrollManager.save(realTimeCurrentIndex.current, pathname)
+      }
       
-      clearTimeout(scrollSaveTimeout)
-      scrollSaveTimeout = setTimeout(() => {
-        if (scrollContainerRef.current && !isNavigating) {
-          scrollManager.save(scrollContainerRef.current.scrollLeft)
-        }
-      }, 300)
+      // Mark first mount as complete after first index change
+      if (isFirstMount.current) {
+        setTimeout(() => {
+          isFirstMount.current = false
+        }, 1000)
+      }
     }
 
-    const container = scrollContainerRef.current
-    if (container) {
-      container.addEventListener('scroll', handleScroll, { passive: true })
+    const stopSaving = () => {
+      isNavigating = true
+      // Save immediately when navigation starts
+      if (restorationAttempted.current && !isFirstMount.current) {
+        scrollManager.saveImmediate(realTimeCurrentIndex.current, pathname)
+      }
     }
+
+    const resumeSaving = () => {
+      setTimeout(() => {
+        isNavigating = false
+      }, 200)
+    }
+
+    // Listen to index changes instead of scroll events
+    const indexChangeHandler = () => {
+      handleIndexChange()
+    }
+
+    window.addEventListener('gallery-navigation-start', stopSaving)
+    window.addEventListener('gallery-navigation-complete', resumeSaving)
+    
+    // Listen for manual scroll events but use index instead
+    container.addEventListener('scroll', indexChangeHandler, { passive: true })
 
     const handleBeforeUnload = () => {
-      if (scrollContainerRef.current) {
-        scrollManager.saveImmediate(scrollContainerRef.current.scrollLeft)
+      if (!isNavigating && !isFirstMount.current) {
+        scrollManager.saveImmediate(realTimeCurrentIndex.current, pathname)
       }
     }
     window.addEventListener('beforeunload', handleBeforeUnload)
 
-    const stopSaving = () => {
-      isNavigating = true
-      clearTimeout(scrollSaveTimeout)
-    }
-
-    window.addEventListener('gallery-navigation-start', stopSaving)
-
     return () => {
-      if (container) {
-        container.removeEventListener('scroll', handleScroll)
-      }
+      container.removeEventListener('scroll', indexChangeHandler)
       window.removeEventListener('beforeunload', handleBeforeUnload)
       window.removeEventListener('gallery-navigation-start', stopSaving)
-      clearTimeout(scrollSaveTimeout)
-      if (scrollContainerRef.current && !isNavigating) {
-        scrollManager.save(scrollContainerRef.current.scrollLeft)
+      window.removeEventListener('gallery-navigation-complete', resumeSaving)
+      
+      // Final save on cleanup
+      if (!isNavigating && restorationAttempted.current && !isFirstMount.current) {
+        scrollManager.saveImmediate(realTimeCurrentIndex.current, pathname)
       }
     }
-  }, [])
+  }, [pathname])
 
-  // Click handler - save position before navigating
+  // Click handler with index saving
   const handleImageClick = useCallback((design: TextileDesign) => {
-    window.dispatchEvent(new Event('gallery-navigation-start'))
+    console.log('🖱️ Image clicked, saving index before navigation')
     
-    if (scrollContainerRef.current) {
-      scrollManager.saveImmediate(scrollContainerRef.current.scrollLeft)
+    // Save current index before navigation
+    if (!isFirstMount.current) {
+      scrollManager.saveImmediate(realTimeCurrentIndex.current, pathname)
+      console.log(`💾 Saved index ${realTimeCurrentIndex.current} for path ${pathname}`)
     }
     
+    scrollManager.triggerNavigationStart()
     router.push(`/project/${design.slug?.current || design._id}`)
-  }, [router])
+  }, [router, pathname])
 
-  // Keyboard navigation
+  // Enhanced keyboard navigation
   useKeyboardNavigation({
     onPrevious: () => handleScrollTo('left'),
     onNext: () => handleScrollTo('right'),
     onScrollUp: () => window.scrollBy({ top: -150, behavior: 'smooth' }),
     onScrollDown: () => window.scrollBy({ top: 150, behavior: 'smooth' }),
     onAbout: () => {
-      window.dispatchEvent(new Event('gallery-navigation-start'))
-      if (scrollContainerRef.current) {
-        scrollManager.saveImmediate(scrollContainerRef.current.scrollLeft)
+      scrollManager.triggerNavigationStart()
+      if (!isFirstMount.current) {
+        scrollManager.saveImmediate(realTimeCurrentIndex.current, pathname)
       }
       router.push('/about')
     },
     onWork: () => router.push('/'),
     onContact: () => {
-      window.dispatchEvent(new Event('gallery-navigation-start'))
-      if (scrollContainerRef.current) {
-        scrollManager.saveImmediate(scrollContainerRef.current.scrollLeft)
+      scrollManager.triggerNavigationStart()
+      if (!isFirstMount.current) {
+        scrollManager.saveImmediate(realTimeCurrentIndex.current, pathname)
       }
       router.push('/contact')
     },
@@ -244,26 +318,23 @@ function HorizontalGallery({ designs }: HorizontalGalleryProps) {
       const activeIndex = realTimeCurrentIndex.current
       const currentDesign = designs[activeIndex]
       
+      console.log('Enter pressed - using real-time index:', activeIndex, 'design:', currentDesign?.title)
+      
       if (currentDesign) {
-        window.dispatchEvent(new Event('gallery-navigation-start'))
-        
-        if (scrollContainerRef.current) {
-          scrollManager.saveImmediate(scrollContainerRef.current.scrollLeft)
-        }
-        
-        router.push(`/project/${currentDesign.slug?.current || currentDesign._id}`)
+        handleImageClick(currentDesign)
       }
     },
     enabled: true
   })
 
-  // Handle scroll to specific item
   const handleScrollTo = useCallback((direction: 'left' | 'right') => {
     const newIndex = direction === 'left' 
       ? Math.max(0, realTimeCurrentIndex.current - 1)
       : Math.min(designs.length - 1, realTimeCurrentIndex.current + 1)
     
     realTimeCurrentIndex.current = newIndex
+    console.log('Scroll navigation - new real-time index:', newIndex)
+    
     scrollToImage(direction)
   }, [scrollToImage, designs.length])
 
@@ -281,7 +352,6 @@ function HorizontalGallery({ designs }: HorizontalGalleryProps) {
     )
   }
 
-  // Determine if navigation arrows should be shown - based on current position in gallery
   const showLeftArrow = canScrollLeft && currentIndex > 0
   const showRightArrow = canScrollRight && currentIndex < designs.length - 1
 
@@ -293,7 +363,6 @@ function HorizontalGallery({ designs }: HorizontalGalleryProps) {
       position: 'relative',
       marginTop: '60px'
     }}>
-      {/* Navigation Arrows - show based on current position in gallery */}
       <NavigationArrows
         canScrollLeft={showLeftArrow}
         canScrollRight={showRightArrow}
@@ -305,6 +374,8 @@ function HorizontalGallery({ designs }: HorizontalGalleryProps) {
       
       <div 
         ref={scrollContainerRef}
+        data-scroll-container="true"
+        data-current-index="0"
         style={{
           display: 'flex',
           height: 'calc(100vh - 100px)',
@@ -320,6 +391,8 @@ function HorizontalGallery({ designs }: HorizontalGalleryProps) {
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
           WebkitOverflowScrolling: 'touch',
+          opacity: isRestoring ? 0 : 1, // Hide during restoration
+          transition: isRestoring ? 'none' : 'opacity 0.3s ease', // Smooth fade in after restoration
         }}
         onTouchStart={(e) => {
           const touch = e.touches[0]

@@ -1,4 +1,4 @@
-// Update src/hooks/useHorizontalScroll.ts
+// src/hooks/useHorizontalScroll.ts - Updated to export setCurrentIndex
 'use client'
 
 import { useRef, useState, useEffect, useCallback } from 'react'
@@ -132,23 +132,25 @@ export function useHorizontalScroll({ itemCount, onIndexChange }: UseHorizontalS
     }, 700)
   }, [currentIndex, onIndexChange])
 
-  const scrollToIndex = useCallback((index: number) => {
+  const scrollToIndex = useCallback((index: number, instant: boolean = false) => {
     const container = scrollContainerRef.current
     if (!container || index < 0 || index >= itemCount) return
 
-    console.log('🎯 MANUAL scroll to index:', index)
+    console.log('🎯 MANUAL scroll to index:', index, instant ? '(INSTANT)' : '(SMOOTH)')
     
-    isUpdatingRef.current = true
+    if (!instant) {
+      isUpdatingRef.current = true
+    }
     
-    // NEW: Use actual DOM elements
+    // Force the index change first
+    setCurrentIndex(index)
+    onIndexChange?.(index)
+    
+    // Use actual DOM elements
     const items = container.children
     const targetItem = items[index] as HTMLElement
     
     if (targetItem) {
-      // Force the index change first
-      setCurrentIndex(index)
-      onIndexChange?.(index)
-      
       const itemCenter = targetItem.offsetLeft + (targetItem.offsetWidth / 2)
       const viewportCenter = container.clientWidth / 2
       const targetScroll = itemCenter - viewportCenter
@@ -159,18 +161,36 @@ export function useHorizontalScroll({ itemCount, onIndexChange }: UseHorizontalS
         itemWidth: targetItem.offsetWidth,
         itemCenter,
         viewportCenter,
-        targetScroll: Math.max(0, targetScroll)
+        targetScroll: Math.max(0, targetScroll),
+        instant
       })
       
-      container.scrollTo({ 
-        left: Math.max(0, targetScroll),
-        behavior: 'smooth' 
-      })
+      if (instant) {
+        // Instant scroll without animation - for restoration
+        const originalBehavior = container.style.scrollBehavior
+        container.style.scrollBehavior = 'auto'
+        container.scrollLeft = Math.max(0, targetScroll)
+        
+        // Force update the scroll position detection immediately
+        setTimeout(() => {
+          container.style.scrollBehavior = originalBehavior
+          // Trigger a manual scroll event to update position detection
+          container.dispatchEvent(new Event('scroll'))
+        }, 10)
+      } else {
+        // Smooth animated scroll - for user navigation
+        container.scrollTo({ 
+          left: Math.max(0, targetScroll),
+          behavior: 'smooth' 
+        })
+      }
     }
 
-    setTimeout(() => {
-      isUpdatingRef.current = false
-    }, 700)
+    if (!instant) {
+      setTimeout(() => {
+        isUpdatingRef.current = false
+      }, 700)
+    }
   }, [itemCount, onIndexChange])
 
   // DISABLED: Auto-center current item when index changes
@@ -179,13 +199,6 @@ export function useHorizontalScroll({ itemCount, onIndexChange }: UseHorizontalS
     // Temporarily disabled to fix navigation issues
     console.log('⚠️ centerCurrentItem called but disabled')
   }, [currentIndex])
-
-  // DISABLED: Center current item when currentIndex changes
-  // useEffect(() => {
-  //   if (!isUpdatingRef.current) {
-  //     setTimeout(centerCurrentItem, 100)
-  //   }
-  // }, [currentIndex, centerCurrentItem])
 
   useEffect(() => {
     const container = scrollContainerRef.current
@@ -244,8 +257,9 @@ export function useHorizontalScroll({ itemCount, onIndexChange }: UseHorizontalS
     canScrollLeft,
     canScrollRight,
     currentIndex,
+    setCurrentIndex, // Export setCurrentIndex for manual control
     scrollToImage,
     scrollToIndex,
-    centerCurrentItem, // NEW: Export centering function
+    centerCurrentItem,
   }
 }
