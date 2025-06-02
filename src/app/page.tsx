@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
 import { resilientFetch, queries } from '@/lib/sanity'
 import { TextileDesign } from '@/types/sanity'
-import HorizontalGallery from '@/components/HorizontalGallery'
+import { HorizontalGallery } from '@/components/gallery'
 import { GalleryLoadingSkeleton, NetworkErrorFallback, ErrorBoundary } from '@/components/LoadingSpinner'
 import { Suspense } from 'react'
 

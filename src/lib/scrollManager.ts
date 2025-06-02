@@ -1,8 +1,7 @@
-// src/lib/scrollManager.ts - Updated to match old code functionality
 'use client'
 
 interface ScrollPosition {
-  index: number // Store item index instead of pixel position
+  index: number
   timestamp: number
 }
 
@@ -11,7 +10,7 @@ interface ScrollState {
 }
 
 class EnhancedScrollManager {
-  private storageKey = 'gallery-scroll-positions-v3' // Updated version
+  private storageKey = 'gallery-scroll-positions-v3'
   private debounceTimeout: NodeJS.Timeout | null = null
   private isNavigating = false
   private lastSavedIndex: number | null = null
@@ -58,10 +57,9 @@ class EnhancedScrollManager {
   }
 
   private handlePageUnload = () => {
-    // Get current index from the gallery if available
-    const currentIndexElement = document.querySelector('[data-current-index]') as HTMLElement
-    if (currentIndexElement) {
-      const currentIndex = parseInt(currentIndexElement.dataset.currentIndex || '0', 10)
+    const currentIndexElement = document.querySelector('[data-current-index]') as HTMLElement | null
+    if (currentIndexElement?.dataset.currentIndex) {
+      const currentIndex = parseInt(currentIndexElement.dataset.currentIndex, 10)
       this.saveImmediate(currentIndex, window.location.pathname)
     }
   }
@@ -72,7 +70,6 @@ class EnhancedScrollManager {
     }, 50)
   }
 
-  // Save index instead of scroll position
   save(currentIndex: number, path?: string): void {
     if (this.isNavigating) {
       console.log('🚫 Navigation in progress, skipping save')
@@ -91,7 +88,6 @@ class EnhancedScrollManager {
     }, 100)
   }
 
-  // Save index immediately
   saveImmediate(currentIndex: number, path?: string): void {
     if (typeof window === 'undefined') return
 
@@ -106,7 +102,6 @@ class EnhancedScrollManager {
       timestamp: Date.now()
     }
 
-    // Also save the root path explicitly for gallery
     if (currentPath === '/') {
       positions['gallery'] = positions[currentPath]
     }
@@ -121,7 +116,6 @@ class EnhancedScrollManager {
     }
   }
 
-  // Get saved index for restoration
   getSavedIndex(path?: string): number | null {
     if (typeof window === 'undefined') return null
     
@@ -129,14 +123,12 @@ class EnhancedScrollManager {
     console.log(`🔍 Getting saved index for path: ${currentPath}`)
     console.log(`🔍 Has visited gallery before: ${this.hasVisitedGallery}`)
     
-    // If this is the first visit to the gallery, always start from the beginning
     if (!this.hasVisitedGallery && currentPath === '/') {
       console.log('🆕 First visit - returning index 0')
       this.markGalleryVisited()
       return 0
     }
 
-    // Try to find saved position
     const pathsToTry = [
       currentPath,
       currentPath === '/' ? 'gallery' : currentPath,
@@ -155,7 +147,6 @@ class EnhancedScrollManager {
       }
     }
 
-    // Use last saved index as fallback (but not for first visit)
     if (!savedPosition && this.lastSavedIndex !== null && this.hasVisitedGallery) {
       console.log(`🔄 Using last saved index: ${this.lastSavedIndex}`)
       return this.lastSavedIndex
@@ -169,11 +160,9 @@ class EnhancedScrollManager {
     return 0
   }
 
-  // Legacy method for compatibility - now delegates to gallery for actual scrolling
   restore(container: HTMLElement, path?: string): boolean {
     const savedIndex = this.getSavedIndex(path)
     if (savedIndex !== null) {
-      // Store the saved index as a data attribute for the gallery to use
       container.setAttribute('data-restore-index', savedIndex.toString())
       container.setAttribute('data-restore-instantly', 'true')
       console.log(`🔄 Marked container to restore to index: ${savedIndex}`)
@@ -217,8 +206,8 @@ class EnhancedScrollManager {
   private cleanupOldPositions(): void {
     const positions = this.getAllPositions()
     const now = Date.now()
-    const maxAge = 24 * 60 * 60 * 1000 // 24 hours
-    
+    const maxAge = 24 * 60 * 60 * 1000
+
     let hasChanges = false
     for (const [path, position] of Object.entries(positions)) {
       if (now - position.timestamp > maxAge) {
@@ -235,6 +224,10 @@ class EnhancedScrollManager {
 
   triggerNavigationStart(): void {
     this.isNavigating = true
+    if (this.debounceTimeout) {
+      clearTimeout(this.debounceTimeout)
+      this.debounceTimeout = null
+    }
     window.dispatchEvent(new Event('gallery-navigation-start'))
   }
 
@@ -245,15 +238,13 @@ class EnhancedScrollManager {
     }, 50)
   }
 
-  // Debug method
   debug(): void {
     console.log('📊 All saved scroll positions:', this.getAllPositions())
     console.log('📊 Last saved index:', this.lastSavedIndex)
     console.log('📊 Has visited gallery:', this.hasVisitedGallery)
-    console.log('📊 Gallery visited flag:', sessionStorage.getItem('gallery-visited'))
+    console.log('📊 Is navigating:', this.isNavigating)
   }
 
-  // Method to reset for testing
   resetFirstVisit(): void {
     sessionStorage.removeItem('gallery-visited')
     this.hasVisitedGallery = false
