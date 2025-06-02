@@ -1,11 +1,8 @@
-// Update your project page to handle escape key properly
-// Add this to your ImageCarousel component in src/components/ImageCarousel.tsx
-
 'use client'
 
 import { useState, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import OptimizedImage from './OptimizedImage'
+import { getImageDimensions, getOptimizedImageUrl } from '@/lib/sanity'
 import NavigationArrows from './NavigationArrows'
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation'
 import KeyboardScrollHandler from './KeyboardScrollHandler'
@@ -39,14 +36,21 @@ export default function ImageCarousel({
 }: ImageCarouselProps) {
   const router = useRouter()
   
-  // Create all images array with main image last
-  const allImages = useMemo(() => [
-    ...(images || []),
-    { _key: 'main-image', asset: mainImage, caption: 'Main view' }
-  ], [mainImage, images])
+  // FIXED: Only use gallery images, don't add main image at all
+  const allImages = useMemo(() => {
+    // Just return the gallery images as they are, no main image
+    return images || []
+  }, [images])
 
   const [currentIndex, setCurrentIndex] = useState(0)
   const currentImage = allImages[currentIndex]
+
+  // Calculate dimensions for current image
+  const imageDimensions = getImageDimensions(currentImage)
+  const aspectRatio = imageDimensions?.aspectRatio || 4/3
+  
+  // CONSISTENT HEIGHT for all images
+  const fixedHeight = 70 // vh - same height for ALL images
 
   // Navigation functions
   const goToPrevious = useCallback(() => {
@@ -63,7 +67,7 @@ export default function ImageCarousel({
     }
   }, [allImages.length])
 
-  // FIXED: Image navigation with proper escape key handling
+  // Image navigation with proper escape key handling
   useKeyboardNavigation({
     onPrevious: goToPrevious,
     onNext: goToNext,
@@ -100,7 +104,7 @@ export default function ImageCarousel({
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        maxWidth: '1200px',
+        maxWidth: '1400px',
         margin: '0 auto',
         padding: '0 40px',
         marginTop: '80px',
@@ -113,11 +117,10 @@ export default function ImageCarousel({
           gap: '60px',
           marginBottom: '20px',
           width: '100%',
-          maxWidth: '1000px',
-          justifyContent: 'space-between'
+          justifyContent: 'center'
         }}>
-          {/* Navigation Arrows - only show if more than 1 image */}
-          {allImages.length > 1 ? (
+          {/* Navigation Arrows - only show if more than 1 gallery image */}
+          {allImages.length > 1 && (
             <div style={{ flexShrink: 0 }}>
               <NavigationArrows
                 canScrollLeft={canScrollLeft}
@@ -129,39 +132,45 @@ export default function ImageCarousel({
                 variant="default"
               />
             </div>
-          ) : (
-            <div style={{ width: '100px', flexShrink: 0 }} />
           )}
 
-          {/* Image */}
+          {/* Image - display current gallery image or fallback to main image */}
           <div style={{
-            flex: 1,
             display: 'flex',
             flexDirection: 'column',
-            maxWidth: '800px'
+            alignItems: 'center'
           }}>
+            {/* Container that wraps tightly around the image */}
             <div style={{
-              width: '100%',
-              height: '50vh',
               position: 'relative',
-              backgroundColor: '#f5f5f5',
               boxShadow: '0 20px 40px rgba(0,0,0,0.15)',
-              overflow: 'hidden'
+              display: 'inline-block',
+              lineHeight: 0,
+              backgroundColor: 'transparent'
             }}>
-              {currentImage?.asset && (
-                <OptimizedImage
-                  src={currentImage.asset}
-                  alt={currentImage.caption || projectTitle}
-                  width={800}
-                  height={600}
-                  priority={true}
-                  sizes="(max-width: 900px) 100vw, 900px"
-                  quality={90}
+              {/* Show current gallery image if available, otherwise show main image */}
+              {(currentImage?.asset || mainImage) && (
+                <img
+                  src={getOptimizedImageUrl(currentImage?.asset || mainImage, { 
+                    height: 800, // Only height constraint - width will adjust to preserve aspect ratio
+                    quality: 90, 
+                    format: 'webp'
+                  })}
+                  alt={currentImage?.caption || projectTitle}
+                  style={{
+                    height: `${fixedHeight}vh`,
+                    width: 'auto',
+                    maxHeight: '700px',
+                    minHeight: '300px',
+                    display: 'block',
+                    objectFit: 'contain'
+                  }}
+                  loading={currentIndex === 0 ? 'eager' : 'lazy'}
                 />
               )}
             </div>
 
-            {/* Image Counter */}
+            {/* Image Counter - Only show if there are gallery images */}
             {allImages.length > 1 && (
               <div style={{
                 textAlign: 'right',
@@ -169,15 +178,16 @@ export default function ImageCarousel({
                 color: '#333',
                 letterSpacing: '1px',
                 marginTop: '8px',
-                fontWeight: 400
+                fontWeight: 400,
+                width: '100%'
               }}>
                 {String(currentIndex + 1).padStart(2, '0')} / {String(allImages.length).padStart(2, '0')}
               </div>
             )}
           </div>
 
-          {/* Right Navigation Arrow */}
-          {allImages.length > 1 ? (
+          {/* Right Navigation Arrow - only show if more than 1 gallery image */}
+          {allImages.length > 1 && (
             <div style={{ flexShrink: 0 }}>
               <NavigationArrows
                 canScrollLeft={false} // Only show right arrow here
@@ -189,8 +199,6 @@ export default function ImageCarousel({
                 variant="default"
               />
             </div>
-          ) : (
-            <div style={{ width: '100px', flexShrink: 0 }} />
           )}
         </div>
 
@@ -198,7 +206,7 @@ export default function ImageCarousel({
         <div style={{ 
           width: '100%',
           maxWidth: '800px',
-          marginTop: '20px'
+          marginTop: '40px'
         }}>
           <h1 style={{ 
             fontSize: '32px', 
@@ -315,12 +323,15 @@ export default function ImageCarousel({
         {/* Preload adjacent images (hidden) */}
         <div style={{ display: 'none' }} aria-hidden="true">
           {preloadImages.map((image, index) => (
-            <OptimizedImage
+            <img
               key={`preload-${index}`}
-              src={image.asset}
+              src={getOptimizedImageUrl(image.asset, { 
+                height: 600, // Only height constraint
+                quality: 80, 
+                format: 'webp'
+              })}
               alt=""
-              width={800}
-              height={600}
+              loading="lazy"
             />
           ))}
         </div>

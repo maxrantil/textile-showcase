@@ -6,27 +6,33 @@ import { TextileDesign } from '@/types/sanity'
 import { useHorizontalScroll } from '@/hooks/useHorizontalScroll'
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation'
 import { scrollManager } from '@/lib/scrollManager'
-import OptimizedImage from './OptimizedImage'
+import { getImageDimensions, getOptimizedImageUrl } from '@/lib/sanity'
 import NavigationArrows from './NavigationArrows'
 
 interface HorizontalGalleryProps {
   designs: TextileDesign[]
 }
 
-// Memoized individual gallery item component - UNCHANGED
+// Memoized individual gallery item component
 const GalleryItem = memo(({ 
   design, 
   index, 
-  onClick 
+  onClick,
+  isActive = false // Keep for centering logic but no visual effects
 }: { 
   design: TextileDesign
   index: number
-  onClick: () => void 
+  onClick: () => void
+  isActive?: boolean
 }) => {
+  // Calculate dimensions based on image aspect ratio
+  const imageDimensions = getImageDimensions(design.image)
+  const fixedHeight = 70 // vh
+  const aspectRatio = imageDimensions?.aspectRatio || 4/3
+  
   return (
     <div 
       style={{ 
-        minWidth: '70vw',
         flexShrink: 0,
         scrollSnapAlign: 'center',
         display: 'flex',
@@ -42,23 +48,32 @@ const GalleryItem = memo(({
         e.currentTarget.style.transform = 'scale(1)'
       }}
     >
+      {/* Image container that adapts to image size - minimal styling */}
       <div style={{
-        width: '100%',
-        height: '70vh',
         position: 'relative',
         boxShadow: '0 20px 40px rgba(0,0,0,0.15)',
-        backgroundColor: '#f5f5f5',
-        overflow: 'hidden',
+        display: 'inline-block',
+        lineHeight: 0,
+        backgroundColor: 'transparent'
       }}>
-        <OptimizedImage
-          src={design.image}
+        <img
+          src={getOptimizedImageUrl(design.image, { 
+            height: 800,
+            quality: index < 3 ? 90 : 80, 
+            format: 'webp'
+          })}
           alt={design.title}
-          width={1200}
-          height={800}
-          priority={index < 3}
+          style={{
+            height: `${fixedHeight}vh`,
+            width: 'auto',
+            maxHeight: '700px',
+            minHeight: '300px',
+            display: 'block',
+            objectFit: 'contain',
+            cursor: 'pointer'
+          }}
+          loading={index < 3 ? 'eager' : 'lazy'}
           onClick={onClick}
-          sizes="70vw"
-          quality={index < 3 ? 90 : 80}
         />
       </div>
 
@@ -97,13 +112,13 @@ function HorizontalGallery({ designs }: HorizontalGalleryProps) {
   // Real-time index ref for avoiding stale closures in keyboard navigation
   const realTimeCurrentIndex = useRef(0)
   
-  // Memoize designs - UNCHANGED
+  // Memoize designs
   const memoizedDesigns = useMemo(() => 
     designs.map((design, index) => ({ ...design, index })), 
     [designs]
   )
 
-  // Your existing scroll hook - UNCHANGED
+  // Your existing scroll hook
   const {
     scrollContainerRef,
     canScrollLeft,
@@ -111,6 +126,7 @@ function HorizontalGallery({ designs }: HorizontalGalleryProps) {
     currentIndex,
     scrollToImage,
     scrollToIndex,
+    centerCurrentItem, // NEW: Get centering function
   } = useHorizontalScroll({ 
     itemCount: designs.length,
     onIndexChange: useCallback((index: number) => {
@@ -128,7 +144,7 @@ function HorizontalGallery({ designs }: HorizontalGalleryProps) {
     realTimeCurrentIndex.current = currentIndex
   }, [currentIndex])
 
-  // NEW: Restore scroll position IMMEDIATELY on mount - before any rendering
+  // Restore scroll position IMMEDIATELY on mount
   useEffect(() => {
     const container = scrollContainerRef.current
     if (container && designs.length > 0) {
@@ -146,40 +162,23 @@ function HorizontalGallery({ designs }: HorizontalGalleryProps) {
     }
   }, []) // Run only once on mount, not when designs change
 
-  // Separate effect for when designs are loaded
-  useEffect(() => {
-    if (scrollContainerRef.current && designs.length > 0) {
-      // Also try to restore when designs are available
-      requestAnimationFrame(() => {
-        if (scrollContainerRef.current) {
-          const restored = scrollManager.restore(scrollContainerRef.current)
-          
-          // IMPORTANT: Force the scroll hook to recalculate the current index
-          // after restoring scroll position - with multiple attempts
-          if (restored) {
-            // Try multiple times to ensure the index is properly calculated
-            const updateIndex = () => {
-              if (scrollContainerRef.current) {
-                scrollContainerRef.current.dispatchEvent(new Event('scroll'))
-              }
-            }
-            
-            // Try immediately, then after short delays
-            setTimeout(updateIndex, 50)
-            setTimeout(updateIndex, 150)
-            setTimeout(updateIndex, 300)
-          }
-        }
-      })
-    }
-  }, [designs.length])
+  // DISABLED: Center the first item on initial load (causing conflicts)
+  // useEffect(() => {
+  //   if (scrollContainerRef.current && designs.length > 0) {
+  //     setTimeout(() => {
+  //       if (centerCurrentItem) {
+  //         centerCurrentItem()
+  //       }
+  //     }, 300)
+  //   }
+  // }, [designs.length, centerCurrentItem])
 
   // Initialize real-time index when component mounts
   useEffect(() => {
     realTimeCurrentIndex.current = 0
   }, [])
 
-  // NEW: Save scroll position periodically - but stop saving after navigation
+  // Save scroll position periodically
   useEffect(() => {
     let scrollSaveTimeout: NodeJS.Timeout
     let isNavigating = false
@@ -232,7 +231,7 @@ function HorizontalGallery({ designs }: HorizontalGalleryProps) {
     }
   }, [])
 
-  // UPDATED: Click handler - save position before navigating and prevent race conditions
+  // Click handler - save position before navigating
   const handleImageClick = useCallback((design: TextileDesign) => {
     // Signal that navigation is starting to stop background scroll saving
     window.dispatchEvent(new Event('gallery-navigation-start'))
@@ -245,7 +244,7 @@ function HorizontalGallery({ designs }: HorizontalGalleryProps) {
     router.push(`/project/${design.slug?.current || design._id}`)
   }, [router])
 
-  // Your existing keyboard navigation - UPDATED to use real-time index
+  // Keyboard navigation
   useKeyboardNavigation({
     onPrevious: () => handleScrollTo('left'),
     onNext: () => handleScrollTo('right'),
@@ -290,7 +289,7 @@ function HorizontalGallery({ designs }: HorizontalGalleryProps) {
     enabled: true
   })
 
-  // Handle scroll to specific item - UPDATED to update real-time index
+  // Handle scroll to specific item
   const handleScrollTo = useCallback((direction: 'left' | 'right') => {
     // Calculate what the new index will be
     const newIndex = direction === 'left' 
@@ -344,9 +343,9 @@ function HorizontalGallery({ designs }: HorizontalGalleryProps) {
           overflowY: 'hidden',
           scrollBehavior: 'smooth',
           scrollSnapType: 'x mandatory',
-          gap: '40px',
-          paddingLeft: '15vw',
-          paddingRight: '15vw',
+          gap: '80px',
+          paddingLeft: '45vw', // INCREASED: More padding so edge items can be centered
+          paddingRight: '45vw', // INCREASED: More padding so edge items can be centered
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
           WebkitOverflowScrolling: 'touch',
@@ -364,6 +363,7 @@ function HorizontalGallery({ designs }: HorizontalGalleryProps) {
             key={design._id}
             design={design}
             index={design.index}
+            isActive={design.index === currentIndex} // NEW: Pass active state
             onClick={() => handleImageClick(design)}
           />
         ))}

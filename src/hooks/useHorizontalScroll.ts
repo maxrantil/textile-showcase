@@ -23,22 +23,31 @@ export function useHorizontalScroll({ itemCount, onIndexChange }: UseHorizontalS
     setCanScrollLeft(scrollLeft > 10)
     setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10)
     
-    // Calculate current index based on which item is most centered in viewport
-    // Your gallery: 70vw items, 40px gaps, 15vw padding on each side
-    const viewportCenter = scrollLeft + (clientWidth / 2)
-    const paddingLeft = clientWidth * 0.15 // 15vw left padding
-    const itemWidth = clientWidth * 0.7 // 70vw item width
-    const gapWidth = 40 // 40px gap
-    const itemPlusGap = itemWidth + gapWidth
+    // Get all items and their positions
+    const items = container.children
+    if (items.length === 0) return
     
-    // Find which item center is closest to viewport center
+    const viewportCenter = scrollLeft + (clientWidth / 2)
     let closestIndex = 0
     let closestDistance = Infinity
     
-    for (let i = 0; i < itemCount; i++) {
-      // Calculate the center position of each item
-      const itemCenter = paddingLeft + (i * itemPlusGap) + (itemWidth / 2)
+    // Create detailed position info for all items
+    const itemPositions = []
+    for (let i = 0; i < items.length && i < itemCount; i++) {
+      const item = items[i] as HTMLElement
+      const offsetLeft = item.offsetLeft
+      const offsetWidth = item.offsetWidth
+      const itemCenter = offsetLeft + (offsetWidth / 2)
       const distance = Math.abs(viewportCenter - itemCenter)
+      
+      itemPositions.push({
+        index: i,
+        offsetLeft,
+        offsetWidth,
+        itemCenter,
+        distance,
+        isReachable: itemCenter >= 0 && itemCenter <= scrollWidth
+      })
       
       if (distance < closestDistance) {
         closestDistance = distance
@@ -46,17 +55,13 @@ export function useHorizontalScroll({ itemCount, onIndexChange }: UseHorizontalS
       }
     }
     
-    console.log('Scroll calculation:', {
-      scrollLeft,
-      viewportCenter,
-      paddingLeft,
-      itemWidth,
-      closestIndex,
-      currentIndex
-    })
+    // Log all positions every time to debug
+    console.log('📊 All item positions:', itemPositions)
+    console.log('🎯 Viewport center:', viewportCenter, 'Closest index:', closestIndex)
+    console.log('📏 Scroll bounds:', { scrollLeft, scrollWidth, clientWidth })
     
     if (closestIndex !== currentIndex) {
-      console.log('Index changed from', currentIndex, 'to', closestIndex)
+      console.log('🔄 Index changed from', currentIndex, 'to', closestIndex)
       setCurrentIndex(closestIndex)
       onIndexChange?.(closestIndex)
     }
@@ -66,47 +71,121 @@ export function useHorizontalScroll({ itemCount, onIndexChange }: UseHorizontalS
     const container = scrollContainerRef.current
     if (!container) return
 
+    console.log('🚀 ScrollToImage called:', direction, 'from index:', currentIndex)
+    
     isUpdatingRef.current = true
     
-    // Calculate scroll amount based on viewport width
-    const scrollAmount = container.clientWidth * 0.75
-    const targetScroll = direction === 'left' 
-      ? Math.max(0, container.scrollLeft - scrollAmount)
-      : container.scrollLeft + scrollAmount
-
-    container.scrollTo({ 
-      left: targetScroll, 
-      behavior: 'smooth' 
-    })
+    const items = container.children
+    if (items.length === 0) {
+      console.log('❌ No items found')
+      return
+    }
+    
+    let targetIndex = currentIndex
+    if (direction === 'left') {
+      targetIndex = Math.max(0, currentIndex - 1)
+    } else {
+      targetIndex = Math.min(items.length - 1, currentIndex + 1)
+    }
+    
+    console.log('🎯 Target index:', targetIndex, 'of', items.length, 'items')
+    
+    // FORCE the index change regardless of scroll detection
+    console.log('🔧 FORCING index change from', currentIndex, 'to', targetIndex)
+    setCurrentIndex(targetIndex)
+    onIndexChange?.(targetIndex)
+    
+    // Ensure target index is valid
+    if (targetIndex < 0 || targetIndex >= items.length) {
+      console.log('❌ Invalid target index')
+      isUpdatingRef.current = false
+      return
+    }
+    
+    const targetItem = items[targetIndex] as HTMLElement
+    if (targetItem) {
+      const itemCenter = targetItem.offsetLeft + (targetItem.offsetWidth / 2)
+      const viewportCenter = container.clientWidth / 2
+      const targetScroll = itemCenter - viewportCenter
+      
+      console.log('📍 Scroll calculation:', {
+        targetIndex,
+        itemOffsetLeft: targetItem.offsetLeft,
+        itemWidth: targetItem.offsetWidth,
+        itemCenter,
+        viewportCenter,
+        targetScroll: Math.max(0, targetScroll),
+        containerScrollWidth: container.scrollWidth,
+        containerClientWidth: container.clientWidth
+      })
+      
+      container.scrollTo({ 
+        left: Math.max(0, targetScroll),
+        behavior: 'smooth' 
+      })
+    }
 
     // Reset the updating flag after animation
     setTimeout(() => {
       isUpdatingRef.current = false
-      checkScrollPosition()
-    }, 500)
-  }, [checkScrollPosition])
+      // Don't call checkScrollPosition here - let the forced index stick
+    }, 700)
+  }, [currentIndex, onIndexChange])
 
   const scrollToIndex = useCallback((index: number) => {
     const container = scrollContainerRef.current
     if (!container || index < 0 || index >= itemCount) return
 
+    console.log('🎯 MANUAL scroll to index:', index)
+    
     isUpdatingRef.current = true
     
-    const { clientWidth, scrollWidth } = container
-    const totalPadding = clientWidth * 0.3
-    const itemWidth = (scrollWidth - totalPadding) / itemCount
-    const targetScroll = (itemWidth * index) + (totalPadding * 0.5)
-
-    container.scrollTo({ 
-      left: targetScroll, 
-      behavior: 'smooth' 
-    })
+    // NEW: Use actual DOM elements
+    const items = container.children
+    const targetItem = items[index] as HTMLElement
+    
+    if (targetItem) {
+      // Force the index change first
+      setCurrentIndex(index)
+      onIndexChange?.(index)
+      
+      const itemCenter = targetItem.offsetLeft + (targetItem.offsetWidth / 2)
+      const viewportCenter = container.clientWidth / 2
+      const targetScroll = itemCenter - viewportCenter
+      
+      console.log('📍 Manual scroll calculation:', {
+        index,
+        itemOffsetLeft: targetItem.offsetLeft,
+        itemWidth: targetItem.offsetWidth,
+        itemCenter,
+        viewportCenter,
+        targetScroll: Math.max(0, targetScroll)
+      })
+      
+      container.scrollTo({ 
+        left: Math.max(0, targetScroll),
+        behavior: 'smooth' 
+      })
+    }
 
     setTimeout(() => {
       isUpdatingRef.current = false
-      checkScrollPosition()
-    }, 500)
-  }, [itemCount, checkScrollPosition])
+    }, 700)
+  }, [itemCount, onIndexChange])
+
+  // DISABLED: Auto-center current item when index changes
+  // This was causing conflicts with manual navigation
+  const centerCurrentItem = useCallback(() => {
+    // Temporarily disabled to fix navigation issues
+    console.log('⚠️ centerCurrentItem called but disabled')
+  }, [currentIndex])
+
+  // DISABLED: Center current item when currentIndex changes
+  // useEffect(() => {
+  //   if (!isUpdatingRef.current) {
+  //     setTimeout(centerCurrentItem, 100)
+  //   }
+  // }, [currentIndex, centerCurrentItem])
 
   useEffect(() => {
     const container = scrollContainerRef.current
@@ -124,15 +203,32 @@ export function useHorizontalScroll({ itemCount, onIndexChange }: UseHorizontalS
       }
     }
 
-    // Initial check
-    checkScrollPosition()
+    // Initial check with multiple attempts to ensure DOM is ready
+    const initialCheck = () => {
+      setTimeout(() => {
+        console.log('🔍 Initial scroll position check')
+        console.log('Container children count:', container.children.length)
+        console.log('Expected itemCount:', itemCount)
+        checkScrollPosition()
+      }, 200)
+      
+      // Extra check for safety
+      setTimeout(() => {
+        console.log('🔍 Secondary scroll position check')
+        checkScrollPosition()
+      }, 500)
+    }
+    initialCheck()
     
     container.addEventListener('scroll', handleScroll, { passive: true })
     
     // Handle window resize
     const handleResize = () => {
       if (!isUpdatingRef.current) {
-        checkScrollPosition()
+        setTimeout(() => {
+          console.log('🔍 Resize scroll position check')
+          checkScrollPosition()
+        }, 200)
       }
     }
     window.addEventListener('resize', handleResize)
@@ -141,7 +237,7 @@ export function useHorizontalScroll({ itemCount, onIndexChange }: UseHorizontalS
       container.removeEventListener('scroll', handleScroll)
       window.removeEventListener('resize', handleResize)
     }
-  }, [checkScrollPosition])
+  }, [checkScrollPosition, itemCount])
 
   return {
     scrollContainerRef,
@@ -150,5 +246,6 @@ export function useHorizontalScroll({ itemCount, onIndexChange }: UseHorizontalS
     currentIndex,
     scrollToImage,
     scrollToIndex,
+    centerCurrentItem, // NEW: Export centering function
   }
 }

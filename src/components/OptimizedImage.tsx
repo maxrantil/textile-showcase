@@ -17,6 +17,8 @@ interface OptimizedImageProps {
   quality?: number
   onClick?: () => void
   loading?: 'lazy' | 'eager'
+  objectFit?: 'contain' | 'cover' | 'fill' | 'none' | 'scale-down'
+  fill?: boolean
 }
 
 export default function OptimizedImage({
@@ -30,7 +32,9 @@ export default function OptimizedImage({
   sizes = '(max-width: 768px) 100vw, (max-width: 1200px) 70vw, 50vw',
   quality = 85,
   onClick,
-  loading = 'lazy'
+  loading = 'lazy',
+  objectFit = 'contain',
+  fill = false
 }: OptimizedImageProps) {
   const [isLoaded, setIsLoaded] = useState(false)
   const [isError, setIsError] = useState(false)
@@ -53,7 +57,7 @@ export default function OptimizedImage({
       },
       { 
         threshold: 0.1,
-        rootMargin: '50px' // Start loading 50px before entering viewport
+        rootMargin: '50px'
       }
     )
 
@@ -91,8 +95,12 @@ export default function OptimizedImage({
   return (
     <div 
       ref={imgRef}
-      className={`relative overflow-hidden ${className}`} 
-      style={style}
+      className={`relative ${className}`} 
+      style={{
+        width: fill ? '100%' : 'auto',
+        height: fill ? '100%' : 'auto',
+        ...style
+      }}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
       tabIndex={onClick ? 0 : undefined}
@@ -109,29 +117,52 @@ export default function OptimizedImage({
 
       {/* The actual image - only render when in view */}
       {isInView && imageUrl && (
-        <Image
-          src={imageUrl}
-          alt={alt}
-          width={width}
-          height={height}
-          loading={priority ? 'eager' : 'lazy'}
-          priority={priority}
-          sizes={sizes}
-          placeholder={blurDataUrl ? 'blur' : 'empty'}
-          blurDataURL={blurDataUrl}
-          onLoad={() => setIsLoaded(true)}
-          onError={() => setIsError(true)}
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            opacity: isLoaded ? 1 : 0,
-            transition: 'opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
-            ...style
-          }}
-          // Add decoding optimization
-          decoding="async"
-        />
+        <>
+          {fill ? (
+            <Image
+              src={imageUrl}
+              alt={alt}
+              fill
+              loading={priority ? 'eager' : 'lazy'}
+              priority={priority}
+              sizes={sizes}
+              placeholder={blurDataUrl ? 'blur' : 'empty'}
+              blurDataURL={blurDataUrl}
+              onLoad={() => setIsLoaded(true)}
+              onError={() => setIsError(true)}
+              style={{
+                objectFit: objectFit,
+                opacity: isLoaded ? 1 : 0,
+                transition: 'opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
+              }}
+              decoding="async"
+            />
+          ) : (
+            <Image
+              src={imageUrl}
+              alt={alt}
+              width={width}
+              height={height}
+              loading={priority ? 'eager' : 'lazy'}
+              priority={priority}
+              sizes={sizes}
+              placeholder={blurDataUrl ? 'blur' : 'empty'}
+              blurDataURL={blurDataUrl}
+              onLoad={() => setIsLoaded(true)}
+              onError={() => setIsError(true)}
+              style={{
+                // REMOVED the default width/height/maxWidth/maxHeight styles that were interfering
+                // Let the parent's style prop take full control
+                objectFit: objectFit,
+                opacity: isLoaded ? 1 : 0,
+                transition: 'opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
+                // Only merge with parent style, don't override with defaults
+                ...(style || {})
+              }}
+              decoding="async"
+            />
+          )}
+        </>
       )}
 
       {/* Error state */}

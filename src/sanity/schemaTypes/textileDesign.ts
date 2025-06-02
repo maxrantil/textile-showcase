@@ -1,10 +1,81 @@
+// src/sanity/schemaTypes/textileDesign.ts - Updated schema
+
 import { defineField, defineType } from 'sanity'
 
 export default defineType({
   name: 'textileDesign',
   type: 'document',
   title: 'Textile Design',
+  orderings: [
+    {
+      title: 'Manual Order (Recommended)',
+      name: 'manualOrder',
+      by: [
+        {field: 'order', direction: 'asc'}
+      ]
+    },
+    {
+      title: 'Featured First, then Manual Order',
+      name: 'featuredThenOrder',
+      by: [
+        {field: 'featured', direction: 'desc'},
+        {field: 'order', direction: 'asc'},
+        {field: '_createdAt', direction: 'desc'}
+      ]
+    },
+    {
+      title: 'Newest First',
+      name: 'createdDesc',
+      by: [
+        {field: '_createdAt', direction: 'desc'}
+      ]
+    },
+    {
+      title: 'Oldest First',
+      name: 'createdAsc',
+      by: [
+        {field: '_createdAt', direction: 'asc'}
+      ]
+    },
+    {
+      title: 'Year (Newest)',
+      name: 'yearDesc',
+      by: [
+        {field: 'year', direction: 'desc'}
+      ]
+    },
+    {
+      title: 'Year (Oldest)',
+      name: 'yearAsc',
+      by: [
+        {field: 'year', direction: 'asc'}
+      ]
+    },
+    {
+      title: 'Title A-Z',
+      name: 'titleAsc',
+      by: [
+        {field: 'title', direction: 'asc'}
+      ]
+    },
+    {
+      title: 'Featured First',
+      name: 'featuredFirst',
+      by: [
+        {field: 'featured', direction: 'desc'},
+        {field: '_createdAt', direction: 'desc'}
+      ]
+    }
+  ],
   fields: [
+    defineField({
+      name: 'order',
+      type: 'number',
+      title: 'Display Order',
+      description: 'Lower numbers appear first (0, 1, 2, etc.). This controls the order in your gallery.',
+      initialValue: 999, // Default to high number so new items appear at end
+      validation: (Rule) => Rule.min(0).integer().error('Order must be a positive integer')
+    }),
     defineField({
       name: 'title',
       type: 'string',
@@ -24,7 +95,7 @@ export default defineType({
       name: 'image',
       type: 'image',
       title: 'Main Image (for gallery)',
-      description: 'This image shows in the main gallery',
+      description: 'This image shows in the main gallery and as the first image in the project view',
       options: {
         hotspot: true
       },
@@ -34,7 +105,7 @@ export default defineType({
       name: 'gallery',
       type: 'array',
       title: 'Additional Images',
-      description: 'Upload multiple images for the detailed project page',
+      description: 'Upload additional images for the detailed project page. The main image will appear first, followed by these images.',
       of: [
         {
           type: 'image',
@@ -90,13 +161,24 @@ export default defineType({
       name: 'featured',
       type: 'boolean',
       title: 'Featured Design',
-      description: 'Display prominently on homepage'
+      description: 'Featured designs get priority placement (after manual order)',
+      initialValue: false
     })
   ],
   preview: {
     select: {
       title: 'title',
-      media: 'image'
+      media: 'image',
+      order: 'order',
+      featured: 'featured'
+    },
+    prepare(selection) {
+      const { title, media, order, featured } = selection
+      return {
+        title: title,
+        subtitle: `Order: ${order}${featured ? ' • Featured' : ''}`,
+        media: media
+      }
     }
   }
 })

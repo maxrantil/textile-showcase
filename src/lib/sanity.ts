@@ -1,3 +1,5 @@
+// src/lib/sanity.ts - Updated queries with better performance and timeouts
+
 import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
 
@@ -22,7 +24,7 @@ export const urlFor = (source: any) => {
   return builder.image(source)
 }
 
-// Enhanced image URL with responsive sizing
+// FIXED: Enhanced image URL with aspect ratio preservation
 export const getOptimizedImageUrl = (
   source: any, 
   options: {
@@ -30,15 +32,26 @@ export const getOptimizedImageUrl = (
     height?: number
     quality?: number
     format?: 'webp' | 'jpg' | 'png'
+    fit?: 'clip' | 'crop' | 'fill' | 'fillmax' | 'max' | 'scale' | 'min'
   } = {}
 ) => {
   if (!source) return ''
   
-  const { width = 800, height = 600, quality = 85, format = 'webp' } = options
+  const { width, height, quality = 85, format = 'webp', fit = 'max' } = options
   
-  return urlFor(source)
-    .width(width)
-    .height(height)
+  let imageBuilder = urlFor(source)
+  
+  // Only set ONE dimension to preserve aspect ratio
+  if (width && !height) {
+    imageBuilder = imageBuilder.width(width)
+  } else if (height && !width) {
+    imageBuilder = imageBuilder.height(height)
+  } else if (width && height) {
+    // If both are provided, use fit parameter to control behavior
+    imageBuilder = imageBuilder.width(width).height(height).fit(fit)
+  }
+  
+  return imageBuilder
     .quality(quality)
     .format(format)
     .url()
@@ -56,8 +69,41 @@ export const getBlurDataUrl = (source: any) => {
     .url()
 }
 
+// NEW: Get image dimensions and aspect ratio
+export const getImageDimensions = (source: any) => {
+  if (!source?.asset) return null
+  
+  // Try to get dimensions from the asset metadata
+  const asset = source.asset
+  
+  // Check for dimensions in metadata
+  if (asset.metadata?.dimensions) {
+    return {
+      width: asset.metadata.dimensions.width,
+      height: asset.metadata.dimensions.height,
+      aspectRatio: asset.metadata.dimensions.width / asset.metadata.dimensions.height
+    }
+  }
+  
+  // Fallback to checking asset directly
+  if (asset.width && asset.height) {
+    return {
+      width: asset.width,
+      height: asset.height,
+      aspectRatio: asset.width / asset.height
+    }
+  }
+  
+  // Default fallback
+  return {
+    width: 800,
+    height: 600,
+    aspectRatio: 4/3
+  }
+}
+
 // Helper function to add timeout to any promise
-function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 10000): Promise<T> {
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 15000): Promise<T> {
   return Promise.race([
     promise,
     new Promise<never>((_, reject) =>
@@ -69,7 +115,7 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 10000): Promise
 // Enhanced cache with TTL
 const cache = new Map<string, { data: any; timestamp: number; ttl: number }>()
 
-// Resilient fetch function with retry logic and caching
+// FIXED: Resilient fetch function with better timeout handling
 export async function resilientFetch<T = any>(
   query: string,
   params: Record<string, any> = {},
@@ -80,7 +126,8 @@ export async function resilientFetch<T = any>(
     cacheTTL?: number
   } = {}
 ): Promise<T | null> {
-  const { retries = 2, timeout = 8000, cache: useCache = true, cacheTTL = 300000 } = options // 5 min default TTL
+  // INCREASED timeouts for better reliability
+  const { retries = 3, timeout = 15000, cache: useCache = true, cacheTTL = 600000 } = options // 10 min default TTL
   
   // Create cache key
   const cacheKey = `${query}-${JSON.stringify(params)}`
@@ -89,16 +136,21 @@ export async function resilientFetch<T = any>(
   if (useCache) {
     const cached = cache.get(cacheKey)
     if (cached && Date.now() - cached.timestamp < cached.ttl) {
+      console.log('📋 Cache hit for:', query.slice(0, 50) + '...')
       return cached.data
     }
   }
   
   for (let attempt = 1; attempt <= retries + 1; attempt++) {
     try {
+      console.log(`🔍 Sanity fetch attempt ${attempt}/${retries + 1}:`, query.slice(0, 50) + '...')
+      
       const result = await withTimeout(
         client.fetch<T>(query, params),
         timeout
       )
+      
+      console.log('✅ Sanity fetch successful')
       
       // Cache successful result
       if (useCache && result) {
@@ -113,19 +165,20 @@ export async function resilientFetch<T = any>(
     } catch (error) {
       const isLastAttempt = attempt === retries + 1
       
-      console.warn(`Sanity fetch attempt ${attempt} failed:`, {
+      console.warn(`❌ Sanity fetch attempt ${attempt} failed:`, {
         error: error instanceof Error ? error.message : 'Unknown error',
         query: query.slice(0, 100) + '...', // Log first 100 chars of query
         isLastAttempt
       })
       
       if (isLastAttempt) {
-        console.error('All Sanity fetch attempts failed, returning null')
+        console.error('🚨 All Sanity fetch attempts failed, returning null')
         return null
       }
       
       // Wait before retrying (exponential backoff)
       const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000)
+      console.log(`⏳ Waiting ${delay}ms before retry...`)
       await new Promise(resolve => setTimeout(resolve, delay))
     }
   }
@@ -133,30 +186,55 @@ export async function resilientFetch<T = any>(
   return null
 }
 
-// Optimized queries
+// OPTIMIZED queries with better performance
 export const queries = {
-  // Home page - only essential fields
+  // Home page - Use the order field from Sanity for proper sorting
   getDesignsForHome: `
-    *[_type == "textileDesign"] | order(_createdAt desc) {
+    *[_type == "textileDesign"] {
       _id,
       title,
       slug,
-      image,
+      image {
+        asset-> {
+          _id,
+          metadata {
+            dimensions
+          }
+        }
+      },
       year,
-      featured
-    }[0...20]
+      featured,
+      order,
+      _createdAt
+    } | order(
+      order asc,      // First, sort by manual order field (ascending - 0, 1, 2, etc.)
+      featured desc,  // Then by featured status (featured items first)
+      _createdAt desc // Finally by creation date (newest first)
+    )[0...20]
   `,
   
-  // Project page - all fields needed
+  // Project page - all fields needed with image metadata
   getProjectBySlug: `
     *[_type == "textileDesign" && (slug.current == $slug || _id == $slug)][0] {
       _id,
       title,
       slug,
-      image,
+      image {
+        asset-> {
+          _id,
+          metadata {
+            dimensions
+          }
+        }
+      },
       gallery[] {
         _key,
-        asset,
+        asset-> {
+          _id,
+          metadata {
+            dimensions
+          }
+        },
         caption
       },
       description,
@@ -165,14 +243,15 @@ export const queries = {
       materials,
       dimensions,
       technique,
-      featured
+      featured,
+      order
     }
   `,
   
-  // For sitemap generation
+  // SIMPLIFIED sitemap query - only essential fields for better performance
   getAllSlugs: `
     *[_type == "textileDesign" && defined(slug.current)] {
-      slug,
+      "slug": slug.current,
       _updatedAt
     }
   `
