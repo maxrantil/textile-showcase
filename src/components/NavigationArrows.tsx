@@ -7,9 +7,8 @@ interface NavigationArrowsProps {
   canScrollRight: boolean
   onScrollLeft: () => void
   onScrollRight: () => void
-  position?: "fixed" | "absolute" | "static" | undefined
+  variant?: 'gallery' | 'project'
   size?: 'small' | 'medium' | 'large'
-  variant?: 'default' | 'minimal' | 'bold'
 }
 
 const NavigationArrows = memo(function NavigationArrows({ 
@@ -17,183 +16,203 @@ const NavigationArrows = memo(function NavigationArrows({
   canScrollRight, 
   onScrollLeft, 
   onScrollRight,
-  position = 'fixed',
-  size = 'medium',
-  variant = 'default'
+  variant = 'gallery',
+  size = 'large'
 }: NavigationArrowsProps) {
+  
   // Size configurations
   const sizeConfig = {
-    small: { width: '60px', height: '60px', triangleSize: '24px' },
-    medium: { width: '80px', height: '80px', triangleSize: '32px' },
-    large: { width: '100px', height: '100px', triangleSize: '40px' }
-  }
-  
-  // Variant configurations
-  const variantConfig = {
-    default: {
-      background: 'transparent',
-      backdropFilter: 'none',
-      border: 'none',
-      boxShadow: 'none',
-      triangleColor: '#f1f1f1', // Default grey
-      triangleColorHover: '#e6e6e6' // Grey for hover
+    small: { 
+      triangleSize: 16,
+      clickableWidth: 80,
+      padding: 15
     },
-    minimal: {
-      background: 'transparent',
-      backdropFilter: 'none',
-      border: 'none',
-      boxShadow: 'none',
-      triangleColor: '#f1f1f1', // Default grey
-      triangleColorHover: '#e6e6e6' // Grey for hover
+    medium: { 
+      triangleSize: 24,
+      clickableWidth: 100,  
+      padding: 20
     },
-    bold: {
-      background: 'transparent',
-      backdropFilter: 'none',
-      border: 'none',
-      boxShadow: 'none',
-      triangleColor: '#f1f1f1', // Default grey
-      triangleColorHover: '#e6e6e6' // Grey for hover
+    large: { 
+      triangleSize: 32,
+      clickableWidth: 120,
+      padding: 25
     }
   }
 
-  const baseStyle: React.CSSProperties = {
-    width: sizeConfig[size].width,
-    height: sizeConfig[size].height,
-    background: variantConfig[variant].background,
-    backdropFilter: variantConfig[variant].backdropFilter,
-    border: variantConfig[variant].border,
-    boxShadow: variantConfig[variant].boxShadow,
-    position,
-    top: '50%',
-    transform: 'translateY(-50%)',
-    zIndex: position === 'fixed' ? 10 : 5,
-    borderRadius: '0',
+  const config = sizeConfig[size]
+  
+  // Use CSS scaling instead of JavaScript for responsiveness
+  const triangleSize = config.triangleSize
+  
+  // Triangle components - EXACT same look as before
+  const LeftTriangle = ({ size, color }: { size: number, color: string }) => (
+    <div
+      style={{
+        width: 0,
+        height: 0,
+        borderTop: `${Math.round(size * 1.5)}px solid transparent`,
+        borderBottom: `${Math.round(size * 1.5)}px solid transparent`,
+        borderRight: `${Math.round(size * 1.5)}px solid ${color}`,
+        transition: 'border-color 0.2s ease'
+      }}
+      aria-hidden="true"
+    />
+  )
+
+  const RightTriangle = ({ size, color }: { size: number, color: string }) => (
+    <div
+      style={{
+        width: 0,
+        height: 0,
+        borderTop: `${Math.round(size * 1.5)}px solid transparent`,
+        borderBottom: `${Math.round(size * 1.5)}px solid transparent`,
+        borderLeft: `${Math.round(size * 1.5)}px solid ${color}`,
+        transition: 'border-color 0.2s ease'
+      }}
+      aria-hidden="true"
+    />
+  )
+
+  // Consistent styling for both gallery and project pages
+  const getClickableAreaStyle = (side: 'left' | 'right'): React.CSSProperties => ({
+    position: 'fixed',
+    top: 0,
+    bottom: 0,
+    width: `${config.clickableWidth}px`,
+    height: '100vh',
+    [side]: 0,
+    background: 'transparent',
+    border: 'none',
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'center',
-    transition: 'none',
-    userSelect: 'none',
-    WebkitTapHighlightColor: 'transparent',
+    justifyContent: side === 'left' ? 'flex-start' : 'flex-end',
+    paddingLeft: side === 'left' ? `${config.padding}px` : 0,
+    paddingRight: side === 'right' ? `${config.padding}px` : 0,
+    zIndex: 40, // Below header but above content
     outline: 'none',
-    padding: '0',
-    margin: '0'
-  }
+    WebkitTapHighlightColor: 'transparent',
+    userSelect: 'none',
+    // Always visible like before
+    opacity: 1,
+    transition: 'none', // No fade transitions like before
+  })
 
-  // Triangle component for left arrow (pointing left)
-  const LeftTriangle = ({ size, color }: { size: string, color: string }) => {
-    const sizeNum = parseInt(size)
-    const verticalSize = `${Math.round(sizeNum * 1.5)}px`
-    const horizontalSize = `${Math.round(sizeNum * 1.5)}px`
-    
-    return (
-      <div
-        style={{
-          width: 0,
-          height: 0,
-          borderTop: `${verticalSize} solid transparent`,
-          borderBottom: `${verticalSize} solid transparent`,
-          borderRight: `${horizontalSize} solid ${color}`,
-          transition: 'border-color 0.2s ease'
-        }}
-        aria-hidden="true"
-      />
-    )
-  }
+  // Triangle colors - EXACT same as before
+  const triangleColor = '#f1f1f1' // Original grey color
+  const triangleColorHover = '#e6e6e6' // Original hover grey
 
-  // Triangle component for right arrow (pointing right)
-  const RightTriangle = ({ size, color }: { size: string, color: string }) => {
-    const sizeNum = parseInt(size)
-    const verticalSize = `${Math.round(sizeNum * 1.5)}px`
-    const horizontalSize = `${Math.round(sizeNum * 1.5)}px`
-    
-    return (
-      <div
-        style={{
-          width: 0,
-          height: 0,
-          borderTop: `${verticalSize} solid transparent`,
-          borderBottom: `${verticalSize} solid transparent`,
-          borderLeft: `${horizontalSize} solid ${color}`,
-          transition: 'border-color 0.2s ease'
-        }}
-        aria-hidden="true"
-      />
-    )
-  }
-
-  const handleMouseEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleInteractionStart = (e: React.MouseEvent<HTMLButtonElement>) => {
+    // EXACT same hover effect as before
     const triangle = e.currentTarget.querySelector('div') as HTMLElement
     if (triangle) {
-      // Change triangle color on hover
-      const hoverColor = variantConfig[variant].triangleColorHover
       if (triangle.style.borderRight) {
-        triangle.style.borderRightColor = hoverColor
+        triangle.style.borderRightColor = triangleColorHover
       }
       if (triangle.style.borderLeft) {
-        triangle.style.borderLeftColor = hoverColor
+        triangle.style.borderLeftColor = triangleColorHover
       }
     }
   }
 
-  const handleMouseLeave = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleInteractionEnd = (e: React.MouseEvent<HTMLButtonElement>) => {
+    // EXACT same hover effect as before
     const triangle = e.currentTarget.querySelector('div') as HTMLElement
     if (triangle) {
-      // Reset triangle color
-      const defaultColor = variantConfig[variant].triangleColor
       if (triangle.style.borderRight) {
-        triangle.style.borderRightColor = defaultColor
+        triangle.style.borderRightColor = triangleColor
       }
       if (triangle.style.borderLeft) {
-        triangle.style.borderLeftColor = defaultColor
+        triangle.style.borderLeftColor = triangleColor
       }
     }
   }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>, action: () => void) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      action()
+    }
+  }
+
   return (
     <>
+      {/* Left Navigation Area - Only render if navigation is possible */}
       {canScrollLeft && (
         <button
           onClick={onScrollLeft}
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-          style={{ ...baseStyle, left: '20px' }}
+          onMouseEnter={handleInteractionStart}
+          onMouseLeave={handleInteractionEnd}
+          onTouchStart={handleInteractionStart}
+          onTouchEnd={handleInteractionEnd}
+          style={getClickableAreaStyle('left')}
           aria-label="Previous image"
           type="button"
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault()
-              onScrollLeft()
-            }
-          }}
+          onKeyDown={(e) => handleKeyDown(e, onScrollLeft)}
+          data-nav="left"
         >
           <LeftTriangle 
-            size={sizeConfig[size].triangleSize} 
-            color={variantConfig[variant].triangleColor} 
+            size={triangleSize} 
+            color={triangleColor} 
           />
         </button>
       )}
 
+      {/* Right Navigation Area - Only render if navigation is possible */}
       {canScrollRight && (
         <button
           onClick={onScrollRight}
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-          style={{ ...baseStyle, right: '20px' }}
+          onMouseEnter={handleInteractionStart}
+          onMouseLeave={handleInteractionEnd}
+          onTouchStart={handleInteractionStart}
+          onTouchEnd={handleInteractionEnd}
+          style={getClickableAreaStyle('right')}
           aria-label="Next image"
           type="button"
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault()
-              onScrollRight()
-            }
-          }}
+          onKeyDown={(e) => handleKeyDown(e, onScrollRight)}
+          data-nav="right"
         >
           <RightTriangle 
-            size={sizeConfig[size].triangleSize} 
-            color={variantConfig[variant].triangleColor} 
+            size={triangleSize} 
+            color={triangleColor} 
           />
         </button>
       )}
+
+      {/* CSS for responsiveness - simpler approach */}
+      <style jsx>{`
+        /* Responsive scaling using CSS transforms */
+        @media (max-width: 1023px) {
+          [data-nav] {
+            transform: scale(0.85);
+          }
+        }
+        
+        @media (max-width: 767px) {
+          [data-nav] {
+            transform: scale(0.7);
+          }
+        }
+        
+        @media (max-width: 480px) {
+          [data-nav] {
+            transform: scale(0.6);
+          }
+        }
+        
+        /* High contrast mode support */
+        @media (prefers-contrast: high) {
+          [data-nav] div {
+            filter: contrast(2);
+          }
+        }
+        
+        /* Focus visibility for accessibility */
+        [data-nav]:focus-visible {
+          outline: 2px solid #0066cc;
+          outline-offset: 2px;
+        }
+      `}</style>
     </>
   )
 })
