@@ -1,8 +1,8 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
-import Header from '@/components/Header'
-import { ErrorBoundary } from '@/components/LoadingSpinner'
+import Header from '@/components/layout/Header'
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 
 // Optimize font loading
 const inter = Inter({ 

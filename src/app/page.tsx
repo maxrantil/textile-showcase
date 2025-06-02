@@ -2,7 +2,8 @@ import { Metadata } from 'next'
 import { resilientFetch, queries } from '@/lib/sanity'
 import { TextileDesign } from '@/types/sanity'
 import { HorizontalGallery } from '@/components/gallery'
-import { GalleryLoadingSkeleton, NetworkErrorFallback, ErrorBoundary } from '@/components/LoadingSpinner'
+import { GalleryLoadingSkeleton } from '@/components/ui/LoadingSpinner'
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 import { Suspense } from 'react'
 
 // Enhanced metadata with structured data

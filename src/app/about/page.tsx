@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ErrorBoundary } from '@/components/LoadingSpinner'
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 import KeyboardScrollHandler from '@/components/KeyboardScrollHandler'
 
 export default function AboutPage() {
