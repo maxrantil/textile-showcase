@@ -230,11 +230,23 @@ npm run type-check
 # Linting
 npm run lint
 
-# Unit tests (if implemented)
-npm run test
-
 # Build verification
 npm run build
+
+# Run all tests once
+npm test
+
+# Run tests in watch mode (re-runs when files change)
+npm run test:watch
+
+# Run tests with coverage report
+npm run test:coverage
+
+# Run specific test file
+npm test -- Button.test.tsx
+
+# Run tests matching a pattern
+npm test -- --testNamePattern="validation"
 ```
 
 ## 📈 SEO Features

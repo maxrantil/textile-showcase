@@ -1,3 +1,4 @@
+// src/components/gallery/GalleryItem.tsx
 'use client'
 
 import { memo } from 'react'
@@ -20,6 +21,9 @@ export const GalleryItem = memo(function GalleryItem({
 }: GalleryItemProps) {
   return (
     <div 
+      role="button"
+      tabIndex={0}
+      aria-label={`View ${design.title} project`}
       style={{ 
         flexShrink: 0,
         scrollSnapAlign: 'center',
@@ -28,6 +32,13 @@ export const GalleryItem = memo(function GalleryItem({
         alignItems: 'center',
         cursor: 'pointer',
         transition: 'transform 0.3s ease',
+      }}
+      onClick={onClick}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          onClick()
+        }
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.transform = 'scale(1.02)'

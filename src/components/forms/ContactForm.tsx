@@ -1,3 +1,4 @@
+// src/components/forms/ContactForm.tsx - Fixed FormField component
 'use client'
 
 import { useState, useCallback } from 'react'
@@ -246,7 +247,7 @@ export default function ContactForm({ onSuccess, onError }: ContactFormProps) {
   )
 }
 
-// Helper component for form fields
+// FIXED: Helper component for form fields with proper label association
 interface FormFieldProps {
   label: string
   name: string
@@ -270,6 +271,8 @@ function FormField({
   focusStyle, 
   rows 
 }: FormFieldProps) {
+  const fieldId = `field-${name}` // Create unique ID for each field
+  
   const labelStyle = {
     display: 'block',
     fontSize: '14px',
@@ -298,12 +301,13 @@ function FormField({
 
   return (
     <div style={{ marginBottom: '24px' }}>
-      <label style={labelStyle}>
+      <label htmlFor={fieldId} style={labelStyle}>
         {label}
       </label>
       
       {type === 'textarea' ? (
         <textarea
+          id={fieldId}
           name={name}
           value={value}
           onChange={onChange}
@@ -321,6 +325,7 @@ function FormField({
         />
       ) : (
         <input
+          id={fieldId}
           type={type}
           name={name}
           value={value}
