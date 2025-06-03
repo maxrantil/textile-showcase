@@ -9,6 +9,7 @@ interface NavigationArrowsProps {
   onScrollRight: () => void
   variant?: 'gallery' | 'project'
   size?: 'small' | 'medium' | 'large'
+  position?: 'static' | 'fixed'
 }
 
 const NavigationArrows = memo(function NavigationArrows({ 
@@ -17,7 +18,8 @@ const NavigationArrows = memo(function NavigationArrows({
   onScrollLeft, 
   onScrollRight,
   variant = 'gallery',
-  size = 'large'
+  size = 'large',
+  position = 'fixed'
 }: NavigationArrowsProps) {
   
   // Size configurations
@@ -75,7 +77,7 @@ const NavigationArrows = memo(function NavigationArrows({
 
   // Consistent styling for both gallery and project pages
   const getClickableAreaStyle = (side: 'left' | 'right'): React.CSSProperties => ({
-    position: 'fixed',
+    position: position,
     top: 0,
     bottom: 0,
     width: `${config.clickableWidth}px`,
@@ -102,8 +104,8 @@ const NavigationArrows = memo(function NavigationArrows({
   const triangleColor = '#f1f1f1' // Original grey color
   const triangleColorHover = '#e6e6e6' // Original hover grey
 
-  const handleInteractionStart = (e: React.MouseEvent<HTMLButtonElement>) => {
-    // EXACT same hover effect as before
+  // Fixed: Separate handlers for mouse and touch events
+  const handleMouseInteractionStart = (e: React.MouseEvent<HTMLButtonElement>) => {
     const triangle = e.currentTarget.querySelector('div') as HTMLElement
     if (triangle) {
       if (triangle.style.borderRight) {
@@ -115,8 +117,32 @@ const NavigationArrows = memo(function NavigationArrows({
     }
   }
 
-  const handleInteractionEnd = (e: React.MouseEvent<HTMLButtonElement>) => {
-    // EXACT same hover effect as before
+  const handleMouseInteractionEnd = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const triangle = e.currentTarget.querySelector('div') as HTMLElement
+    if (triangle) {
+      if (triangle.style.borderRight) {
+        triangle.style.borderRightColor = triangleColor
+      }
+      if (triangle.style.borderLeft) {
+        triangle.style.borderLeftColor = triangleColor
+      }
+    }
+  }
+
+  // Touch event handlers with correct typing
+  const handleTouchStart = (e: React.TouchEvent<HTMLButtonElement>) => {
+    const triangle = e.currentTarget.querySelector('div') as HTMLElement
+    if (triangle) {
+      if (triangle.style.borderRight) {
+        triangle.style.borderRightColor = triangleColorHover
+      }
+      if (triangle.style.borderLeft) {
+        triangle.style.borderLeftColor = triangleColorHover
+      }
+    }
+  }
+
+  const handleTouchEnd = (e: React.TouchEvent<HTMLButtonElement>) => {
     const triangle = e.currentTarget.querySelector('div') as HTMLElement
     if (triangle) {
       if (triangle.style.borderRight) {
@@ -141,10 +167,10 @@ const NavigationArrows = memo(function NavigationArrows({
       {canScrollLeft && (
         <button
           onClick={onScrollLeft}
-          onMouseEnter={handleInteractionStart}
-          onMouseLeave={handleInteractionEnd}
-          onTouchStart={handleInteractionStart}
-          onTouchEnd={handleInteractionEnd}
+          onMouseEnter={handleMouseInteractionStart}
+          onMouseLeave={handleMouseInteractionEnd}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
           style={getClickableAreaStyle('left')}
           aria-label="Previous image"
           type="button"
@@ -162,10 +188,10 @@ const NavigationArrows = memo(function NavigationArrows({
       {canScrollRight && (
         <button
           onClick={onScrollRight}
-          onMouseEnter={handleInteractionStart}
-          onMouseLeave={handleInteractionEnd}
-          onTouchStart={handleInteractionStart}
-          onTouchEnd={handleInteractionEnd}
+          onMouseEnter={handleMouseInteractionStart}
+          onMouseLeave={handleMouseInteractionEnd}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
           style={getClickableAreaStyle('right')}
           aria-label="Next image"
           type="button"

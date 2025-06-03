@@ -8,7 +8,7 @@ import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation'
 import { useScrollRestoration } from '@/hooks/gallery/useScrollRestoration'
 import { useGalleryNavigation } from '@/hooks/gallery/useGalleryNavigation'
 import { scrollManager } from '@/lib/scrollManager'
-import NavigationArrows from '../NavigationArrows'
+import NavigationArrows from '../ui/NavigationArrows'
 import { GalleryContainer } from './GalleryContainer'
 import { GalleryItem } from './GalleryItem'
 

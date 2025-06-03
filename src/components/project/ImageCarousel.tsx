@@ -3,9 +3,9 @@
 import { useState, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { getImageDimensions, getOptimizedImageUrl } from '@/lib/sanity'
-import NavigationArrows from './NavigationArrows'
+import NavigationArrows from '../ui/NavigationArrows'
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation'
-import KeyboardScrollHandler from './KeyboardScrollHandler'
+import KeyboardScrollHandler from '../KeyboardScrollHandler'
 
 interface GalleryImage {
   _key: string
@@ -129,7 +129,7 @@ export default function ImageCarousel({
                 onScrollRight={goToNext}
                 position="static"
                 size="large"
-                variant="default"
+                variant="project"
               />
             </div>
           )}
@@ -196,7 +196,7 @@ export default function ImageCarousel({
                 onScrollRight={goToNext}
                 position="static"
                 size="large"
-                variant="default"
+                variant="project"
               />
             </div>
           )}
