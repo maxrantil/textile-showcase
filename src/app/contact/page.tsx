@@ -10,19 +10,33 @@ export default function ContactPage() {
     <>
       <KeyboardScrollHandler />
       
-      <div style={{ minHeight: '100vh', background: '#fafafa' }}>
+      <div style={{ 
+        background: '#fafafa',
+        width: '100%',
+        overflowX: 'hidden',
+        minHeight: '100vh', // Changed from height to minHeight
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center'
+      }}>
         <div style={{ height: '100px' }} />
         
-        <div style={{ 
-          maxWidth: '800px', 
-          margin: '0 auto', 
-          padding: '60px clamp(20px, 5vw, 40px)' 
+        <div style={{
+          width: '100%',
+          maxWidth: '800px',
+          padding: '60px clamp(16px, 4vw, 40px)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center'
         }}>
           <ErrorBoundary>
-            <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-              <h1 style={{ 
-                fontSize: 'clamp(32px, 5vw, 48px)', 
-                fontWeight: 300, 
+            <div style={{ 
+              textAlign: 'center', 
+              marginBottom: '48px',
+              width: '100%',
+              maxWidth: '600px'
+            }}>
+              <h1 className="text-display-mobile text-crisp" style={{ 
                 margin: '0 0 24px 0',
                 color: '#333',
                 letterSpacing: '-1px'
@@ -30,35 +44,38 @@ export default function ContactPage() {
                 Contact
               </h1>
               
-              <p style={{ 
-                fontSize: 'clamp(16px, 2.5vw, 18px)', 
+              <p className="text-body-large" style={{ 
                 color: '#666', 
-                lineHeight: '1.6',
-                maxWidth: '600px',
-                margin: '0 auto'
+                lineHeight: '1.6'
               }}>
                 Interested in collaborating or learning more about my work? 
                 I'd love to hear from you.
               </p>
             </div>
 
-            {/* Contact Form */}
-            <ContactForm 
-              onSuccess={() => console.log('Form submitted successfully!')}
-              onError={(error) => console.error('Form submission error:', error)}
-            />
+            {/* Contact Form - Centered */}
+            <div style={{ 
+              width: '100%',
+              maxWidth: '600px',
+              marginBottom: '48px'
+            }}>
+              <ContactForm 
+                onSuccess={() => console.log('Form submitted successfully!')}
+                onError={(error) => console.error('Form submission error:', error)}
+              />
+            </div>
 
             {/* Additional Contact Information */}
             <div style={{ 
-              marginTop: '60px', 
-              padding: '40px', 
+              padding: 'clamp(20px, 5vw, 40px)', 
               background: '#fff',
               borderRadius: '12px',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.08)'
+              boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
+              width: '100%',
+              maxWidth: '600px',
+              marginBottom: '48px'
             }}>
-              <h2 style={{
-                fontSize: 'clamp(20px, 3vw, 24px)',
-                fontWeight: 300,
+              <h2 className="text-h2-mobile text-crisp" style={{
                 margin: '0 0 24px 0',
                 color: '#333',
                 textAlign: 'center'
@@ -68,13 +85,12 @@ export default function ContactPage() {
               
               <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-                gap: '32px',
+                gridTemplateColumns: '1fr',
+                gap: '24px',
                 textAlign: 'center'
               }}>
                 <div>
-                  <h3 style={{
-                    fontSize: '16px',
+                  <h3 className="text-caption-mobile" style={{
                     fontWeight: 500,
                     margin: '0 0 8px 0',
                     color: '#333',
@@ -83,14 +99,13 @@ export default function ContactPage() {
                   }}>
                     Studio Location
                   </h3>
-                  <p style={{ fontSize: '16px', color: '#666', margin: 0 }}>
+                  <p className="text-body-mobile" style={{ color: '#666', margin: 0 }}>
                     Stockholm, Sweden
                   </p>
                 </div>
                 
                 <div>
-                  <h3 style={{
-                    fontSize: '16px',
+                  <h3 className="text-caption-mobile" style={{
                     fontWeight: 500,
                     margin: '0 0 8px 0',
                     color: '#333',
@@ -99,36 +114,57 @@ export default function ContactPage() {
                   }}>
                     Response Time
                   </h3>
-                  <p style={{ fontSize: '16px', color: '#666', margin: 0 }}>
+                  <p className="text-body-mobile" style={{ color: '#666', margin: 0 }}>
                     Usually within 48 hours
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Back Link */}
-            <div style={{ textAlign: 'center', marginTop: '60px' }}>
+            {/* Add some extra content for better desktop scrolling */}
+            <div style={{ 
+              padding: 'clamp(20px, 5vw, 40px)', 
+              background: '#fff',
+              borderRadius: '12px',
+              boxShadow: '0 4px 16px rgba(0,0,0,0.05)',
+              width: '100%',
+              maxWidth: '600px',
+              marginBottom: '48px',
+              textAlign: 'center'
+            }}>
+              <h3 className="text-h2-mobile text-crisp" style={{
+                margin: '0 0 16px 0',
+                color: '#333'
+              }}>
+                Let's Create Together
+              </h3>
+              
+              <p className="text-body-mobile" style={{ 
+                color: '#666',
+                lineHeight: '1.6',
+                marginBottom: '16px'
+              }}>
+                Whether you're interested in commissioning a piece, collaborating on a project, 
+                or simply learning more about sustainable textile practices, I'm here to help.
+              </p>
+              
+              <p className="text-body-mobile" style={{ 
+                color: '#666',
+                lineHeight: '1.6'
+              }}>
+                Each inquiry is unique, and I take time to understand your vision and needs. 
+                Together, we can create something meaningful and lasting.
+              </p>
+            </div>
+
+            {/* Back Link - Centered */}
+            <div style={{ 
+              textAlign: 'center',
+              paddingBottom: '60px' // Extra padding for better spacing
+            }}>
               <Link 
                 href="/"
-                style={{
-                  fontSize: '14px',
-                  color: '#333',
-                  textDecoration: 'none',
-                  letterSpacing: '1px',
-                  border: '2px solid #333',
-                  padding: '12px 24px',
-                  borderRadius: '6px',
-                  transition: 'all 0.3s ease',
-                  display: 'inline-block'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#333'
-                  e.currentTarget.style.color = '#fff'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent'
-                  e.currentTarget.style.color = '#333'
-                }}
+                className="btn-mobile btn-mobile-secondary touch-feedback"
               >
                 ← Back to Gallery
               </Link>

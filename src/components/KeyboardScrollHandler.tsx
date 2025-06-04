@@ -16,11 +16,9 @@ export default function KeyboardScrollHandler({
 
   useKeyboardNavigation({
     onScrollUp: () => {
-      console.log('Scroll up triggered!')
       window.scrollBy({ top: -scrollAmount, behavior: 'smooth' })
     },
     onScrollDown: () => {
-      console.log('Scroll down triggered!')
       window.scrollBy({ top: scrollAmount, behavior: 'smooth' })
     },
     // Page navigation

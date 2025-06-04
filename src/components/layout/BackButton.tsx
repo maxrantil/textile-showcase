@@ -1,7 +1,6 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { BackButton as StyledBackButton } from '@/components/ui/Button'
 import { scrollManager } from '@/lib/scrollManager'
 
 export default function BackButton() {
@@ -25,8 +24,11 @@ export default function BackButton() {
   }
 
   return (
-    <StyledBackButton onClick={handleBack}>
+    <button 
+      onClick={handleBack}
+      className="btn-mobile btn-mobile-secondary touch-feedback"
+    >
       ← Back to Gallery
-    </StyledBackButton>
+    </button>
   )
 }

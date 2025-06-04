@@ -60,24 +60,20 @@ async function getDesigns(): Promise<TextileDesign[]> {
 function GalleryWithErrorBoundary({ designs }: { designs: TextileDesign[] }) {
   if (!designs || designs.length === 0) {
     return (
-      <div style={{ 
-        height: '100vh', 
+      <div className="full-height-mobile" style={{ 
         display: 'flex', 
         alignItems: 'center', 
         justifyContent: 'center',
         background: '#fafafa' 
       }}>
-        <div style={{ textAlign: 'center' }}>
-          <h2 style={{ 
-            fontSize: '24px', 
-            fontWeight: 300, 
+        <div className="container-mobile" style={{ textAlign: 'center' }}>
+          <h2 className="text-h2-mobile text-crisp" style={{
             margin: '0 0 16px 0',
             color: '#333'
           }}>
             No designs available
           </h2>
-          <p style={{ 
-            fontSize: '16px', 
+          <p className="text-body-mobile" style={{
             color: '#666'
           }}>
             Please check back later for new work.

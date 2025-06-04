@@ -20,13 +20,98 @@
 
 /* Fix iOS Safari 100vh issue */
 .full-height-mobile {
-    height: 100vh;
-    height: calc(var(--vh, 1vh) * 100);
+    min-height: 100vh;
 }
 
 .header-height {
     height: calc(var(--header-height) + var(--safe-area-top));
     padding-top: var(--safe-area-top);
+}
+
+/* FIXED: Prevent horizontal overflow and scrollbars globally */
+html,
+body {
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+    box-sizing: border-box;
+}
+
+/* FIXED: Hide all scrollbars globally */
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+*::-webkit-scrollbar {
+    display: none;
+}
+
+html,
+body,
+* {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+/* FIXED: Enhanced container-mobile for better width control */
+.container-mobile {
+    width: 100%;
+    max-width: 100vw;
+    padding-left: clamp(16px, 4vw, 40px);
+    padding-right: clamp(16px, 4vw, 40px);
+    margin: 0 auto;
+    box-sizing: border-box;
+    overflow-x: hidden;
+}
+
+/* Ensure all children respect container width */
+.container-mobile * {
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* FIXED: Better grid mobile for narrow screens */
+.grid-mobile {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(16px, 4vw, 24px);
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+    .grid-mobile {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+}
+
+/* FIXED: Stack mobile improvements */
+.stack-mobile {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(16px, 4vw, 24px);
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+    .stack-mobile {
+        flex-direction: row;
+        align-items: flex-start;
+    }
+}
+
+/* Responsive text improvements */
+.text-display-mobile,
+.text-h1-mobile,
+.text-h2-mobile,
+.text-body-large,
+.text-body-mobile,
+.text-caption-mobile {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+    max-width: 100%;
 }
 
 /* ==========================================================================
@@ -66,6 +151,7 @@
     transition: all 0.2s ease;
     -webkit-tap-highlight-color: transparent;
     -webkit-appearance: none;
+    box-sizing: border-box;
 }
 
 .btn-mobile-primary {
@@ -126,6 +212,11 @@
     line-height: 1.3;
 }
 
+.text-body-large {
+    font-size: clamp(18px, 3vw, 20px);
+    line-height: 1.6;
+}
+
 .text-body-mobile {
     font-size: clamp(16px, 2.5vw, 18px);
     line-height: 1.6;
@@ -147,15 +238,6 @@
 /* ==========================================================================
      Mobile Layout Utilities
      ========================================================================== */
-
-/* Container with safe margins */
-.container-mobile {
-    width: 100%;
-    max-width: 100vw;
-    padding-left: clamp(16px, 4vw, 40px);
-    padding-right: clamp(16px, 4vw, 40px);
-    margin: 0 auto;
-}
 
 /* Responsive spacing system */
 .spacing-mobile-xs {
@@ -195,23 +277,13 @@
     padding: clamp(24px, 5vw, 32px);
 }
 
-/* Mobile-first grid */
-.grid-mobile {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: clamp(16px, 4vw, 24px);
-}
-
-@media (min-width: 768px) {
-    .grid-mobile {
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    }
-}
-
 .grid-mobile-2 {
     display: grid;
     grid-template-columns: 1fr;
     gap: clamp(12px, 3vw, 20px);
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 @media (min-width: 480px) {
@@ -220,29 +292,16 @@
     }
 }
 
-/* Stack on mobile, row on desktop */
-.stack-mobile {
-    display: flex;
-    flex-direction: column;
-    gap: clamp(16px, 4vw, 24px);
-}
-
-@media (min-width: 768px) {
-    .stack-mobile {
-        flex-direction: row;
-        align-items: center;
-    }
-}
-
 /* ==========================================================================
-     Mobile Form Improvements
+     Mobile Form Improvements - FIXED ALIGNMENT
      ========================================================================== */
 
+/* FIXED: Form inputs with consistent alignment */
 .form-input-mobile {
     width: 100%;
+    max-width: 100%;
     padding: 16px;
     font-size: 16px;
-    /* Prevents zoom on iOS */
     border: 2px solid #e5e5e5;
     border-radius: 8px;
     background: #fff;
@@ -250,6 +309,7 @@
     -webkit-appearance: none;
     appearance: none;
     font-family: inherit;
+    box-sizing: border-box;
 }
 
 .form-input-mobile:focus {
@@ -258,10 +318,29 @@
     box-shadow: 0 0 0 3px rgba(51, 51, 51, 0.1);
 }
 
+/* FIXED: Form textarea with consistent alignment */
 .form-textarea-mobile {
-    min-height: 120px;
-    resize: vertical;
+    width: 100%;
+    max-width: 100%;
+    padding: 16px;
+    font-size: 16px;
+    border: 2px solid #e5e5e5;
+    border-radius: 8px;
+    background: #fff;
+    transition: all 0.3s ease;
+    -webkit-appearance: none;
+    appearance: none;
     font-family: inherit;
+    resize: vertical;
+    line-height: 1.6;
+    min-height: clamp(120px, 25vh, 200px);
+    box-sizing: border-box;
+}
+
+.form-textarea-mobile:focus {
+    outline: none;
+    border-color: #333;
+    box-shadow: 0 0 0 3px rgba(51, 51, 51, 0.1);
 }
 
 .form-label-mobile {
@@ -272,6 +351,60 @@
     color: #333;
     letter-spacing: 0.5px;
     text-transform: uppercase;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* Form error states */
+.form-input-error {
+    border-color: #ef4444 !important;
+    background-color: #fef2f2 !important;
+}
+
+.form-input-error:focus {
+    border-color: #dc2626 !important;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1) !important;
+}
+
+/* Better mobile form spacing */
+@media (max-width: 767px) {
+    .form-textarea-mobile {
+        min-height: max(120px, 20vh);
+    }
+}
+
+/* FIXED: Enhanced form grid for proper alignment */
+.name-email-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(16px, 4vw, 24px);
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+    .name-email-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+/* REMOVED: Duplicate width declarations that were causing conflicts */
+
+/* Form container alignment */
+.form-container {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+/* Placeholder styling */
+.form-textarea-mobile::placeholder {
+    color: #999;
+    opacity: 1;
+    font-style: italic;
 }
 
 /* ==========================================================================
@@ -377,7 +510,7 @@
 
 .gallery-indicators-mobile {
     position: fixed;
-    bottom: calc(20px + var(--safe-area-bottom));
+    bottom: calc(30px + var(--safe-area-bottom));
     left: 50%;
     transform: translateX(-50%);
     display: flex;
@@ -519,4 +652,5 @@
 }
 
 .debug-mobile[data-breakpoint="desktop"]::after {
-    background: #44ff44; }
+    background: #44ff44;
+}

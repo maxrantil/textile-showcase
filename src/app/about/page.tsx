@@ -9,20 +9,34 @@ export default function AboutPage() {
     <>
       <KeyboardScrollHandler />
       
-      <div style={{ minHeight: '100vh', background: '#fafafa' }}>
+      <div style={{ 
+        background: '#fafafa',
+        width: '100%',
+        overflowX: 'hidden',
+        minHeight: '100vh', // Changed from height to minHeight
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center'
+      }}>
         <div style={{ height: '100px' }} />
         
-        <div style={{ 
-          maxWidth: '1000px', 
-          margin: '0 auto', 
-          padding: '60px clamp(20px, 5vw, 40px)' 
+        <div style={{
+          width: '100%',
+          maxWidth: '1000px',
+          padding: '60px clamp(16px, 4vw, 40px)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center'
         }}>
           <ErrorBoundary>
             {/* Artist Statement */}
-            <section style={{ textAlign: 'center', marginBottom: '80px' }}>
-              <h1 style={{ 
-                fontSize: 'clamp(32px, 5vw, 48px)', 
-                fontWeight: 300, 
+            <section style={{ 
+              textAlign: 'center', 
+              marginBottom: '80px',
+              width: '100%',
+              maxWidth: '800px'
+            }}>
+              <h1 className="text-display-mobile text-crisp" style={{ 
                 margin: '0 0 48px 0',
                 color: '#333',
                 letterSpacing: '-1px'
@@ -31,14 +45,13 @@ export default function AboutPage() {
               </h1>
               
               <div style={{ 
-                maxWidth: '800px', 
-                margin: '0 auto',
-                fontSize: 'clamp(18px, 2.5vw, 20px)',
-                color: '#555',
-                lineHeight: '1.8',
-                letterSpacing: '0.3px'
+                width: '100%'
               }}>
-                <p style={{ marginBottom: '32px' }}>
+                <p className="text-body-large" style={{ 
+                  marginBottom: '32px',
+                  color: '#555',
+                  letterSpacing: '0.3px'
+                }}>
                   My work explores the intersection between traditional textile craftsmanship 
                   and contemporary sustainable practices. Each piece is a meditation on the 
                   relationship between material, process, and time — honoring the slow, 
@@ -46,7 +59,11 @@ export default function AboutPage() {
                   our environmental future.
                 </p>
                 
-                <p style={{ marginBottom: '32px' }}>
+                <p className="text-body-large" style={{ 
+                  marginBottom: '32px',
+                  color: '#555',
+                  letterSpacing: '0.3px'
+                }}>
                   Through the rhythmic process of weaving, I create works that speak to both 
                   intimacy and universality. The tactile quality of natural fibers, the 
                   precise geometry of pattern, and the subtle interplay of color and texture 
@@ -54,7 +71,10 @@ export default function AboutPage() {
                   deeply rooted in material authenticity.
                 </p>
                 
-                <p>
+                <p className="text-body-large" style={{ 
+                  color: '#555',
+                  letterSpacing: '0.3px'
+                }}>
                   Each textile is conceived as both functional object and contemplative space — 
                   inviting viewers to slow down, to feel, and to consider our collective 
                   relationship with the materials that surround us in daily life.
@@ -62,167 +82,220 @@ export default function AboutPage() {
               </div>
             </section>
             
-            {/* Main content grid - responsive */}
+            {/* Main content - Centered */}
             <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-              gap: 'clamp(40px, 8vw, 80px)',
-              alignItems: 'start'
+              width: '100%',
+              maxWidth: '900px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 'clamp(40px, 8vw, 60px)',
+              marginBottom: '80px'
             }}>
               {/* Studio Info */}
-              <section>
-                <h2 style={{ 
-                  fontSize: 'clamp(24px, 4vw, 32px)', 
-                  fontWeight: 300, 
-                  margin: '0 0 32px 0',
-                  color: '#333',
-                  letterSpacing: '-0.5px'
+              <section style={{ 
+                width: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center'
+              }}>
+                <div style={{ 
+                  width: '100%',
+                  maxWidth: '700px'
                 }}>
-                  About the Studio
-                </h2>
-                
-                <div style={{ marginBottom: '32px' }}>
-                  <p style={{ 
-                    fontSize: 'clamp(16px, 2vw, 18px)', 
-                    color: '#666', 
-                    lineHeight: '1.7',
-                    marginBottom: '24px'
+                  <h2 className="text-h2-mobile text-crisp" style={{ 
+                    margin: '0 0 32px 0',
+                    color: '#333',
+                    letterSpacing: '-0.5px',
+                    textAlign: 'center'
                   }}>
-                    Founded in 2018, our studio operates from a converted warehouse in 
-                    Stockholm, where we maintain both traditional floor looms and 
-                    modern sustainable dyeing facilities. Our practice emphasizes 
-                    collaboration with local artisans and suppliers who share our 
-                    commitment to ethical production methods.
-                  </p>
+                    About the Studio
+                  </h2>
                   
-                  <p style={{ 
-                    fontSize: 'clamp(16px, 2vw, 18px)', 
-                    color: '#666', 
-                    lineHeight: '1.7',
-                    marginBottom: '24px'
+                  <div style={{ 
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '24px'
                   }}>
-                    We work exclusively with natural and regenerated fibers, sourcing 
-                    materials from certified organic producers and pioneering innovative 
-                    approaches to natural dyeing using locally foraged plants and 
-                    minerals.
-                  </p>
+                    <p className="text-body-mobile" style={{ 
+                      color: '#666',
+                      textAlign: 'center'
+                    }}>
+                      Founded in 2018, our studio operates from a converted warehouse in 
+                      Stockholm, where we maintain both traditional floor looms and 
+                      modern sustainable dyeing facilities. Our practice emphasizes 
+                      collaboration with local artisans and suppliers who share our 
+                      commitment to ethical production methods.
+                    </p>
+                    
+                    <p className="text-body-mobile" style={{ 
+                      color: '#666',
+                      textAlign: 'center'
+                    }}>
+                      We work exclusively with natural and regenerated fibers, sourcing 
+                      materials from certified organic producers and pioneering innovative 
+                      approaches to natural dyeing using locally foraged plants and 
+                      minerals.
+                    </p>
 
-                  <p style={{ 
-                    fontSize: 'clamp(16px, 2vw, 18px)', 
-                    color: '#666', 
-                    lineHeight: '1.7'
-                  }}>
-                    Our works have been exhibited internationally and are held in 
-                    private collections across Europe and North America.
-                  </p>
+                    <p className="text-body-mobile" style={{ 
+                      color: '#666',
+                      textAlign: 'center'
+                    }}>
+                      Our works have been exhibited internationally and are held in 
+                      private collections across Europe and North America.
+                    </p>
+                  </div>
                 </div>
               </section>
 
               {/* Approach and Recognition */}
-              <section>
-                <h3 style={{ 
-                  fontSize: 'clamp(20px, 3vw, 24px)', 
-                  fontWeight: 300, 
-                  margin: '0 0 32px 0',
-                  color: '#333',
-                  letterSpacing: '-0.3px'
+              <section style={{ 
+                width: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center'
+              }}>
+                <div style={{ 
+                  width: '100%',
+                  maxWidth: '700px'
                 }}>
-                  Our Approach
-                </h3>
-                
-                <div style={{ marginBottom: '40px' }}>
-                  <div style={{ 
-                    display: 'grid',
-                    gridTemplateColumns: '1fr',
-                    gap: '16px',
-                    marginBottom: '32px'
+                  <h3 className="text-h2-mobile text-crisp" style={{ 
+                    margin: '0 0 32px 0',
+                    color: '#333',
+                    letterSpacing: '-0.3px',
+                    textAlign: 'center'
                   }}>
+                    Our Approach
+                  </h3>
+                  
+                  <div style={{ marginBottom: '40px' }}>
                     <div style={{ 
-                      fontSize: 'clamp(14px, 1.8vw, 16px)',
-                      color: '#555',
-                      lineHeight: '1.8',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '16px',
+                      marginBottom: '32px'
                     }}>
-                      <strong style={{ color: '#333' }}>Materials:</strong> Organic cotton, linen, hemp, and wool from certified sustainable sources
+                      <div className="text-body-mobile" style={{ 
+                        color: '#555',
+                        lineHeight: '1.8',
+                        textAlign: 'center'
+                      }}>
+                        <strong style={{ color: '#333' }}>Materials:</strong> Organic cotton, linen, hemp, and wool from certified sustainable sources
+                      </div>
+                      
+                      <div className="text-body-mobile" style={{ 
+                        color: '#555',
+                        lineHeight: '1.8',
+                        textAlign: 'center'
+                      }}>
+                        <strong style={{ color: '#333' }}>Techniques:</strong> Traditional hand-weaving, natural dyeing, and contemporary finishing methods
+                      </div>
+                      
+                      <div className="text-body-mobile" style={{ 
+                        color: '#555',
+                        lineHeight: '1.8',
+                        textAlign: 'center'
+                      }}>
+                        <strong style={{ color: '#333' }}>Philosophy:</strong> Slow production, zero waste, and deep collaboration with material processes
+                      </div>
+                      
+                      <div className="text-body-mobile" style={{ 
+                        color: '#555',
+                        lineHeight: '1.8',
+                        textAlign: 'center'
+                      }}>
+                        <strong style={{ color: '#333' }}>Impact:</strong> Carbon-neutral studio operations and direct partnerships with fiber producers
+                      </div>
                     </div>
-                    
-                    <div style={{ 
-                      fontSize: 'clamp(14px, 1.8vw, 16px)',
-                      color: '#555',
-                      lineHeight: '1.8',
+
+                    <h4 className="text-body-mobile" style={{ 
+                      fontWeight: 500, 
+                      margin: '0 0 16px 0',
+                      color: '#333',
+                      textAlign: 'center'
                     }}>
-                      <strong style={{ color: '#333' }}>Techniques:</strong> Traditional hand-weaving, natural dyeing, and contemporary finishing methods
-                    </div>
+                      Recent Recognition
+                    </h4>
                     
-                    <div style={{ 
-                      fontSize: 'clamp(14px, 1.8vw, 16px)',
-                      color: '#555',
-                      lineHeight: '1.8',
+                    <div style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '8px',
+                      alignItems: 'center'
                     }}>
-                      <strong style={{ color: '#333' }}>Philosophy:</strong> Slow production, zero waste, and deep collaboration with material processes
-                    </div>
-                    
-                    <div style={{ 
-                      fontSize: 'clamp(14px, 1.8vw, 16px)',
-                      color: '#555',
-                      lineHeight: '1.8'
-                    }}>
-                      <strong style={{ color: '#333' }}>Impact:</strong> Carbon-neutral studio operations and direct partnerships with fiber producers
+                      <span className="text-body-mobile" style={{ color: '#666' }}>
+                        2024 — Sustainable Design Award, Stockholm Design Week
+                      </span>
+                      <span className="text-body-mobile" style={{ color: '#666' }}>
+                        2023 — Featured in Textile Arts International
+                      </span>
+                      <span className="text-body-mobile" style={{ color: '#666' }}>
+                        2022 — Solo exhibition, Craft Contemporary, London
+                      </span>
+                      <span className="text-body-mobile" style={{ color: '#666' }}>
+                        2021 — Nordic Craft Prize finalist
+                      </span>
                     </div>
                   </div>
+                </div>
+              </section>
 
-                  <h4 style={{ 
-                    fontSize: 'clamp(16px, 2.2vw, 18px)', 
-                    fontWeight: 300, 
-                    margin: '0 0 16px 0',
+              {/* Add some extra content for better desktop scrolling */}
+              <section style={{ 
+                width: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                padding: '40px 0'
+              }}>
+                <div style={{ 
+                  width: '100%',
+                  maxWidth: '700px',
+                  textAlign: 'center'
+                }}>
+                  <h3 className="text-h2-mobile text-crisp" style={{ 
+                    margin: '0 0 24px 0',
                     color: '#333'
                   }}>
-                    Recent Recognition
-                  </h4>
+                    Philosophy & Process
+                  </h3>
                   
-                  <ul style={{ 
-                    listStyle: 'none', 
-                    padding: 0,
-                    fontSize: 'clamp(14px, 1.8vw, 15px)',
+                  <p className="text-body-mobile" style={{ 
                     color: '#666',
-                    lineHeight: '1.6'
+                    lineHeight: '1.8',
+                    marginBottom: '24px'
                   }}>
-                    <li style={{ marginBottom: '8px' }}>2024 — Sustainable Design Award, Stockholm Design Week</li>
-                    <li style={{ marginBottom: '8px' }}>2023 — Featured in Textile Arts International</li>
-                    <li style={{ marginBottom: '8px' }}>2022 — Solo exhibition, Craft Contemporary, London</li>
-                    <li>2021 — Nordic Craft Prize finalist</li>
-                  </ul>
+                    Our creative process begins with an intimate understanding of materials. 
+                    Each fiber tells a story of its origin, from the soil that nurtured it 
+                    to the hands that harvested it. We honor this journey through mindful 
+                    design and considered construction.
+                  </p>
+                  
+                  <p className="text-body-mobile" style={{ 
+                    color: '#666',
+                    lineHeight: '1.8'
+                  }}>
+                    Time is our most precious tool. In an age of instant gratification, 
+                    we choose the slow path — allowing ideas to develop organically, 
+                    patterns to emerge naturally, and beauty to unfold at its own pace.
+                  </p>
                 </div>
               </section>
             </div>
-          </ErrorBoundary>
 
-          {/* Back Link */}
-          <div style={{ textAlign: 'center', marginTop: '80px' }}>
-            <Link 
-              href="/"
-              style={{
-                fontSize: '14px',
-                color: '#333',
-                textDecoration: 'none',
-                letterSpacing: '1px',
-                border: '2px solid #333',
-                padding: '12px 24px',
-                borderRadius: '6px',
-                transition: 'all 0.3s ease',
-                display: 'inline-block'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#333'
-                e.currentTarget.style.color = '#fff'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent'
-                e.currentTarget.style.color = '#333'
-              }}
-            >
-              ← Back to Gallery
-            </Link>
-          </div>
+            {/* Back Link - Centered */}
+            <div style={{ 
+              textAlign: 'center',
+              paddingBottom: '60px' // Extra padding for better spacing
+            }}>
+              <Link 
+                href="/"
+                className="btn-mobile btn-mobile-secondary touch-feedback"
+              >
+                ← Back to Gallery
+              </Link>
+            </div>
+          </ErrorBoundary>
         </div>
       </div>
     </>

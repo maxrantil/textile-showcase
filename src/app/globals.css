@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import mobile utilities */
+@import '../styles/mobile-utilities.css';
+
 /* CSS Custom Properties for consistent design system */
 :root {
   --color-primary: #333;

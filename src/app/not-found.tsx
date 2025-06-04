@@ -4,18 +4,15 @@ import Link from 'next/link'
 
 export default function NotFound() {
   return (
-    <div style={{ 
-      minHeight: '100vh', 
+    <div className="full-height-mobile" style={{ 
       display: 'flex', 
       alignItems: 'center', 
       justifyContent: 'center',
-      background: '#fafafa',
-      padding: '20px'
+      background: '#fafafa'
     }}>
-      <div style={{ 
+      <div className="container-mobile" style={{ 
         textAlign: 'center',
-        maxWidth: '500px',
-        width: '100%'
+        maxWidth: '500px'
       }}>
         {/* 404 Number */}
         <div style={{
@@ -29,9 +26,7 @@ export default function NotFound() {
           404
         </div>
 
-        <h1 style={{ 
-          fontSize: 'clamp(24px, 5vw, 48px)', 
-          fontWeight: 300, 
+        <h1 className="text-display-mobile text-crisp" style={{ 
           margin: '0 0 16px 0',
           color: '#333',
           letterSpacing: '-0.5px'
@@ -39,8 +34,7 @@ export default function NotFound() {
           Page Not Found
         </h1>
         
-        <p style={{ 
-          fontSize: 'clamp(16px, 2.5vw, 18px)', 
+        <p className="text-body-large" style={{ 
           color: '#666',
           marginBottom: '32px',
           lineHeight: '1.6'
@@ -49,92 +43,33 @@ export default function NotFound() {
         </p>
 
         {/* Navigation options */}
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '16px',
+        <div className="stack-mobile" style={{
           alignItems: 'center'
         }}>
           <Link 
             href="/"
+            className="btn-mobile btn-mobile-primary touch-feedback"
             style={{
-              fontSize: '14px',
-              color: '#fff',
-              backgroundColor: '#333',
-              textDecoration: 'none',
-              letterSpacing: '1px',
-              border: '2px solid #333',
-              padding: '16px 32px',
-              borderRadius: '6px',
-              transition: 'all 0.3s ease',
-              display: 'inline-block',
               textTransform: 'uppercase',
               fontWeight: 500
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#000'
-              e.currentTarget.style.borderColor = '#000'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = '#333'
-              e.currentTarget.style.borderColor = '#333'
             }}
           >
             ← Back to Gallery
           </Link>
 
-          <div style={{
-            display: 'flex',
-            gap: '16px',
-            flexWrap: 'wrap',
+          <div className="grid-mobile-2" style={{
             justifyContent: 'center'
           }}>
             <Link 
               href="/about"
-              style={{
-                fontSize: '14px',
-                color: '#333',
-                textDecoration: 'none',
-                letterSpacing: '1px',
-                border: '1px solid #ddd',
-                padding: '12px 24px',
-                borderRadius: '6px',
-                transition: 'all 0.3s ease',
-                display: 'inline-block'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = '#333'
-                e.currentTarget.style.backgroundColor = '#f9f9f9'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = '#ddd'
-                e.currentTarget.style.backgroundColor = 'transparent'
-              }}
+              className="btn-mobile btn-mobile-ghost touch-feedback"
             >
               About
             </Link>
 
             <Link 
               href="/contact"
-              style={{
-                fontSize: '14px',
-                color: '#333',
-                textDecoration: 'none',
-                letterSpacing: '1px',
-                border: '1px solid #ddd',
-                padding: '12px 24px',
-                borderRadius: '6px',
-                transition: 'all 0.3s ease',
-                display: 'inline-block'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = '#333'
-                e.currentTarget.style.backgroundColor = '#f9f9f9'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = '#ddd'
-                e.currentTarget.style.backgroundColor = 'transparent'
-              }}
+              className="btn-mobile btn-mobile-ghost touch-feedback"
             >
               Contact
             </Link>
@@ -142,23 +77,20 @@ export default function NotFound() {
         </div>
 
         {/* Help text */}
-        <div style={{
-          marginTop: '48px',
+        <div className="spacing-mobile-xl" style={{
           padding: '24px',
           backgroundColor: '#fff',
           borderRadius: '8px',
           border: '1px solid #e5e5e5'
         }}>
-          <h2 style={{
-            fontSize: '16px',
+          <h2 className="text-body-mobile" style={{
             fontWeight: 500,
             margin: '0 0 12px 0',
             color: '#333'
           }}>
             Looking for something specific?
           </h2>
-          <p style={{
-            fontSize: '14px',
+          <p className="text-caption-mobile" style={{
             color: '#666',
             margin: 0,
             lineHeight: '1.5'

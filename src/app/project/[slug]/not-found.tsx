@@ -2,24 +2,20 @@ import Link from 'next/link'
 
 export default function NotFound() {
   return (
-    <div style={{ 
-      minHeight: '100vh', 
+    <div className="full-height-mobile" style={{ 
       display: 'flex', 
       alignItems: 'center', 
       justifyContent: 'center',
       background: '#fafafa'
     }}>
-      <div style={{ textAlign: 'center' }}>
-        <h1 style={{ 
-          fontSize: '48px', 
-          fontWeight: 300, 
+      <div className="container-mobile" style={{ textAlign: 'center' }}>
+        <h1 className="text-display-mobile text-crisp" style={{ 
           margin: '0 0 16px 0',
           color: '#333'
         }}>
           Project Not Found
         </h1>
-        <p style={{ 
-          fontSize: '18px', 
+        <p className="text-body-large" style={{ 
           color: '#666',
           marginBottom: '32px'
         }}>
@@ -27,15 +23,7 @@ export default function NotFound() {
         </p>
         <Link 
           href="/"
-          style={{
-            fontSize: '14px',
-            color: '#333',
-            textDecoration: 'none',
-            letterSpacing: '1px',
-            border: '1px solid #333',
-            padding: '12px 24px',
-            borderRadius: '6px'
-          }}
+          className="btn-mobile btn-mobile-secondary touch-feedback"
         >
           ← Back to Gallery
         </Link>

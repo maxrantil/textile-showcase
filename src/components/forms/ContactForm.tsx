@@ -1,4 +1,3 @@
-// src/components/forms/ContactForm.tsx - Fixed FormField component
 'use client'
 
 import { useState, useCallback } from 'react'
@@ -110,144 +109,130 @@ export default function ContactForm({ onSuccess, onError }: ContactFormProps) {
     }
   }, [formData, validateForm, onSuccess, onError])
 
-  // Shared input styles
-  const inputStyle = {
-    width: '100%',
-    padding: '16px',
-    border: '2px solid #e5e5e5',
-    borderRadius: '6px',
-    fontSize: '16px',
-    fontFamily: 'inherit',
-    transition: 'all 0.3s ease',
-    outline: 'none',
-    backgroundColor: '#fff'
-  }
-
-  const errorInputStyle = {
-    ...inputStyle,
-    borderColor: '#ef4444',
-    backgroundColor: '#fef2f2'
-  }
-
-  const focusStyle = {
-    borderColor: '#333',
-    boxShadow: '0 0 0 3px rgba(51, 51, 51, 0.1)'
-  }
-
   return (
-    <form onSubmit={handleSubmit} noValidate>
+    <div style={{ 
+      width: '100%',
+      display: 'flex',
+      justifyContent: 'center',
+      padding: '0'
+    }}>
       <div style={{ 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
-        gap: '24px', 
-        marginBottom: '24px' 
+        width: '100%', 
+        maxWidth: '600px'
       }}>
-        <FormField
-          label="Name *"
-          name="name"
-          type="text"
-          value={formData.name}
-          onChange={handleChange}
-          error={errors.name}
-          style={errors.name ? errorInputStyle : inputStyle}
-          focusStyle={focusStyle}
-        />
-        
-        <FormField
-          label="Email *"
-          name="email"
-          type="email"
-          value={formData.email}
-          onChange={handleChange}
-          error={errors.email}
-          style={errors.email ? errorInputStyle : inputStyle}
-          focusStyle={focusStyle}
-        />
-      </div>
-      
-      <FormField
-        label="Message *"
-        name="message"
-        type="textarea"
-        value={formData.message}
-        onChange={handleChange}
-        error={errors.message}
-        style={errors.message ? errorInputStyle : inputStyle}
-        focusStyle={focusStyle}
-        rows={6}
-      />
-      
-      {errors.general && (
-        <div style={{
-          background: '#fef2f2',
-          border: '1px solid #fecaca',
-          color: '#dc2626',
-          padding: '16px',
-          borderRadius: '6px',
-          marginBottom: '24px',
-          textAlign: 'center'
+        <form onSubmit={handleSubmit} noValidate style={{ 
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'stretch'
         }}>
-          {errors.general}
-        </div>
-      )}
-      
-      <div style={{ textAlign: 'center' }}>
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          style={{
-            fontSize: '14px',
-            color: isSubmitting ? '#999' : '#fff',
-            background: isSubmitting ? '#f5f5f5' : '#333',
-            border: `2px solid ${isSubmitting ? '#ddd' : '#333'}`,
-            padding: '16px 32px',
-            borderRadius: '6px',
-            cursor: isSubmitting ? 'not-allowed' : 'pointer',
-            letterSpacing: '1px',
-            textTransform: 'uppercase',
-            transition: 'all 0.3s ease',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-            margin: '0 auto',
-            minWidth: '160px'
-          }}
-        >
-          {isSubmitting ? (
-            <>
-              <LoadingSpinner size="small" />
-              Sending...
-            </>
-          ) : (
-            'Send Message'
+          {/* Name and Email Row - Centered */}
+          <div style={{
+            width: '100%',
+            marginBottom: 'clamp(16px, 4vw, 24px)'
+          }}>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr',
+              gap: 'clamp(16px, 4vw, 24px)',
+              width: '100%'
+            }} className="responsive-form-grid">
+              <FormField
+                label="Name *"
+                name="name"
+                type="text"
+                value={formData.name}
+                onChange={handleChange}
+                error={errors.name}
+              />
+              
+              <FormField
+                label="Email *"
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleChange}
+                error={errors.email}
+              />
+            </div>
+          </div>
+          
+          {/* Message Field - Full Width */}
+          <FormField
+            label="Message *"
+            name="message"
+            type="textarea"
+            value={formData.message}
+            onChange={handleChange}
+            error={errors.message}
+            responsiveHeight={true}
+          />
+          
+          {errors.general && (
+            <div style={{
+              background: '#fef2f2',
+              border: '1px solid #fecaca',
+              color: '#dc2626',
+              padding: '16px',
+              borderRadius: '6px',
+              marginBottom: '24px',
+              textAlign: 'center',
+              width: '100%'
+            }}>
+              <span className="text-body-mobile">{errors.general}</span>
+            </div>
           )}
-        </button>
-      </div>
+          
+          <div style={{ 
+            textAlign: 'center', 
+            width: '100%',
+            display: 'flex',
+            justifyContent: 'center'
+          }}>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="btn-mobile btn-mobile-primary touch-feedback"
+              style={{
+                minWidth: '160px'
+              }}
+            >
+              {isSubmitting ? (
+                <>
+                  <LoadingSpinner size="small" />
+                  Sending...
+                </>
+              ) : (
+                'Send Message'
+              )}
+            </button>
+          </div>
 
-      {submitStatus === 'success' && (
-        <div style={{
-          background: '#f0f9ff',
-          border: '1px solid #bae6fd',
-          color: '#0369a1',
-          padding: '20px',
-          borderRadius: '8px',
-          textAlign: 'center',
-          marginTop: '32px'
-        }}>
-          <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: 500 }}>
-            Message sent successfully!
-          </h3>
-          <p style={{ margin: 0, fontSize: '16px' }}>
-            Thank you for your message. I'll get back to you as soon as possible.
-          </p>
-        </div>
-      )}
-    </form>
+          {submitStatus === 'success' && (
+            <div className="spacing-mobile-lg" style={{
+              background: '#f0f9ff',
+              border: '1px solid #bae6fd',
+              color: '#0369a1',
+              padding: '20px',
+              borderRadius: '8px',
+              textAlign: 'center',
+              width: '100%'
+            }}>
+              <h3 className="text-body-mobile" style={{ margin: '0 0 8px 0', fontWeight: 500 }}>
+                Message sent successfully!
+              </h3>
+              <p className="text-body-mobile" style={{ margin: 0 }}>
+                Thank you for your message. I'll get back to you as soon as possible.
+              </p>
+            </div>
+          )}
+        </form>
+      </div>
+    </div>
   )
 }
 
-// FIXED: Helper component for form fields with proper label association
+// Enhanced Form Field Component
 interface FormFieldProps {
   label: string
   name: string
@@ -255,9 +240,7 @@ interface FormFieldProps {
   value: string
   onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void
   error?: string
-  style: React.CSSProperties
-  focusStyle: React.CSSProperties
-  rows?: number
+  responsiveHeight?: boolean
 }
 
 function FormField({ 
@@ -266,42 +249,23 @@ function FormField({
   type, 
   value, 
   onChange, 
-  error, 
-  style, 
-  focusStyle, 
-  rows 
+  error,
+  responsiveHeight = false
 }: FormFieldProps) {
-  const fieldId = `field-${name}` // Create unique ID for each field
+  const fieldId = `field-${name}`
   
-  const labelStyle = {
-    display: 'block',
-    fontSize: '14px',
-    fontWeight: 500,
-    marginBottom: '8px',
-    color: '#333',
-    letterSpacing: '0.5px',
-    textTransform: 'uppercase' as const
+  // Responsive textarea height based on device
+  const getTextareaHeight = () => {
+    if (!responsiveHeight) return '120px'
+    return 'clamp(120px, 25vh, 200px)'
   }
-
-  const errorStyle = {
-    color: '#ef4444',
-    fontSize: '14px',
-    marginTop: '4px',
-    margin: '4px 0 0 0'
-  }
-
-  const handleFocus = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    Object.assign(e.target.style, focusStyle)
-  }
-
-  const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    e.target.style.borderColor = error ? '#ef4444' : '#e5e5e5'
-    e.target.style.boxShadow = 'none'
-  }
-
+  
   return (
-    <div style={{ marginBottom: '24px' }}>
-      <label htmlFor={fieldId} style={labelStyle}>
+    <div style={{
+      marginBottom: 'clamp(16px, 4vw, 24px)',
+      width: '100%'
+    }}>
+      <label htmlFor={fieldId} className="form-label-mobile">
         {label}
       </label>
       
@@ -312,16 +276,17 @@ function FormField({
           value={value}
           onChange={onChange}
           required
-          rows={rows}
+          className={`form-textarea-mobile ${error ? 'form-input-error' : ''}`}
           style={{
-            ...style,
-            resize: 'vertical' as const,
-            minHeight: '120px'
+            minHeight: getTextareaHeight(),
+            resize: 'vertical',
+            lineHeight: '1.6',
+            fontSize: '16px',
+            width: '100%'
           }}
-          onFocus={handleFocus}
-          onBlur={handleBlur}
           aria-invalid={!!error}
           aria-describedby={error ? `${name}-error` : undefined}
+          placeholder="Tell me about your project, ideas, or any questions you have..."
         />
       ) : (
         <input
@@ -331,16 +296,18 @@ function FormField({
           value={value}
           onChange={onChange}
           required
-          style={style}
-          onFocus={handleFocus}
-          onBlur={handleBlur}
+          className={`form-input-mobile ${error ? 'form-input-error' : ''}`}
+          style={{ width: '100%' }}
           aria-invalid={!!error}
           aria-describedby={error ? `${name}-error` : undefined}
         />
       )}
       
       {error && (
-        <p id={`${name}-error`} style={errorStyle}>
+        <p id={`${name}-error`} className="text-caption-mobile" style={{
+          color: '#ef4444',
+          margin: '4px 0 0 0'
+        }}>
           {error}
         </p>
       )}

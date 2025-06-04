@@ -1,4 +1,3 @@
-// src/config/responsiveConfig.ts - Config only, no hooks
 export const RESPONSIVE_CONFIG = {
   breakpoints: {
     sm: 640,   // Mobile
@@ -9,15 +8,15 @@ export const RESPONSIVE_CONFIG = {
   gallery: {
     mobile: {
       itemHeight: 85,  // vh - larger for better mobile viewing
-      gap: 30,         // px - smaller gaps for mobile
+      gap: 20,         // px - smaller gaps for mobile
       padding: '20px', // Consistent edge padding
       navigationSize: 'medium',
       showArrows: false, // Hide arrows on mobile, use swipe
     },
     tablet: {
       itemHeight: 75,
-      gap: 50,
-      padding: '40px',
+      gap: 40,
+      padding: '10vw',
       navigationSize: 'large',
       showArrows: true,
     },

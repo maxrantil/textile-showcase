@@ -1,4 +1,4 @@
-// src/components/gallery/HorizontalGallery.tsx - Fixed version with proper arrow control
+// src/components/gallery/HorizontalGallery.tsx - Fixed version with proper arrow control and mobile utilities
 'use client'
 
 import { memo, useMemo, useRef, useEffect, useState } from 'react'
@@ -168,14 +168,13 @@ function HorizontalGallery({ designs }: HorizontalGalleryProps) {
 
   if (!designs || designs.length === 0) {
     return (
-      <div style={{ 
-        height: '100vh', 
+      <div className="full-height-mobile" style={{ 
         display: 'flex', 
         alignItems: 'center', 
         justifyContent: 'center',
         background: '#fafafa' 
       }}>
-        <p style={{ color: '#666', fontSize: '18px' }}>No designs found</p>
+        <p className="text-body-mobile" style={{ color: '#666' }}>No designs found</p>
       </div>
     )
   }
@@ -223,7 +222,7 @@ function HorizontalGallery({ designs }: HorizontalGalleryProps) {
   )
 }
 
-// Mobile Gallery Indicators Component
+// Mobile Gallery Indicators Component with mobile utilities
 interface MobileGalleryIndicatorsProps {
   currentIndex: number
   totalItems: number
@@ -236,35 +235,16 @@ const MobileGalleryIndicators = memo(function MobileGalleryIndicators({
   onDotClick
 }: MobileGalleryIndicatorsProps) {
   return (
-    <div style={{
-      position: 'fixed',
-      bottom: '30px',
-      left: '50%',
-      transform: 'translateX(-50%)',
-      display: 'flex',
-      gap: '8px',
-      padding: '12px 16px',
-      backgroundColor: 'rgba(255, 255, 255, 0.95)',
-      borderRadius: '24px',
-      backdropFilter: 'blur(12px)',
-      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
-      zIndex: 30,
-      // Ensure it works with safe area
-      paddingBottom: 'calc(12px + env(safe-area-inset-bottom, 0px))'
-    }}>
+    <div className="gallery-indicators-mobile">
       {Array.from({ length: Math.min(totalItems, 8) }, (_, index) => (
         <button
           key={index}
           onClick={() => onDotClick(index)}
+          className="touch-target touch-feedback"
           style={{
-            width: '44px', // Touch-friendly size
-            height: '44px',
             border: 'none',
             backgroundColor: 'transparent',
             cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
             borderRadius: '50%',
             transition: 'background-color 0.2s ease'
           }}
@@ -272,13 +252,14 @@ const MobileGalleryIndicators = memo(function MobileGalleryIndicators({
           onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
           aria-label={`Go to image ${index + 1}`}
         >
-          <span style={{
+          <span className="gallery-dot" style={{
             width: '8px',
             height: '8px',
             borderRadius: '50%',
             backgroundColor: index === currentIndex ? '#333' : '#ccc',
             transition: 'all 0.3s ease',
-            transform: index === currentIndex ? 'scale(1.2)' : 'scale(1)'
+            transform: index === currentIndex ? 'scale(1.2)' : 'scale(1)',
+            display: 'block'
           }} />
         </button>
       ))}
@@ -292,8 +273,7 @@ const MobileGalleryIndicators = memo(function MobileGalleryIndicators({
           borderLeft: '1px solid #e5e5e5',
           marginLeft: '8px'
         }}>
-          <span style={{
-            fontSize: '12px',
+          <span className="text-caption-mobile" style={{
             color: '#666',
             fontWeight: 500,
             letterSpacing: '0.5px'

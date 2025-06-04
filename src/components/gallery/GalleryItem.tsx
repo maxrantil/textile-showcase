@@ -1,8 +1,8 @@
-// src/components/gallery/GalleryItem.tsx
 'use client'
 
-import { memo } from 'react'
+import { memo, useState, useEffect } from 'react'
 import { TextileDesign } from '@/sanity/types'
+import { RESPONSIVE_CONFIG, getGalleryConfig } from '@/config/responsiveConfig'
 import { GalleryImage } from './GalleryImage'
 import { GalleryItemInfo } from './GalleryItemInfo'
 
@@ -19,6 +19,38 @@ export const GalleryItem = memo(function GalleryItem({
   onClick,
   isActive = false
 }: GalleryItemProps) {
+  const [breakpoint, setBreakpoint] = useState<'mobile' | 'tablet' | 'desktop'>('desktop')
+  
+  // Detect current breakpoint
+  useEffect(() => {
+    const getBreakpoint = () => {
+      const width = window.innerWidth
+      if (width < RESPONSIVE_CONFIG.breakpoints.md) return 'mobile'
+      if (width < RESPONSIVE_CONFIG.breakpoints.lg) return 'tablet'
+      return 'desktop'
+    }
+    
+    const handleResize = () => setBreakpoint(getBreakpoint())
+    handleResize()
+    
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+  
+  const galleryConfig = getGalleryConfig(breakpoint)
+  
+  // Responsive item width
+  const getItemWidth = () => {
+    switch (breakpoint) {
+      case 'mobile':
+        return 'clamp(280px, 85vw, 400px)'
+      case 'tablet':
+        return 'clamp(350px, 60vw, 500px)'
+      default:
+        return 'auto' // Desktop uses height-based sizing
+    }
+  }
+  
   return (
     <div 
       role="button"
@@ -32,6 +64,8 @@ export const GalleryItem = memo(function GalleryItem({
         alignItems: 'center',
         cursor: 'pointer',
         transition: 'transform 0.3s ease',
+        width: getItemWidth(),
+        maxWidth: breakpoint === 'mobile' ? '90vw' : 'none'
       }}
       onClick={onClick}
       onKeyDown={(e) => {
@@ -52,6 +86,7 @@ export const GalleryItem = memo(function GalleryItem({
         alt={design.title}
         index={index}
         onClick={onClick}
+        breakpoint={breakpoint}
       />
       
       <GalleryItemInfo 
