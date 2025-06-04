@@ -15,7 +15,7 @@ import { getOptimizedImageUrl } from '@/sanity/lib'
 import { GalleryContainer } from './GalleryContainer'
 import { GalleryItem } from './GalleryItem'
 import { UmamiEvents } from '@/utils/analytics'
-import { preloadImages, perf } from '@/utils/performance'
+import { preloadImages, perf, logMemoryUsage } from '@/utils/performance'
 
 interface HorizontalGalleryProps {
   designs: TextileDesign[]
@@ -167,6 +167,21 @@ function HorizontalGallery({ designs }: HorizontalGalleryProps) {
       }
     }
   }, [realTimeCurrentIndex.current, memoizedDesigns, isMobile]) // Dependencies: current index, designs, mobile state
+
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      logMemoryUsage('Gallery mounted')
+      
+      const interval = setInterval(() => {
+        logMemoryUsage('Gallery active')
+      }, 10000) // Log every 10 seconds
+      
+      return () => {
+        clearInterval(interval)
+        logMemoryUsage('Gallery unmounted')
+      }
+    }
+  }, [])
 
   // Enhanced scroll function with analytics
   const handleScrollToImage = useCallback((direction: 'left' | 'right') => {

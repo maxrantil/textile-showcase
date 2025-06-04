@@ -1,4 +1,3 @@
-// src/components/project/ImageCarousel.tsx - Fixed version with stable state management
 'use client'
 
 import { useState, useCallback, useMemo, useEffect } from 'react'
@@ -8,8 +7,8 @@ import NavigationArrows from '../ui/NavigationArrows'
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation'
 import KeyboardScrollHandler from '../KeyboardScrollHandler'
 import { UmamiEvents } from '@/utils/analytics'
+import { perf, logMemoryUsage } from '@/utils/performance'
 import React from 'react'
-
 
 interface GalleryImage {
   _key: string
@@ -53,6 +52,22 @@ export default function ImageCarousel({
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
   
+  // Memory monitoring for development
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      logMemoryUsage('ImageCarousel mounted')
+      
+      const interval = setInterval(() => {
+        logMemoryUsage('ImageCarousel active')
+      }, 10000) // Log every 10 seconds
+      
+      return () => {
+        clearInterval(interval)
+        logMemoryUsage('ImageCarousel unmounted')
+      }
+    }
+  }, [])
+  
   // Create array of all images for desktop carousel
   const allImages = useMemo(() => {
     const imageArray = []
@@ -80,19 +95,41 @@ export default function ImageCarousel({
 
   const currentImage = allImages[currentIndex]
 
-  // Navigation functions for desktop carousel with analytics
+  // Navigation functions for desktop carousel with performance monitoring
   const goToPrevious = useCallback(() => {
-    const newIndex = currentIndex === 0 ? allImages.length - 1 : currentIndex - 1
-    UmamiEvents.projectImageView(projectTitle, newIndex + 1)
-    UmamiEvents.projectNavigation('previous', projectTitle)
-    setCurrentIndex(newIndex)
+    perf.start('carousel-navigation-previous')
+    
+    try {
+      const newIndex = currentIndex === 0 ? allImages.length - 1 : currentIndex - 1
+      UmamiEvents.projectImageView(projectTitle, newIndex + 1)
+      UmamiEvents.projectNavigation('previous', projectTitle)
+      setCurrentIndex(newIndex)
+    } finally {
+      const duration = perf.end('carousel-navigation-previous')
+      
+      // Log slow navigations in development
+      if (process.env.NODE_ENV === 'development' && duration > 100) {
+        console.warn(`⚠️ Slow carousel navigation (previous) detected: ${duration.toFixed(2)}ms`)
+      }
+    }
   }, [allImages.length, currentIndex, projectTitle])
 
   const goToNext = useCallback(() => {
-    const newIndex = currentIndex === allImages.length - 1 ? 0 : currentIndex + 1
-    UmamiEvents.projectImageView(projectTitle, newIndex + 1)
-    UmamiEvents.projectNavigation('next', projectTitle)
-    setCurrentIndex(newIndex)
+    perf.start('carousel-navigation-next')
+    
+    try {
+      const newIndex = currentIndex === allImages.length - 1 ? 0 : currentIndex + 1
+      UmamiEvents.projectImageView(projectTitle, newIndex + 1)
+      UmamiEvents.projectNavigation('next', projectTitle)
+      setCurrentIndex(newIndex)
+    } finally {
+      const duration = perf.end('carousel-navigation-next')
+      
+      // Log slow navigations in development
+      if (process.env.NODE_ENV === 'development' && duration > 100) {
+        console.warn(`⚠️ Slow carousel navigation (next) detected: ${duration.toFixed(2)}ms`)
+      }
+    }
   }, [allImages.length, currentIndex, projectTitle])
 
   // Keyboard navigation
@@ -114,7 +151,7 @@ export default function ImageCarousel({
     UmamiEvents.projectImageView(projectTitle, 1)
   }, [projectTitle])
 
-  // Preload adjacent images for desktop
+  // Preload adjacent images for desktop with performance monitoring
   const preloadImages = useMemo(() => {
     if (isMobile) return []
     
@@ -515,143 +552,147 @@ export default function ImageCarousel({
         </div>
       </div>
     </>
- )
+  )
 }
 
-// FIXED: Mobile Image Block Component with React.memo and stable state
+// Mobile Image Block Component with performance monitoring
 interface MobileImageBlockProps {
- image: any
- index: number
- isFirst: boolean
- projectTitle: string
+  image: any
+  index: number
+  isFirst: boolean
+  projectTitle: string
 }
 
 const MobileImageBlock = React.memo(function MobileImageBlock({ 
- image, 
- index, 
- isFirst,
- projectTitle
+  image, 
+  index, 
+  isFirst,
+  projectTitle
 }: MobileImageBlockProps) {
- const [imageLoaded, setImageLoaded] = useState(false)
- const [imageError, setImageError] = useState(false)
+  const [imageLoaded, setImageLoaded] = useState(false)
+  const [imageError, setImageError] = useState(false)
 
- // Track mobile image view when it loads
- useEffect(() => {
-   if (imageLoaded) {
-     UmamiEvents.projectImageView(projectTitle, index + 1)
-   }
- }, [imageLoaded, projectTitle, index])
+  // Track mobile image view when it loads with performance monitoring
+  useEffect(() => {
+    if (imageLoaded) {
+      perf.start(`mobile-image-track-${index}`)
+      try {
+        UmamiEvents.projectImageView(projectTitle, index + 1)
+      } finally {
+        perf.end(`mobile-image-track-${index}`)
+      }
+    }
+  }, [imageLoaded, projectTitle, index])
 
- // Don't render if no asset
- if (!image?.asset) {
-   return null
- }
+  // Don't render if no asset
+  if (!image?.asset) {
+    return null
+  }
 
- const imageUrl = getOptimizedImageUrl(image.asset, {
-   width: 400,
-   height: 600,
-   quality: 80,
-   format: 'webp'
- })
+  const imageUrl = getOptimizedImageUrl(image.asset, {
+    width: 400,
+    height: 600,
+    quality: 80,
+    format: 'webp'
+  })
 
- return (
-   <div style={{
-     width: '100%',
-     position: 'relative'
-   }}>
-     <div style={{
-       position: 'relative',
-       background: '#fff',
-       borderRadius: '8px',
-       overflow: 'hidden',
-       boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
-     }}>
-       {/* Always show the image element, control visibility with display */}
-       <img
-         src={imageUrl}
-         alt={image.caption || `Project image ${index + 1}`}
-         style={{
-           width: '100%',
-           height: 'auto',
-           display: 'block', // Always block, no conditional display
-           objectFit: 'contain',
-           maxHeight: '70vh',
-           minHeight: '200px',
-           opacity: imageLoaded ? 1 : 0, // Use opacity instead of display
-           transition: 'opacity 0.3s ease'
-         }}
-         loading={isFirst ? 'eager' : 'lazy'}
-         onLoad={() => {
-           console.log(`✅ Image ${index + 1} loaded successfully`)
-           setImageLoaded(true)
-         }}
-         onError={(e) => {
-           console.error(`❌ Image ${index + 1} failed to load:`, e)
-           setImageError(true)
-         }}
-       />
+  return (
+    <div style={{
+      width: '100%',
+      position: 'relative'
+    }}>
+      <div style={{
+        position: 'relative',
+        background: '#fff',
+        borderRadius: '8px',
+        overflow: 'hidden',
+        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
+      }}>
+        <img
+          src={imageUrl}
+          alt={image.caption || `Project image ${index + 1}`}
+          style={{
+            width: '100%',
+            height: 'auto',
+            display: 'block',
+            objectFit: 'contain',
+            maxHeight: '70vh',
+            minHeight: '200px',
+            opacity: imageLoaded ? 1 : 0,
+            transition: 'opacity 0.3s ease'
+          }}
+          loading={isFirst ? 'eager' : 'lazy'}
+          onLoad={() => {
+            console.log(`✅ Image ${index + 1} loaded successfully`)
+            setImageLoaded(true)
+          }}
+          onError={(e) => {
+            console.error(`❌ Image ${index + 1} failed to load:`, e)
+            setImageError(true)
+          }}
+        />
 
-       {/* Loading overlay */}
-       {!imageLoaded && !imageError && (
-         <div style={{
-           position: 'absolute',
-           top: 0,
-           left: 0,
-           right: 0,
-           bottom: 0,
-           background: '#f5f5f5',
-           display: 'flex',
-           alignItems: 'center',
-           justifyContent: 'center',
-           color: '#999',
-           fontSize: '14px',
-           minHeight: '200px'
-         }}>
-           Loading image {index + 1}...
-         </div>
-       )}
+        {/* Loading overlay */}
+        {!imageLoaded && !imageError && (
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: '#f5f5f5',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#999',
+            fontSize: '14px',
+            minHeight: '200px'
+          }}>
+            Loading image {index + 1}...
+          </div>
+        )}
 
-       {/* Error overlay */}
-       {imageError && (
-         <div style={{
-           position: 'absolute',
-           top: 0,
-           left: 0,
-           right: 0,
-           bottom: 0,
-           background: '#f5f5f5',
-           display: 'flex',
-           alignItems: 'center',
-           justifyContent: 'center',
-           color: '#999',
-           fontSize: '14px',
-           flexDirection: 'column',
-           gap: '8px',
-           minHeight: '200px'
-         }}>
-           <div>❌ Failed to load image {index + 1}</div>
-           <div style={{ fontSize: '12px' }}>
-             Key: {image._key}
-           </div>
-           <div style={{ fontSize: '10px', wordBreak: 'break-all', maxWidth: '80%' }}>
-             URL: {imageUrl.substring(0, 50)}...
-           </div>
-         </div>
-       )}
-     </div>
+        {/* Error overlay */}
+        {imageError && (
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: '#f5f5f5',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#999',
+            fontSize: '14px',
+            flexDirection: 'column',
+            gap: '8px',
+            minHeight: '200px'
+          }}>
+            <div>❌ Failed to load image {index + 1}</div>
+            <div style={{ fontSize: '12px' }}>
+              Key: {image._key}
+            </div>
+            <div style={{ fontSize: '10px', wordBreak: 'break-all', maxWidth: '80%' }}>
+              URL: {imageUrl.substring(0, 50)}...
+            </div>
+          </div>
+        )}
+      </div>
 
-     {/* Image caption */}
-     {image.caption && !image.isMainImage && (
-       <p style={{
-         textAlign: 'center',
-         fontSize: '14px',
-         color: '#666',
-         margin: '12px 0 0 0',
-         fontStyle: 'italic'
-       }}>
-         {image.caption}
-       </p>
-     )}
-   </div>
- )
+      {/* Image caption */}
+      {image.caption && !image.isMainImage && (
+        <p style={{
+          textAlign: 'center',
+          fontSize: '14px',
+          color: '#666',
+          margin: '12px 0 0 0',
+          fontStyle: 'italic'
+        }}>
+          {image.caption}
+        </p>
+      )}
+    </div>
+  )
 })

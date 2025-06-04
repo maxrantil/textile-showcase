@@ -24,7 +24,7 @@ export default function Button({
   onMouseLeave,
   ...props
 }: ButtonProps) {
-  const [setIsHovered] = React.useState(false)
+  const [isHovered, setIsHovered] = React.useState(false)
   
   // Get base mobile button classes
   const baseClasses = `btn-mobile touch-feedback ${className}`

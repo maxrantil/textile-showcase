@@ -1,5 +1,7 @@
 'use client'
 
+import { debounce } from '@/utils/performance'
+
 interface ScrollPosition {
   index: number
   timestamp: number
@@ -15,8 +17,12 @@ class EnhancedScrollManager {
   private isNavigating = false
   private lastSavedIndex: number | null = null
   private hasVisitedGallery = false
+  private debouncedSave: ReturnType<typeof debounce>
 
   constructor() {
+    this.debouncedSave = debounce((index: number, path: string) => {
+      this.saveImmediate(index, path)
+    }, 300)
     if (typeof window !== 'undefined') {
       this.setupNavigationListeners()
       this.cleanupOldPositions()
@@ -83,9 +89,7 @@ class EnhancedScrollManager {
       clearTimeout(this.debounceTimeout)
     }
 
-    this.debounceTimeout = setTimeout(() => {
-      this.saveImmediate(currentIndex, path)
-    }, 100)
+    this.debouncedSave(currentIndex, path || window.location.pathname)
   }
 
   saveImmediate(currentIndex: number, path?: string): void {

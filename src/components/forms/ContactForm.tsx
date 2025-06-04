@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { UmamiEvents } from '@/utils/analytics'
+import { debounce } from '@/utils/performance'
 
 interface FormData {
   name: string
@@ -57,15 +58,35 @@ export default function ContactForm({ onSuccess, onError }: ContactFormProps) {
     return errors
   }, [])
 
+  // Create debounced validation
+  const debouncedValidation = useMemo(() => 
+    debounce((data: FormData) => {
+      const validationErrors = validateForm(data)
+      setErrors(prev => {
+        // Only update if there are actual changes to prevent unnecessary re-renders
+        const hasChanges = Object.keys(validationErrors).some(
+          key => validationErrors[key as keyof FormErrors] !== prev[key as keyof FormErrors]
+        )
+        return hasChanges ? validationErrors : prev
+      })
+    }, 500),
+    [validateForm]
+  )
+
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     
-    setFormData(prev => ({ ...prev, [name]: value }))
+    const newFormData = { ...formData, [name]: value }
+    setFormData(newFormData)
     
+    // Clear immediate error for this field
     if (errors[name as keyof FormErrors]) {
       setErrors(prev => ({ ...prev, [name]: undefined }))
     }
-  }, [errors])
+    
+    // Debounced validation for all fields
+    debouncedValidation(newFormData)
+  }, [formData, errors, debouncedValidation])
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()

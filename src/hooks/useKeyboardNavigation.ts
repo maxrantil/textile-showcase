@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useMemo } from 'react'
+import { throttle } from '@/utils/performance'
 
 interface UseKeyboardNavigationProps {
   onPrevious?: () => void
@@ -29,6 +30,17 @@ export function useKeyboardNavigation({
 }: UseKeyboardNavigationProps) {
   const scrollIntervals = useRef<Map<string, NodeJS.Timeout>>(new Map())
 
+  // Create throttled scroll functions
+  const throttledScrollUp = useMemo(() => 
+    onScrollUp ? throttle(onScrollUp, 100) : undefined, 
+    [onScrollUp]
+  )
+  
+  const throttledScrollDown = useMemo(() => 
+    onScrollDown ? throttle(onScrollDown, 100) : undefined, 
+    [onScrollDown]
+  )
+
   useEffect(() => {
     if (!enabled) return
 
@@ -40,7 +52,7 @@ export function useKeyboardNavigation({
         return
       }
 
-      // For scroll keys, handle continuous scrolling
+      // For scroll keys, handle continuous scrolling with throttling
       if (['ArrowUp', 'ArrowDown', 'j', 'k'].includes(e.key)) {
         e.preventDefault()
         
@@ -49,28 +61,28 @@ export function useKeyboardNavigation({
           return
         }
 
-        // Execute immediately
+        // Execute immediately using throttled functions
         switch (e.key) {
           case 'ArrowUp':
           case 'k':
-            onScrollUp?.()
+            throttledScrollUp?.()
             break
           case 'ArrowDown':
           case 'j':
-            onScrollDown?.()
+            throttledScrollDown?.()
             break
         }
 
-        // Set up continuous scrolling
+        // Set up continuous scrolling with throttled functions
         const interval = setInterval(() => {
           switch (e.key) {
             case 'ArrowUp':
             case 'k':
-              onScrollUp?.()
+              throttledScrollUp?.()
               break
             case 'ArrowDown':
             case 'j':
-              onScrollDown?.()
+              throttledScrollDown?.()
               break
           }
         }, 150) // Repeat every 150ms while held
@@ -143,5 +155,5 @@ export function useKeyboardNavigation({
       window.removeEventListener('keyup', handleKeyUp)
       window.removeEventListener('blur', handleBlur)
     }
-  }, [onPrevious, onNext, onEscape, onEnter, onScrollUp, onScrollDown, onAbout, onWork, onContact, enabled])
+  }, [throttledScrollUp, throttledScrollDown, onPrevious, onNext, onEscape, onEnter, onAbout, onWork, onContact, enabled])
 }
