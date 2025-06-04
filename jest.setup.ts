@@ -25,7 +25,7 @@ jest.mock('next/navigation', () => ({
 }))
 
 // Mock Sanity client
-jest.mock('@/lib/sanity', () => ({
+jest.mock('@/sanity/lib', () => ({
   client: {
     fetch: jest.fn(),
   },

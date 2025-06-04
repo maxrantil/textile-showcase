@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import Image from 'next/image'
-import { getOptimizedImageUrl, getBlurDataUrl } from '@/lib/sanity'
+import { getOptimizedImageUrl, getBlurDataUrl } from '@/sanity/lib'
 import { ImageLoadingPlaceholder } from './LoadingSpinner'
 
 interface OptimizedImageProps {

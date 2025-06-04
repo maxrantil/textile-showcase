@@ -1,7 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { GalleryItem } from '../../gallery/GalleryItem'
-import { TextileDesign } from '@/types/sanity'
+import { TextileDesign } from '@/sanity/types'
 
 const mockDesign: TextileDesign = {
   _id: '1',

@@ -3,7 +3,7 @@
 import { useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { scrollManager } from '@/lib/scrollManager'
-import { TextileDesign } from '@/types/sanity'
+import { TextileDesign } from '@/sanity/types'
 
 interface UseGalleryNavigationProps {
   designs: TextileDesign[]

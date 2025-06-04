@@ -2,7 +2,7 @@
 'use client'
 
 import { memo } from 'react'
-import { TextileDesign } from '@/types/sanity'
+import { TextileDesign } from '@/sanity/types'
 import { GalleryImage } from './GalleryImage'
 import { GalleryItemInfo } from './GalleryItemInfo'
 

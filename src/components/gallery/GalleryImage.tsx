@@ -1,7 +1,7 @@
 'use client'
 
 import { memo } from 'react'
-import { getOptimizedImageUrl } from '@/lib/sanity'
+import { getOptimizedImageUrl } from '@/sanity/lib'
 import { GALLERY_CONFIG } from '@/config/galleryConfig'
 
 interface GalleryImageProps {

@@ -2,7 +2,7 @@
 
 import { memo, useMemo, useRef, useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
-import { TextileDesign } from '@/types/sanity'
+import { TextileDesign } from '@/sanity/types'
 import { useHorizontalScroll } from '@/hooks/useHorizontalScroll'
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation'
 import { useScrollRestoration } from '@/hooks/gallery/useScrollRestoration'
