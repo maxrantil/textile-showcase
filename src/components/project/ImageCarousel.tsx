@@ -3,7 +3,7 @@
 
 import { useState, useCallback, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { getImageDimensions, getOptimizedImageUrl } from '@/sanity/lib'
+import { getOptimizedImageUrl } from '@/sanity/lib'
 import NavigationArrows from '../ui/NavigationArrows'
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation'
 import KeyboardScrollHandler from '../KeyboardScrollHandler'

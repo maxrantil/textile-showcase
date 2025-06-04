@@ -19,7 +19,6 @@ const NavigationArrows = memo(function NavigationArrows({
   canScrollRight, 
   onScrollLeft, 
   onScrollRight,
-  variant = 'gallery',
   size = 'large',
   position = 'fixed',
   showOnMobile = false // Default to false for gallery, true for project

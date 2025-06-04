@@ -2,7 +2,6 @@
 
 import { forwardRef, useState, useEffect } from 'react'
 import { RESPONSIVE_CONFIG, getGalleryConfig } from '@/config/responsiveConfig'
-import { GALLERY_CONFIG } from '@/config/galleryConfig'
 
 interface GalleryContainerProps {
   children: React.ReactNode

@@ -2,7 +2,7 @@
 
 import { memo, useState, useEffect } from 'react'
 import { TextileDesign } from '@/sanity/types'
-import { RESPONSIVE_CONFIG, getGalleryConfig } from '@/config/responsiveConfig'
+import { RESPONSIVE_CONFIG } from '@/config/responsiveConfig'
 import { GalleryImage } from './GalleryImage'
 import { GalleryItemInfo } from './GalleryItemInfo'
 
@@ -17,7 +17,6 @@ export const GalleryItem = memo(function GalleryItem({
   design, 
   index, 
   onClick,
-  isActive = false
 }: GalleryItemProps) {
   const [breakpoint, setBreakpoint] = useState<'mobile' | 'tablet' | 'desktop'>('desktop')
   
@@ -36,8 +35,6 @@ export const GalleryItem = memo(function GalleryItem({
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [])
-  
-  const galleryConfig = getGalleryConfig(breakpoint)
   
   // Responsive item width
   const getItemWidth = () => {

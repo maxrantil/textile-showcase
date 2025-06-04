@@ -240,7 +240,7 @@ export default function ContactForm({ onSuccess, onError }: ContactFormProps) {
                 Message sent successfully!
               </h3>
               <p className="text-body-mobile" style={{ margin: 0 }}>
-                Thank you for your message. I'll get back to you as soon as possible.
+                Thank you for your message. I&apos;ll get back to you as soon as possible.
               </p>
             </div>
           )}

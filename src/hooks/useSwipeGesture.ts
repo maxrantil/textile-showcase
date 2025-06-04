@@ -95,7 +95,7 @@ export function useSwipeGesture({
     }
   }, [enabled, touchStart, threshold, preventScroll, isSwiping])
 
-  const handleTouchEnd = useCallback((e: TouchEvent) => {
+  const handleTouchEnd = useCallback(() => {
     if (!enabled || !touchStart || !swipeRef.current) {
       console.log('🚫 Touch end - missing data')
       return

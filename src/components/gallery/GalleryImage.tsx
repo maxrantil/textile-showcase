@@ -2,7 +2,7 @@
 
 import { memo } from 'react'
 import { getOptimizedImageUrl } from '@/sanity/lib'
-import { RESPONSIVE_CONFIG, getGalleryConfig } from '@/config/responsiveConfig'
+import { getGalleryConfig } from '@/config/responsiveConfig'
 import { GALLERY_CONFIG } from '@/config/galleryConfig'
 
 interface GalleryImageProps {

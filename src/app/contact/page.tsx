@@ -49,7 +49,7 @@ export default function ContactPage() {
                 lineHeight: '1.6'
               }}>
                 Interested in collaborating or learning more about my work? 
-                I'd love to hear from you.
+                I&apos;d love to hear from you.
               </p>
             </div>
 
@@ -136,7 +136,7 @@ export default function ContactPage() {
                 margin: '0 0 16px 0',
                 color: '#333'
               }}>
-                Let's Create Together
+                Let&apos;s Create Together
               </h3>
               
               <p className="text-body-mobile" style={{ 
@@ -144,8 +144,8 @@ export default function ContactPage() {
                 lineHeight: '1.6',
                 marginBottom: '16px'
               }}>
-                Whether you're interested in commissioning a piece, collaborating on a project, 
-                or simply learning more about sustainable textile practices, I'm here to help.
+                Whether you&apos;re interested in commissioning a piece, collaborating on a project, 
+                or simply learning more about sustainable textile practices, I&apos;m here to help.
               </p>
               
               <p className="text-body-mobile" style={{ 

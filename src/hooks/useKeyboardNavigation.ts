@@ -28,7 +28,6 @@ export function useKeyboardNavigation({
   enabled = true
 }: UseKeyboardNavigationProps) {
   const scrollIntervals = useRef<Map<string, NodeJS.Timeout>>(new Map())
-  const scrollAmount = 150
 
   useEffect(() => {
     if (!enabled) return

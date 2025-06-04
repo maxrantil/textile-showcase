@@ -2,6 +2,7 @@
 
 import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
+import { perf } from '@/utils/performance'
 
 // Configuration based on environment
 const config = {
@@ -129,61 +130,68 @@ export async function resilientFetch<T = any>(
   // INCREASED timeouts for better reliability
   const { retries = 3, timeout = 15000, cache: useCache = true, cacheTTL = 600000 } = options // 10 min default TTL
   
-  // Create cache key
-  const cacheKey = `${query}-${JSON.stringify(params)}`
+  // Create a shorter name for performance tracking
+  const queryName = query.replace(/\s+/g, ' ').slice(0, 50).replace(/[^a-zA-Z0-9\s]/g, '').trim()
+  const perfName = `sanity-${queryName}`
   
-  // Check cache first
-  if (useCache) {
-    const cached = cache.get(cacheKey)
-    if (cached && Date.now() - cached.timestamp < cached.ttl) {
-      console.log('📋 Cache hit for:', query.slice(0, 50) + '...')
-      return cached.data
+  // WRAP THE ENTIRE FUNCTION IN PERFORMANCE MONITORING
+  return await perf.measureAsync(perfName, async () => {
+    // Create cache key
+    const cacheKey = `${query}-${JSON.stringify(params)}`
+    
+    // Check cache first
+    if (useCache) {
+      const cached = cache.get(cacheKey)
+      if (cached && Date.now() - cached.timestamp < cached.ttl) {
+        console.log('📋 Cache hit for:', query.slice(0, 50) + '...')
+        return cached.data
+      }
     }
-  }
-  
-  for (let attempt = 1; attempt <= retries + 1; attempt++) {
-    try {
-      console.log(`🔍 Sanity fetch attempt ${attempt}/${retries + 1}:`, query.slice(0, 50) + '...')
-      
-      const result = await withTimeout(
-        client.fetch<T>(query, params),
-        timeout
-      )
-      
-      console.log('✅ Sanity fetch successful')
-      
-      // Cache successful result
-      if (useCache && result) {
-        cache.set(cacheKey, {
-          data: result,
-          timestamp: Date.now(),
-          ttl: cacheTTL
+    
+    for (let attempt = 1; attempt <= retries + 1; attempt++) {
+      try {
+        console.log(`🔍 Sanity fetch attempt ${attempt}/${retries + 1}:`, query.slice(0, 50) + '...')
+        
+        const result = await withTimeout(
+          client.fetch<T>(query, params),
+          timeout
+        )
+        
+        console.log('✅ Sanity fetch successful')
+        
+        // Cache successful result
+        if (useCache && result) {
+          cache.set(cacheKey, {
+            data: result,
+            timestamp: Date.now(),
+            ttl: cacheTTL
+          })
+        }
+        
+        return result
+      } catch (error) {
+        const isLastAttempt = attempt === retries + 1
+        
+        console.warn(`❌ Sanity fetch attempt ${attempt} failed:`, {
+          error: error instanceof Error ? error.message : 'Unknown error',
+          query: query.slice(0, 100) + '...', // Log first 100 chars of query
+          isLastAttempt
         })
+        
+        if (isLastAttempt) {
+          console.error('🚨 All Sanity fetch attempts failed, returning null')
+          return null
+        }
+        
+        // Wait before retrying (exponential backoff)
+        const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000)
+        console.log(`⏳ Waiting ${delay}ms before retry...`)
+        await new Promise(resolve => setTimeout(resolve, delay))
       }
-      
-      return result
-    } catch (error) {
-      const isLastAttempt = attempt === retries + 1
-      
-      console.warn(`❌ Sanity fetch attempt ${attempt} failed:`, {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        query: query.slice(0, 100) + '...', // Log first 100 chars of query
-        isLastAttempt
-      })
-      
-      if (isLastAttempt) {
-        console.error('🚨 All Sanity fetch attempts failed, returning null')
-        return null
-      }
-      
-      // Wait before retrying (exponential backoff)
-      const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000)
-      console.log(`⏳ Waiting ${delay}ms before retry...`)
-      await new Promise(resolve => setTimeout(resolve, delay))
     }
-  }
-  
-  return null
+    
+    return null
+  })
 }
 
 // OPTIMIZED queries with better performance

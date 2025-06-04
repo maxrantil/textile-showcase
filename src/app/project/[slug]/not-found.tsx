@@ -19,7 +19,7 @@ export default function NotFound() {
           color: '#666',
           marginBottom: '32px'
         }}>
-          The textile project you're looking for doesn't exist.
+          The textile project you&apos;re looking for doesn&apos;t exist.
         </p>
         <Link 
           href="/"

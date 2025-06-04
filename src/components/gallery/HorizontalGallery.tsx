@@ -1,7 +1,7 @@
 // src/components/gallery/HorizontalGallery.tsx - Fixed version with proper arrow control and mobile utilities
 'use client'
 
-import { memo, useMemo, useRef, useEffect, useState } from 'react'
+import { memo, useMemo, useRef, useEffect, useState, useCallback } from 'react'
 import { usePathname } from 'next/navigation'
 import { TextileDesign } from '@/sanity/types'
 import { useHorizontalScroll } from '@/hooks/useHorizontalScroll'
@@ -11,9 +11,11 @@ import { useGalleryNavigation } from '@/hooks/gallery/useGalleryNavigation'
 import { useHorizontalSwipe } from '@/hooks/useSwipeGesture'
 import { scrollManager } from '@/lib/scrollManager'
 import NavigationArrows from '../ui/NavigationArrows'
+import { getOptimizedImageUrl } from '@/sanity/lib'
 import { GalleryContainer } from './GalleryContainer'
 import { GalleryItem } from './GalleryItem'
 import { UmamiEvents } from '@/utils/analytics'
+import { preloadImages, perf } from '@/utils/performance'
 
 interface HorizontalGalleryProps {
   designs: TextileDesign[]
@@ -145,17 +147,56 @@ function HorizontalGallery({ designs }: HorizontalGalleryProps) {
     }
   }, [currentIndex, pathname, restoration.restorationAttempted])
 
+  // Preload adjacent images for better performance
+  useEffect(() => {
+    if (!isMobile && memoizedDesigns.length > 1) {
+      const currentIdx = realTimeCurrentIndex.current
+      const prevIndex = currentIdx === 0 ? memoizedDesigns.length - 1 : currentIdx - 1
+      const nextIndex = currentIdx === memoizedDesigns.length - 1 ? 0 : currentIdx + 1
+      
+      const adjacentUrls = [
+        memoizedDesigns[prevIndex]?.image ? getOptimizedImageUrl(memoizedDesigns[prevIndex].image, { width: 800, quality: 80, format: 'webp' }) : null,
+        memoizedDesigns[nextIndex]?.image ? getOptimizedImageUrl(memoizedDesigns[nextIndex].image, { width: 800, quality: 80, format: 'webp' }) : null
+      ].filter(Boolean) as string[]
+      
+      if (adjacentUrls.length > 0) {
+        console.log('🔄 Preloading adjacent images:', adjacentUrls.length)
+        preloadImages(adjacentUrls).catch(error => {
+          console.warn('⚠️ Failed to preload some images:', error)
+        })
+      }
+    }
+  }, [realTimeCurrentIndex.current, memoizedDesigns, isMobile]) // Dependencies: current index, designs, mobile state
+
   // Enhanced scroll function with analytics
-  const handleScrollToImage = (direction: 'left' | 'right') => {
-    const oldIndex = realTimeCurrentIndex.current
-    const newIndex = direction === 'left' ? 
-      Math.max(0, oldIndex - 1) : 
-      Math.min(designs.length - 1, oldIndex + 1)
+  const handleScrollToImage = useCallback((direction: 'left' | 'right') => {
+    perf.start('gallery-scroll')
     
-    // Track arrow navigation
-    UmamiEvents.galleryNavigation(`arrow-${direction}`, oldIndex, newIndex)
-    scrollToImage(direction)
-  }
+    try {
+      const oldIndex = realTimeCurrentIndex.current
+      const newIndex = direction === 'left' ? 
+        Math.max(0, oldIndex - 1) : 
+        Math.min(designs.length - 1, oldIndex + 1)
+      
+      // Track arrow navigation
+      UmamiEvents.galleryNavigation(`arrow-${direction}`, oldIndex, newIndex)
+      scrollToImage(direction)
+    } finally {
+      perf.end('gallery-scroll')
+    }
+  }, [designs.length, scrollToImage])
+
+  // ENHANCED DOT CLICK WITH PERFORMANCE MONITORING:
+  const handleDotClick = useCallback((index: number) => {
+    perf.start('gallery-dot-navigation')
+    
+    try {
+      UmamiEvents.galleryNavigation('dot-click', realTimeCurrentIndex.current, index)
+      scrollToIndex(index)
+    } finally {
+      perf.end('gallery-dot-navigation')
+    }
+  }, [scrollToIndex])
 
   // Keyboard navigation
   useKeyboardNavigation({
@@ -192,16 +233,29 @@ function HorizontalGallery({ designs }: HorizontalGalleryProps) {
   })
 
   // Enhanced image click handler with analytics
-  const handleImageClick = (design: TextileDesign, index: number) => {
-    UmamiEvents.viewProject(design.title, design.year)
-    navigation.handleImageClick(design)
-  }
-
-  // Enhanced dot click with analytics
-  const handleDotClick = (index: number) => {
-    UmamiEvents.galleryNavigation('dot-click', realTimeCurrentIndex.current, index)
-    scrollToIndex(index)
-  }
+  const handleImageClick = useCallback((design: TextileDesign, index: number) => {
+    perf.start('gallery-navigation')
+    
+    try {
+      // Track analytics
+      UmamiEvents.viewProject(design.title, design.year)
+      
+      // Handle the navigation
+      navigation.handleImageClick(design)
+      
+      console.log(`🖱️ Gallery navigation completed for: ${design.title}`)
+    } catch (error) {
+      console.error('❌ Error in gallery navigation:', error)
+    } finally {
+      // Always end performance tracking, even if there's an error
+      const duration = perf.end('gallery-navigation')
+      
+      // Log slow navigations in development
+      if (process.env.NODE_ENV === 'development' && duration > 100) {
+        console.warn(`⚠️ Slow gallery navigation detected: ${duration.toFixed(2)}ms`)
+      }
+    }
+  }, [navigation])
 
   // Mark first mount complete
   useEffect(() => {
