@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { RESPONSIVE_CONFIG } from '@/config/responsiveConfig'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
+import { UmamiEvents } from '@/utils/analytics'
 
 // Navigation items configuration
 const NAV_ITEMS = [
@@ -14,7 +15,7 @@ const NAV_ITEMS = [
   { href: '/contact', label: 'CONTACT', exact: false },
 ] as const
 
-// Individual navigation link component
+// Individual navigation link component with analytics
 const NavLink = memo(({ 
   href, 
   label, 
@@ -27,49 +28,67 @@ const NavLink = memo(({
   isActive: boolean
   isMobile?: boolean
   onClick?: () => void
-}) => (
-  <Link 
-    href={href}
-    onClick={onClick}
-    style={{
-      fontSize: isMobile ? RESPONSIVE_CONFIG.typography.bodyLarge : RESPONSIVE_CONFIG.typography.bodySmall,
-      letterSpacing: '1px',
-      color: isActive ? '#666' : '#333',
-      textDecoration: 'none',
-      transition: 'color 0.3s ease',
-      position: 'relative',
-      padding: isMobile ? '16px 0' : '8px 0',
-      display: 'block',
-      // Mobile touch target
-      ...(isMobile && {
-        minHeight: '44px',
-        display: 'flex',
-        alignItems: 'center'
-      })
-    }}
-    onMouseEnter={(e) => e.currentTarget.style.color = '#666'}
-    onMouseLeave={(e) => e.currentTarget.style.color = isActive ? '#666' : '#333'}
-    aria-current={isActive ? 'page' : undefined}
-  >
-    {label}
-    {/* Active indicator */}
-    {isActive && (
-      <span
-        style={{
-          position: 'absolute',
-          bottom: isMobile ? '12px' : '4px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: '20px',
-          height: '2px',
-          backgroundColor: '#333',
-          borderRadius: '1px'
-        }}
-        aria-hidden="true"
-      />
-    )}
-  </Link>
-))
+}) => {
+  const handleClick = () => {
+    // Track navigation
+    switch (href) {
+      case '/':
+        UmamiEvents.navigateHome()
+        break
+      case '/about':
+        UmamiEvents.navigateToAbout()
+        break
+      case '/contact':
+        UmamiEvents.navigateToContact()
+        break
+    }
+    onClick?.()
+  }
+
+  return (
+    <Link 
+      href={href}
+      onClick={handleClick}
+      style={{
+        fontSize: isMobile ? RESPONSIVE_CONFIG.typography.bodyLarge : RESPONSIVE_CONFIG.typography.bodySmall,
+        letterSpacing: '1px',
+        color: isActive ? '#666' : '#333',
+        textDecoration: 'none',
+        transition: 'color 0.3s ease',
+        position: 'relative',
+        padding: isMobile ? '16px 0' : '8px 0',
+        display: 'block',
+        // Mobile touch target
+        ...(isMobile && {
+          minHeight: '44px',
+          display: 'flex',
+          alignItems: 'center'
+        })
+      }}
+      onMouseEnter={(e) => e.currentTarget.style.color = '#666'}
+      onMouseLeave={(e) => e.currentTarget.style.color = isActive ? '#666' : '#333'}
+      aria-current={isActive ? 'page' : undefined}
+    >
+      {label}
+      {/* Active indicator */}
+      {isActive && (
+        <span
+          style={{
+            position: 'absolute',
+            bottom: isMobile ? '12px' : '4px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: '20px',
+            height: '2px',
+            backgroundColor: '#333',
+            borderRadius: '1px'
+          }}
+          aria-hidden="true"
+        />
+      )}
+    </Link>
+  )
+})
 
 NavLink.displayName = 'NavLink'
 
@@ -83,10 +102,18 @@ const MobileMenu = memo(({
   onClose: () => void
   pathname: string
 }) => {
+  // Track mobile menu usage
+  useEffect(() => {
+    if (isOpen) {
+      UmamiEvents.mobileMenuOpen()
+    }
+  }, [isOpen])
+
   // Close menu on escape key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
+        UmamiEvents.mobileMenuClose('keyboard')
         onClose()
       }
     }
@@ -102,6 +129,16 @@ const MobileMenu = memo(({
       document.body.style.overflow = 'unset'
     }
   }, [isOpen, onClose])
+
+  const handleClose = () => {
+    UmamiEvents.mobileMenuClose('click')
+    onClose()
+  }
+
+  const handleBackdropClose = () => {
+    UmamiEvents.mobileMenuClose('backdrop')
+    onClose()
+  }
 
   if (!isOpen) return null
 
@@ -121,7 +158,7 @@ const MobileMenu = memo(({
           transition: 'opacity 0.3s ease',
           backdropFilter: 'blur(4px)'
         }}
-        onClick={onClose}
+        onClick={handleBackdropClose}
         aria-hidden="true"
       />
       
@@ -149,7 +186,7 @@ const MobileMenu = memo(({
       >
         {/* Close button */}
         <button
-          onClick={onClose}
+          onClick={handleClose}
           style={{
             position: 'absolute',
             top: '24px',
@@ -203,7 +240,7 @@ const MobileMenu = memo(({
               label={item.label}
               isActive={item.exact ? pathname === item.href : pathname.startsWith(item.href)}
               isMobile={true}
-              onClick={onClose}
+              onClick={handleClose}
             />
           ))}
         </nav>
@@ -234,68 +271,75 @@ const HamburgerButton = memo(({
 }: { 
   isOpen: boolean
   onClick: () => void 
-}) => (
-  <button
-    onClick={onClick}
-    style={{
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'center',
-      alignItems: 'center',
-      width: '44px',
-      height: '44px',
-      background: 'none',
-      border: 'none',
-      cursor: 'pointer',
-      padding: '8px',
-      borderRadius: '6px',
-      transition: 'background-color 0.2s ease'
-    }}
-    aria-label={isOpen ? 'Close menu' : 'Open menu'}
-    aria-expanded={isOpen}
-    aria-controls="mobile-menu"
-    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.05)'}
-    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-  >
-    {/* Top line */}
-    <span
+}) => {
+  const handleClick = () => {
+    UmamiEvents.mobileMenuToggle(isOpen ? 'close' : 'open')
+    onClick()
+  }
+
+  return (
+    <button
+      onClick={handleClick}
       style={{
-        display: 'block',
-        width: '20px',
-        height: '2px',
-        backgroundColor: '#333',
-        transition: 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-        transform: isOpen ? 'rotate(45deg) translateY(6px)' : 'none',
-        transformOrigin: 'center'
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: '44px',
+        height: '44px',
+        background: 'none',
+        border: 'none',
+        cursor: 'pointer',
+        padding: '8px',
+        borderRadius: '6px',
+        transition: 'background-color 0.2s ease'
       }}
-    />
-    {/* Middle line */}
-    <span
-      style={{
-        display: 'block',
-        width: '20px',
-        height: '2px',
-        backgroundColor: '#333',
-        margin: '4px 0',
-        transition: 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-        opacity: isOpen ? 0 : 1,
-        transform: isOpen ? 'scale(0)' : 'scale(1)'
-      }}
-    />
-    {/* Bottom line */}
-    <span
-      style={{
-        display: 'block',
-        width: '20px',
-        height: '2px',
-        backgroundColor: '#333',
-        transition: 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-        transform: isOpen ? 'rotate(-45deg) translateY(-6px)' : 'none',
-        transformOrigin: 'center'
-      }}
-    />
-  </button>
-))
+      aria-label={isOpen ? 'Close menu' : 'Open menu'}
+      aria-expanded={isOpen}
+      aria-controls="mobile-menu"
+      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.05)'}
+      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+    >
+      {/* Top line */}
+      <span
+        style={{
+          display: 'block',
+          width: '20px',
+          height: '2px',
+          backgroundColor: '#333',
+          transition: 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+          transform: isOpen ? 'rotate(45deg) translateY(6px)' : 'none',
+          transformOrigin: 'center'
+        }}
+      />
+      {/* Middle line */}
+      <span
+        style={{
+          display: 'block',
+          width: '20px',
+          height: '2px',
+          backgroundColor: '#333',
+          margin: '4px 0',
+          transition: 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+          opacity: isOpen ? 0 : 1,
+          transform: isOpen ? 'scale(0)' : 'scale(1)'
+        }}
+      />
+      {/* Bottom line */}
+      <span
+        style={{
+          display: 'block',
+          width: '20px',
+          height: '2px',
+          backgroundColor: '#333',
+          transition: 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+          transform: isOpen ? 'rotate(-45deg) translateY(-6px)' : 'none',
+          transformOrigin: 'center'
+        }}
+      />
+    </button>
+  )
+})
 
 HamburgerButton.displayName = 'HamburgerButton'
 
@@ -409,6 +453,7 @@ const ResponsiveHeader = memo(function ResponsiveHeader() {
           <Link 
             href="/" 
             style={logoStyles}
+            onClick={() => UmamiEvents.navigateHome()}
             onMouseEnter={(e) => e.currentTarget.style.color = '#666'}
             onMouseLeave={(e) => e.currentTarget.style.color = '#333'}
             aria-label="Ida Romme - Home"

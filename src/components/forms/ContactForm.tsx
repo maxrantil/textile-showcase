@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
+import { UmamiEvents } from '@/utils/analytics'
 
 interface FormData {
   name: string
@@ -72,12 +73,17 @@ export default function ContactForm({ onSuccess, onError }: ContactFormProps) {
     const formErrors = validateForm(formData)
     if (Object.keys(formErrors).length > 0) {
       setErrors(formErrors)
+      // Track form validation errors
+      UmamiEvents.contactFormError()
       return
     }
 
     setIsSubmitting(true)
     setSubmitStatus('idle')
     setErrors({})
+
+    // Track form submission attempt
+    UmamiEvents.contactFormSubmit()
 
     try {
       const response = await fetch('/api/contact', {
@@ -91,11 +97,19 @@ export default function ContactForm({ onSuccess, onError }: ContactFormProps) {
       if (response.ok) {
         setSubmitStatus('success')
         setFormData({ name: '', email: '', message: '' })
+        
+        // Track successful form submission
+        UmamiEvents.contactFormSuccess()
+        
         onSuccess?.()
       } else {
         setSubmitStatus('error')
         const errorMessage = data.error || 'Failed to send message'
         setErrors({ general: errorMessage })
+        
+        // Track form submission error
+        UmamiEvents.contactFormError()
+        
         onError?.(errorMessage)
       }
     } catch (error) {
@@ -103,6 +117,10 @@ export default function ContactForm({ onSuccess, onError }: ContactFormProps) {
       setSubmitStatus('error')
       const errorMessage = 'Network error. Please check your connection and try again.'
       setErrors({ general: errorMessage })
+      
+      // Track network error
+      UmamiEvents.contactFormError()
+      
       onError?.(errorMessage)
     } finally {
       setIsSubmitting(false)

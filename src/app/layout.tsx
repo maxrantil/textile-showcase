@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
-import Header from '@/components/layout/Header'
+import Header from '@/components/layout/ResponsiveHeader'
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 
 // Optimize font loading
@@ -121,6 +121,15 @@ export default function RootLayout({
             })
           }}
         />
+        
+        {/* Umami Analytics - FIXED: Moved to head and corrected syntax */}
+        {process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_UMAMI_URL && (
+          <script
+            defer
+            src={`${process.env.NEXT_PUBLIC_UMAMI_URL}/script.js`}
+            data-website-id={process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID}
+          />
+        )}
       </head>
       <body className="bg-white font-sans antialiased">
         {/* Skip to main content for accessibility */}
@@ -138,7 +147,7 @@ export default function RootLayout({
           </main>
         </ErrorBoundary>
 
-        {/* Analytics placeholder - add when needed */}
+        {/* Google Analytics - Keep existing GA code for fallback */}
         {process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_GA_ID && (
           <>
             <script async src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`} />

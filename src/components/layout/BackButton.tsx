@@ -2,12 +2,16 @@
 
 import { useRouter } from 'next/navigation'
 import { scrollManager } from '@/lib/scrollManager'
+import { UmamiEvents } from '@/utils/analytics'
 
 export default function BackButton() {
   const router = useRouter()
 
   const handleBack = () => {
     console.log('🔙 Back button clicked')
+    
+    // Track back button usage
+    UmamiEvents.backToGallery()
     
     // Save current position before going back (if any)
     const container = document.querySelector('[data-scroll-container]') as HTMLElement

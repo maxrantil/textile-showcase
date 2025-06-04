@@ -7,6 +7,9 @@ import { getImageDimensions, getOptimizedImageUrl } from '@/sanity/lib'
 import NavigationArrows from '../ui/NavigationArrows'
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation'
 import KeyboardScrollHandler from '../KeyboardScrollHandler'
+import { UmamiEvents } from '@/utils/analytics'
+import React from 'react'
+
 
 interface GalleryImage {
   _key: string
@@ -77,14 +80,20 @@ export default function ImageCarousel({
 
   const currentImage = allImages[currentIndex]
 
-  // Navigation functions for desktop carousel
+  // Navigation functions for desktop carousel with analytics
   const goToPrevious = useCallback(() => {
-    setCurrentIndex(prev => prev === 0 ? allImages.length - 1 : prev - 1)
-  }, [allImages.length])
+    const newIndex = currentIndex === 0 ? allImages.length - 1 : currentIndex - 1
+    UmamiEvents.projectImageView(projectTitle, newIndex + 1)
+    UmamiEvents.projectNavigation('previous', projectTitle)
+    setCurrentIndex(newIndex)
+  }, [allImages.length, currentIndex, projectTitle])
 
   const goToNext = useCallback(() => {
-    setCurrentIndex(prev => prev === allImages.length - 1 ? 0 : prev + 1)
-  }, [allImages.length])
+    const newIndex = currentIndex === allImages.length - 1 ? 0 : currentIndex + 1
+    UmamiEvents.projectImageView(projectTitle, newIndex + 1)
+    UmamiEvents.projectNavigation('next', projectTitle)
+    setCurrentIndex(newIndex)
+  }, [allImages.length, currentIndex, projectTitle])
 
   // Keyboard navigation
   useKeyboardNavigation({
@@ -92,12 +101,18 @@ export default function ImageCarousel({
     onNext: !isMobile ? goToNext : undefined,
     onEscape: () => {
       console.log('Escape pressed - going back')
+      UmamiEvents.backToGallery()
       router.back()
     },
     onScrollUp: () => window.scrollBy({ top: -150, behavior: 'smooth' }),
     onScrollDown: () => window.scrollBy({ top: 150, behavior: 'smooth' }),
     enabled: true
   })
+
+  // Track initial project view
+  useEffect(() => {
+    UmamiEvents.projectImageView(projectTitle, 1)
+  }, [projectTitle])
 
   // Preload adjacent images for desktop
   const preloadImages = useMemo(() => {
@@ -260,10 +275,11 @@ export default function ImageCarousel({
             }}>
               {allImages.map((image, index) => (
                 <MobileImageBlock 
-                  key={`${image._key}-${index}`} // More stable key
+                  key={`${image._key}-${index}`}
                   image={image}
                   index={index}
                   isFirst={index === 0}
+                  projectTitle={projectTitle}
                 />
               ))}
             </div>
@@ -499,137 +515,143 @@ export default function ImageCarousel({
         </div>
       </div>
     </>
-  )
+ )
 }
 
 // FIXED: Mobile Image Block Component with React.memo and stable state
 interface MobileImageBlockProps {
-  image: any
-  index: number
-  isFirst: boolean
+ image: any
+ index: number
+ isFirst: boolean
+ projectTitle: string
 }
 
 const MobileImageBlock = React.memo(function MobileImageBlock({ 
-  image, 
-  index, 
-  isFirst 
+ image, 
+ index, 
+ isFirst,
+ projectTitle
 }: MobileImageBlockProps) {
-  const [imageLoaded, setImageLoaded] = useState(false)
-  const [imageError, setImageError] = useState(false)
+ const [imageLoaded, setImageLoaded] = useState(false)
+ const [imageError, setImageError] = useState(false)
 
-  // Don't render if no asset
-  if (!image?.asset) {
-    return null
-  }
+ // Track mobile image view when it loads
+ useEffect(() => {
+   if (imageLoaded) {
+     UmamiEvents.projectImageView(projectTitle, index + 1)
+   }
+ }, [imageLoaded, projectTitle, index])
 
-  const imageUrl = getOptimizedImageUrl(image.asset, {
-    width: 400,
-    height: 600,
-    quality: 80,
-    format: 'webp'
-  })
+ // Don't render if no asset
+ if (!image?.asset) {
+   return null
+ }
 
-  return (
-    <div style={{
-      width: '100%',
-      position: 'relative'
-    }}>
-      <div style={{
-        position: 'relative',
-        background: '#fff',
-        borderRadius: '8px',
-        overflow: 'hidden',
-        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
-      }}>
-        {/* Always show the image element, control visibility with display */}
-        <img
-          src={imageUrl}
-          alt={image.caption || `Project image ${index + 1}`}
-          style={{
-            width: '100%',
-            height: 'auto',
-            display: 'block', // Always block, no conditional display
-            objectFit: 'contain',
-            maxHeight: '70vh',
-            minHeight: '200px',
-            opacity: imageLoaded ? 1 : 0, // Use opacity instead of display
-            transition: 'opacity 0.3s ease'
-          }}
-          loading={isFirst ? 'eager' : 'lazy'}
-          onLoad={() => {
-            console.log(`✅ Image ${index + 1} loaded successfully`)
-            setImageLoaded(true)
-          }}
-          onError={(e) => {
-            console.error(`❌ Image ${index + 1} failed to load:`, e)
-            setImageError(true)
-          }}
-        />
+ const imageUrl = getOptimizedImageUrl(image.asset, {
+   width: 400,
+   height: 600,
+   quality: 80,
+   format: 'webp'
+ })
 
-        {/* Loading overlay */}
-        {!imageLoaded && !imageError && (
-          <div style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: '#f5f5f5',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#999',
-            fontSize: '14px',
-            minHeight: '200px'
-          }}>
-            Loading image {index + 1}...
-          </div>
-        )}
+ return (
+   <div style={{
+     width: '100%',
+     position: 'relative'
+   }}>
+     <div style={{
+       position: 'relative',
+       background: '#fff',
+       borderRadius: '8px',
+       overflow: 'hidden',
+       boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
+     }}>
+       {/* Always show the image element, control visibility with display */}
+       <img
+         src={imageUrl}
+         alt={image.caption || `Project image ${index + 1}`}
+         style={{
+           width: '100%',
+           height: 'auto',
+           display: 'block', // Always block, no conditional display
+           objectFit: 'contain',
+           maxHeight: '70vh',
+           minHeight: '200px',
+           opacity: imageLoaded ? 1 : 0, // Use opacity instead of display
+           transition: 'opacity 0.3s ease'
+         }}
+         loading={isFirst ? 'eager' : 'lazy'}
+         onLoad={() => {
+           console.log(`✅ Image ${index + 1} loaded successfully`)
+           setImageLoaded(true)
+         }}
+         onError={(e) => {
+           console.error(`❌ Image ${index + 1} failed to load:`, e)
+           setImageError(true)
+         }}
+       />
 
-        {/* Error overlay */}
-        {imageError && (
-          <div style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: '#f5f5f5',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#999',
-            fontSize: '14px',
-            flexDirection: 'column',
-            gap: '8px',
-            minHeight: '200px'
-          }}>
-            <div>❌ Failed to load image {index + 1}</div>
-            <div style={{ fontSize: '12px' }}>
-              Key: {image._key}
-            </div>
-            <div style={{ fontSize: '10px', wordBreak: 'break-all', maxWidth: '80%' }}>
-              URL: {imageUrl.substring(0, 50)}...
-            </div>
-          </div>
-        )}
-      </div>
+       {/* Loading overlay */}
+       {!imageLoaded && !imageError && (
+         <div style={{
+           position: 'absolute',
+           top: 0,
+           left: 0,
+           right: 0,
+           bottom: 0,
+           background: '#f5f5f5',
+           display: 'flex',
+           alignItems: 'center',
+           justifyContent: 'center',
+           color: '#999',
+           fontSize: '14px',
+           minHeight: '200px'
+         }}>
+           Loading image {index + 1}...
+         </div>
+       )}
 
-      {/* Image caption */}
-      {image.caption && !image.isMainImage && (
-        <p style={{
-          textAlign: 'center',
-          fontSize: '14px',
-          color: '#666',
-          margin: '12px 0 0 0',
-          fontStyle: 'italic'
-        }}>
-          {image.caption}
-        </p>
-      )}
-    </div>
-  )
+       {/* Error overlay */}
+       {imageError && (
+         <div style={{
+           position: 'absolute',
+           top: 0,
+           left: 0,
+           right: 0,
+           bottom: 0,
+           background: '#f5f5f5',
+           display: 'flex',
+           alignItems: 'center',
+           justifyContent: 'center',
+           color: '#999',
+           fontSize: '14px',
+           flexDirection: 'column',
+           gap: '8px',
+           minHeight: '200px'
+         }}>
+           <div>❌ Failed to load image {index + 1}</div>
+           <div style={{ fontSize: '12px' }}>
+             Key: {image._key}
+           </div>
+           <div style={{ fontSize: '10px', wordBreak: 'break-all', maxWidth: '80%' }}>
+             URL: {imageUrl.substring(0, 50)}...
+           </div>
+         </div>
+       )}
+     </div>
+
+     {/* Image caption */}
+     {image.caption && !image.isMainImage && (
+       <p style={{
+         textAlign: 'center',
+         fontSize: '14px',
+         color: '#666',
+         margin: '12px 0 0 0',
+         fontStyle: 'italic'
+       }}>
+         {image.caption}
+       </p>
+     )}
+   </div>
+ )
 })
-
-// Add React import at the top
-import React from 'react'

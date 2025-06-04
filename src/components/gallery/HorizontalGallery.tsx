@@ -13,6 +13,7 @@ import { scrollManager } from '@/lib/scrollManager'
 import NavigationArrows from '../ui/NavigationArrows'
 import { GalleryContainer } from './GalleryContainer'
 import { GalleryItem } from './GalleryItem'
+import { UmamiEvents } from '@/utils/analytics'
 
 interface HorizontalGalleryProps {
   designs: TextileDesign[]
@@ -76,10 +77,14 @@ function HorizontalGallery({ designs }: HorizontalGalleryProps) {
   const swipeHandlers = useHorizontalSwipe({
     onSwipeLeft: () => {
       console.log('🚀 Gallery swipe left - going to next image')
+      // Track swipe navigation
+      UmamiEvents.galleryNavigation('swipe-left', realTimeCurrentIndex.current, Math.min(realTimeCurrentIndex.current + 1, designs.length - 1))
       scrollToImage('right') // Swipe left = go to next image
     },
     onSwipeRight: () => {
       console.log('🚀 Gallery swipe right - going to previous image')
+      // Track swipe navigation
+      UmamiEvents.galleryNavigation('swipe-right', realTimeCurrentIndex.current, Math.max(realTimeCurrentIndex.current - 1, 0))
       scrollToImage('left') // Swipe right = go to previous image
     },
     enabled: isMobile, // Only enable on mobile
@@ -140,23 +145,63 @@ function HorizontalGallery({ designs }: HorizontalGalleryProps) {
     }
   }, [currentIndex, pathname, restoration.restorationAttempted])
 
+  // Enhanced scroll function with analytics
+  const handleScrollToImage = (direction: 'left' | 'right') => {
+    const oldIndex = realTimeCurrentIndex.current
+    const newIndex = direction === 'left' ? 
+      Math.max(0, oldIndex - 1) : 
+      Math.min(designs.length - 1, oldIndex + 1)
+    
+    // Track arrow navigation
+    UmamiEvents.galleryNavigation(`arrow-${direction}`, oldIndex, newIndex)
+    scrollToImage(direction)
+  }
+
   // Keyboard navigation
   useKeyboardNavigation({
-    onPrevious: () => scrollToImage('left'),
-    onNext: () => scrollToImage('right'),
+    onPrevious: () => {
+      UmamiEvents.galleryNavigation('keyboard-left', realTimeCurrentIndex.current, Math.max(realTimeCurrentIndex.current - 1, 0))
+      scrollToImage('left')
+    },
+    onNext: () => {
+      UmamiEvents.galleryNavigation('keyboard-right', realTimeCurrentIndex.current, Math.min(realTimeCurrentIndex.current + 1, designs.length - 1))
+      scrollToImage('right')
+    },
     onScrollUp: () => window.scrollBy({ top: -150, behavior: 'smooth' }),
     onScrollDown: () => window.scrollBy({ top: 150, behavior: 'smooth' }),
-    onAbout: () => navigation.handlePageNavigation('/about'),
-    onWork: () => navigation.handlePageNavigation('/'),
-    onContact: () => navigation.handlePageNavigation('/contact'),
+    onAbout: () => {
+      UmamiEvents.navigateToAbout()
+      navigation.handlePageNavigation('/about')
+    },
+    onWork: () => {
+      UmamiEvents.navigateHome()
+      navigation.handlePageNavigation('/')
+    },
+    onContact: () => {
+      UmamiEvents.navigateToContact()
+      navigation.handlePageNavigation('/contact')
+    },
     onEnter: () => {
       const currentDesign = designs[realTimeCurrentIndex.current]
       if (currentDesign) {
+        UmamiEvents.viewProject(currentDesign.title, currentDesign.year)
         navigation.handleImageClick(currentDesign)
       }
     },
     enabled: true
   })
+
+  // Enhanced image click handler with analytics
+  const handleImageClick = (design: TextileDesign, index: number) => {
+    UmamiEvents.viewProject(design.title, design.year)
+    navigation.handleImageClick(design)
+  }
+
+  // Enhanced dot click with analytics
+  const handleDotClick = (index: number) => {
+    UmamiEvents.galleryNavigation('dot-click', realTimeCurrentIndex.current, index)
+    scrollToIndex(index)
+  }
 
   // Mark first mount complete
   useEffect(() => {
@@ -185,8 +230,8 @@ function HorizontalGallery({ designs }: HorizontalGalleryProps) {
       <NavigationArrows
         canScrollLeft={canScrollLeft && currentIndex > 0}
         canScrollRight={canScrollRight && currentIndex < designs.length - 1}
-        onScrollLeft={() => scrollToImage('left')}
-        onScrollRight={() => scrollToImage('right')}
+        onScrollLeft={() => handleScrollToImage('left')}
+        onScrollRight={() => handleScrollToImage('right')}
         variant="gallery"
         size="large"
         position="fixed" // Keep fixed positioning for gallery
@@ -205,7 +250,7 @@ function HorizontalGallery({ designs }: HorizontalGalleryProps) {
             design={design}
             index={design.index}
             isActive={design.index === currentIndex}
-            onClick={() => navigation.handleImageClick(design)}
+            onClick={() => handleImageClick(design, design.index)}
           />
         ))}
       </GalleryContainer>
@@ -215,7 +260,7 @@ function HorizontalGallery({ designs }: HorizontalGalleryProps) {
         <MobileGalleryIndicators
           currentIndex={currentIndex}
           totalItems={designs.length}
-          onDotClick={(index) => scrollToIndex(index)}
+          onDotClick={handleDotClick}
         />
       )}
     </>
