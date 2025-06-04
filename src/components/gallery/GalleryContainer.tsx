@@ -1,3 +1,4 @@
+// src/components/gallery/GalleryContainer.tsx - Updated with swipe support
 'use client'
 
 import { forwardRef } from 'react'
@@ -6,12 +7,21 @@ import { GALLERY_STYLES, GALLERY_CONFIG } from '@/config/galleryConfig'
 interface GalleryContainerProps {
   children: React.ReactNode
   isRestoring: boolean
+  // Add swipe event handlers
   onTouchStart?: (e: React.TouchEvent) => void
   onTouchMove?: (e: React.TouchEvent) => void
+  onTouchEnd?: (e: React.TouchEvent) => void
 }
 
 export const GalleryContainer = forwardRef<HTMLDivElement, GalleryContainerProps>(
-  function GalleryContainer({ children, isRestoring, onTouchStart, onTouchMove }, ref) {
+  function GalleryContainer({ 
+    children, 
+    isRestoring, 
+    onTouchStart, 
+    onTouchMove, 
+    onTouchEnd 
+  }, ref) {
+    
     return (
       <div style={{ 
         ...GALLERY_STYLES.container,
@@ -32,24 +42,33 @@ export const GalleryContainer = forwardRef<HTMLDivElement, GalleryContainerProps
             scrollSnapType: 'x mandatory',
             opacity: isRestoring ? 0 : 1,
             transition: isRestoring ? 'none' : 'opacity 0.3s ease',
+            // Mobile-specific optimizations
+            WebkitOverflowScrolling: 'touch',
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
           }}
-          onTouchStart={(e) => {
-            const touch = e.touches[0]
-            const target = e.currentTarget as HTMLElement // TypeScript fix
-            target.dataset.startX = touch.clientX.toString()
-            onTouchStart?.(e)
-          }}
-          onTouchMove={(e) => {
-            e.preventDefault()
-            onTouchMove?.(e)
-          }}
+          // Add touch event handlers
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
+          // Add some debugging attributes
+          data-swipe-enabled={!!(onTouchStart && onTouchMove && onTouchEnd)}
         >
           {children}
         </div>
 
+        {/* Hide scrollbar */}
         <style jsx>{`
           div::-webkit-scrollbar {
             display: none;
+          }
+          
+          /* Add some mobile-specific styles */
+          @media (max-width: 767px) {
+            [data-scroll-container] {
+              padding-top: 60px !important;
+              padding-bottom: 80px !important; /* Make room for indicators */
+            }
           }
         `}</style>
       </div>

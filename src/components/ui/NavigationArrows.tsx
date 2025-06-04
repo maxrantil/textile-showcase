@@ -1,3 +1,4 @@
+// src/components/ui/NavigationArrows.tsx - Fixed version for both gallery and project pages
 'use client'
 
 import { memo } from 'react'
@@ -10,6 +11,7 @@ interface NavigationArrowsProps {
   variant?: 'gallery' | 'project'
   size?: 'small' | 'medium' | 'large'
   position?: 'static' | 'fixed'
+  showOnMobile?: boolean // Add this prop to control mobile visibility
 }
 
 const NavigationArrows = memo(function NavigationArrows({ 
@@ -19,7 +21,8 @@ const NavigationArrows = memo(function NavigationArrows({
   onScrollRight,
   variant = 'gallery',
   size = 'large',
-  position = 'fixed'
+  position = 'fixed',
+  showOnMobile = false // Default to false for gallery, true for project
 }: NavigationArrowsProps) {
   
   // Size configurations
@@ -42,8 +45,6 @@ const NavigationArrows = memo(function NavigationArrows({
   }
 
   const config = sizeConfig[size]
-  
-  // Use CSS scaling instead of JavaScript for responsiveness
   const triangleSize = config.triangleSize
   
   // Triangle components - EXACT same look as before
@@ -81,7 +82,7 @@ const NavigationArrows = memo(function NavigationArrows({
     top: 0,
     bottom: 0,
     width: `${config.clickableWidth}px`,
-    height: '100vh',
+    height: position === 'fixed' ? '100vh' : '100%',
     [side]: 0,
     background: 'transparent',
     border: 'none',
@@ -176,6 +177,7 @@ const NavigationArrows = memo(function NavigationArrows({
           type="button"
           onKeyDown={(e) => handleKeyDown(e, onScrollLeft)}
           data-nav="left"
+          className={showOnMobile ? 'nav-show-mobile' : 'nav-hide-mobile'}
         >
           <LeftTriangle 
             size={triangleSize} 
@@ -197,6 +199,7 @@ const NavigationArrows = memo(function NavigationArrows({
           type="button"
           onKeyDown={(e) => handleKeyDown(e, onScrollRight)}
           data-nav="right"
+          className={showOnMobile ? 'nav-show-mobile' : 'nav-hide-mobile'}
         >
           <RightTriangle 
             size={triangleSize} 
@@ -205,8 +208,27 @@ const NavigationArrows = memo(function NavigationArrows({
         </button>
       )}
 
-      {/* CSS for responsiveness - simpler approach */}
+      {/* CSS for responsiveness and mobile control */}
       <style jsx>{`
+        /* Default: Hide on mobile unless explicitly shown */
+        .nav-hide-mobile {
+          display: flex;
+        }
+        
+        .nav-show-mobile {
+          display: flex;
+        }
+        
+        @media (max-width: 767px) {
+          .nav-hide-mobile {
+            display: none !important;
+          }
+          
+          .nav-show-mobile {
+            display: flex !important;
+          }
+        }
+        
         /* Responsive scaling using CSS transforms */
         @media (max-width: 1023px) {
           [data-nav] {

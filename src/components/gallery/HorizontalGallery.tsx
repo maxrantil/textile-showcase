@@ -1,3 +1,4 @@
+// src/components/gallery/HorizontalGallery.tsx - Fixed version with proper arrow control
 'use client'
 
 import { memo, useMemo, useRef, useEffect, useState } from 'react'
@@ -7,6 +8,7 @@ import { useHorizontalScroll } from '@/hooks/useHorizontalScroll'
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation'
 import { useScrollRestoration } from '@/hooks/gallery/useScrollRestoration'
 import { useGalleryNavigation } from '@/hooks/gallery/useGalleryNavigation'
+import { useHorizontalSwipe } from '@/hooks/useSwipeGesture'
 import { scrollManager } from '@/lib/scrollManager'
 import NavigationArrows from '../ui/NavigationArrows'
 import { GalleryContainer } from './GalleryContainer'
@@ -20,6 +22,20 @@ function HorizontalGallery({ designs }: HorizontalGalleryProps) {
   const pathname = usePathname()
   const realTimeCurrentIndex = useRef(0)
   const isFirstMount = useRef(true)
+  
+  // Add state to detect mobile
+  const [isMobile, setIsMobile] = useState(false)
+  
+  // Detect if we're on mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
   
   const memoizedDesigns = useMemo(() => 
     designs.map((design, index) => ({ ...design, index })), 
@@ -56,6 +72,21 @@ function HorizontalGallery({ designs }: HorizontalGalleryProps) {
     isFirstMount: isFirstMount.current
   })
 
+  // SWIPE GESTURE SUPPORT
+  const swipeHandlers = useHorizontalSwipe({
+    onSwipeLeft: () => {
+      console.log('🚀 Gallery swipe left - going to next image')
+      scrollToImage('right') // Swipe left = go to next image
+    },
+    onSwipeRight: () => {
+      console.log('🚀 Gallery swipe right - going to previous image')
+      scrollToImage('left') // Swipe right = go to previous image
+    },
+    enabled: isMobile, // Only enable on mobile
+    minSwipeDistance: 50,
+    maxSwipeTime: 400
+  })
+
   // Handle restoration when component mounts
   useEffect(() => {
     if (!scrollContainerRef.current || designs.length === 0) return
@@ -66,20 +97,15 @@ function HorizontalGallery({ designs }: HorizontalGalleryProps) {
     const attemptRestore = () => {
       restoration.attemptRestoration(
         (index, instant) => {
-          // FIRST: Force update both the hook state and our refs immediately
           setCurrentIndex(index)
           realTimeCurrentIndex.current = index
           scrollContainerRef.current?.setAttribute('data-current-index', index.toString())
-          
-          // THEN: Use instant scrolling for restoration to make it invisible
           scrollToIndex(index, instant)
         }
       )
     }
 
-    // Start restoration immediately
     attemptRestore()
-
   }, [pathname, designs.length, scrollToIndex, setCurrentIndex, restoration])
 
   useEffect(() => {
@@ -101,7 +127,6 @@ function HorizontalGallery({ designs }: HorizontalGalleryProps) {
     window.addEventListener('gallery-navigation-start', stopSaving)
     window.addEventListener('gallery-navigation-complete', resumeSaving)
 
-    // Save on index changes
     if (!isNavigating) {
       scrollManager.save(realTimeCurrentIndex.current, pathname)
     }
@@ -157,6 +182,7 @@ function HorizontalGallery({ designs }: HorizontalGalleryProps) {
 
   return (
     <>
+      {/* FIXED: Navigation Arrows - always show but with mobile control via showOnMobile prop */}
       <NavigationArrows
         canScrollLeft={canScrollLeft && currentIndex > 0}
         canScrollRight={canScrollRight && currentIndex < designs.length - 1}
@@ -164,11 +190,15 @@ function HorizontalGallery({ designs }: HorizontalGalleryProps) {
         onScrollRight={() => scrollToImage('right')}
         variant="gallery"
         size="large"
+        position="fixed" // Keep fixed positioning for gallery
+        showOnMobile={false} // Hide on mobile for gallery (we have swipe instead)
       />
       
       <GalleryContainer 
         ref={scrollContainerRef}
         isRestoring={restoration.isRestoring}
+        // Add swipe handlers only on mobile
+        {...(isMobile ? swipeHandlers : {})}
       >
         {memoizedDesigns.map((design) => (
           <GalleryItem
@@ -180,8 +210,100 @@ function HorizontalGallery({ designs }: HorizontalGalleryProps) {
           />
         ))}
       </GalleryContainer>
+
+      {/* Mobile indicators */}
+      {isMobile && designs.length > 1 && (
+        <MobileGalleryIndicators
+          currentIndex={currentIndex}
+          totalItems={designs.length}
+          onDotClick={(index) => scrollToIndex(index)}
+        />
+      )}
     </>
   )
 }
+
+// Mobile Gallery Indicators Component
+interface MobileGalleryIndicatorsProps {
+  currentIndex: number
+  totalItems: number
+  onDotClick: (index: number) => void
+}
+
+const MobileGalleryIndicators = memo(function MobileGalleryIndicators({
+  currentIndex,
+  totalItems,
+  onDotClick
+}: MobileGalleryIndicatorsProps) {
+  return (
+    <div style={{
+      position: 'fixed',
+      bottom: '30px',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      display: 'flex',
+      gap: '8px',
+      padding: '12px 16px',
+      backgroundColor: 'rgba(255, 255, 255, 0.95)',
+      borderRadius: '24px',
+      backdropFilter: 'blur(12px)',
+      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+      zIndex: 30,
+      // Ensure it works with safe area
+      paddingBottom: 'calc(12px + env(safe-area-inset-bottom, 0px))'
+    }}>
+      {Array.from({ length: Math.min(totalItems, 8) }, (_, index) => (
+        <button
+          key={index}
+          onClick={() => onDotClick(index)}
+          style={{
+            width: '44px', // Touch-friendly size
+            height: '44px',
+            border: 'none',
+            backgroundColor: 'transparent',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: '50%',
+            transition: 'background-color 0.2s ease'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.05)'}
+          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+          aria-label={`Go to image ${index + 1}`}
+        >
+          <span style={{
+            width: '8px',
+            height: '8px',
+            borderRadius: '50%',
+            backgroundColor: index === currentIndex ? '#333' : '#ccc',
+            transition: 'all 0.3s ease',
+            transform: index === currentIndex ? 'scale(1.2)' : 'scale(1)'
+          }} />
+        </button>
+      ))}
+      
+      {/* Show counter for many items */}
+      {totalItems > 8 && (
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          paddingLeft: '8px',
+          borderLeft: '1px solid #e5e5e5',
+          marginLeft: '8px'
+        }}>
+          <span style={{
+            fontSize: '12px',
+            color: '#666',
+            fontWeight: 500,
+            letterSpacing: '0.5px'
+          }}>
+            {currentIndex + 1}/{totalItems}
+          </span>
+        </div>
+      )}
+    </div>
+  )
+})
 
 export default memo(HorizontalGallery)
