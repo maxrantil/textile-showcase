@@ -19,21 +19,31 @@ export function useGalleryNavigation({
 }: UseGalleryNavigationProps) {
   const router = useRouter()
   const lastClick = useRef(0)
+  const lastClickedDesign = useRef<string | null>(null)
 
   const handleImageClick = useCallback((design: TextileDesign) => {
-    // Simple debouncing - only allow clicks every 300ms
     const now = Date.now()
-    if (now - lastClick.current < 300) {
-      console.log('🚫 Click too fast, ignoring')
+    const timeSinceLastClick = now - lastClick.current
+    
+    // Different debounce times based on context
+    const debounceTime = lastClickedDesign.current === design._id ? 200 : 100
+    
+    if (timeSinceLastClick < debounceTime) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🚫 Click ignored (${timeSinceLastClick}ms < ${debounceTime}ms)`)
+      }
       return
     }
+    
     lastClick.current = now
-
-    console.log('🖱️ Image clicked, saving index before navigation')
+    lastClickedDesign.current = design._id // Track which item was clicked
+  
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🖱️ Navigating to project:', design.title)
+    }
     
     if (!isFirstMount) {
       scrollManager.saveImmediate(currentIndex, pathname)
-      console.log(`💾 Saved index ${currentIndex} for path ${pathname}`)
     }
     
     scrollManager.triggerNavigationStart()
@@ -43,7 +53,7 @@ export function useGalleryNavigation({
   const handlePageNavigation = useCallback((path: string) => {
     // Simple debouncing
     const now = Date.now()
-    if (now - lastClick.current < 300) {
+    if (now - lastClick.current < 150) {
       console.log('🚫 Navigation too fast, ignoring')
       return
     }

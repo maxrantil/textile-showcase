@@ -9,12 +9,17 @@ export class PerformanceMonitor {
   end(name: string): number {
     const startTime = this.metrics.get(name)
     if (!startTime) {
-      console.warn(`No start time found for metric: ${name}`)
+      // Only warn in development and make it less noisy
+      if (process.env.NODE_ENV === 'development') {
+        console.warn(`⚠️ Performance metric '${name}' was ended but never started`)
+      }
       return 0
     }
     const duration = performance.now() - startTime
     this.metrics.delete(name)
-    if (process.env.NODE_ENV === 'development') {
+    
+    // Only log slow operations in development
+    if (process.env.NODE_ENV === 'development' && duration > 100) {
       console.log(`⏱️ ${name}: ${duration.toFixed(2)}ms`)
     }
     return duration
@@ -22,9 +27,15 @@ export class PerformanceMonitor {
 
   async measureAsync<T>(name: string, fn: () => Promise<T>): Promise<T> {
     this.start(name)
-    const result = await fn()
-    this.end(name)
-    return result
+    try {
+      const result = await fn()
+      this.end(name)
+      return result
+    } catch (error) {
+      // Clean up the metric on error
+      this.metrics.delete(name)
+      throw error
+    }
   }
 }
 

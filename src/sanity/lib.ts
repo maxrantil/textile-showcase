@@ -42,7 +42,12 @@ export const urlFor = (source: SanityImageSource | null | undefined) => {
   return builder.image(source)
 }
 
-// FIXED: Enhanced image URL with aspect ratio preservation
+const SANITY_CDN_CONFIG = {
+  // More permissive referrer policy for Sanity images
+  referrerPolicy: 'no-referrer-when-downgrade' as const
+}
+
+// Update the getOptimizedImageUrl function
 export const getOptimizedImageUrl = (
   source: SanityImageSource | null | undefined, 
   options: {
@@ -59,20 +64,20 @@ export const getOptimizedImageUrl = (
   
   let imageBuilder = urlFor(source)
   
-  // Only set ONE dimension to preserve aspect ratio
   if (width && !height) {
     imageBuilder = imageBuilder.width(width)
   } else if (height && !width) {
     imageBuilder = imageBuilder.height(height)
   } else if (width && height) {
-    // If both are provided, use fit parameter to control behavior
     imageBuilder = imageBuilder.width(width).height(height).fit(fit)
   }
   
-  return imageBuilder
+  const url = imageBuilder
     .quality(quality)
     .format(format)
     .url()
+    
+  return url
 }
 
 // Generate blur data URL for better loading experience
@@ -139,7 +144,6 @@ interface CacheEntry<T> {
 
 const cache = new Map<string, CacheEntry<unknown>>()
 
-// FIXED: Resilient fetch function with better timeout handling
 export async function resilientFetch<T = unknown>(
   query: string,
   params: Record<string, unknown> = {},
@@ -150,71 +154,70 @@ export async function resilientFetch<T = unknown>(
     cacheTTL?: number
   } = {}
 ): Promise<T | null> {
-  // INCREASED timeouts for better reliability
-  const { retries = 3, timeout = 15000, cache: useCache = true, cacheTTL = 600000 } = options // 10 min default TTL
+  const { retries = 3, timeout = 15000, cache: useCache = true, cacheTTL = 600000 } = options
   
-  // Create a shorter name for performance tracking
-  const queryName = query.replace(/\s+/g, ' ').slice(0, 50).replace(/[^a-zA-Z0-9\s]/g, '').trim()
-  const perfName = `sanity-${queryName}`
+  // Create cache key
+  const cacheKey = `${query}-${JSON.stringify(params)}`
   
-  // WRAP THE ENTIRE FUNCTION IN PERFORMANCE MONITORING
-  return await perf.measureAsync(perfName, async () => {
-    // Create cache key
-    const cacheKey = `${query}-${JSON.stringify(params)}`
-    
-    // Check cache first
-    if (useCache) {
-      const cached = cache.get(cacheKey)
-      if (cached && Date.now() - cached.timestamp < cached.ttl) {
-        console.log('📋 Cache hit for:', query.slice(0, 50) + '...')
-        return cached.data as T
+  // Check cache first
+  if (useCache) {
+    const cached = cache.get(cacheKey)
+    if (cached && Date.now() - cached.timestamp < cached.ttl) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('📋 Cache hit for query')
       }
+      return cached.data as T
     }
-    
-    for (let attempt = 1; attempt <= retries + 1; attempt++) {
-      try {
-        console.log(`🔍 Sanity fetch attempt ${attempt}/${retries + 1}:`, query.slice(0, 50) + '...')
-        
-        const result = await withTimeout(
-          client.fetch<T>(query, params),
-          timeout
-        )
-        
+  }
+  
+  for (let attempt = 1; attempt <= retries + 1; attempt++) {
+    try {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🔍 Sanity fetch attempt ${attempt}/${retries + 1}`)
+      }
+      
+      const result = await withTimeout(
+        client.fetch<T>(query, params),
+        timeout
+      )
+      
+      if (process.env.NODE_ENV === 'development') {
         console.log('✅ Sanity fetch successful')
-        
-        // Cache successful result
-        if (useCache && result) {
-          cache.set(cacheKey, {
-            data: result,
-            timestamp: Date.now(),
-            ttl: cacheTTL
-          })
-        }
-        
-        return result
-      } catch (error) {
-        const isLastAttempt = attempt === retries + 1
-        
+      }
+      
+      // Cache successful result
+      if (useCache && result) {
+        cache.set(cacheKey, {
+          data: result,
+          timestamp: Date.now(),
+          ttl: cacheTTL
+        })
+      }
+      
+      return result
+      
+    } catch (error) {
+      const isLastAttempt = attempt === retries + 1
+      
+      if (process.env.NODE_ENV === 'development') {
         console.warn(`❌ Sanity fetch attempt ${attempt} failed:`, {
           error: error instanceof Error ? error.message : 'Unknown error',
-          query: query.slice(0, 100) + '...', // Log first 100 chars of query
           isLastAttempt
         })
-        
-        if (isLastAttempt) {
-          console.error('🚨 All Sanity fetch attempts failed, returning null')
-          return null
-        }
-        
-        // Wait before retrying (exponential backoff)
-        const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000)
-        console.log(`⏳ Waiting ${delay}ms before retry...`)
-        await new Promise(resolve => setTimeout(resolve, delay))
       }
+      
+      if (isLastAttempt) {
+        console.error('🚨 All Sanity fetch attempts failed, returning null')
+        return null
+      }
+      
+      // Wait before retrying
+      const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000)
+      await new Promise(resolve => setTimeout(resolve, delay))
     }
-    
-    return null
-  })
+  }
+  
+  return null
 }
 
 // OPTIMIZED queries with better performance

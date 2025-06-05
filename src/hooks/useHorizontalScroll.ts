@@ -18,12 +18,11 @@ export function useHorizontalScroll({ itemCount, onIndexChange }: UseHorizontalS
   const checkScrollPosition = useCallback(() => {
     const container = scrollContainerRef.current
     if (!container || isUpdatingRef.current) return
-
+  
     const { scrollLeft, scrollWidth, clientWidth } = container
     setCanScrollLeft(scrollLeft > 10)
     setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10)
     
-    // Get all items and their positions
     const items = container.children
     if (items.length === 0) return
     
@@ -31,23 +30,10 @@ export function useHorizontalScroll({ itemCount, onIndexChange }: UseHorizontalS
     let closestIndex = 0
     let closestDistance = Infinity
     
-    // Create detailed position info for all items
-    const itemPositions = []
     for (let i = 0; i < items.length && i < itemCount; i++) {
       const item = items[i] as HTMLElement
-      const offsetLeft = item.offsetLeft
-      const offsetWidth = item.offsetWidth
-      const itemCenter = offsetLeft + (offsetWidth / 2)
+      const itemCenter = item.offsetLeft + (item.offsetWidth / 2)
       const distance = Math.abs(viewportCenter - itemCenter)
-      
-      itemPositions.push({
-        index: i,
-        offsetLeft,
-        offsetWidth,
-        itemCenter,
-        distance,
-        isReachable: itemCenter >= 0 && itemCenter <= scrollWidth
-      })
       
       if (distance < closestDistance) {
         closestDistance = distance
@@ -55,13 +41,11 @@ export function useHorizontalScroll({ itemCount, onIndexChange }: UseHorizontalS
       }
     }
     
-    // Log all positions every time to debug
-    console.log('📊 All item positions:', itemPositions)
-    console.log('🎯 Viewport center:', viewportCenter, 'Closest index:', closestIndex)
-    console.log('📏 Scroll bounds:', { scrollLeft, scrollWidth, clientWidth })
-    
+    // Only log when index actually changes
     if (closestIndex !== currentIndex) {
-      console.log('🔄 Index changed from', currentIndex, 'to', closestIndex)
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🎯 Gallery index changed:', currentIndex, '→', closestIndex)
+      }
       setCurrentIndex(closestIndex)
       onIndexChange?.(closestIndex)
     }

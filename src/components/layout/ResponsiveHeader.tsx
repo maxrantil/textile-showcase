@@ -458,7 +458,7 @@ const ResponsiveHeader = memo(function ResponsiveHeader() {
             onMouseLeave={(e) => e.currentTarget.style.color = '#333'}
             aria-label="Ida Romme - Home"
           >
-            IDA ROMME
+            IDA ROMME (this is a work in progress)
           </Link>
           
           {/* Navigation */}
