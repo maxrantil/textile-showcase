@@ -3,7 +3,7 @@
 import { useState, useCallback, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation'
-import { getOptimizedImageUrl, SANITY_CDN_CONFIG } from '@/sanity/lib'
+import { getOptimizedImageUrl, SANITY_CDN_CONFIG } from '@/sanity/imageHelpers'
 import NavigationArrows from '../../ui/NavigationArrows'
 import { UmamiEvents } from '@/utils/analytics'
 import { perf } from '@/utils/performance'

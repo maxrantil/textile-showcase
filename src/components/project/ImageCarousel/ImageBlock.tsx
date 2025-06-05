@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { getOptimizedImageUrl } from '@/sanity/lib'
+import { getOptimizedImageUrl } from '@/sanity/imageHelpers'
 import { UmamiEvents } from '@/utils/analytics'
 import { perf } from '@/utils/performance'
 import type { SanityImageSource } from '@sanity/image-url/lib/types/types'

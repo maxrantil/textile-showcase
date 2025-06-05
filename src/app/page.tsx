@@ -1,5 +1,6 @@
 import { Metadata } from 'next'
-import { resilientFetch, queries } from '@/sanity/lib'
+import { queries } from '@/sanity/queries'
+import { resilientFetch } from '@/sanity/dataFetcher'
 import { TextileDesign } from '@/sanity/types'
 import { HorizontalGallery } from '@/components/gallery'
 import { GalleryLoadingSkeleton } from '@/components/ui/LoadingSpinner'

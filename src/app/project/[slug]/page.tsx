@@ -2,7 +2,9 @@
 
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { resilientFetch, queries, getOptimizedImageUrl } from '@/sanity/lib'
+import { getOptimizedImageUrl } from '@/sanity/imageHelpers'
+import { queries } from '@/sanity/queries'
+import { resilientFetch } from '@/sanity/dataFetcher'
 import { TextileDesign } from '@/sanity/types'
 import ImageCarousel from '@/components/project/ImageCarousel/index'
 import BackButton from '@/components/layout/BackButton'

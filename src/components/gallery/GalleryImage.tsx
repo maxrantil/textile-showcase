@@ -1,6 +1,6 @@
 'use client'
 import { memo } from 'react'
-import { getOptimizedImageUrl, SANITY_CDN_CONFIG } from '@/sanity/lib'
+import { getOptimizedImageUrl, SANITY_CDN_CONFIG } from '@/sanity/imageHelpers'
 import { getGalleryConfig } from '@/config/responsiveConfig'
 import { GALLERY_CONFIG } from '@/config/galleryConfig'
 import type { SanityImageSource } from '@sanity/image-url/lib/types/types'
