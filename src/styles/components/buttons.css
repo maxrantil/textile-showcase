@@ -1,0 +1,53 @@
+/* src/styles/components/buttons.css */
+
+/* ==========================================================================
+   Button Component Styles
+   ========================================================================== */
+
+/* Button variants with proper touch sizing */
+.btn-mobile {
+    min-height: 48px;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-appearance: none;
+    box-sizing: border-box;
+}
+
+.btn-mobile-primary {
+    background: #333;
+    color: #fff;
+    border: 2px solid #333;
+}
+
+.btn-mobile-secondary {
+    background: transparent;
+    color: #333;
+    border: 2px solid #333;
+}
+
+.btn-mobile-ghost {
+    background: transparent;
+    color: #666;
+    border: 1px solid #ddd;
+}
+
+/* Active states for mobile */
+.btn-mobile:active {
+    transform: scale(0.98);
+}
+
+.btn-mobile-primary:active {
+    background: #000;
+    border-color: #000;
+}
+
+.btn-mobile-secondary:active {
+    background: #333;
+    color: #fff;
+}

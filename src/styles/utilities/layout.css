@@ -1,0 +1,70 @@
+/* src/styles/utilities/layout.css */
+
+/* ==========================================================================
+   Layout and Container Utilities
+   ========================================================================== */
+
+/* FIXED: Enhanced container-mobile for better width control */
+.container-mobile {
+    width: 100%;
+    max-width: 100vw;
+    padding-left: clamp(16px, 4vw, 40px);
+    padding-right: clamp(16px, 4vw, 40px);
+    margin: 0 auto;
+    box-sizing: border-box;
+    overflow-x: hidden;
+}
+
+/* Ensure all children respect container width */
+.container-mobile * {
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* FIXED: Better grid mobile for narrow screens */
+.grid-mobile {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(16px, 4vw, 24px);
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+    .grid-mobile {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+}
+
+.grid-mobile-2 {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(12px, 3vw, 20px);
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+@media (min-width: 480px) {
+    .grid-mobile-2 {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+/* FIXED: Stack mobile improvements */
+.stack-mobile {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(16px, 4vw, 24px);
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+    .stack-mobile {
+        flex-direction: row;
+        align-items: flex-start;
+    }
+}
