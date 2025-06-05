@@ -4,9 +4,10 @@ import { useState, useRef, useEffect } from 'react'
 import Image from 'next/image'
 import { getOptimizedImageUrl, getBlurDataUrl } from '@/sanity/lib'
 import { ImageLoadingPlaceholder } from './LoadingSpinner'
+import type { SanityImageSource } from '@sanity/image-url/lib/types/types'
 
 interface OptimizedImageProps {
-  src: any // Sanity image object
+  src: SanityImageSource | null | undefined
   alt: string
   width?: number
   height?: number
@@ -32,7 +33,6 @@ export default function OptimizedImage({
   sizes = '(max-width: 768px) 100vw, (max-width: 1200px) 70vw, 50vw',
   quality = 85,
   onClick,
-  loading = 'lazy',
   objectFit = 'contain',
   fill = false
 }: OptimizedImageProps) {

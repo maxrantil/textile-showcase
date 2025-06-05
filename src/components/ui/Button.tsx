@@ -22,10 +22,10 @@ export default function Button({
   style,
   onMouseEnter,
   onMouseLeave,
+  onFocus,
+  onBlur,
   ...props
 }: ButtonProps) {
-  const [isHovered, setIsHovered] = React.useState(false)
-  
   // Get base mobile button classes
   const baseClasses = `btn-mobile touch-feedback ${className}`
   
@@ -42,7 +42,7 @@ export default function Button({
         return 'btn-mobile-secondary'
     }
   })()
-
+  
   // Size adjustments (mobile utilities handle base sizing)
   const sizeStyles: React.CSSProperties = (() => {
     switch (size) {
@@ -66,14 +66,20 @@ export default function Button({
 
   const handleMouseEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (!disabled && !loading) {
-      setIsHovered(true)
       onMouseEnter?.(e)
     }
   }
 
   const handleMouseLeave = (e: React.MouseEvent<HTMLButtonElement>) => {
-    setIsHovered(false)
     onMouseLeave?.(e)
+  }
+
+  const handleFocus = (e: React.FocusEvent<HTMLButtonElement>) => {
+    onFocus?.(e)
+  }
+
+  const handleBlur = (e: React.FocusEvent<HTMLButtonElement>) => {
+    onBlur?.(e)
   }
 
   return (
@@ -84,14 +90,8 @@ export default function Button({
       style={combinedStyles}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      onFocus={(e) => {
-        setIsHovered(true)
-        props.onFocus?.(e)
-      }}
-      onBlur={(e) => {
-        setIsHovered(false)
-        props.onBlur?.(e)
-      }}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
     >
       {loading && <LoadingSpinner size="small" />}
       {loading ? 'Loading...' : children}

@@ -113,7 +113,7 @@ function HorizontalGallery({ designs }: HorizontalGalleryProps) {
     }
 
     attemptRestore()
-  }, [pathname, designs.length, scrollToIndex, setCurrentIndex, restoration])
+  }, [pathname, designs.length, scrollToIndex, setCurrentIndex, restoration, scrollContainerRef])
 
   useEffect(() => {
     realTimeCurrentIndex.current = 0
@@ -166,7 +166,7 @@ function HorizontalGallery({ designs }: HorizontalGalleryProps) {
         })
       }
     }
-  }, [realTimeCurrentIndex.current, memoizedDesigns, isMobile]) // Dependencies: current index, designs, mobile state
+  }, [currentIndex, memoizedDesigns, isMobile]) // Remove realTimeCurrentIndex.current from dependencies
 
   useEffect(() => {
     if (process.env.NODE_ENV === 'development') {
@@ -248,7 +248,7 @@ function HorizontalGallery({ designs }: HorizontalGalleryProps) {
   })
 
   // Enhanced image click handler with analytics
-  const handleImageClick = useCallback((design: TextileDesign, index: number) => {
+  const handleImageClick = useCallback((design: TextileDesign) => {
     perf.start('gallery-navigation')
     
     try {
@@ -319,7 +319,7 @@ function HorizontalGallery({ designs }: HorizontalGalleryProps) {
             design={design}
             index={design.index}
             isActive={design.index === currentIndex}
-            onClick={() => handleImageClick(design, design.index)}
+            onClick={() => handleImageClick(design)}
           />
         ))}
       </GalleryContainer>

@@ -44,6 +44,9 @@ export function useKeyboardNavigation({
   useEffect(() => {
     if (!enabled) return
 
+    // Capture the current intervals map for cleanup
+    const currentIntervals = scrollIntervals.current
+
     const handleKeyDown = (e: KeyboardEvent) => {
       // Don't interfere with form inputs
       if (e.target instanceof HTMLInputElement ||
@@ -57,7 +60,7 @@ export function useKeyboardNavigation({
         e.preventDefault()
         
         // If interval already exists for this key, don't create another
-        if (scrollIntervals.current.has(e.key)) {
+        if (currentIntervals.has(e.key)) {
           return
         }
 
@@ -87,7 +90,7 @@ export function useKeyboardNavigation({
           }
         }, 150) // Repeat every 150ms while held
 
-        scrollIntervals.current.set(e.key, interval)
+        currentIntervals.set(e.key, interval)
         return
       }
 
@@ -129,17 +132,17 @@ export function useKeyboardNavigation({
 
     const handleKeyUp = (e: KeyboardEvent) => {
       // Clear scroll interval when key is released
-      const interval = scrollIntervals.current.get(e.key)
+      const interval = currentIntervals.get(e.key)
       if (interval) {
         clearInterval(interval)
-        scrollIntervals.current.delete(e.key)
+        currentIntervals.delete(e.key)
       }
     }
 
     // Clear all intervals when window loses focus
     const handleBlur = () => {
-      scrollIntervals.current.forEach(interval => clearInterval(interval))
-      scrollIntervals.current.clear()
+      currentIntervals.forEach(interval => clearInterval(interval))
+      currentIntervals.clear()
     }
 
     window.addEventListener('keydown', handleKeyDown)
@@ -147,9 +150,9 @@ export function useKeyboardNavigation({
     window.addEventListener('blur', handleBlur)
     
     return () => {
-      // Clean up intervals
-      scrollIntervals.current.forEach(interval => clearInterval(interval))
-      scrollIntervals.current.clear()
+      // Clean up intervals using the captured reference
+      currentIntervals.forEach(interval => clearInterval(interval))
+      currentIntervals.clear()
       
       window.removeEventListener('keydown', handleKeyDown)
       window.removeEventListener('keyup', handleKeyUp)

@@ -5,7 +5,7 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { UmamiEvents } from '@/utils/analytics'
 import { debounce } from '@/utils/performance'
 
-interface FormData {
+interface ContactFormData {
   name: string
   email: string
   message: string
@@ -24,7 +24,7 @@ interface ContactFormProps {
 }
 
 export default function ContactForm({ onSuccess, onError }: ContactFormProps) {
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState<ContactFormData>({
     name: '',
     email: '',
     message: ''
@@ -34,7 +34,7 @@ export default function ContactForm({ onSuccess, onError }: ContactFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle')
 
-  const validateForm = useCallback((data: FormData): FormErrors => {
+  const validateForm = useCallback((data: ContactFormData): FormErrors => {
     const errors: FormErrors = {}
 
     if (!data.name.trim()) {
@@ -58,9 +58,10 @@ export default function ContactForm({ onSuccess, onError }: ContactFormProps) {
     return errors
   }, [])
 
-  // Create debounced validation
+  // Create debounced validation - fix the typing issue
   const debouncedValidation = useMemo(() => 
-    debounce((data: FormData) => {
+    debounce((...args: unknown[]) => {
+      const data = args[0] as ContactFormData
       const validationErrors = validateForm(data)
       setErrors(prev => {
         // Only update if there are actual changes to prevent unnecessary re-renders

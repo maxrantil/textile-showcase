@@ -9,16 +9,33 @@ import KeyboardScrollHandler from '../KeyboardScrollHandler'
 import { UmamiEvents } from '@/utils/analytics'
 import { perf, logMemoryUsage } from '@/utils/performance'
 import React from 'react'
+import type { SanityImageSource } from '@sanity/image-url/lib/types/types'
+
+// Define proper types for Sanity images
+interface SanityImageAsset {
+  _id: string
+  _ref?: string
+  metadata?: {
+    dimensions?: {
+      width: number
+      height: number
+    }
+  }
+}
 
 interface GalleryImage {
   _key: string
-  asset: any
+  asset: SanityImageAsset | SanityImageSource
   caption?: string
+}
+
+interface ExtendedGalleryImage extends GalleryImage {
+  isMainImage: boolean
 }
 
 interface ImageCarouselProps {
   images?: GalleryImage[]
-  mainImage: any
+  mainImage: SanityImageAsset | SanityImageSource
   projectTitle: string
   projectYear?: number
   projectDescription?: string
@@ -69,8 +86,8 @@ export default function ImageCarousel({
   }, [])
   
   // Create array of all images for desktop carousel
-  const allImages = useMemo(() => {
-    const imageArray = []
+  const allImages = useMemo((): ExtendedGalleryImage[] => {
+    const imageArray: ExtendedGalleryImage[] = []
     
     // Add main image first
     if (mainImage) {
@@ -378,6 +395,7 @@ export default function ImageCarousel({
               backgroundColor: 'transparent'
             }}>
               {(currentImage?.asset || mainImage) && (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={getOptimizedImageUrl(currentImage?.asset || mainImage, { 
                     height: 800,
@@ -538,6 +556,7 @@ export default function ImageCarousel({
         {/* Preload adjacent images (desktop only) */}
         <div style={{ display: 'none' }} aria-hidden="true">
           {preloadImages.map((image, index) => (
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               key={`preload-${index}`}
               src={getOptimizedImageUrl(image.asset, { 
@@ -557,7 +576,7 @@ export default function ImageCarousel({
 
 // Mobile Image Block Component with performance monitoring
 interface MobileImageBlockProps {
-  image: any
+  image: ExtendedGalleryImage
   index: number
   isFirst: boolean
   projectTitle: string
@@ -608,6 +627,7 @@ const MobileImageBlock = React.memo(function MobileImageBlock({
         overflow: 'hidden',
         boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
       }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={imageUrl}
           alt={image.caption || `Project image ${index + 1}`}

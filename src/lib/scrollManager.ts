@@ -20,9 +20,13 @@ class EnhancedScrollManager {
   private debouncedSave: ReturnType<typeof debounce>
 
   constructor() {
-    this.debouncedSave = debounce((index: number, path: string) => {
+    // Fix the debounce typing issue
+    this.debouncedSave = debounce((...args: unknown[]) => {
+      const index = args[0] as number
+      const path = args[1] as string
       this.saveImmediate(index, path)
     }, 300)
+    
     if (typeof window !== 'undefined') {
       this.setupNavigationListeners()
       this.cleanupOldPositions()

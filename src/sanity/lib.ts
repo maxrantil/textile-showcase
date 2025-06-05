@@ -1,8 +1,25 @@
-// src/lib/sanity.ts - Updated queries with better performance and timeouts
-
 import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
 import { perf } from '@/utils/performance'
+import type { SanityImageSource } from '@sanity/image-url/lib/types/types'
+
+// Define Sanity image types
+interface SanityImageAsset {
+  _id: string
+  metadata?: {
+    dimensions?: {
+      width: number
+      height: number
+    }
+  }
+  width?: number
+  height?: number
+}
+
+interface SanityImage {
+  asset?: SanityImageAsset
+  _ref?: string
+}
 
 // Configuration based on environment
 const config = {
@@ -17,7 +34,7 @@ export const client = createClient(config)
 
 const builder = imageUrlBuilder(client)
 
-export const urlFor = (source: any) => {
+export const urlFor = (source: SanityImageSource | null | undefined) => {
   if (!source) {
     console.warn('urlFor received null or undefined source')
     return builder.image({})
@@ -27,7 +44,7 @@ export const urlFor = (source: any) => {
 
 // FIXED: Enhanced image URL with aspect ratio preservation
 export const getOptimizedImageUrl = (
-  source: any, 
+  source: SanityImageSource | null | undefined, 
   options: {
     width?: number
     height?: number
@@ -59,7 +76,7 @@ export const getOptimizedImageUrl = (
 }
 
 // Generate blur data URL for better loading experience
-export const getBlurDataUrl = (source: any) => {
+export const getBlurDataUrl = (source: SanityImageSource | null | undefined) => {
   if (!source) return undefined
   
   return urlFor(source)
@@ -71,7 +88,7 @@ export const getBlurDataUrl = (source: any) => {
 }
 
 // NEW: Get image dimensions and aspect ratio
-export const getImageDimensions = (source: any) => {
+export const getImageDimensions = (source: SanityImage | null | undefined) => {
   if (!source?.asset) return null
   
   // Try to get dimensions from the asset metadata
@@ -114,12 +131,18 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 15000): Promise
 }
 
 // Enhanced cache with TTL
-const cache = new Map<string, { data: any; timestamp: number; ttl: number }>()
+interface CacheEntry<T> {
+  data: T
+  timestamp: number
+  ttl: number
+}
+
+const cache = new Map<string, CacheEntry<unknown>>()
 
 // FIXED: Resilient fetch function with better timeout handling
-export async function resilientFetch<T = any>(
+export async function resilientFetch<T = unknown>(
   query: string,
-  params: Record<string, any> = {},
+  params: Record<string, unknown> = {},
   options: { 
     retries?: number
     timeout?: number
@@ -144,7 +167,7 @@ export async function resilientFetch<T = any>(
       const cached = cache.get(cacheKey)
       if (cached && Date.now() - cached.timestamp < cached.ttl) {
         console.log('📋 Cache hit for:', query.slice(0, 50) + '...')
-        return cached.data
+        return cached.data as T
       }
     }
     

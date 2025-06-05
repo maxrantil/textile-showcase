@@ -1,4 +1,4 @@
-// src/utils/performance.ts - Complete file
+// src/utils/performance.ts - Complete file with type fixes
 export class PerformanceMonitor {
   private metrics: Map<string, number> = new Map()
 
@@ -12,14 +12,11 @@ export class PerformanceMonitor {
       console.warn(`No start time found for metric: ${name}`)
       return 0
     }
-    
     const duration = performance.now() - startTime
     this.metrics.delete(name)
-    
     if (process.env.NODE_ENV === 'development') {
       console.log(`⏱️ ${name}: ${duration.toFixed(2)}ms`)
     }
-    
     return duration
   }
 
@@ -52,12 +49,12 @@ export async function preloadImages(urls: string[]): Promise<void> {
 }
 
 // Throttle and debounce
-export function throttle<T extends (...args: any[]) => any>(
+export function throttle<T extends (...args: unknown[]) => unknown>(
   func: T,
   limit: number
 ): T {
   let inThrottle: boolean
-  return (function(this: any, ...args: any[]) {
+  return (function(this: unknown, ...args: unknown[]) {
     if (!inThrottle) {
       func.apply(this, args)
       inThrottle = true
@@ -66,21 +63,31 @@ export function throttle<T extends (...args: any[]) => any>(
   }) as T
 }
 
-export function debounce<T extends (...args: any[]) => any>(
+export function debounce<T extends (...args: unknown[]) => unknown>(
   func: T,
   wait: number
 ): T {
   let timeout: NodeJS.Timeout
-  return (function(this: any, ...args: any[]) {
+  return (function(this: unknown, ...args: unknown[]) {
     clearTimeout(timeout)
     timeout = setTimeout(() => func.apply(this, args), wait)
   }) as T
 }
 
 // Memory monitoring
+interface PerformanceMemory {
+  usedJSHeapSize: number
+  totalJSHeapSize: number
+  jsHeapSizeLimit: number
+}
+
+interface PerformanceWithMemory extends Performance {
+  memory: PerformanceMemory
+}
+
 export function getMemoryUsage() {
   if (typeof window !== 'undefined' && 'memory' in performance) {
-    const memory = (performance as any).memory
+    const memory = (performance as PerformanceWithMemory).memory
     return {
       used: Math.round(memory.usedJSHeapSize / 1024 / 1024),
       total: Math.round(memory.totalJSHeapSize / 1024 / 1024),

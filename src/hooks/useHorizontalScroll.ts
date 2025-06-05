@@ -198,7 +198,7 @@ export function useHorizontalScroll({ itemCount, onIndexChange }: UseHorizontalS
   const centerCurrentItem = useCallback(() => {
     // Temporarily disabled to fix navigation issues
     console.log('⚠️ centerCurrentItem called but disabled')
-  }, [currentIndex])
+  }, []) // Removed currentIndex dependency since it's not being used
 
   useEffect(() => {
     const container = scrollContainerRef.current

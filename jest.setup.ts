@@ -45,114 +45,137 @@ jest.mock('@/lib/scrollManager', () => ({
   },
 }))
 
-// Mock Headers for API tests
-global.Headers = class Headers {
-  private headers: Record<string, string> = {}
-  
-  constructor(init?: Record<string, string>) {
-    if (init) {
-      Object.assign(this.headers, init)
-    }
-  }
-  
-  get(name: string) {
-    return this.headers[name.toLowerCase()] || null
-  }
-  
-  set(name: string, value: string) {
-    this.headers[name.toLowerCase()] = value
-  }
-  
-  has(name: string) {
-    return name.toLowerCase() in this.headers
-  }
-  
-  append(name: string, value: string) {
-    const existing = this.get(name)
-    if (existing) {
-      this.set(name, `${existing}, ${value}`)
-    } else {
-      this.set(name, value)
-    }
-  }
-  
-  delete(name: string) {
-    delete this.headers[name.toLowerCase()]
-  }
-  
-  *[Symbol.iterator]() {
-    for (const [name, value] of Object.entries(this.headers)) {
-      yield [name, value]
-    }
-  }
-}
+// Mock Headers for API tests - simplified to avoid iterator type conflicts
+global.Headers = jest.fn().mockImplementation((init?: HeadersInit) => {
+  const headers: Record<string, string> = {}
 
-// Mock ReadableStream for API tests
-global.ReadableStream = class ReadableStream {
-  private chunks: Uint8Array[]
-  private position: number
-  
-  constructor(underlyingSource?: any) {
-    this.chunks = []
-    this.position = 0
-    
-    // If we have an underlying source with a start method, call it
-    if (underlyingSource?.start) {
-      const controller = {
-        enqueue: (chunk: any) => {
-          if (typeof chunk === 'string') {
-            this.chunks.push(new TextEncoder().encode(chunk))
-          } else if (chunk instanceof Uint8Array) {
-            this.chunks.push(chunk)
-          }
-        },
-        close: () => {},
-        error: (error: any) => {}
+  // Initialize from various input types
+  if (init) {
+    if (typeof init === 'object' && !Array.isArray(init) && !(init instanceof Headers)) {
+      Object.entries(init).forEach(([key, value]) => {
+        headers[key.toLowerCase()] = value
+      })
+    } else if (Array.isArray(init)) {
+      init.forEach(([key, value]) => {
+        headers[key.toLowerCase()] = value
+      })
+    }
+  }
+
+  return {
+    get: jest.fn((name: string) => headers[name.toLowerCase()] || null),
+    set: jest.fn((name: string, value: string) => {
+      headers[name.toLowerCase()] = value
+    }),
+    has: jest.fn((name: string) => name.toLowerCase() in headers),
+    append: jest.fn((name: string, value: string) => {
+      const existing = headers[name.toLowerCase()]
+      if (existing) {
+        headers[name.toLowerCase()] = `${existing}, ${value}`
+      } else {
+        headers[name.toLowerCase()] = value
       }
-      underlyingSource.start(controller)
-    }
-  }
-  
-  getReader() {
-    return {
-      read: async () => {
-        if (this.position >= this.chunks.length) {
-          return { done: true, value: undefined }
-        }
-        const chunk = this.chunks[this.position++]
-        return { done: false, value: chunk }
-      },
-      releaseLock: () => {}
-    }
-  }
-  
-  // Add static method to create from string (useful for tests)
-  static fromString(str: string) {
-    return new ReadableStream({
-      start(controller) {
-        controller.enqueue(str)
-        controller.close()
+    }),
+    delete: jest.fn((name: string) => {
+      delete headers[name.toLowerCase()]
+    }),
+    getSetCookie: jest.fn(() => {
+      const setCookies = headers['set-cookie']
+      return setCookies ? setCookies.split(', ') : []
+    }),
+    forEach: jest.fn((callback: (value: string, key: string) => void) => {
+      Object.entries(headers).forEach(([key, value]) => {
+        callback(value, key)
+      })
+    }),
+    entries: jest.fn(() => Object.entries(headers)),
+    keys: jest.fn(() => Object.keys(headers)),
+    values: jest.fn(() => Object.values(headers)),
+    [Symbol.iterator]: jest.fn(function* () {
+      for (const [key, value] of Object.entries(headers)) {
+        yield [key, value]
       }
     })
   }
-}
+})
 
-// Mock TextEncoder and TextDecoder for ReadableStream
-global.TextEncoder = class TextEncoder {
-  encode(input: string): Uint8Array {
+// Mock ReadableStream for API tests - simplified
+global.ReadableStream = jest.fn().mockImplementation((underlyingSource?: any) => {
+  const chunks: any[] = []
+  let position = 0
+
+  // If we have an underlying source with a start method, call it
+  if (underlyingSource?.start) {
+    const controller = {
+      enqueue: (chunk: any) => {
+        if (typeof chunk === 'string') {
+          chunks.push(new TextEncoder().encode(chunk))
+        } else {
+          chunks.push(chunk)
+        }
+      },
+      close: () => {},
+      error: () => {}
+    }
+    underlyingSource.start(controller)
+  }
+
+  return {
+    locked: false,
+    getReader: jest.fn(() => ({
+      read: jest.fn(async () => {
+        if (position >= chunks.length) {
+          return { done: true, value: undefined }
+        }
+        const chunk = chunks[position++]
+        return { done: false, value: chunk }
+      }),
+      releaseLock: jest.fn(),
+      closed: Promise.resolve(undefined),
+      cancel: jest.fn(async () => undefined)
+    })),
+    cancel: jest.fn(async () => undefined),
+    pipeTo: jest.fn(async () => undefined),
+    pipeThrough: jest.fn(() => new (global.ReadableStream as any)()),
+    tee: jest.fn(() => [new (global.ReadableStream as any)(), new (global.ReadableStream as any)()])
+  }
+})
+
+// Add static method to ReadableStream
+;(global.ReadableStream as any).fromString = jest.fn((str: string) => {
+  return new (global.ReadableStream as any)({
+    start(controller: any) {
+      controller.enqueue(str)
+      controller.close()
+    }
+  })
+})
+
+// Mock TextEncoder and TextDecoder
+global.TextEncoder = jest.fn().mockImplementation(() => ({
+  encoding: 'utf-8',
+  encode: jest.fn((input = '') => {
     const bytes = new Uint8Array(input.length)
     for (let i = 0; i < input.length; i++) {
       bytes[i] = input.charCodeAt(i)
     }
     return bytes
-  }
-}
+  }),
+  encodeInto: jest.fn(() => ({ read: 0, written: 0 }))
+}))
 
-global.TextDecoder = class TextDecoder {
-  decode(input: Uint8Array): string {
-    return String.fromCharCode(...Array.from(input))
-  }
-}
+global.TextDecoder = jest.fn().mockImplementation(() => ({
+  encoding: 'utf-8',
+  fatal: false,
+  ignoreBOM: false,
+  decode: jest.fn((input?: BufferSource) => {
+    if (!input) return ''
+    if (input instanceof Uint8Array) {
+      return String.fromCharCode(...Array.from(input))
+    }
+    return ''
+  })
+}))
 
 // Mock window.scrollBy for keyboard navigation tests
 Object.defineProperty(window, 'scrollBy', {

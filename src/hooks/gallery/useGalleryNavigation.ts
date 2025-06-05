@@ -13,7 +13,6 @@ interface UseGalleryNavigationProps {
 }
 
 export function useGalleryNavigation({ 
-  designs, 
   currentIndex, 
   pathname, 
   isFirstMount

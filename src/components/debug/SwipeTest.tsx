@@ -100,7 +100,7 @@ export default function SwipeTest() {
         <strong>How to test:</strong>
         <ul style={{ margin: '8px 0 0 0', paddingLeft: '20px' }}>
           <li>On mobile: Swipe left/right with your finger on the colored area</li>
-          <li>On desktop: You can simulate by dragging (though it's designed for touch)</li>
+          <li>On desktop: You can simulate by dragging (though it&apos;s designed for touch)</li>
           <li>Watch the progress dots and swipe history below</li>
           <li>Check the browser console for detailed swipe logs</li>
         </ul>

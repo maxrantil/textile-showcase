@@ -1,5 +1,17 @@
 // src/utils/mobileUtils.ts
 
+// Define navigator extensions
+interface NavigatorConnection {
+  effectiveType?: '2g' | '3g' | '4g' | 'slow-2g'
+  downlink?: number
+  rtt?: number
+}
+
+interface NavigatorWithExtensions extends Navigator {
+  connection?: NavigatorConnection
+  deviceMemory?: number
+}
+
 // Viewport height fix for iOS Safari
 export function setViewportHeight() {
     const vh = window.innerHeight * 0.01
@@ -107,15 +119,16 @@ export function setViewportHeight() {
     // Check if device is low-end
     isLowEndDevice(): boolean {
       // Heuristics for low-end device detection
-      const connection = (navigator as any).connection
+      const extendedNavigator = navigator as NavigatorWithExtensions
+      const connection = extendedNavigator.connection
       const hardwareConcurrency = navigator.hardwareConcurrency || 1
-      const deviceMemory = (navigator as any).deviceMemory || 1
+      const deviceMemory = extendedNavigator.deviceMemory || 1
       
       return (
         hardwareConcurrency <= 2 ||
         deviceMemory <= 2 ||
-        (connection && connection.effectiveType === 'slow-2g') ||
-        (connection && connection.effectiveType === '2g')
+        (connection?.effectiveType === 'slow-2g') ||
+        (connection?.effectiveType === '2g')
       )
     }
   }

@@ -9,8 +9,8 @@ interface ErrorBoundaryState {
 }
 
 // Error Boundary Component
-export class ErrorBoundary extends React.Component<React.PropsWithChildren<{}>, ErrorBoundaryState> {
-  constructor(props: React.PropsWithChildren<{}>) {
+export class ErrorBoundary extends React.Component<React.PropsWithChildren, ErrorBoundaryState> {
+  constructor(props: React.PropsWithChildren) {
     super(props)
     this.state = { hasError: false }
   }
@@ -33,33 +33,33 @@ export class ErrorBoundary extends React.Component<React.PropsWithChildren<{}>, 
 }
 
 // Error Fallback Component
-export function ErrorFallback({ 
+export function ErrorFallback({
   error,
   retry
-}: { 
+}: {
   error?: Error
-  retry?: () => void 
+  retry?: () => void
 }) {
   return (
-    <div style={{ 
+    <div style={{
       minHeight: '400px',
-      display: 'flex', 
-      alignItems: 'center', 
+      display: 'flex',
+      alignItems: 'center',
       justifyContent: 'center',
       background: '#fafafa',
       padding: '40px'
     }}>
       <div style={{ textAlign: 'center', maxWidth: '500px' }}>
-        <h2 style={{ 
-          fontSize: '24px', 
-          fontWeight: 300, 
+        <h2 style={{
+          fontSize: '24px',
+          fontWeight: 300,
           margin: '0 0 16px 0',
           color: '#333'
         }}>
           Something went wrong
         </h2>
-        <p style={{ 
-          fontSize: '16px', 
+        <p style={{
+          fontSize: '16px',
           color: '#666',
           marginBottom: '24px',
           lineHeight: '1.5'
@@ -92,25 +92,25 @@ export function ErrorFallback({
 // Network Error Component
 export function NetworkErrorFallback({ retry }: { retry?: () => void }) {
   return (
-    <div style={{ 
+    <div style={{
       minHeight: '400px',
-      display: 'flex', 
-      alignItems: 'center', 
+      display: 'flex',
+      alignItems: 'center',
       justifyContent: 'center',
       background: '#fafafa',
       padding: '40px'
     }}>
       <div style={{ textAlign: 'center', maxWidth: '500px' }}>
-        <h2 style={{ 
-          fontSize: '24px', 
-          fontWeight: 300, 
+        <h2 style={{
+          fontSize: '24px',
+          fontWeight: 300,
           margin: '0 0 16px 0',
           color: '#333'
         }}>
           Connection Error
         </h2>
-        <p style={{ 
-          fontSize: '16px', 
+        <p style={{
+          fontSize: '16px',
           color: '#666',
           marginBottom: '24px',
           lineHeight: '1.5'

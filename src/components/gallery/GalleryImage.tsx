@@ -4,23 +4,23 @@ import { memo } from 'react'
 import { getOptimizedImageUrl } from '@/sanity/lib'
 import { getGalleryConfig } from '@/config/responsiveConfig'
 import { GALLERY_CONFIG } from '@/config/galleryConfig'
+import type { SanityImageSource } from '@sanity/image-url/lib/types/types'
 
 interface GalleryImageProps {
-  src: any
+  src: SanityImageSource | null | undefined
   alt: string
   index: number
   onClick: () => void
   breakpoint: 'mobile' | 'tablet' | 'desktop'
 }
 
-export const GalleryImage = memo(function GalleryImage({ 
-  src, 
-  alt, 
-  index, 
+export const GalleryImage = memo(function GalleryImage({
+  src,
+  alt,
+  index,
   onClick,
   breakpoint
 }: GalleryImageProps) {
-  
   const galleryConfig = getGalleryConfig(breakpoint)
   
   // Responsive image dimensions
@@ -46,9 +46,9 @@ export const GalleryImage = memo(function GalleryImage({
         }
     }
   }
-  
+
   const dimensions = getImageDimensions()
-  
+
   return (
     <div style={{
       position: 'relative',
@@ -60,10 +60,11 @@ export const GalleryImage = memo(function GalleryImage({
       overflow: 'hidden',
       width: '100%'
     }}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={getOptimizedImageUrl(src, { 
+        src={getOptimizedImageUrl(src, {
           width: dimensions.width,
-          quality: index < GALLERY_CONFIG.preloadCount ? 90 : 80, 
+          quality: index < GALLERY_CONFIG.preloadCount ? 90 : 80,
           format: 'webp'
         })}
         alt={alt}
