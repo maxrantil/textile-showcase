@@ -1,6 +1,5 @@
 import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
-import { perf } from '@/utils/performance'
 import type { SanityImageSource } from '@sanity/image-url/lib/types/types'
 
 // Define Sanity image types
@@ -42,7 +41,7 @@ export const urlFor = (source: SanityImageSource | null | undefined) => {
   return builder.image(source)
 }
 
-const SANITY_CDN_CONFIG = {
+export const SANITY_CDN_CONFIG = {
   // More permissive referrer policy for Sanity images
   referrerPolicy: 'no-referrer-when-downgrade' as const
 }

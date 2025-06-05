@@ -1,7 +1,6 @@
 'use client'
-
 import { memo } from 'react'
-import { getOptimizedImageUrl } from '@/sanity/lib'
+import { getOptimizedImageUrl, SANITY_CDN_CONFIG } from '@/sanity/lib'
 import { getGalleryConfig } from '@/config/responsiveConfig'
 import { GALLERY_CONFIG } from '@/config/galleryConfig'
 import type { SanityImageSource } from '@sanity/image-url/lib/types/types'
@@ -68,6 +67,7 @@ export const GalleryImage = memo(function GalleryImage({
           format: 'webp'
         })}
         alt={alt}
+        referrerPolicy={SANITY_CDN_CONFIG.referrerPolicy}
         style={{
           width: '100%',
           height: breakpoint === 'desktop' ? `${galleryConfig.itemHeight}vh` : 'auto',
