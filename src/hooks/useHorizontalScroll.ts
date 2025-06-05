@@ -182,14 +182,7 @@ export function useHorizontalScroll({ itemCount, onIndexChange }: UseHorizontalS
         isUpdatingRef.current = false
       }, 700)
     }
-  }, [itemCount, onIndexChange])
-
-  // DISABLED: Auto-center current item when index changes
-  // This was causing conflicts with manual navigation
-  const centerCurrentItem = useCallback(() => {
-    // Temporarily disabled to fix navigation issues
-    console.log('⚠️ centerCurrentItem called but disabled')
-  }, []) // Removed currentIndex dependency since it's not being used
+  }, [itemCount, currentIndex, onIndexChange])
 
   useEffect(() => {
     const container = scrollContainerRef.current
@@ -257,6 +250,5 @@ export function useHorizontalScroll({ itemCount, onIndexChange }: UseHorizontalS
     setCurrentIndex, // Export setCurrentIndex for manual control
     scrollToImage,
     scrollToIndex,
-    centerCurrentItem,
   }
 }

@@ -76,7 +76,7 @@ const nextConfig = {
       },
       // Icons and manifest
       {
-        source: '/(favicon|apple-touch-icon|icon-)*',
+        source: '/(favicon|apple-touch-icon|icon)*',
         headers: [
           {
             key: 'Cache-Control',
