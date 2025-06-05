@@ -11,7 +11,9 @@ export function useScrollRestoration(pathname: string, designCount: number) {
   const attemptRestoration = (scrollToIndex: (index: number, instant?: boolean) => void, attempt: number = 1) => {
     if (restorationAttempted.current) return
     
-    console.log(`🔄 Index restoration attempt ${attempt} for path: ${pathname}`)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔄 Attempting index restoration:', attempt, 'for path:', pathname)
+    }
     
     if (attempt === 1) {
       scrollManager.debug()
@@ -20,7 +22,9 @@ export function useScrollRestoration(pathname: string, designCount: number) {
     const savedIndex = scrollManager.getSavedIndex(pathname)
     
     if (savedIndex !== null && savedIndex >= 0 && savedIndex < designCount) {
-      console.log('✅ Restoring to index:', savedIndex)
+      if (process.env.NODE_ENV === 'development') {
+        console.log('✅ Restoring to index:', savedIndex)
+      }
       scrollToIndex(savedIndex, true) // instant
       restorationAttempted.current = true
       
@@ -33,7 +37,9 @@ export function useScrollRestoration(pathname: string, designCount: number) {
       const delay = 50 * attempt
       setTimeout(() => attemptRestoration(scrollToIndex, attempt + 1), delay)
     } else {
-      console.log('✅ Starting from beginning (index 0)')
+      if (process.env.NODE_ENV === 'development') {
+        console.log('✅ Starting from beginning (index 0)')
+      }
       scrollToIndex(0, true)
       restorationAttempted.current = true
       

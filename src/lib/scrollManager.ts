@@ -37,7 +37,9 @@ class EnhancedScrollManager {
   private checkFirstVisit() {
     this.hasVisitedGallery = sessionStorage.getItem('gallery-visited') === 'true'
     if (!this.hasVisitedGallery) {
-      console.log('🆕 First visit to gallery - will start from beginning')
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🆕 First visit to gallery - will start from beginning')
+      }
     }
   }
 
@@ -45,20 +47,26 @@ class EnhancedScrollManager {
     if (!this.hasVisitedGallery) {
       sessionStorage.setItem('gallery-visited', 'true')
       this.hasVisitedGallery = true
-      console.log('✅ Marked gallery as visited')
+      if (process.env.NODE_ENV === 'development') {
+        console.log('✅ Marked gallery as visited')
+      }
     }
   }
 
   private setupNavigationListeners() {
     window.addEventListener('gallery-navigation-start', () => {
       this.isNavigating = true
-      console.log('🚫 Navigation started - stopping scroll saves')
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🚫 Navigation started - stopping scroll saves')
+      }
     })
 
     window.addEventListener('gallery-navigation-complete', () => {
       setTimeout(() => {
         this.isNavigating = false
-        console.log('✅ Navigation complete - resuming scroll saves')
+        if (process.env.NODE_ENV === 'development') {
+          console.log('✅ Navigation complete - resuming scroll saves')
+        }
       }, 300)
     })
 
@@ -82,7 +90,9 @@ class EnhancedScrollManager {
 
   save(currentIndex: number, path?: string): void {
     if (this.isNavigating) {
-      console.log('🚫 Navigation in progress, skipping save')
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🚫 Navigation in progress, skipping save for index:', currentIndex)
+      }
       return
     }
 
@@ -118,7 +128,9 @@ class EnhancedScrollManager {
 
     try {
       sessionStorage.setItem(this.storageKey, JSON.stringify(positions))
-      console.log(`💾 Saved current index for ${currentPath}:`, currentIndex)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`💾 Saved current index for ${currentPath}:`, currentIndex)
+      }
     } catch (error) {
       console.warn('Failed to save scroll position:', error)
     }
@@ -128,11 +140,15 @@ class EnhancedScrollManager {
     if (typeof window === 'undefined') return null
     
     const currentPath = this.normalizePath(path || window.location.pathname)
-    console.log(`🔍 Getting saved index for path: ${currentPath}`)
-    console.log(`🔍 Has visited gallery before: ${this.hasVisitedGallery}`)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔍 Getting saved index for path: ${currentPath}`)
+      console.log(`🔍 Has visited gallery before: ${this.hasVisitedGallery}`)
+    }
     
     if (!this.hasVisitedGallery && currentPath === '/') {
-      console.log('🆕 First visit - returning index 0')
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🆕 First visit - returning index 0')
+      }
       this.markGalleryVisited()
       return 0
     }
@@ -150,13 +166,17 @@ class EnhancedScrollManager {
     for (const pathToTry of pathsToTry) {
       if (positions[pathToTry]) {
         savedPosition = positions[pathToTry]
-        console.log(`✅ Found saved index for path: ${pathToTry} - index: ${savedPosition.index}`)
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`🔍 Found saved position for path: ${pathToTry} - index: ${savedPosition.index}`)
+        }
         break
       }
     }
 
     if (!savedPosition && this.lastSavedIndex !== null && this.hasVisitedGallery) {
-      console.log(`🔄 Using last saved index: ${this.lastSavedIndex}`)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🔄 Using last saved index: ${this.lastSavedIndex}`)
+      }
       return this.lastSavedIndex
     }
     
@@ -164,7 +184,9 @@ class EnhancedScrollManager {
       return savedPosition.index
     }
     
-    console.log(`ℹ️ No saved index found for ${currentPath} - returning 0`)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`ℹ️ No saved index found for ${currentPath} - returning 0`)
+    }
     return 0
   }
 
@@ -173,7 +195,9 @@ class EnhancedScrollManager {
     if (savedIndex !== null) {
       container.setAttribute('data-restore-index', savedIndex.toString())
       container.setAttribute('data-restore-instantly', 'true')
-      console.log(`🔄 Marked container to restore to index: ${savedIndex}`)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🔄 Marked container to restore to index: ${savedIndex}`)
+      }
       return true
     }
     return false
@@ -226,7 +250,9 @@ class EnhancedScrollManager {
     
     if (hasChanges) {
       sessionStorage.setItem(this.storageKey, JSON.stringify(positions))
-      console.log('🧹 Cleaned up old scroll positions')
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🧹 Cleaned up old scroll positions')
+      }
     }
   }
 
@@ -247,16 +273,20 @@ class EnhancedScrollManager {
   }
 
   debug(): void {
-    console.log('📊 All saved scroll positions:', this.getAllPositions())
-    console.log('📊 Last saved index:', this.lastSavedIndex)
-    console.log('📊 Has visited gallery:', this.hasVisitedGallery)
-    console.log('📊 Is navigating:', this.isNavigating)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('📊 All saved scroll positions:', this.getAllPositions())
+      console.log('📊 Last saved index:', this.lastSavedIndex)
+      console.log('📊 Has visited gallery:', this.hasVisitedGallery)
+      console.log('📊 Is navigating:', this.isNavigating)
+    }
   }
 
   resetFirstVisit(): void {
     sessionStorage.removeItem('gallery-visited')
     this.hasVisitedGallery = false
-    console.log('🔄 Reset first visit flag')
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔄 Reset first visit flag')
+    }
   }
 }
 

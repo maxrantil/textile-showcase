@@ -160,7 +160,9 @@ function HorizontalGallery({ designs }: HorizontalGalleryProps) {
       ].filter(Boolean) as string[]
       
       if (adjacentUrls.length > 0) {
-        console.log('🔄 Preloading adjacent images:', adjacentUrls.length)
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🔄 Preloading adjacent images:', adjacentUrls.length)
+        }
         preloadImages(adjacentUrls).catch(error => {
           console.warn('⚠️ Failed to preload some images:', error)
         })
@@ -258,7 +260,9 @@ function HorizontalGallery({ designs }: HorizontalGalleryProps) {
       // Handle the navigation
       navigation.handleImageClick(design)
       
-      console.log(`🖱️ Gallery navigation completed for: ${design.title}`)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🖱️ Gallery navigation completed for: ${design.title}`)
+      }
     } catch (error) {
       console.error('❌ Error in gallery navigation:', error)
     } finally {

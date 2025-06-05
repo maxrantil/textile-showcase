@@ -55,7 +55,9 @@ export function useHorizontalScroll({ itemCount, onIndexChange }: UseHorizontalS
     const container = scrollContainerRef.current
     if (!container) return
 
-    console.log('🚀 ScrollToImage called:', direction, 'from index:', currentIndex)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🚀 ScrollToImage called:', direction, 'from index:', currentIndex)
+    }
     
     isUpdatingRef.current = true
     
@@ -72,10 +74,10 @@ export function useHorizontalScroll({ itemCount, onIndexChange }: UseHorizontalS
       targetIndex = Math.min(items.length - 1, currentIndex + 1)
     }
     
-    console.log('🎯 Target index:', targetIndex, 'of', items.length, 'items')
-    
-    // FORCE the index change regardless of scroll detection
-    console.log('🔧 FORCING index change from', currentIndex, 'to', targetIndex)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🎯 Target index:', targetIndex, 'of', items.length, 'items')
+      console.log('🔧 FORCING index change from', currentIndex, 'to', targetIndex)
+    }
     setCurrentIndex(targetIndex)
     onIndexChange?.(targetIndex)
     
@@ -92,17 +94,18 @@ export function useHorizontalScroll({ itemCount, onIndexChange }: UseHorizontalS
       const viewportCenter = container.clientWidth / 2
       const targetScroll = itemCenter - viewportCenter
       
-      console.log('📍 Scroll calculation:', {
-        targetIndex,
-        itemOffsetLeft: targetItem.offsetLeft,
-        itemWidth: targetItem.offsetWidth,
-        itemCenter,
-        viewportCenter,
-        targetScroll: Math.max(0, targetScroll),
-        containerScrollWidth: container.scrollWidth,
-        containerClientWidth: container.clientWidth
-      })
-      
+      if (process.env.NODE_ENV === 'development') {
+        console.log('📍 Scroll calculation:', {
+          targetIndex,
+          itemOffsetLeft: targetItem.offsetLeft,
+          itemWidth: targetItem.offsetWidth,
+          itemCenter,
+          viewportCenter,
+          targetScroll: Math.max(0, targetScroll),
+          containerScrollWidth: container.scrollWidth,
+          containerClientWidth: container.clientWidth
+        })
+      }
       container.scrollTo({ 
         left: Math.max(0, targetScroll),
         behavior: 'smooth' 
@@ -120,7 +123,9 @@ export function useHorizontalScroll({ itemCount, onIndexChange }: UseHorizontalS
     const container = scrollContainerRef.current
     if (!container || index < 0 || index >= itemCount) return
 
-    console.log('🎯 MANUAL scroll to index:', index, instant ? '(INSTANT)' : '(SMOOTH)')
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🚀 scrollToIndex called:', index, 'from index:', currentIndex)
+    }
     
     if (!instant) {
       isUpdatingRef.current = true
@@ -139,15 +144,17 @@ export function useHorizontalScroll({ itemCount, onIndexChange }: UseHorizontalS
       const viewportCenter = container.clientWidth / 2
       const targetScroll = itemCenter - viewportCenter
       
-      console.log('📍 Manual scroll calculation:', {
-        index,
-        itemOffsetLeft: targetItem.offsetLeft,
-        itemWidth: targetItem.offsetWidth,
-        itemCenter,
-        viewportCenter,
-        targetScroll: Math.max(0, targetScroll),
-        instant
-      })
+      if (process.env.NODE_ENV === 'development') {
+        console.log('📍 Manual scroll calculation:', {
+          index,
+          itemOffsetLeft: targetItem.offsetLeft,
+          itemWidth: targetItem.offsetWidth,
+          itemCenter,
+          viewportCenter,
+          targetScroll: Math.max(0, targetScroll),
+          instant
+        })
+      }
       
       if (instant) {
         // Instant scroll without animation - for restoration
@@ -203,15 +210,19 @@ export function useHorizontalScroll({ itemCount, onIndexChange }: UseHorizontalS
     // Initial check with multiple attempts to ensure DOM is ready
     const initialCheck = () => {
       setTimeout(() => {
-        console.log('🔍 Initial scroll position check')
-        console.log('Container children count:', container.children.length)
-        console.log('Expected itemCount:', itemCount)
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🔍 Initial scroll position check')
+          console.log('Container children count:', container.children.length)
+          console.log('Expected itemCount:', itemCount)
+        }
         checkScrollPosition()
       }, 200)
       
       // Extra check for safety
       setTimeout(() => {
-        console.log('🔍 Secondary scroll position check')
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🔍 Secondary scroll position check')
+        }
         checkScrollPosition()
       }, 500)
     }

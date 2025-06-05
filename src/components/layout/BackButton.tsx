@@ -18,7 +18,9 @@ export default function BackButton() {
     if (container) {
       const currentIndex = parseInt(container.getAttribute('data-current-index') || '0', 10)
       scrollManager.saveImmediate(currentIndex, window.location.pathname)
-      console.log(`💾 Saved current index ${currentIndex} before going back`)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`💾 Saved current index ${currentIndex} before going back`)
+      }
     }
     
     scrollManager.debug()
