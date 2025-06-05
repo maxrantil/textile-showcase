@@ -1,5 +1,5 @@
 // src/utils/validation/validators.ts
-import type { ValidationResult, ValidatorFunction } from './types'
+import type { ValidationResult } from './types'
 
 /**
  * Core field validators

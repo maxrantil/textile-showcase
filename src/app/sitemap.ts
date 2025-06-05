@@ -1,5 +1,6 @@
 import { MetadataRoute } from 'next'
-import { resilientFetch, queries } from '@/sanity/lib'
+import { queries } from '@/sanity/queries'
+import { resilientFetch } from '@/sanity/dataFetcher'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://idaromme.dk'

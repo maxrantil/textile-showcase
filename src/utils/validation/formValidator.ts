@@ -138,7 +138,7 @@ export function createDebouncedValidator(
 /**
  * Form validation hooks for React components
  */
-export class FormValidator<T extends Record<string, any> = Record<string, any>> {
+export class FormValidator<T extends Record<string, string> = Record<string, string>> {
   private rules: FormValidationRules
   private errors: FormErrors = {}
   private isValid: boolean = true

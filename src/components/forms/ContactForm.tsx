@@ -14,6 +14,7 @@ interface ContactFormData {
   name: string
   email: string
   message: string
+  [key: string]: string
 }
 
 interface ContactFormProps {
@@ -42,7 +43,7 @@ export default function ContactForm({ onSuccess, onError, className = '' }: Cont
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const [submitError, setSubmitError] = useState<string>('')
 
-  const handleFieldChange = useCallback((fieldName: keyof ContactFormData, value: string) => {
+  const handleFieldChange = useCallback((fieldName: string, value: string) => {
     // Update form data
     setFormData(prev => ({ ...prev, [fieldName]: value }))
     
