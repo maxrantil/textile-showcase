@@ -4,7 +4,7 @@ import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { resilientFetch, queries, getOptimizedImageUrl } from '@/sanity/lib'
 import { TextileDesign } from '@/sanity/types'
-import ImageCarousel from '@/components/project/ImageCarousel'
+import ImageCarousel from '@/components/project/ImageCarousel/index'
 import BackButton from '@/components/layout/BackButton'
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 
