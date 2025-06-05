@@ -1,13 +1,12 @@
 /* src/styles/components/forms.css */
 
 /* ==========================================================================
-   Form Component Styles - FIXED ALIGNMENT
-   ========================================================================== */
+  Form Component Styles - FIXED ALIGNMENT
+  ========================================================================== */
 
 /* FIXED: Form inputs with consistent alignment */
 .form-input-mobile {
     width: 100%;
-    max-width: 100%;
     padding: 16px;
     font-size: 16px;
     border: 2px solid #e5e5e5;
@@ -29,7 +28,6 @@
 /* FIXED: Form textarea with consistent alignment */
 .form-textarea-mobile {
     width: 100%;
-    max-width: 100%;
     padding: 16px;
     font-size: 16px;
     border: 2px solid #e5e5e5;
@@ -60,7 +58,6 @@
     letter-spacing: 0.5px;
     text-transform: uppercase;
     width: 100%;
-    max-width: 100%;
     box-sizing: border-box;
 }
 
@@ -83,17 +80,16 @@
 }
 
 /* FIXED: Enhanced form grid for proper alignment */
-.name-email-grid {
+.form-row {
     display: grid;
     grid-template-columns: 1fr;
     gap: clamp(16px, 4vw, 24px);
     width: 100%;
-    max-width: 100%;
     box-sizing: border-box;
 }
 
 @media (min-width: 768px) {
-    .name-email-grid {
+    .form-row {
         grid-template-columns: 1fr 1fr;
     }
 }
@@ -112,3 +108,87 @@
     opacity: 1;
     font-style: italic;
 }
+
+/* Form layout utilities */
+.contact-form-container {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.contact-form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(16px, 4vw, 24px);
+}
+
+.form-submit {
+    display: flex;
+    justify-content: center;
+    margin-top: clamp(16px, 4vw, 24px);
+}
+
+/* Form field improvements */
+.form-field {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.form-help-text {
+    font-size: 12px;
+    color: #666;
+    margin: 4px 0 0 0;
+    line-height: 1.4;
+}
+
+.form-error-text {
+    font-size: 12px;
+    color: #ef4444;
+    margin: 4px 0 0 0;
+    line-height: 1.4;
+}
+
+.text-required {
+    color: #ef4444;
+}
+
+/* Message components */
+.form-message {
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 24px;
+    text-align: center;
+    width: 100%;
+}
+
+.form-message-success {
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    color: #0369a1;
+}
+
+.form-message-error {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #dc2626;
+}
+
+.form-message-title {
+    margin: 0 0 8px 0;
+    font-weight: 500;
+    font-size: 16px;
+}
+
+.form-message-text {
+    margin: 0 0 16px 0;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.form-message-text:last-child {
+    margin-bottom: 0;
+}
+
+.form-retry-button {
+    margin-top: 12px;}
