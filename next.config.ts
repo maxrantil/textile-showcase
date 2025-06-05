@@ -1,6 +1,3 @@
-/// <reference types="next" />
-/// <reference types="next/image-types/global" />
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
@@ -19,7 +16,7 @@ const nextConfig = {
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
   experimental: {
-    optimizeCss: true, // This is valid
+    optimizeCss: true,
   },
   // Handle build optimization
   typescript: {
@@ -30,7 +27,7 @@ const nextConfig = {
   },
   // Compress responses
   compress: true,
-  // Add headers for better caching and security
+  // FIXED: Enhanced headers with proper referrer policy
   async headers() {
     return [
       {
@@ -54,7 +51,7 @@ const nextConfig = {
           },
           {
             key: 'Referrer-Policy',
-            value: 'origin-when-cross-origin'
+            value: 'strict-origin-when-cross-origin'
           },
           // Cache static assets
           {
@@ -63,9 +60,23 @@ const nextConfig = {
           }
         ],
       },
-      // Longer cache for images
+      // Longer cache for images with proper referrer policy
       {
         source: '/images/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable'
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin'
+          }
+        ],
+      },
+      // Icons and manifest
+      {
+        source: '/(favicon|apple-touch-icon|icon-)*',
         headers: [
           {
             key: 'Cache-Control',
@@ -75,6 +86,9 @@ const nextConfig = {
       },
     ]
   },
+  // FIXED: Add security configurations
+  poweredByHeader: false,
+  generateEtags: false,
 }
 
 module.exports = nextConfig

@@ -43,7 +43,7 @@ export const urlFor = (source: SanityImageSource | null | undefined) => {
 
 export const SANITY_CDN_CONFIG = {
   // More permissive referrer policy for Sanity images
-  referrerPolicy: 'no-referrer-when-downgrade' as const
+  referrerPolicy: 'strict-origin-when-cross-origin' as const
 }
 
 // Update the getOptimizedImageUrl function

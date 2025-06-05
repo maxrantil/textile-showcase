@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { getOptimizedImageUrl } from '@/sanity/lib'
+import { getOptimizedImageUrl, SANITY_CDN_CONFIG } from '@/sanity/lib'
 import NavigationArrows from '../ui/NavigationArrows'
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation'
 import KeyboardScrollHandler from '../KeyboardScrollHandler'
@@ -154,7 +154,9 @@ export default function ImageCarousel({
     onPrevious: !isMobile ? goToPrevious : undefined,
     onNext: !isMobile ? goToNext : undefined,
     onEscape: () => {
-      console.log('Escape pressed - going back')
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Escape pressed - going back')
+      }
       UmamiEvents.backToGallery()
       router.back()
     },
@@ -403,6 +405,7 @@ export default function ImageCarousel({
                     format: 'webp'
                   })}
                   alt={currentImage?.caption || projectTitle}
+                  referrerPolicy={SANITY_CDN_CONFIG.referrerPolicy}
                   style={{
                     height: '70vh',
                     width: 'auto',
@@ -643,11 +646,15 @@ const MobileImageBlock = React.memo(function MobileImageBlock({
           }}
           loading={isFirst ? 'eager' : 'lazy'}
           onLoad={() => {
-            console.log(`✅ Image ${index + 1} loaded successfully`)
+            if (process.env.NODE_ENV === 'development') {
+              console.log(`✅ Image ${index + 1} loaded successfully`)
+            }
             setImageLoaded(true)
           }}
           onError={(e) => {
-            console.error(`❌ Image ${index + 1} failed to load:`, e)
+            if (process.env.NODE_ENV === 'development') {
+              console.error(`❌ Image ${index + 1} failed to load:`, e)
+            }
             setImageError(true)
           }}
         />

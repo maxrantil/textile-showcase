@@ -1,21 +1,42 @@
 {
-    "name": "Ida Romme - Contemporary Textile Design",
-    "short_name": "Ida Romme",
-    "description": "Contemporary textile designs featuring sustainable hand-woven pieces",
-    "start_url": "/",
-    "display": "standalone",
-    "background_color": "#fafafa",
-    "theme_color": "#333333",
-    "icons": [
-      {
-        "src": "/icon-192.png",
-        "sizes": "192x192",
-        "type": "image/png"
-      },
-      {
-        "src": "/icon-512.png",
-        "sizes": "512x512",
-        "type": "image/png"
-      }
-    ]
-  }
+  "name": "Ida Romme - Contemporary Textile Design",
+  "short_name": "Ida Romme",
+  "description": "Contemporary textile designs featuring sustainable hand-woven pieces",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fafafa",
+  "theme_color": "#333333",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "categories": ["design", "art", "lifestyle"],
+  "lang": "en",
+  "dir": "ltr"
+}

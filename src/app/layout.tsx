@@ -8,7 +8,7 @@ import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 const inter = Inter({ 
   subsets: ['latin'],
   variable: '--font-inter',
-  display: 'swap', // Better font loading performance
+  display: 'swap',
   preload: true,
 })
 
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Ida Romme - Contemporary Textile Design',
     description: 'Contemporary textile designs featuring sustainable hand-woven pieces',
-    creator: '@idaromme', // Add if Twitter handle exists
+    creator: '@idaromme',
   },
   robots: {
     index: true,
@@ -52,6 +52,21 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
+  // FIXED: Proper icon configuration
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: '/icon-96x96.png', sizes: '96x96', type: 'image/png' },
+      { url: '/icon-192x192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icon-512x512.png', sizes: '512x512', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+    shortcut: '/favicon.ico',
+  },
+  manifest: '/manifest.json',
   verification: {
     // Add verification codes when available
     // google: 'your-google-verification-code',
@@ -82,17 +97,15 @@ export default function RootLayout({
         <link rel="preconnect" href="https://cdn.sanity.io" />
         <link rel="dns-prefetch" href="https://cdn.sanity.io" />
         
-        {/* Favicon and app icons */}
-        <link rel="icon" href="/favicon.ico" sizes="any" />
-        <link rel="icon" href="/icon.svg" type="image/svg+xml" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-        <link rel="manifest" href="/manifest.json" />
-        
         {/* Performance hints */}
         <meta name="format-detection" content="telephone=no" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="idaromme.dk" />
+        
+        {/* FIXED: Enhanced referrer policy meta tag */}
+        <meta name="referrer" content="strict-origin-when-cross-origin" />
         
         {/* Structured data for organization */}
         <script
@@ -103,7 +116,7 @@ export default function RootLayout({
               "@type": "Organization",
               "name": "Ida Romme Studio",
               "url": "https://idaromme.dk",
-              "logo": "https://idaromme.dk/logo.png",
+              "logo": "https://idaromme.dk/icon-512x512.png",
               "founder": {
                 "@type": "Person",
                 "name": "Ida Romme"
@@ -111,18 +124,17 @@ export default function RootLayout({
               "address": {
                 "@type": "PostalAddress",
                 "addressLocality": "Stockholm",
-                "addressCountry": "SE"
+                "addressCountry": "DK"
               },
               "sameAs": [
-                // Add social media links when available
-                // "https://instagram.com/idaromme",
+                "https://instagram.com/idaromme"
                 // "https://linkedin.com/in/idaromme"
               ]
             })
           }}
         />
         
-        {/* Umami Analytics - FIXED: Moved to head and corrected syntax */}
+        {/* Umami Analytics - Production only */}
         {process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_UMAMI_URL && (
           <script
             defer
@@ -146,29 +158,7 @@ export default function RootLayout({
             {children}
           </main>
         </ErrorBoundary>
-
-        {/* Google Analytics - Keep existing GA code for fallback */}
-        {process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_GA_ID && (
-          <>
-            <script async src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`} />
-            <script
-              dangerouslySetInnerHTML={{
-                __html: `
-                  window.dataLayer = window.dataLayer || [];
-                  function gtag(){dataLayer.push(arguments);}
-                  gtag('js', new Date());
-                  gtag('config', '${process.env.NEXT_PUBLIC_GA_ID}');
-                `,
-              }}
-            />
-          </>
-        )}
       </body>
     </html>
   )
-}
-
-// Add global error boundary for unhandled errors
-export function generateStaticParams() {
-  return []
 }

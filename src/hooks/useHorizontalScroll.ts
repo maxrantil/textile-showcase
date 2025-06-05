@@ -234,7 +234,9 @@ export function useHorizontalScroll({ itemCount, onIndexChange }: UseHorizontalS
     const handleResize = () => {
       if (!isUpdatingRef.current) {
         setTimeout(() => {
-          console.log('🔍 Resize scroll position check')
+          if (process.env.NODE_ENV === 'development') {
+            console.log('🔍 Resize scroll position check')
+          }
           checkScrollPosition()
         }, 200)
       }

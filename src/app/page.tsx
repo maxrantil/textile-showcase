@@ -113,7 +113,7 @@ export default async function Home() {
             "address": {
               "@type": "PostalAddress",
               "addressLocality": "Stockholm",
-              "addressCountry": "SE"
+              "addressCountry": "DK"
             }
           })
         }}
