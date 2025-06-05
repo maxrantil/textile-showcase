@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
-import Header from '@/components/layout/ResponsiveHeader'
+import Header from '@/components/layout/Header/ResponsiveHeader'
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 
 // Optimize font loading
