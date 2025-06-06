@@ -1,104 +1,78 @@
+// src/components/project/ImageCarousel/index.tsx (Updated with error boundary)
 'use client'
 
-import { useState, useEffect } from 'react'
-import { DesktopCarousel } from './DesktopCarousel'
-import { MobileImageStack } from './MobileImageStack'
-import { ProjectDetails } from './ProjectDetails'
-import KeyboardScrollHandler from '../../KeyboardScrollHandler'
-import type { SanityImageSource } from '@sanity/image-url/lib/types/types'
+import { memo } from 'react'
+import CarouselLayoutSelector from './CarouselLayoutSelector'
+import { CarouselErrorBoundary } from './CarouselErrorBoundary'
+import { ImageCarouselProps } from './CarouselLayoutProps'
 
-interface GalleryImage {
-  _key: string
-  asset: SanityImageSource
-  caption?: string
-}
+const ImageCarousel = memo(function ImageCarousel(props: ImageCarouselProps) {
+  const {
+    images,
+    mainImage,
+    projectTitle,
+    projectYear,
+    projectDescription,
+    projectMaterials,
+    projectTechnique,
+    projectDimensions,
+    fallbackToMobile = false,
+    customBreakpoint = 768
+  } = props
 
-interface ImageCarouselProps {
-  images?: GalleryImage[]
-  mainImage: SanityImageSource
-  projectTitle: string
-  projectYear?: number
-  projectDescription?: string
-  projectMaterials?: string
-  projectTechnique?: string
-  projectDimensions?: string
-}
-
-export default function ImageCarousel(props: ImageCarouselProps) {
-  const [isMobile, setIsMobile] = useState(false)
-  
-  // Detect mobile vs desktop
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
-    
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
-  
-  return (
-    <>
-      <KeyboardScrollHandler />
-      
-      {isMobile ? (
-        <MobileLayout {...props} />
-      ) : (
-        <DesktopLayout {...props} />
-      )}
-    </>
-  )
-}
-
-// Mobile Layout Wrapper
-function MobileLayout(props: ImageCarouselProps) {
-  return (
-    <div style={{ 
-      minHeight: '100vh',
-      background: '#fafafa',
-      paddingTop: '80px',
-      paddingBottom: '60px'
-    }}>
+  // Validate required props
+  if (!mainImage || !projectTitle) {
+    console.warn('ImageCarousel: mainImage and projectTitle are required props')
+    return (
       <div style={{
-        maxWidth: '100%',
-        margin: '0 auto',
-        padding: '0 20px'
+        minHeight: '50vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: '#fafafa',
+        color: '#666',
+        textAlign: 'center'
       }}>
-        {/* Project Header */}
-        <ProjectDetails {...props} isMobile={true} />
-        
-        {/* Images Stack */}
-        <MobileImageStack 
-          images={props.images}
-          mainImage={props.mainImage}
-          projectTitle={props.projectTitle}
-        />
+        <div>
+          <h2>Unable to load project</h2>
+          <p>Missing required project information</p>
+        </div>
       </div>
-    </div>
-  )
-}
+    )
+  }
 
-// Desktop Layout Wrapper  
-function DesktopLayout(props: ImageCarouselProps) {
   return (
-    <div style={{ 
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      maxWidth: '1400px',
-      margin: '0 auto',
-      padding: '0 40px',
-      marginTop: '80px',
-      position: 'relative'
-    }}>
-      <DesktopCarousel 
-        images={props.images}
-        mainImage={props.mainImage}
-        projectTitle={props.projectTitle}
+    <CarouselErrorBoundary
+      onError={(error, errorInfo) => {
+        // Log to analytics or error tracking service
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Carousel Error:', { error, errorInfo, props })
+        }
+      }}
+    >
+      <CarouselLayoutSelector
+        images={images}
+        mainImage={mainImage}
+        projectTitle={projectTitle}
+        projectYear={projectYear}
+        projectDescription={projectDescription}
+        projectMaterials={projectMaterials}
+        projectTechnique={projectTechnique}
+        projectDimensions={projectDimensions}
+        customBreakpoint={customBreakpoint}
+        fallbackToMobile={fallbackToMobile}
+        enableLazyLoading={true}
       />
-      
-      <ProjectDetails {...props} isMobile={false} />
-    </div>
+    </CarouselErrorBoundary>
   )
-}
+})
+
+export default ImageCarousel
+
+// Re-export everything for easy access
+export * from './CarouselLayoutProps'
+export { default as CarouselMobileLayout } from './CarouselMobileLayout'
+export { default as CarouselDesktopLayout } from './CarouselDesktopLayout'
+export { default as CarouselLayoutSelector } from './CarouselLayoutSelector'
+export { useCarouselLayoutDetector, useCarouselBreakpoint } from './CarouselLayoutDetector'
+export { CarouselErrorBoundary } from './CarouselErrorBoundary'
