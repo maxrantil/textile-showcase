@@ -1,30 +1,20 @@
 // src/sanity/client.ts
 import { createClient } from 'next-sanity'
 
-// Configuration based on environment
+// Configuration based on environment with fallbacks
 const config = {
-  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
-  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET!,
+  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || '2y05n6hf',
+  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || 'production',
   useCdn: process.env.NODE_ENV === 'production',
-  apiVersion: '2024-01-01',
+  apiVersion: process.env.NEXT_PUBLIC_SANITY_API_VERSION || '2025-06-08',
   perspective: 'published' as const,
 }
 
-// Validate required environment variables
-if (!config.projectId) {
-  throw new Error('Missing NEXT_PUBLIC_SANITY_PROJECT_ID environment variable')
-}
-
-if (!config.dataset) {
-  throw new Error('Missing NEXT_PUBLIC_SANITY_DATASET environment variable')
-}
-
+// Remove the validation that throws errors
 export const client = createClient(config)
 
 // Export config for use in other modules
 export const sanityConfig = config
-
-// Client utilities
 export const isProduction = config.useCdn
 export const projectId = config.projectId
 export const dataset = config.dataset

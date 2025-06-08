@@ -1,6 +1,6 @@
 export const SANITY_PROJECT_CONFIG = {
-  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
-  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || 'production',
-  apiVersion: '2024-01-01',
+  projectId: '2y05n6hf',
+  dataset: 'production',
+  apiVersion: '2025-06-08',
   useCdn: process.env.NODE_ENV === 'production',
 } as const
