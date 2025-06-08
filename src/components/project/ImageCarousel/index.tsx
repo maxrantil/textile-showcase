@@ -17,22 +17,24 @@ const ImageCarousel = memo(function ImageCarousel(props: ImageCarouselProps) {
     projectTechnique,
     projectDimensions,
     fallbackToMobile = false,
-    customBreakpoint = 768
+    customBreakpoint = 768,
   } = props
 
   // Validate required props
   if (!mainImage || !projectTitle) {
     console.warn('ImageCarousel: mainImage and projectTitle are required props')
     return (
-      <div style={{
-        minHeight: '50vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: '#fafafa',
-        color: '#666',
-        textAlign: 'center'
-      }}>
+      <div
+        style={{
+          minHeight: '50vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: '#fafafa',
+          color: '#666',
+          textAlign: 'center',
+        }}
+      >
         <div>
           <h2>Unable to load project</h2>
           <p>Missing required project information</p>
@@ -74,5 +76,8 @@ export * from './CarouselLayoutProps'
 export { default as CarouselMobileLayout } from './CarouselMobileLayout'
 export { default as CarouselDesktopLayout } from './CarouselDesktopLayout'
 export { default as CarouselLayoutSelector } from './CarouselLayoutSelector'
-export { useCarouselLayoutDetector, useCarouselBreakpoint } from './CarouselLayoutDetector'
+export {
+  useCarouselLayoutDetector,
+  useCarouselBreakpoint,
+} from './CarouselLayoutDetector'
 export { CarouselErrorBoundary } from './CarouselErrorBoundary'

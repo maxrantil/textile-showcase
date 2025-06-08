@@ -8,9 +8,9 @@ interface HamburgerButtonProps {
   onClick: () => void
 }
 
-export const HamburgerButton = memo(function HamburgerButton({ 
-  isOpen, 
-  onClick 
+export const HamburgerButton = memo(function HamburgerButton({
+  isOpen,
+  onClick,
 }: HamburgerButtonProps) {
   const handleClick = () => {
     UmamiEvents.mobileMenuToggle(isOpen ? 'close' : 'open')
@@ -29,7 +29,7 @@ export const HamburgerButton = memo(function HamburgerButton({
     cursor: 'pointer',
     padding: '8px',
     borderRadius: '6px',
-    transition: 'background-color 0.2s ease'
+    transition: 'background-color 0.2s ease',
   }
 
   const lineStyles = {
@@ -47,14 +47,18 @@ export const HamburgerButton = memo(function HamburgerButton({
       aria-label={isOpen ? 'Close menu' : 'Open menu'}
       aria-expanded={isOpen}
       aria-controls="mobile-menu"
-      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.05)'}
-      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+      onMouseEnter={(e) =>
+        (e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.05)')
+      }
+      onMouseLeave={(e) =>
+        (e.currentTarget.style.backgroundColor = 'transparent')
+      }
     >
       <span
         style={{
           ...lineStyles,
           transform: isOpen ? 'rotate(45deg) translateY(6px)' : 'none',
-          transformOrigin: 'center'
+          transformOrigin: 'center',
         }}
       />
       <span
@@ -62,14 +66,14 @@ export const HamburgerButton = memo(function HamburgerButton({
           ...lineStyles,
           margin: '4px 0',
           opacity: isOpen ? 0 : 1,
-          transform: isOpen ? 'scale(0)' : 'scale(1)'
+          transform: isOpen ? 'scale(0)' : 'scale(1)',
         }}
       />
       <span
         style={{
           ...lineStyles,
           transform: isOpen ? 'rotate(-45deg) translateY(-6px)' : 'none',
-          transformOrigin: 'center'
+          transformOrigin: 'center',
         }}
       />
     </button>

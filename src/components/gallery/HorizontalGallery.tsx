@@ -20,8 +20,8 @@ interface HorizontalGalleryProps {
 function HorizontalGallery({ designs }: HorizontalGalleryProps) {
   const pathname = usePathname()
 
-  const memoizedDesigns = useMemo(() => 
-    designs.map((design, index) => ({ ...design, index })), 
+  const memoizedDesigns = useMemo(
+    () => designs.map((design, index) => ({ ...design, index })),
     [designs]
   )
 
@@ -33,7 +33,7 @@ function HorizontalGallery({ designs }: HorizontalGalleryProps) {
     const checkMobile = () => {
       galleryState.updateMobileState(window.innerWidth < 768)
     }
-    
+
     checkMobile()
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
@@ -55,7 +55,7 @@ function HorizontalGallery({ designs }: HorizontalGalleryProps) {
   useGalleryPreloader({
     designs: memoizedDesigns,
     currentIndex: galleryState.currentIndex,
-    isMobile: galleryState.isMobile
+    isMobile: galleryState.isMobile,
   })
 
   // Lifecycle management
@@ -67,18 +67,23 @@ function HorizontalGallery({ designs }: HorizontalGalleryProps) {
     scrollToIndex: galleryState.scrollToIndex,
     setCurrentIndex: galleryState.setCurrentIndex,
     realTimeCurrentIndex: galleryState.realTimeCurrentIndex,
-    markFirstMountComplete: galleryState.markFirstMountComplete
+    markFirstMountComplete: galleryState.markFirstMountComplete,
   })
 
   if (!designs || designs.length === 0) {
     return (
-      <div className="full-height-mobile" style={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        background: '#fafafa' 
-      }}>
-        <p className="text-body-mobile" style={{ color: '#666' }}>No designs found</p>
+      <div
+        className="full-height-mobile"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: '#fafafa',
+        }}
+      >
+        <p className="text-body-mobile" style={{ color: '#666' }}>
+          No designs found
+        </p>
       </div>
     )
   }
@@ -87,8 +92,13 @@ function HorizontalGallery({ designs }: HorizontalGalleryProps) {
     <>
       {/* Navigation Arrows */}
       <NavigationArrows
-        canScrollLeft={galleryState.canScrollLeft && galleryState.currentIndex > 0}
-        canScrollRight={galleryState.canScrollRight && galleryState.currentIndex < designs.length - 1}
+        canScrollLeft={
+          galleryState.canScrollLeft && galleryState.currentIndex > 0
+        }
+        canScrollRight={
+          galleryState.canScrollRight &&
+          galleryState.currentIndex < designs.length - 1
+        }
         onScrollLeft={() => navigation.handleScrollToImage('left')}
         onScrollRight={() => navigation.handleScrollToImage('right')}
         variant="gallery"
@@ -96,8 +106,8 @@ function HorizontalGallery({ designs }: HorizontalGalleryProps) {
         position="fixed"
         showOnMobile={false}
       />
-      
-      <GalleryContainer 
+
+      <GalleryContainer
         ref={galleryState.scrollContainerRef}
         isRestoring={galleryState.restoration.isRestoring}
         {...navigation.swipeHandlers}

@@ -18,10 +18,10 @@ export const HeaderNavigation = memo(function HeaderNavigation({
   pathname,
   isMobileMenuOpen,
   navigationStyles,
-  onToggleMobileMenu
+  onToggleMobileMenu,
 }: HeaderNavigationProps) {
   return (
-    <nav 
+    <nav
       style={navigationStyles}
       role="navigation"
       aria-label="Main navigation"

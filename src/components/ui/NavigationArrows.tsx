@@ -14,40 +14,39 @@ interface NavigationArrowsProps {
   showOnMobile?: boolean // Add this prop to control mobile visibility
 }
 
-const NavigationArrows = memo(function NavigationArrows({ 
-  canScrollLeft, 
-  canScrollRight, 
-  onScrollLeft, 
+const NavigationArrows = memo(function NavigationArrows({
+  canScrollLeft,
+  canScrollRight,
+  onScrollLeft,
   onScrollRight,
   size = 'large',
   position = 'fixed',
-  showOnMobile = false // Default to false for gallery, true for project
+  showOnMobile = false, // Default to false for gallery, true for project
 }: NavigationArrowsProps) {
-  
   // Size configurations
   const sizeConfig = {
-    small: { 
+    small: {
       triangleSize: 16,
       clickableWidth: 80,
-      padding: 15
+      padding: 15,
     },
-    medium: { 
+    medium: {
       triangleSize: 24,
-      clickableWidth: 100,  
-      padding: 20
+      clickableWidth: 100,
+      padding: 20,
     },
-    large: { 
+    large: {
       triangleSize: 32,
       clickableWidth: 120,
-      padding: 25
-    }
+      padding: 25,
+    },
   }
 
   const config = sizeConfig[size]
   const triangleSize = config.triangleSize
-  
+
   // Triangle components - EXACT same look as before
-  const LeftTriangle = ({ size, color }: { size: number, color: string }) => (
+  const LeftTriangle = ({ size, color }: { size: number; color: string }) => (
     <div
       style={{
         width: 0,
@@ -55,13 +54,13 @@ const NavigationArrows = memo(function NavigationArrows({
         borderTop: `${Math.round(size * 1.5)}px solid transparent`,
         borderBottom: `${Math.round(size * 1.5)}px solid transparent`,
         borderRight: `${Math.round(size * 1.5)}px solid ${color}`,
-        transition: 'border-color 0.2s ease'
+        transition: 'border-color 0.2s ease',
       }}
       aria-hidden="true"
     />
   )
 
-  const RightTriangle = ({ size, color }: { size: number, color: string }) => (
+  const RightTriangle = ({ size, color }: { size: number; color: string }) => (
     <div
       style={{
         width: 0,
@@ -69,14 +68,16 @@ const NavigationArrows = memo(function NavigationArrows({
         borderTop: `${Math.round(size * 1.5)}px solid transparent`,
         borderBottom: `${Math.round(size * 1.5)}px solid transparent`,
         borderLeft: `${Math.round(size * 1.5)}px solid ${color}`,
-        transition: 'border-color 0.2s ease'
+        transition: 'border-color 0.2s ease',
       }}
       aria-hidden="true"
     />
   )
 
   // Consistent styling for both gallery and project pages
-  const getClickableAreaStyle = (side: 'left' | 'right'): React.CSSProperties => ({
+  const getClickableAreaStyle = (
+    side: 'left' | 'right'
+  ): React.CSSProperties => ({
     position: position,
     top: 0,
     bottom: 0,
@@ -105,7 +106,9 @@ const NavigationArrows = memo(function NavigationArrows({
   const triangleColorHover = '#e6e6e6' // Original hover grey
 
   // Fixed: Separate handlers for mouse and touch events
-  const handleMouseInteractionStart = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleMouseInteractionStart = (
+    e: React.MouseEvent<HTMLButtonElement>
+  ) => {
     const triangle = e.currentTarget.querySelector('div') as HTMLElement
     if (triangle) {
       if (triangle.style.borderRight) {
@@ -117,7 +120,9 @@ const NavigationArrows = memo(function NavigationArrows({
     }
   }
 
-  const handleMouseInteractionEnd = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleMouseInteractionEnd = (
+    e: React.MouseEvent<HTMLButtonElement>
+  ) => {
     const triangle = e.currentTarget.querySelector('div') as HTMLElement
     if (triangle) {
       if (triangle.style.borderRight) {
@@ -154,7 +159,10 @@ const NavigationArrows = memo(function NavigationArrows({
     }
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>, action: () => void) => {
+  const handleKeyDown = (
+    e: React.KeyboardEvent<HTMLButtonElement>,
+    action: () => void
+  ) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault()
       action()
@@ -178,10 +186,7 @@ const NavigationArrows = memo(function NavigationArrows({
           data-nav="left"
           className={showOnMobile ? 'nav-show-mobile' : 'nav-hide-mobile'}
         >
-          <LeftTriangle 
-            size={triangleSize} 
-            color={triangleColor} 
-          />
+          <LeftTriangle size={triangleSize} color={triangleColor} />
         </button>
       )}
 
@@ -200,10 +205,7 @@ const NavigationArrows = memo(function NavigationArrows({
           data-nav="right"
           className={showOnMobile ? 'nav-show-mobile' : 'nav-hide-mobile'}
         >
-          <RightTriangle 
-            size={triangleSize} 
-            color={triangleColor} 
-          />
+          <RightTriangle size={triangleSize} color={triangleColor} />
         </button>
       )}
 
@@ -213,47 +215,47 @@ const NavigationArrows = memo(function NavigationArrows({
         .nav-hide-mobile {
           display: flex;
         }
-        
+
         .nav-show-mobile {
           display: flex;
         }
-        
+
         @media (max-width: 767px) {
           .nav-hide-mobile {
             display: none !important;
           }
-          
+
           .nav-show-mobile {
             display: flex !important;
           }
         }
-        
+
         /* Responsive scaling using CSS transforms */
         @media (max-width: 1023px) {
           [data-nav] {
             transform: scale(0.85);
           }
         }
-        
+
         @media (max-width: 767px) {
           [data-nav] {
             transform: scale(0.7);
           }
         }
-        
+
         @media (max-width: 480px) {
           [data-nav] {
             transform: scale(0.6);
           }
         }
-        
+
         /* High contrast mode support */
         @media (prefers-contrast: high) {
           [data-nav] div {
             filter: contrast(2);
           }
         }
-        
+
         /* Focus visibility for accessibility */
         [data-nav]:focus-visible {
           outline: 2px solid #0066cc;

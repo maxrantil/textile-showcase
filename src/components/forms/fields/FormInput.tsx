@@ -12,49 +12,56 @@ interface FormInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 }
 
 export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
-  function FormInput({ 
-    label, 
-    error, 
-    helpText, 
-    containerClassName = '', 
-    className = '',
-    required = false,
-    id,
-    ...props 
-  }, ref) {
+  function FormInput(
+    {
+      label,
+      error,
+      helpText,
+      containerClassName = '',
+      className = '',
+      required = false,
+      id,
+      ...props
+    },
+    ref
+  ) {
     const fieldId = id || `field-${props.name || 'input'}`
-    
+
     return (
       <div className={`form-field ${containerClassName}`}>
-        <label 
-          htmlFor={fieldId} 
-          className="form-label-mobile"
-        >
+        <label htmlFor={fieldId} className="form-label-mobile">
           {label}
-          {required && <span className="text-required" aria-label="required"> *</span>}
+          {required && (
+            <span className="text-required" aria-label="required">
+              {' '}
+              *
+            </span>
+          )}
         </label>
-        
+
         <input
           ref={ref}
           id={fieldId}
           className={`form-input-mobile ${error ? 'form-input-error' : ''} ${className}`}
           aria-invalid={!!error}
-          aria-describedby={error ? `${fieldId}-error` : helpText ? `${fieldId}-help` : undefined}
+          aria-describedby={
+            error
+              ? `${fieldId}-error`
+              : helpText
+                ? `${fieldId}-help`
+                : undefined
+          }
           {...props}
         />
-        
+
         {helpText && !error && (
           <p id={`${fieldId}-help`} className="form-help-text">
             {helpText}
           </p>
         )}
-        
+
         {error && (
-          <p 
-            id={`${fieldId}-error`} 
-            className="form-error-text"
-            role="alert"
-          >
+          <p id={`${fieldId}-error`} className="form-error-text" role="alert">
             {error}
           </p>
         )}

@@ -3,10 +3,18 @@ import type { Metadata, Viewport } from 'next'
 export const baseMetadata: Metadata = {
   title: {
     default: 'Ida Romme - Contemporary Textile Design',
-    template: '%s - Ida Romme'
+    template: '%s - Ida Romme',
   },
-  description: 'Contemporary textile designs by Ida Romme, featuring sustainable hand-woven pieces that bridge traditional craftsmanship with modern aesthetics.',
-  keywords: ['textile design', 'hand weaving', 'sustainable textiles', 'contemporary craft', 'Stockholm', 'textile art'],
+  description:
+    'Contemporary textile designs by Ida Romme, featuring sustainable hand-woven pieces that bridge traditional craftsmanship with modern aesthetics.',
+  keywords: [
+    'textile design',
+    'hand weaving',
+    'sustainable textiles',
+    'contemporary craft',
+    'Stockholm',
+    'textile art',
+  ],
   authors: [{ name: 'Ida Romme' }],
   creator: 'Ida Romme',
   publisher: 'Ida Romme Studio',
@@ -47,13 +55,15 @@ export const openGraphMetadata: Metadata['openGraph'] = {
   url: 'https://idaromme.dk',
   siteName: 'Ida Romme',
   title: 'Ida Romme - Contemporary Textile Design',
-  description: 'Contemporary textile designs featuring sustainable hand-woven pieces',
+  description:
+    'Contemporary textile designs featuring sustainable hand-woven pieces',
 }
 
 export const twitterMetadata: Metadata['twitter'] = {
   card: 'summary_large_image',
   title: 'Ida Romme - Contemporary Textile Design',
-  description: 'Contemporary textile designs featuring sustainable hand-woven pieces',
+  description:
+    'Contemporary textile designs featuring sustainable hand-woven pieces',
   creator: '@idaromme',
 }
 

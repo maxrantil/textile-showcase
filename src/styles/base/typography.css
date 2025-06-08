@@ -6,39 +6,39 @@
 
 /* Fluid typography with better mobile scaling */
 .text-display-mobile {
-    font-size: clamp(28px, 8vw, 64px);
-    font-weight: 300;
-    line-height: 1.1;
-    letter-spacing: -0.02em;
+  font-size: clamp(28px, 8vw, 64px);
+  font-weight: 300;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
 }
 
 .text-h1-mobile {
-    font-size: clamp(24px, 6vw, 48px);
-    font-weight: 300;
-    line-height: 1.2;
-    letter-spacing: -0.01em;
+  font-size: clamp(24px, 6vw, 48px);
+  font-weight: 300;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
 }
 
 .text-h2-mobile {
-    font-size: clamp(20px, 5vw, 32px);
-    font-weight: 300;
-    line-height: 1.3;
+  font-size: clamp(20px, 5vw, 32px);
+  font-weight: 300;
+  line-height: 1.3;
 }
 
 .text-body-large {
-    font-size: clamp(18px, 3vw, 20px);
-    line-height: 1.6;
+  font-size: clamp(18px, 3vw, 20px);
+  line-height: 1.6;
 }
 
 .text-body-mobile {
-    font-size: clamp(16px, 2.5vw, 18px);
-    line-height: 1.6;
+  font-size: clamp(16px, 2.5vw, 18px);
+  line-height: 1.6;
 }
 
 .text-caption-mobile {
-    font-size: clamp(14px, 2vw, 16px);
-    line-height: 1.4;
-    color: #666;
+  font-size: clamp(14px, 2vw, 16px);
+  line-height: 1.4;
+  color: #666;
 }
 
 /* Text quality improvements */
@@ -48,15 +48,15 @@
 .text-body-large,
 .text-body-mobile,
 .text-caption-mobile {
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    hyphens: auto;
-    max-width: 100%;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  max-width: 100%;
 }
 
 /* Better text rendering on mobile */
 .text-crisp {
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }

@@ -29,12 +29,12 @@ export interface CarouselDesktopLayoutProps extends CarouselLayoutProps {
 }
 
 export interface CarouselMobileLayoutProps extends CarouselLayoutProps {
-    // Mobile-specific props
-    swipeThreshold?: number
-    showDots?: boolean
-    autoplay?: boolean
-    autoplayInterval?: number
-  }
+  // Mobile-specific props
+  swipeThreshold?: number
+  showDots?: boolean
+  autoplay?: boolean
+  autoplayInterval?: number
+}
 
 export interface ImageCarouselProps extends BaseCarouselProps {
   // Main component props

@@ -36,30 +36,30 @@ const CarouselMobileLayout = memo(function CarouselMobileLayout({
   projectTechnique,
   projectDimensions,
   className = '',
-  style
+  style,
 }: CarouselMobileLayoutProps) {
   const containerStyle: React.CSSProperties = {
     minHeight: '100vh',
     background: '#fafafa',
     paddingTop: '80px',
     paddingBottom: '60px',
-    ...style
+    ...style,
   }
 
   const contentStyle: React.CSSProperties = {
     maxWidth: '100%',
     margin: '0 auto',
-    padding: '0 20px'
+    padding: '0 20px',
   }
 
   return (
     <>
       <KeyboardScrollHandler />
-      
+
       <div className={className} style={containerStyle}>
         <div style={contentStyle}>
           {/* Project Header */}
-          <ProjectDetails 
+          <ProjectDetails
             projectTitle={projectTitle}
             projectYear={projectYear}
             projectDescription={projectDescription}
@@ -68,9 +68,9 @@ const CarouselMobileLayout = memo(function CarouselMobileLayout({
             projectDimensions={projectDimensions}
             isMobile={true}
           />
-          
+
           {/* Images Stack */}
-          <MobileImageStack 
+          <MobileImageStack
             images={images}
             mainImage={mainImage}
             projectTitle={projectTitle}

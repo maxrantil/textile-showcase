@@ -17,7 +17,7 @@ export function useHeaderBreakpointLogic() {
   }, [breakpoint])
 
   const toggleMobileMenu = useCallback(() => {
-    setIsMobileMenuOpen(prev => {
+    setIsMobileMenuOpen((prev) => {
       const newState = !prev
       UmamiEvents.mobileMenuToggle(newState ? 'open' : 'close')
       return newState
@@ -45,6 +45,6 @@ export function useHeaderBreakpointLogic() {
     toggleMobileMenu,
     closeMobileMenu,
     handleMobileMenuBackdrop,
-    handleMobileMenuEscape
+    handleMobileMenuEscape,
   }
 }

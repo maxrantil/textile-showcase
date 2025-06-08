@@ -13,12 +13,12 @@ interface NavLinkProps {
   onClick?: () => void
 }
 
-export const NavLink = memo(function NavLink({ 
-  href, 
-  label, 
-  isActive, 
+export const NavLink = memo(function NavLink({
+  href,
+  label,
+  isActive,
   isMobile = false,
-  onClick
+  onClick,
 }: NavLinkProps) {
   const handleClick = () => {
     // Track navigation
@@ -37,8 +37,8 @@ export const NavLink = memo(function NavLink({
   }
 
   const linkStyles: React.CSSProperties = {
-    fontSize: isMobile 
-      ? RESPONSIVE_CONFIG.typography.bodyLarge 
+    fontSize: isMobile
+      ? RESPONSIVE_CONFIG.typography.bodyLarge
       : RESPONSIVE_CONFIG.typography.bodySmall,
     letterSpacing: '1px',
     color: isActive ? '#666' : '#333',
@@ -51,17 +51,19 @@ export const NavLink = memo(function NavLink({
     ...(isMobile && {
       minHeight: '44px',
       display: 'flex',
-      alignItems: 'center'
-    })
+      alignItems: 'center',
+    }),
   }
 
   return (
-    <Link 
+    <Link
       href={href}
       onClick={handleClick}
       style={linkStyles}
-      onMouseEnter={(e) => e.currentTarget.style.color = '#666'}
-      onMouseLeave={(e) => e.currentTarget.style.color = isActive ? '#666' : '#333'}
+      onMouseEnter={(e) => (e.currentTarget.style.color = '#666')}
+      onMouseLeave={(e) =>
+        (e.currentTarget.style.color = isActive ? '#666' : '#333')
+      }
       aria-current={isActive ? 'page' : undefined}
     >
       {label}
@@ -76,7 +78,7 @@ export const NavLink = memo(function NavLink({
             width: '20px',
             height: '2px',
             backgroundColor: '#333',
-            borderRadius: '1px'
+            borderRadius: '1px',
           }}
           aria-hidden="true"
         />

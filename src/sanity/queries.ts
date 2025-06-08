@@ -4,8 +4,8 @@
  * Base fragments for reusable query parts
  */
 const fragments = {
-    // Image with metadata
-    imageWithMetadata: `
+  // Image with metadata
+  imageWithMetadata: `
       asset-> {
         _id,
         metadata {
@@ -13,9 +13,9 @@ const fragments = {
         }
       }
     `,
-    
-    // Gallery image with caption
-    galleryImage: `
+
+  // Gallery image with caption
+  galleryImage: `
       _key,
       asset-> {
         _id,
@@ -25,9 +25,9 @@ const fragments = {
       },
       caption
     `,
-    
-    // Basic textile design fields
-    basicTextileDesign: `
+
+  // Basic textile design fields
+  basicTextileDesign: `
       _id,
       title,
       slug,
@@ -35,15 +35,15 @@ const fragments = {
       featured,
       order,
       _createdAt
-    `
-  }
-  
-  /**
-   * Home page gallery queries
-   */
-  export const homeQueries = {
-    // Get designs for home page with proper sorting
-    getDesignsForHome: `
+    `,
+}
+
+/**
+ * Home page gallery queries
+ */
+export const homeQueries = {
+  // Get designs for home page with proper sorting
+  getDesignsForHome: `
       *[_type == "textileDesign"] {
         ${fragments.basicTextileDesign},
         image {
@@ -55,24 +55,24 @@ const fragments = {
         _createdAt desc // Finally by creation date (newest first)
       )[0...20]
     `,
-  
-    // Get featured designs only
-    getFeaturedDesigns: `
+
+  // Get featured designs only
+  getFeaturedDesigns: `
       *[_type == "textileDesign" && featured == true] {
         ${fragments.basicTextileDesign},
         image {
           ${fragments.imageWithMetadata}
         }
       } | order(order asc, _createdAt desc)[0...10]
-    `
-  }
-  
-  /**
-   * Project page queries
-   */
-  export const projectQueries = {
-    // Get single project by slug with all details
-    getProjectBySlug: `
+    `,
+}
+
+/**
+ * Project page queries
+ */
+export const projectQueries = {
+  // Get single project by slug with all details
+  getProjectBySlug: `
       *[_type == "textileDesign" && (slug.current == $slug || _id == $slug)][0] {
         ${fragments.basicTextileDesign},
         image {
@@ -88,9 +88,9 @@ const fragments = {
         technique
       }
     `,
-  
-    // Get project navigation (previous/next)
-    getProjectNavigation: `
+
+  // Get project navigation (previous/next)
+  getProjectNavigation: `
       {
         "current": *[_type == "textileDesign" && slug.current == $slug][0] {
           _id,
@@ -109,23 +109,23 @@ const fragments = {
           slug
         }
       }
-    `
-  }
-  
-  /**
-   * Sitemap and SEO queries
-   */
-  export const seoQueries = {
-    // Get all slugs for sitemap generation
-    getAllSlugs: `
+    `,
+}
+
+/**
+ * Sitemap and SEO queries
+ */
+export const seoQueries = {
+  // Get all slugs for sitemap generation
+  getAllSlugs: `
       *[_type == "textileDesign" && defined(slug.current)] {
         "slug": slug.current,
         _updatedAt
       }
     `,
-  
-    // Get metadata for all projects
-    getAllMetadata: `
+
+  // Get metadata for all projects
+  getAllMetadata: `
       *[_type == "textileDesign"] {
         _id,
         title,
@@ -137,15 +137,15 @@ const fragments = {
           ${fragments.imageWithMetadata}
         }
       } | order(order asc, _createdAt desc)
-    `
-  }
-  
-  /**
-   * Admin and management queries
-   */
-  export const adminQueries = {
-    // Get all designs with full details for admin
-    getAllDesignsAdmin: `
+    `,
+}
+
+/**
+ * Admin and management queries
+ */
+export const adminQueries = {
+  // Get all designs with full details for admin
+  getAllDesignsAdmin: `
       *[_type == "textileDesign"] {
         ${fragments.basicTextileDesign},
         image {
@@ -159,52 +159,52 @@ const fragments = {
         _updatedAt
       } | order(order asc, _createdAt desc)
     `,
-  
-    // Get design count and statistics
-    getDesignStats: `
+
+  // Get design count and statistics
+  getDesignStats: `
       {
         "total": count(*[_type == "textileDesign"]),
         "featured": count(*[_type == "textileDesign" && featured == true]),
         "published": count(*[_type == "textileDesign" && defined(slug.current)]),
         "lastUpdated": *[_type == "textileDesign"] | order(_updatedAt desc)[0]._updatedAt
       }
-    `
-  }
-  
-  /**
-   * All queries combined for easy import
-   */
-  export const queries = {
-    // Home page
-    getDesignsForHome: homeQueries.getDesignsForHome,
-    getFeaturedDesigns: homeQueries.getFeaturedDesigns,
-    
-    // Project pages
-    getProjectBySlug: projectQueries.getProjectBySlug,
-    getProjectNavigation: projectQueries.getProjectNavigation,
-    
-    // SEO and sitemap
-    getAllSlugs: seoQueries.getAllSlugs,
-    getAllMetadata: seoQueries.getAllMetadata,
-    
-    // Admin
-    getAllDesignsAdmin: adminQueries.getAllDesignsAdmin,
-    getDesignStats: adminQueries.getDesignStats
-  }
-  
-  /**
-   * Query parameter validation helpers
-   */
-  export const queryParams = {
-    validateSlug: (slug: string): boolean => {
-      return typeof slug === 'string' && slug.length > 0 && slug.length < 200
-    },
-    
-    validateLimit: (limit: number): boolean => {
-      return Number.isInteger(limit) && limit > 0 && limit <= 100
-    },
-    
-    validateOffset: (offset: number): boolean => {
-      return Number.isInteger(offset) && offset >= 0
-    }
-  }
+    `,
+}
+
+/**
+ * All queries combined for easy import
+ */
+export const queries = {
+  // Home page
+  getDesignsForHome: homeQueries.getDesignsForHome,
+  getFeaturedDesigns: homeQueries.getFeaturedDesigns,
+
+  // Project pages
+  getProjectBySlug: projectQueries.getProjectBySlug,
+  getProjectNavigation: projectQueries.getProjectNavigation,
+
+  // SEO and sitemap
+  getAllSlugs: seoQueries.getAllSlugs,
+  getAllMetadata: seoQueries.getAllMetadata,
+
+  // Admin
+  getAllDesignsAdmin: adminQueries.getAllDesignsAdmin,
+  getDesignStats: adminQueries.getDesignStats,
+}
+
+/**
+ * Query parameter validation helpers
+ */
+export const queryParams = {
+  validateSlug: (slug: string): boolean => {
+    return typeof slug === 'string' && slug.length > 0 && slug.length < 200
+  },
+
+  validateLimit: (limit: number): boolean => {
+    return Number.isInteger(limit) && limit > 0 && limit <= 100
+  },
+
+  validateOffset: (offset: number): boolean => {
+    return Number.isInteger(offset) && offset >= 0
+  },
+}

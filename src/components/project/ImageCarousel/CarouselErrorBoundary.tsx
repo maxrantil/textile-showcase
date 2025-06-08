@@ -14,7 +14,10 @@ interface CarouselErrorBoundaryProps {
   onError?: (error: Error, errorInfo: React.ErrorInfo) => void
 }
 
-export class CarouselErrorBoundary extends Component<CarouselErrorBoundaryProps, CarouselErrorBoundaryState> {
+export class CarouselErrorBoundary extends Component<
+  CarouselErrorBoundaryProps,
+  CarouselErrorBoundaryState
+> {
   constructor(props: CarouselErrorBoundaryProps) {
     super(props)
     this.state = { hasError: false }
@@ -41,29 +44,35 @@ export class CarouselErrorBoundary extends Component<CarouselErrorBoundaryProps,
       }
 
       return (
-        <div style={{
-          minHeight: '50vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: '#fafafa',
-          padding: '40px',
-          textAlign: 'center'
-        }}>
+        <div
+          style={{
+            minHeight: '50vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: '#fafafa',
+            padding: '40px',
+            textAlign: 'center',
+          }}
+        >
           <div>
-            <h2 style={{
-              fontSize: '24px',
-              fontWeight: 300,
-              margin: '0 0 16px 0',
-              color: '#333'
-            }}>
+            <h2
+              style={{
+                fontSize: '24px',
+                fontWeight: 300,
+                margin: '0 0 16px 0',
+                color: '#333',
+              }}
+            >
               Unable to load project images
             </h2>
-            <p style={{
-              fontSize: '16px',
-              color: '#666',
-              marginBottom: '24px'
-            }}>
+            <p
+              style={{
+                fontSize: '16px',
+                color: '#666',
+                marginBottom: '24px',
+              }}
+            >
               Something went wrong while loading the image carousel.
             </p>
             <button
@@ -75,7 +84,7 @@ export class CarouselErrorBoundary extends Component<CarouselErrorBoundaryProps,
                 border: 'none',
                 borderRadius: '6px',
                 cursor: 'pointer',
-                fontSize: '14px'
+                fontSize: '14px',
               }}
             >
               Reload Page

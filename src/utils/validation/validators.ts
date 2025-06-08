@@ -12,7 +12,7 @@ export const validators = {
     const trimmed = value.trim()
     return {
       isValid: trimmed.length > 0,
-      error: trimmed.length === 0 ? 'This field is required' : undefined
+      error: trimmed.length === 0 ? 'This field is required' : undefined,
     }
   },
 
@@ -23,7 +23,10 @@ export const validators = {
     const trimmed = value.trim()
     return {
       isValid: trimmed.length >= minLength,
-      error: trimmed.length < minLength ? `Must be at least ${minLength} characters` : undefined
+      error:
+        trimmed.length < minLength
+          ? `Must be at least ${minLength} characters`
+          : undefined,
     }
   },
 
@@ -33,7 +36,10 @@ export const validators = {
   maxLength: (value: string, maxLength: number): ValidationResult => {
     return {
       isValid: value.length <= maxLength,
-      error: value.length > maxLength ? `Must be no more than ${maxLength} characters` : undefined
+      error:
+        value.length > maxLength
+          ? `Must be no more than ${maxLength} characters`
+          : undefined,
     }
   },
 
@@ -45,17 +51,23 @@ export const validators = {
     const trimmed = value.trim()
     return {
       isValid: emailRegex.test(trimmed),
-      error: !emailRegex.test(trimmed) ? 'Please enter a valid email address' : undefined
+      error: !emailRegex.test(trimmed)
+        ? 'Please enter a valid email address'
+        : undefined,
     }
   },
 
   /**
    * Pattern validator
    */
-  pattern: (value: string, pattern: RegExp, errorMessage: string): ValidationResult => {
+  pattern: (
+    value: string,
+    pattern: RegExp,
+    errorMessage: string
+  ): ValidationResult => {
     return {
       isValid: pattern.test(value),
-      error: !pattern.test(value) ? errorMessage : undefined
+      error: !pattern.test(value) ? errorMessage : undefined,
     }
   },
 
@@ -67,7 +79,10 @@ export const validators = {
     const trimmed = value.trim()
     return {
       isValid: trimmed.length === 0 || phoneRegex.test(trimmed), // Optional field
-      error: trimmed.length > 0 && !phoneRegex.test(trimmed) ? 'Please enter a valid phone number' : undefined
+      error:
+        trimmed.length > 0 && !phoneRegex.test(trimmed)
+          ? 'Please enter a valid phone number'
+          : undefined,
     }
   },
 
@@ -81,7 +96,7 @@ export const validators = {
     } catch {
       return {
         isValid: false,
-        error: 'Please enter a valid URL'
+        error: 'Please enter a valid URL',
       }
     }
   },
@@ -89,9 +104,12 @@ export const validators = {
   /**
    * Custom validator wrapper
    */
-  custom: (value: string, validatorFn: (value: string) => ValidationResult): ValidationResult => {
+  custom: (
+    value: string,
+    validatorFn: (value: string) => ValidationResult
+  ): ValidationResult => {
     return validatorFn(value)
-  }
+  },
 }
 
 /**
@@ -101,28 +119,28 @@ export const commonValidationRules = {
   name: {
     required: true,
     minLength: 2,
-    maxLength: 100
+    maxLength: 100,
   },
   email: {
     required: true,
-    maxLength: 254
+    maxLength: 254,
   },
   message: {
     required: true,
     minLength: 10,
-    maxLength: 2000
+    maxLength: 2000,
   },
   phone: {
     required: false,
     minLength: 10,
-    maxLength: 20
+    maxLength: 20,
   },
   company: {
     required: false,
-    maxLength: 100
+    maxLength: 100,
   },
   subject: {
     required: false,
-    maxLength: 200
-  }
+    maxLength: 200,
+  },
 }

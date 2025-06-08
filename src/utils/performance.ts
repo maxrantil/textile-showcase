@@ -11,13 +11,15 @@ export class PerformanceMonitor {
     if (!startTime) {
       // Only warn in development and make it less noisy
       if (process.env.NODE_ENV === 'development') {
-        console.warn(`⚠️ Performance metric '${name}' was ended but never started`)
+        console.warn(
+          `⚠️ Performance metric '${name}' was ended but never started`
+        )
       }
       return 0
     }
     const duration = performance.now() - startTime
     this.metrics.delete(name)
-    
+
     // Only log slow operations in development
     if (process.env.NODE_ENV === 'development' && duration > 100) {
       console.log(`⏱️ ${name}: ${duration.toFixed(2)}ms`)
@@ -65,13 +67,13 @@ export function throttle<T extends (...args: unknown[]) => unknown>(
   limit: number
 ): T {
   let inThrottle: boolean
-  return (function(this: unknown, ...args: unknown[]) {
+  return function (this: unknown, ...args: unknown[]) {
     if (!inThrottle) {
       func.apply(this, args)
       inThrottle = true
       setTimeout(() => (inThrottle = false), limit)
     }
-  }) as T
+  } as T
 }
 
 export function debounce<T extends (...args: unknown[]) => unknown>(
@@ -79,10 +81,10 @@ export function debounce<T extends (...args: unknown[]) => unknown>(
   wait: number
 ): T {
   let timeout: NodeJS.Timeout
-  return (function(this: unknown, ...args: unknown[]) {
+  return function (this: unknown, ...args: unknown[]) {
     clearTimeout(timeout)
     timeout = setTimeout(() => func.apply(this, args), wait)
-  }) as T
+  } as T
 }
 
 // Memory monitoring
@@ -112,7 +114,9 @@ export function logMemoryUsage(label?: string) {
   if (process.env.NODE_ENV === 'development') {
     const memory = getMemoryUsage()
     if (memory) {
-      console.log(`🧠 Memory ${label ? `(${label})` : ''}: ${memory.used}MB / ${memory.total}MB (limit: ${memory.limit}MB)`)
+      console.log(
+        `🧠 Memory ${label ? `(${label})` : ''}: ${memory.used}MB / ${memory.total}MB (limit: ${memory.limit}MB)`
+      )
     }
   }
 }

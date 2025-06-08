@@ -29,7 +29,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
   try {
     const { slug } = await params
     const project = await getProject(slug)
-    
+
     if (!project) {
       console.log(`🚫 Project not found, showing 404: ${slug}`)
       notFound()

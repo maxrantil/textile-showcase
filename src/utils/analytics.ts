@@ -25,7 +25,7 @@ export const UmamiEvents = {
   viewProject: (projectTitle: string, projectYear?: number) =>
     trackEvent('project-view', {
       title: projectTitle,
-      year: projectYear
+      year: projectYear,
     }),
 
   // Gallery navigation - enhanced with method tracking
@@ -33,7 +33,7 @@ export const UmamiEvents = {
     trackEvent('gallery-navigate', {
       method, // 'arrow-left', 'arrow-right', 'keyboard-left', 'keyboard-right', 'swipe-left', 'swipe-right', 'dot-click'
       from: fromIndex,
-      to: toIndex
+      to: toIndex,
     }),
 
   // Contact form
@@ -51,14 +51,14 @@ export const UmamiEvents = {
   projectImageView: (projectTitle: string, imageNumber: number) =>
     trackEvent('project-image-view', {
       project: projectTitle,
-      image: imageNumber
+      image: imageNumber,
     }),
 
   // Project page navigation
   projectNavigation: (direction: 'previous' | 'next', projectTitle: string) =>
     trackEvent('project-navigate', {
       direction,
-      project: projectTitle
+      project: projectTitle,
     }),
 
   // Mobile menu interactions
@@ -66,5 +66,5 @@ export const UmamiEvents = {
   mobileMenuClose: (method: 'click' | 'backdrop' | 'keyboard') =>
     trackEvent('mobile-menu-close', { method }),
   mobileMenuToggle: (action: 'open' | 'close') =>
-    trackEvent('mobile-menu-toggle', { action })
+    trackEvent('mobile-menu-toggle', { action }),
 }

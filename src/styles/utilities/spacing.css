@@ -6,38 +6,38 @@
 
 /* Responsive spacing system */
 .spacing-mobile-xs {
-    margin: clamp(8px, 2vw, 12px);
+  margin: clamp(8px, 2vw, 12px);
 }
 
 .spacing-mobile-sm {
-    margin: clamp(12px, 3vw, 16px);
+  margin: clamp(12px, 3vw, 16px);
 }
 
 .spacing-mobile-md {
-    margin: clamp(16px, 4vw, 24px);
+  margin: clamp(16px, 4vw, 24px);
 }
 
 .spacing-mobile-lg {
-    margin: clamp(24px, 5vw, 32px);
+  margin: clamp(24px, 5vw, 32px);
 }
 
 .spacing-mobile-xl {
-    margin: clamp(32px, 6vw, 48px);
+  margin: clamp(32px, 6vw, 48px);
 }
 
 /* Padding variants */
 .padding-mobile-xs {
-    padding: clamp(8px, 2vw, 12px);
+  padding: clamp(8px, 2vw, 12px);
 }
 
 .padding-mobile-sm {
-    padding: clamp(12px, 3vw, 16px);
+  padding: clamp(12px, 3vw, 16px);
 }
 
 .padding-mobile-md {
-    padding: clamp(16px, 4vw, 24px);
+  padding: clamp(16px, 4vw, 24px);
 }
 
 .padding-mobile-lg {
-    padding: clamp(24px, 5vw, 32px);
+  padding: clamp(24px, 5vw, 32px);
 }

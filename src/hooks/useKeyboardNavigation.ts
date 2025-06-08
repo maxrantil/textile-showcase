@@ -26,18 +26,18 @@ export function useKeyboardNavigation({
   onAbout,
   onWork,
   onContact,
-  enabled = true
+  enabled = true,
 }: UseKeyboardNavigationProps) {
   const scrollIntervals = useRef<Map<string, NodeJS.Timeout>>(new Map())
 
   // Create throttled scroll functions
-  const throttledScrollUp = useMemo(() => 
-    onScrollUp ? throttle(onScrollUp, 100) : undefined, 
+  const throttledScrollUp = useMemo(
+    () => (onScrollUp ? throttle(onScrollUp, 100) : undefined),
     [onScrollUp]
   )
-  
-  const throttledScrollDown = useMemo(() => 
-    onScrollDown ? throttle(onScrollDown, 100) : undefined, 
+
+  const throttledScrollDown = useMemo(
+    () => (onScrollDown ? throttle(onScrollDown, 100) : undefined),
     [onScrollDown]
   )
 
@@ -49,16 +49,18 @@ export function useKeyboardNavigation({
 
     const handleKeyDown = (e: KeyboardEvent) => {
       // Don't interfere with form inputs
-      if (e.target instanceof HTMLInputElement ||
-          e.target instanceof HTMLTextAreaElement ||
-          e.target instanceof HTMLSelectElement) {
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement ||
+        e.target instanceof HTMLSelectElement
+      ) {
         return
       }
 
       // For scroll keys, handle continuous scrolling with throttling
       if (['ArrowUp', 'ArrowDown', 'j', 'k'].includes(e.key)) {
         e.preventDefault()
-        
+
         // If interval already exists for this key, don't create another
         if (currentIntervals.has(e.key)) {
           return
@@ -141,22 +143,33 @@ export function useKeyboardNavigation({
 
     // Clear all intervals when window loses focus
     const handleBlur = () => {
-      currentIntervals.forEach(interval => clearInterval(interval))
+      currentIntervals.forEach((interval) => clearInterval(interval))
       currentIntervals.clear()
     }
 
     window.addEventListener('keydown', handleKeyDown)
     window.addEventListener('keyup', handleKeyUp)
     window.addEventListener('blur', handleBlur)
-    
+
     return () => {
       // Clean up intervals using the captured reference
-      currentIntervals.forEach(interval => clearInterval(interval))
+      currentIntervals.forEach((interval) => clearInterval(interval))
       currentIntervals.clear()
-      
+
       window.removeEventListener('keydown', handleKeyDown)
       window.removeEventListener('keyup', handleKeyUp)
       window.removeEventListener('blur', handleBlur)
     }
-  }, [throttledScrollUp, throttledScrollDown, onPrevious, onNext, onEscape, onEnter, onAbout, onWork, onContact, enabled])
+  }, [
+    throttledScrollUp,
+    throttledScrollDown,
+    onPrevious,
+    onNext,
+    onEscape,
+    onEnter,
+    onAbout,
+    onWork,
+    onContact,
+    enabled,
+  ])
 }

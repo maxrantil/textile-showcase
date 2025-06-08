@@ -27,109 +27,124 @@ interface ContactFormProps {
 const validationRules = {
   name: commonValidationRules.name,
   email: commonValidationRules.email,
-  message: commonValidationRules.message
+  message: commonValidationRules.message,
 }
 
-export default function ContactForm({ onSuccess, onError, className = '' }: ContactFormProps) {
+export default function ContactForm({
+  onSuccess,
+  onError,
+  className = '',
+}: ContactFormProps) {
   const [formData, setFormData] = useState<ContactFormData>({
     name: '',
     email: '',
-    message: ''
+    message: '',
   })
-  
-  const [validator] = useState(() => new FormValidator<ContactFormData>(validationRules))
+
+  const [validator] = useState(
+    () => new FormValidator<ContactFormData>(validationRules)
+  )
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const [submitStatus, setSubmitStatus] = useState<
+    'idle' | 'success' | 'error'
+  >('idle')
   const [submitError, setSubmitError] = useState<string>('')
 
-  const handleFieldChange = useCallback((fieldName: string, value: string) => {
-    // Update form data
-    setFormData(prev => ({ ...prev, [fieldName]: value }))
-    
-    // Clear submit status when user starts typing
-    if (submitStatus !== 'idle') {
-      setSubmitStatus('idle')
-      setSubmitError('')
-    }
-    
-    // Validate field
-    const result = validator.validateField(fieldName, value)
-    
-    // Update field errors
-    setFieldErrors(prev => {
-      const newErrors = { ...prev }
-      if (result.error) {
-        newErrors[fieldName] = result.error
-      } else {
-        delete newErrors[fieldName]
+  const handleFieldChange = useCallback(
+    (fieldName: string, value: string) => {
+      // Update form data
+      setFormData((prev) => ({ ...prev, [fieldName]: value }))
+
+      // Clear submit status when user starts typing
+      if (submitStatus !== 'idle') {
+        setSubmitStatus('idle')
+        setSubmitError('')
       }
-      return newErrors
-    })
-  }, [validator, submitStatus])
 
-  const handleSubmit = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    // Validate entire form
-    const validationResult = validator.validateForm(formData)
-    
-    if (!validationResult.isValid) {
-      setFieldErrors(validationResult.errors)
-      UmamiEvents.contactFormError()
-      return
-    }
+      // Validate field
+      const result = validator.validateField(fieldName, value)
 
-    setIsSubmitting(true)
-    setSubmitStatus('idle')
-    setFieldErrors({})
-    setSubmitError('')
-
-    // Track form submission attempt
-    UmamiEvents.contactFormSubmit()
-
-    try {
-      const response = await fetch('/api/contact', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+      // Update field errors
+      setFieldErrors((prev) => {
+        const newErrors = { ...prev }
+        if (result.error) {
+          newErrors[fieldName] = result.error
+        } else {
+          delete newErrors[fieldName]
+        }
+        return newErrors
       })
+    },
+    [validator, submitStatus]
+  )
 
-      const data = await response.json()
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault()
 
-      if (response.ok) {
-        setSubmitStatus('success')
-        setFormData({ name: '', email: '', message: '' })
-        validator.reset()
-        
-        // Track successful form submission
-        UmamiEvents.contactFormSuccess()
-        
-        onSuccess?.()
-      } else {
-        const errorMessage = data.error || 'Failed to send message'
+      // Validate entire form
+      const validationResult = validator.validateForm(formData)
+
+      if (!validationResult.isValid) {
+        setFieldErrors(validationResult.errors)
+        UmamiEvents.contactFormError()
+        return
+      }
+
+      setIsSubmitting(true)
+      setSubmitStatus('idle')
+      setFieldErrors({})
+      setSubmitError('')
+
+      // Track form submission attempt
+      UmamiEvents.contactFormSubmit()
+
+      try {
+        const response = await fetch('/api/contact', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData),
+        })
+
+        const data = await response.json()
+
+        if (response.ok) {
+          setSubmitStatus('success')
+          setFormData({ name: '', email: '', message: '' })
+          validator.reset()
+
+          // Track successful form submission
+          UmamiEvents.contactFormSuccess()
+
+          onSuccess?.()
+        } else {
+          const errorMessage = data.error || 'Failed to send message'
+          setSubmitStatus('error')
+          setSubmitError(errorMessage)
+
+          // Track form submission error
+          UmamiEvents.contactFormError()
+
+          onError?.(errorMessage)
+        }
+      } catch (error) {
+        console.error('Error submitting form:', error)
+        const errorMessage =
+          'Network error. Please check your connection and try again.'
         setSubmitStatus('error')
         setSubmitError(errorMessage)
-        
-        // Track form submission error
+
+        // Track network error
         UmamiEvents.contactFormError()
-        
+
         onError?.(errorMessage)
+      } finally {
+        setIsSubmitting(false)
       }
-    } catch (error) {
-      console.error('Error submitting form:', error)
-      const errorMessage = 'Network error. Please check your connection and try again.'
-      setSubmitStatus('error')
-      setSubmitError(errorMessage)
-      
-      // Track network error
-      UmamiEvents.contactFormError()
-      
-      onError?.(errorMessage)
-    } finally {
-      setIsSubmitting(false)
-    }
-  }, [formData, validator, onSuccess, onError])
+    },
+    [formData, validator, onSuccess, onError]
+  )
 
   const handleRetry = useCallback(() => {
     setSubmitStatus('idle')
@@ -152,7 +167,7 @@ export default function ContactForm({ onSuccess, onError, className = '' }: Cont
             placeholder="Your full name"
             autoComplete="name"
           />
-          
+
           <FormInput
             name="email"
             type="email"
@@ -165,7 +180,7 @@ export default function ContactForm({ onSuccess, onError, className = '' }: Cont
             autoComplete="email"
           />
         </div>
-        
+
         {/* Message Field */}
         <FormTextarea
           name="message"
@@ -177,7 +192,7 @@ export default function ContactForm({ onSuccess, onError, className = '' }: Cont
           placeholder="Tell me about your project, ideas, or any questions you have..."
           helpText="Please include any relevant details about your project or inquiry."
         />
-        
+
         {/* Submit Button */}
         <div className="form-submit">
           <button

@@ -17,7 +17,7 @@ export function ProjectContent({ project, slug }: ProjectContentProps) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(structuredData)
+          __html: JSON.stringify(structuredData),
         }}
       />
 
@@ -28,12 +28,14 @@ export function ProjectContent({ project, slug }: ProjectContentProps) {
         {/* Project Content */}
         <div style={{ paddingBottom: '40px' }}>
           <ErrorBoundary>
-            <ImageCarousel 
+            <ImageCarousel
               images={project.gallery || []}
               mainImage={project.image}
               projectTitle={project.title}
               projectYear={project.year}
-              projectDescription={project.detailedDescription || project.description}
+              projectDescription={
+                project.detailedDescription || project.description
+              }
               projectMaterials={project.materials}
               projectTechnique={project.technique}
               projectDimensions={project.dimensions}

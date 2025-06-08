@@ -8,7 +8,9 @@ import { TextileDesign } from '@/sanity/types'
 interface ScrollRestoration {
   isRestoring: boolean
   restorationAttempted: boolean
-  attemptRestoration: (scrollToIndex: (index: number, instant?: boolean) => void) => void
+  attemptRestoration: (
+    scrollToIndex: (index: number, instant?: boolean) => void
+  ) => void
   markRestored: () => void
 }
 
@@ -31,7 +33,7 @@ export function useGalleryLifecycle({
   scrollToIndex,
   setCurrentIndex,
   realTimeCurrentIndex,
-  markFirstMountComplete
+  markFirstMountComplete,
 }: GalleryLifecycleProps) {
   // Handle restoration when component mounts
   useEffect(() => {
@@ -41,18 +43,27 @@ export function useGalleryLifecycle({
     scrollContainerRef.current.setAttribute('data-current-index', '0')
 
     const attemptRestore = () => {
-      restoration.attemptRestoration(
-        (index: number, instant?: boolean) => {
-          setCurrentIndex(index)
-          realTimeCurrentIndex.current = index
-          scrollContainerRef.current?.setAttribute('data-current-index', index.toString())
-          scrollToIndex(index, instant)
-        }
-      )
+      restoration.attemptRestoration((index: number, instant?: boolean) => {
+        setCurrentIndex(index)
+        realTimeCurrentIndex.current = index
+        scrollContainerRef.current?.setAttribute(
+          'data-current-index',
+          index.toString()
+        )
+        scrollToIndex(index, instant)
+      })
     }
 
     attemptRestore()
-  }, [pathname, designs.length, scrollToIndex, setCurrentIndex, restoration, scrollContainerRef, realTimeCurrentIndex])
+  }, [
+    pathname,
+    designs.length,
+    scrollToIndex,
+    setCurrentIndex,
+    restoration,
+    scrollContainerRef,
+    realTimeCurrentIndex,
+  ])
 
   // Reset state on pathname change
   useEffect(() => {
@@ -64,9 +75,13 @@ export function useGalleryLifecycle({
     if (!restoration.restorationAttempted) return
 
     let isNavigating = false
-    const stopSaving = () => { isNavigating = true }
+    const stopSaving = () => {
+      isNavigating = true
+    }
     const resumeSaving = () => {
-      setTimeout(() => { isNavigating = false }, 200)
+      setTimeout(() => {
+        isNavigating = false
+      }, 200)
     }
 
     window.addEventListener('gallery-navigation-start', stopSaving)

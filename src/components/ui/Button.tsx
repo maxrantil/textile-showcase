@@ -3,7 +3,8 @@
 import React from 'react'
 import { LoadingSpinner } from './LoadingSpinner'
 
-export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+export interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost'
   size?: 'small' | 'medium' | 'large'
   loading?: boolean
@@ -28,7 +29,7 @@ export default function Button({
 }: ButtonProps) {
   // Get base mobile button classes
   const baseClasses = `btn-mobile touch-feedback ${className}`
-  
+
   // Get variant classes
   const variantClasses = (() => {
     switch (variant) {
@@ -42,7 +43,7 @@ export default function Button({
         return 'btn-mobile-secondary'
     }
   })()
-  
+
   // Size adjustments (mobile utilities handle base sizing)
   const sizeStyles: React.CSSProperties = (() => {
     switch (size) {
@@ -56,7 +57,7 @@ export default function Button({
   })()
 
   const combinedClasses = `${baseClasses} ${variantClasses}`
-  
+
   const combinedStyles: React.CSSProperties = {
     width: fullWidth ? '100%' : 'auto',
     opacity: disabled ? 0.6 : 1,
@@ -100,19 +101,28 @@ export default function Button({
 }
 
 // Pre-configured button variants for common use cases
-export const BackButton = ({ children = '← Back to Gallery', ...props }: Omit<ButtonProps, 'variant'>) => (
+export const BackButton = ({
+  children = '← Back to Gallery',
+  ...props
+}: Omit<ButtonProps, 'variant'>) => (
   <Button variant="outline" {...props}>
     {children}
   </Button>
 )
 
-export const SubmitButton = ({ children = 'Submit', ...props }: Omit<ButtonProps, 'variant'>) => (
+export const SubmitButton = ({
+  children = 'Submit',
+  ...props
+}: Omit<ButtonProps, 'variant'>) => (
   <Button variant="primary" {...props}>
     {children}
   </Button>
 )
 
-export const CancelButton = ({ children = 'Cancel', ...props }: Omit<ButtonProps, 'variant'>) => (
+export const CancelButton = ({
+  children = 'Cancel',
+  ...props
+}: Omit<ButtonProps, 'variant'>) => (
   <Button variant="ghost" {...props}>
     {children}
   </Button>

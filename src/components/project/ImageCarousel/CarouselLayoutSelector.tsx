@@ -14,33 +14,43 @@ const CarouselDesktopLayout = lazy(() => import('./CarouselDesktopLayout'))
 // Loading fallback component
 const CarouselLoadingFallback = memo(function CarouselLoadingFallback() {
   return (
-    <div style={{
-      minHeight: '50vh',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      background: '#fafafa'
-    }}>
-      <div style={{
-        padding: '20px',
-        textAlign: 'center',
-        color: '#666'
-      }}>
-        <div style={{
-          width: '40px',
-          height: '40px',
-          border: '3px solid #f3f3f3',
-          borderTop: '3px solid #333',
-          borderRadius: '50%',
-          animation: 'spin 1s linear infinite',
-          margin: '0 auto 10px'
-        }} />
+    <div
+      style={{
+        minHeight: '50vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: '#fafafa',
+      }}
+    >
+      <div
+        style={{
+          padding: '20px',
+          textAlign: 'center',
+          color: '#666',
+        }}
+      >
+        <div
+          style={{
+            width: '40px',
+            height: '40px',
+            border: '3px solid #f3f3f3',
+            borderTop: '3px solid #333',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+            margin: '0 auto 10px',
+          }}
+        />
         <p>Loading project...</p>
       </div>
       <style jsx>{`
         @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
+          0% {
+            transform: rotate(0deg);
+          }
+          100% {
+            transform: rotate(360deg);
+          }
         }
       `}</style>
     </div>
@@ -60,7 +70,7 @@ const CarouselLayoutSelector = memo(function CarouselLayoutSelector({
   ...carouselProps
 }: CarouselLayoutSelectorProps) {
   const { isMobile, isInitialized } = useCarouselLayoutDetector({
-    mobileBreakpoint: customBreakpoint
+    mobileBreakpoint: customBreakpoint,
   })
 
   // Show loading state during hydration to prevent layout shift

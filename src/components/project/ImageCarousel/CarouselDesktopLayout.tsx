@@ -40,7 +40,7 @@ const CarouselDesktopLayout = memo(function CarouselDesktopLayout({
   className = '',
   style,
   maxWidth = '1400px',
-  padding = '0 40px'
+  padding = '0 40px',
 }: CarouselDesktopLayoutProps) {
   const containerStyle: React.CSSProperties = {
     display: 'flex',
@@ -51,23 +51,23 @@ const CarouselDesktopLayout = memo(function CarouselDesktopLayout({
     padding,
     marginTop: '80px',
     position: 'relative',
-    ...style
+    ...style,
   }
 
   return (
     <>
       <KeyboardScrollHandler />
-      
+
       <div className={className} style={containerStyle}>
         {/* Desktop Carousel */}
-        <DesktopCarousel 
+        <DesktopCarousel
           images={images}
           mainImage={mainImage}
           projectTitle={projectTitle}
         />
-        
+
         {/* Project Details */}
-        <ProjectDetails 
+        <ProjectDetails
           projectTitle={projectTitle}
           projectYear={projectYear}
           projectDescription={projectDescription}

@@ -18,7 +18,7 @@ const ResponsiveHeader = memo(function ResponsiveHeader() {
         <div style={headerState.containerStyles}>
           {/* Logo/Brand */}
           <HeaderLogo logoStyles={headerState.logoStyles} />
-          
+
           {/* Navigation */}
           <HeaderNavigation
             breakpoint={headerState.breakpoint}

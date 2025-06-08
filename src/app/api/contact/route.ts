@@ -6,7 +6,7 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 export async function POST(request: NextRequest) {
   try {
     const { name, email, message } = await request.json()
-    
+
     // Validate required fields
     if (!name || !email || !message) {
       return NextResponse.json(
@@ -39,12 +39,11 @@ export async function POST(request: NextRequest) {
     })
 
     // Return success with the actual response data
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       data: data.data,
-      error: data.error 
+      error: data.error,
     })
-
   } catch (error) {
     console.error('Contact form error:', error)
     return NextResponse.json(

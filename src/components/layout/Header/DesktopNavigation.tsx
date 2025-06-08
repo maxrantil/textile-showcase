@@ -14,21 +14,25 @@ interface DesktopNavigationProps {
   pathname: string
 }
 
-export const DesktopNavigation = memo(function DesktopNavigation({ 
-  pathname 
+export const DesktopNavigation = memo(function DesktopNavigation({
+  pathname,
 }: DesktopNavigationProps) {
   return (
-    <div style={{
-      display: 'flex',
-      gap: '32px',
-      alignItems: 'center'
-    }}>
+    <div
+      style={{
+        display: 'flex',
+        gap: '32px',
+        alignItems: 'center',
+      }}
+    >
       {NAV_ITEMS.map((item) => (
         <NavLink
           key={item.href}
           href={item.href}
           label={item.label}
-          isActive={item.exact ? pathname === item.href : pathname.startsWith(item.href)}
+          isActive={
+            item.exact ? pathname === item.href : pathname.startsWith(item.href)
+          }
           isMobile={false}
         />
       ))}

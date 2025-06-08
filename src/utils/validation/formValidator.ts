@@ -1,18 +1,18 @@
 // src/utils/validation/formValidator.ts
 import { validators } from './validators'
-import type { 
-  FormValidationRules, 
-  FormValidationResult, 
-  FormErrors, 
+import type {
+  FormValidationRules,
+  FormValidationResult,
+  FormErrors,
   FieldValidationRule,
-  ValidationResult 
+  ValidationResult,
 } from './types'
 
 /**
  * Validate a single field against its rules
  */
 export function validateField(
-  value: string, 
+  value: string,
   rules: FieldValidationRule,
   fieldName?: string
 ): ValidationResult {
@@ -64,8 +64,8 @@ export function validateField(
   // Pattern validation
   if (rules.pattern) {
     const patternResult = validators.pattern(
-      value, 
-      rules.pattern, 
+      value,
+      rules.pattern,
       `Please enter a valid ${fieldName || 'value'}`
     )
     if (!patternResult.isValid) {
@@ -88,7 +88,7 @@ export function validateField(
  * Validate entire form against validation rules
  */
 export function validateForm(
-  formData: Record<string, string>, 
+  formData: Record<string, string>,
   validationRules: FormValidationRules
 ): FormValidationResult {
   const errors: FormErrors = {}
@@ -98,7 +98,7 @@ export function validateForm(
   for (const [fieldName, fieldRules] of Object.entries(validationRules)) {
     const fieldValue = formData[fieldName] || ''
     const fieldResult = validateField(fieldValue, fieldRules, fieldName)
-    
+
     if (!fieldResult.isValid && fieldResult.error) {
       errors[fieldName] = fieldResult.error
       isValid = false
@@ -138,7 +138,9 @@ export function createDebouncedValidator(
 /**
  * Form validation hooks for React components
  */
-export class FormValidator<T extends Record<string, string> = Record<string, string>> {
+export class FormValidator<
+  T extends Record<string, string> = Record<string, string>,
+> {
   private rules: FormValidationRules
   private errors: FormErrors = {}
   private isValid: boolean = true
@@ -150,16 +152,16 @@ export class FormValidator<T extends Record<string, string> = Record<string, str
   validateField(fieldName: string, value: string): ValidationResult {
     const rules = this.rules[fieldName]
     if (!rules) return { isValid: true }
-    
+
     const result = validateField(value, rules, fieldName)
-    
+
     // Update internal state
     if (result.error) {
       this.errors[fieldName] = result.error
     } else {
       delete this.errors[fieldName]
     }
-    
+
     this.isValid = Object.keys(this.errors).length === 0
     return result
   }
@@ -170,7 +172,7 @@ export class FormValidator<T extends Record<string, string> = Record<string, str
     for (const [key, value] of Object.entries(formData)) {
       stringFormData[key] = String(value)
     }
-    
+
     const result = validateForm(stringFormData, this.rules)
     this.errors = result.errors
     this.isValid = result.isValid

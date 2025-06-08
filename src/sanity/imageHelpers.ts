@@ -32,11 +32,6 @@ export const urlFor = (source: SanityImageSource | null | undefined) => {
   return builder.image(source)
 }
 
-// CDN configuration
-export const SANITY_CDN_CONFIG = {
-  referrerPolicy: 'strict-origin-when-cross-origin' as const
-}
-
 // Image optimization interface
 interface ImageOptimizationOptions {
   width?: number
@@ -50,15 +45,15 @@ interface ImageOptimizationOptions {
  * Generate optimized image URL from Sanity image source
  */
 export const getOptimizedImageUrl = (
-  source: SanityImageSource | null | undefined, 
+  source: SanityImageSource | null | undefined,
   options: ImageOptimizationOptions = {}
 ): string => {
   if (!source) return ''
-  
+
   const { width, height, quality = 85, format = 'webp', fit = 'max' } = options
-  
+
   let imageBuilder = urlFor(source)
-  
+
   if (width && !height) {
     imageBuilder = imageBuilder.width(width)
   } else if (height && !width) {
@@ -66,27 +61,21 @@ export const getOptimizedImageUrl = (
   } else if (width && height) {
     imageBuilder = imageBuilder.width(width).height(height).fit(fit)
   }
-  
-  const url = imageBuilder
-    .quality(quality)
-    .format(format)
-    .url()
-    
+
+  const url = imageBuilder.quality(quality).format(format).url()
+
   return url
 }
 
 /**
  * Generate blur data URL for better loading experience
  */
-export const getBlurDataUrl = (source: SanityImageSource | null | undefined): string | undefined => {
+export const getBlurDataUrl = (
+  source: SanityImageSource | null | undefined
+): string | undefined => {
   if (!source) return undefined
-  
-  return urlFor(source)
-    .width(20)
-    .height(20)
-    .blur(50)
-    .quality(20)
-    .url()
+
+  return urlFor(source).width(20).height(20).blur(50).quality(20).url()
 }
 
 /**
@@ -94,33 +83,34 @@ export const getBlurDataUrl = (source: SanityImageSource | null | undefined): st
  */
 export const getImageDimensions = (source: SanityImage | null | undefined) => {
   if (!source?.asset) return null
-  
+
   // Try to get dimensions from the asset metadata
   const asset = source.asset
-  
+
   // Check for dimensions in metadata
   if (asset.metadata?.dimensions) {
     return {
       width: asset.metadata.dimensions.width,
       height: asset.metadata.dimensions.height,
-      aspectRatio: asset.metadata.dimensions.width / asset.metadata.dimensions.height
+      aspectRatio:
+        asset.metadata.dimensions.width / asset.metadata.dimensions.height,
     }
   }
-  
+
   // Fallback to checking asset directly
   if (asset.width && asset.height) {
     return {
       width: asset.width,
       height: asset.height,
-      aspectRatio: asset.width / asset.height
+      aspectRatio: asset.width / asset.height,
     }
   }
-  
+
   // Default fallback
   return {
     width: 800,
     height: 600,
-    aspectRatio: 4/3
+    aspectRatio: 4 / 3,
   }
 }
 
@@ -132,12 +122,16 @@ export const getResponsiveImageSrcSet = (
   baseSizes: number[] = [400, 800, 1200, 1600]
 ): string => {
   if (!source) return ''
-  
-  const srcSetEntries = baseSizes.map(size => {
-    const url = getOptimizedImageUrl(source, { width: size, quality: 85, format: 'webp' })
+
+  const srcSetEntries = baseSizes.map((size) => {
+    const url = getOptimizedImageUrl(source, {
+      width: size,
+      quality: 85,
+      format: 'webp',
+    })
     return `${url} ${size}w`
   })
-  
+
   return srcSetEntries.join(', ')
 }
 

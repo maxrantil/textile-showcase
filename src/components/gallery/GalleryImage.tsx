@@ -1,6 +1,7 @@
 'use client'
 import { memo } from 'react'
-import { getOptimizedImageUrl, SANITY_CDN_CONFIG } from '@/sanity/imageHelpers'
+import { getOptimizedImageUrl } from '@/sanity/imageHelpers'
+import { SANITY_CDN_CONFIG } from '@/sanity/config'
 import { getGalleryConfig } from '@/config/responsiveConfig'
 import { GALLERY_CONFIG } from '@/config/galleryConfig'
 import type { SanityImageSource } from '@sanity/image-url/lib/types/types'
@@ -18,10 +19,10 @@ export const GalleryImage = memo(function GalleryImage({
   alt,
   index,
   onClick,
-  breakpoint
+  breakpoint,
 }: GalleryImageProps) {
   const galleryConfig = getGalleryConfig(breakpoint)
-  
+
   // Responsive image dimensions
   const getImageDimensions = () => {
     switch (breakpoint) {
@@ -29,19 +30,19 @@ export const GalleryImage = memo(function GalleryImage({
         return {
           width: 400,
           maxHeight: 'min(65vh, 450px)',
-          minHeight: '200px'
+          minHeight: '200px',
         }
       case 'tablet':
         return {
           width: 600,
           maxHeight: 'min(70vh, 600px)',
-          minHeight: '300px'
+          minHeight: '300px',
         }
       default:
         return {
           width: 800,
           maxHeight: '700px',
-          minHeight: '300px'
+          minHeight: '300px',
         }
     }
   }
@@ -49,33 +50,36 @@ export const GalleryImage = memo(function GalleryImage({
   const dimensions = getImageDimensions()
 
   return (
-    <div style={{
-      position: 'relative',
-      boxShadow: '0 20px 40px rgba(0,0,0,0.15)',
-      display: 'inline-block',
-      lineHeight: 0,
-      backgroundColor: 'transparent',
-      borderRadius: breakpoint === 'mobile' ? '8px' : '4px',
-      overflow: 'hidden',
-      width: '100%'
-    }}>
+    <div
+      style={{
+        position: 'relative',
+        boxShadow: '0 20px 40px rgba(0,0,0,0.15)',
+        display: 'inline-block',
+        lineHeight: 0,
+        backgroundColor: 'transparent',
+        borderRadius: breakpoint === 'mobile' ? '8px' : '4px',
+        overflow: 'hidden',
+        width: '100%',
+      }}
+    >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={getOptimizedImageUrl(src, {
           width: dimensions.width,
           quality: index < GALLERY_CONFIG.preloadCount ? 90 : 80,
-          format: 'webp'
+          format: 'webp',
         })}
         alt={alt}
         referrerPolicy={SANITY_CDN_CONFIG.referrerPolicy}
         style={{
           width: '100%',
-          height: breakpoint === 'desktop' ? `${galleryConfig.itemHeight}vh` : 'auto',
+          height:
+            breakpoint === 'desktop' ? `${galleryConfig.itemHeight}vh` : 'auto',
           maxHeight: dimensions.maxHeight,
           minHeight: dimensions.minHeight,
           display: 'block',
           objectFit: 'contain',
-          cursor: 'pointer'
+          cursor: 'pointer',
         }}
         loading={index < GALLERY_CONFIG.preloadCount ? 'eager' : 'lazy'}
         onClick={onClick}

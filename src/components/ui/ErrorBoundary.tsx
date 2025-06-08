@@ -9,7 +9,10 @@ interface ErrorBoundaryState {
 }
 
 // Error Boundary Component
-export class ErrorBoundary extends React.Component<React.PropsWithChildren, ErrorBoundaryState> {
+export class ErrorBoundary extends React.Component<
+  React.PropsWithChildren,
+  ErrorBoundaryState
+> {
   constructor(props: React.PropsWithChildren) {
     super(props)
     this.state = { hasError: false }
@@ -35,36 +38,43 @@ export class ErrorBoundary extends React.Component<React.PropsWithChildren, Erro
 // Error Fallback Component
 export function ErrorFallback({
   error,
-  retry
+  retry,
 }: {
   error?: Error
   retry?: () => void
 }) {
   return (
-    <div style={{
-      minHeight: '400px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      background: '#fafafa',
-      padding: '40px'
-    }}>
+    <div
+      style={{
+        minHeight: '400px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: '#fafafa',
+        padding: '40px',
+      }}
+    >
       <div style={{ textAlign: 'center', maxWidth: '500px' }}>
-        <h2 style={{
-          fontSize: '24px',
-          fontWeight: 300,
-          margin: '0 0 16px 0',
-          color: '#333'
-        }}>
+        <h2
+          style={{
+            fontSize: '24px',
+            fontWeight: 300,
+            margin: '0 0 16px 0',
+            color: '#333',
+          }}
+        >
           Something went wrong
         </h2>
-        <p style={{
-          fontSize: '16px',
-          color: '#666',
-          marginBottom: '24px',
-          lineHeight: '1.5'
-        }}>
-          {error?.message || 'An unexpected error occurred while loading the content.'}
+        <p
+          style={{
+            fontSize: '16px',
+            color: '#666',
+            marginBottom: '24px',
+            lineHeight: '1.5',
+          }}
+        >
+          {error?.message ||
+            'An unexpected error occurred while loading the content.'}
         </p>
         {retry && (
           <button
@@ -78,7 +88,7 @@ export function ErrorFallback({
               borderRadius: '6px',
               cursor: 'pointer',
               letterSpacing: '1px',
-              textTransform: 'uppercase'
+              textTransform: 'uppercase',
             }}
           >
             Try Again
@@ -92,30 +102,37 @@ export function ErrorFallback({
 // Network Error Component
 export function NetworkErrorFallback({ retry }: { retry?: () => void }) {
   return (
-    <div style={{
-      minHeight: '400px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      background: '#fafafa',
-      padding: '40px'
-    }}>
+    <div
+      style={{
+        minHeight: '400px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: '#fafafa',
+        padding: '40px',
+      }}
+    >
       <div style={{ textAlign: 'center', maxWidth: '500px' }}>
-        <h2 style={{
-          fontSize: '24px',
-          fontWeight: 300,
-          margin: '0 0 16px 0',
-          color: '#333'
-        }}>
+        <h2
+          style={{
+            fontSize: '24px',
+            fontWeight: 300,
+            margin: '0 0 16px 0',
+            color: '#333',
+          }}
+        >
           Connection Error
         </h2>
-        <p style={{
-          fontSize: '16px',
-          color: '#666',
-          marginBottom: '24px',
-          lineHeight: '1.5'
-        }}>
-          Unable to load content. Please check your internet connection and try again.
+        <p
+          style={{
+            fontSize: '16px',
+            color: '#666',
+            marginBottom: '24px',
+            lineHeight: '1.5',
+          }}
+        >
+          Unable to load content. Please check your internet connection and try
+          again.
         </p>
         {retry && (
           <button
@@ -129,7 +146,7 @@ export function NetworkErrorFallback({ retry }: { retry?: () => void }) {
               borderRadius: '6px',
               cursor: 'pointer',
               letterSpacing: '1px',
-              textTransform: 'uppercase'
+              textTransform: 'uppercase',
             }}
           >
             Retry

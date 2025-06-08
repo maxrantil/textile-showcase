@@ -28,14 +28,17 @@ export function useGalleryState({ designs, pathname }: GalleryStateProps) {
     setCurrentIndex,
     scrollToImage,
     scrollToIndex,
-  } = useHorizontalScroll({ 
+  } = useHorizontalScroll({
     itemCount: designs.length,
     onIndexChange: (index: number) => {
       realTimeCurrentIndex.current = index
       if (scrollContainerRef.current) {
-        scrollContainerRef.current.setAttribute('data-current-index', index.toString())
+        scrollContainerRef.current.setAttribute(
+          'data-current-index',
+          index.toString()
+        )
       }
-    }
+    },
   })
 
   const updateMobileState = useCallback((mobile: boolean) => {
@@ -51,16 +54,16 @@ export function useGalleryState({ designs, pathname }: GalleryStateProps) {
     realTimeCurrentIndex,
     isFirstMount,
     scrollContainerRef,
-    
+
     // State
     isMobile,
     currentIndex,
     canScrollLeft,
     canScrollRight,
-    
+
     // Restoration
     restoration,
-    
+
     // Actions
     setCurrentIndex,
     scrollToImage,

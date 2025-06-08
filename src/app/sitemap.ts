@@ -4,7 +4,7 @@ import { resilientFetch } from '@/sanity/dataFetcher'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://idaromme.dk'
-  
+
   // Static pages
   const staticPages: MetadataRoute.Sitemap = [
     {
@@ -29,16 +29,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Dynamic project pages
   try {
-    const projects = await resilientFetch<Array<{
-      slug: { current: string }
-      _updatedAt: string
-    }>>(
-      queries.getAllSlugs,
-      {},
-      { retries: 2, timeout: 5000 }
-    )
+    const projects = await resilientFetch<
+      Array<{
+        slug: { current: string }
+        _updatedAt: string
+      }>
+    >(queries.getAllSlugs, {}, { retries: 2, timeout: 5000 })
 
-    const projectPages: MetadataRoute.Sitemap = projects 
+    const projectPages: MetadataRoute.Sitemap = projects
       ? projects.map((project) => ({
           url: `${baseUrl}/project/${project.slug.current}`,
           lastModified: new Date(project._updatedAt),

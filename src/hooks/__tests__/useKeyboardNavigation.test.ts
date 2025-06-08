@@ -6,15 +6,15 @@ describe('useKeyboardNavigation Hook', () => {
   it('calls onNext when right arrow is pressed', () => {
     const mockOnNext = jest.fn()
     const mockOnPrevious = jest.fn()
-    
-    renderHook(() => 
+
+    renderHook(() =>
       useKeyboardNavigation({
         onNext: mockOnNext,
         onPrevious: mockOnPrevious,
         enabled: true,
       })
     )
-    
+
     fireEvent.keyDown(window, { key: 'ArrowRight' })
     expect(mockOnNext).toHaveBeenCalledTimes(1)
     expect(mockOnPrevious).not.toHaveBeenCalled()
@@ -23,15 +23,15 @@ describe('useKeyboardNavigation Hook', () => {
   it('calls onPrevious when left arrow is pressed', () => {
     const mockOnNext = jest.fn()
     const mockOnPrevious = jest.fn()
-    
-    renderHook(() => 
+
+    renderHook(() =>
       useKeyboardNavigation({
         onNext: mockOnNext,
         onPrevious: mockOnPrevious,
         enabled: true,
       })
     )
-    
+
     fireEvent.keyDown(window, { key: 'ArrowLeft' })
     expect(mockOnPrevious).toHaveBeenCalledTimes(1)
     expect(mockOnNext).not.toHaveBeenCalled()
@@ -39,14 +39,14 @@ describe('useKeyboardNavigation Hook', () => {
 
   it('does not call handlers when disabled', () => {
     const mockOnNext = jest.fn()
-    
-    renderHook(() => 
+
+    renderHook(() =>
       useKeyboardNavigation({
         onNext: mockOnNext,
         enabled: false,
       })
     )
-    
+
     fireEvent.keyDown(window, { key: 'ArrowRight' })
     expect(mockOnNext).not.toHaveBeenCalled()
   })

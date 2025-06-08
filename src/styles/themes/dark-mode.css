@@ -5,32 +5,32 @@
    ========================================================================== */
 
 @media (prefers-color-scheme: dark) {
-    .auto-dark {
-        background: #1a1a1a;
-        color: #ffffff;
-    }
+  .auto-dark {
+    background: #1a1a1a;
+    color: #ffffff;
+  }
 
-    .auto-dark .form-input-mobile {
-        background: #2a2a2a;
-        border-color: #404040;
-        color: #ffffff;
-    }
+  .auto-dark .form-input-mobile {
+    background: #2a2a2a;
+    border-color: #404040;
+    color: #ffffff;
+  }
 
-    .auto-dark .btn-mobile-secondary {
-        color: #ffffff;
-        border-color: #ffffff;
-    }
+  .auto-dark .btn-mobile-secondary {
+    color: #ffffff;
+    border-color: #ffffff;
+  }
 
-    .auto-dark .btn-mobile-secondary:active {
-        background: #ffffff;
-        color: #1a1a1a;
-    }
+  .auto-dark .btn-mobile-secondary:active {
+    background: #ffffff;
+    color: #1a1a1a;
+  }
 
-    .auto-dark .text-caption-mobile {
-        color: #999;
-    }
+  .auto-dark .text-caption-mobile {
+    color: #999;
+  }
 
-    .auto-dark .form-label-mobile {
-        color: #ffffff;
-    }
+  .auto-dark .form-label-mobile {
+    color: #ffffff;
+  }
 }

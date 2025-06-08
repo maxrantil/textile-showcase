@@ -1,14 +1,14 @@
 export const RESPONSIVE_CONFIG = {
   breakpoints: {
-    sm: 640,   // Mobile
-    md: 768,   // Tablet
-    lg: 1024,  // Desktop
-    xl: 1280,  // Large desktop
+    sm: 640, // Mobile
+    md: 768, // Tablet
+    lg: 1024, // Desktop
+    xl: 1280, // Large desktop
   },
   gallery: {
     mobile: {
-      itemHeight: 85,  // vh - larger for better mobile viewing
-      gap: 20,         // px - smaller gaps for mobile
+      itemHeight: 85, // vh - larger for better mobile viewing
+      gap: 20, // px - smaller gaps for mobile
       padding: '20px', // Consistent edge padding
       navigationSize: 'medium',
       showArrows: false, // Hide arrows on mobile, use swipe
@@ -26,7 +26,7 @@ export const RESPONSIVE_CONFIG = {
       padding: '45vw',
       navigationSize: 'large',
       showArrows: true,
-    }
+    },
   },
   header: {
     mobile: { height: 60 },
@@ -41,7 +41,7 @@ export const RESPONSIVE_CONFIG = {
     bodyLarge: 'clamp(18px, 3vw, 20px)',
     bodyMedium: 'clamp(16px, 2.5vw, 18px)',
     bodySmall: 'clamp(14px, 2vw, 16px)',
-  }
+  },
 } as const
 
 // Get responsive gallery config

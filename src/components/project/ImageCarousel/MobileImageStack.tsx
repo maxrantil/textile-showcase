@@ -20,45 +20,49 @@ interface MobileImageStackProps {
   projectTitle: string
 }
 
-export function MobileImageStack({ 
-  images = [], 
-  mainImage, 
-  projectTitle 
+export function MobileImageStack({
+  images = [],
+  mainImage,
+  projectTitle,
 }: MobileImageStackProps) {
   // Create array of all images for mobile stack
   const allImages = useMemo((): ExtendedGalleryImage[] => {
     const imageArray: ExtendedGalleryImage[] = []
-    
+
     // Add main image first
     if (mainImage) {
       imageArray.push({
         _key: 'main-image',
         asset: mainImage,
         caption: projectTitle,
-        isMainImage: true
+        isMainImage: true,
       })
     }
-    
+
     // Add gallery images
     if (images && images.length > 0) {
-      imageArray.push(...images.map(img => ({
-        ...img,
-        isMainImage: false
-      })))
+      imageArray.push(
+        ...images.map((img) => ({
+          ...img,
+          isMainImage: false,
+        }))
+      )
     }
-    
+
     return imageArray
   }, [images, mainImage, projectTitle])
 
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '30px',
-      alignItems: 'center'
-    }}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '30px',
+        alignItems: 'center',
+      }}
+    >
       {allImages.map((image, index) => (
-        <ImageBlock 
+        <ImageBlock
           key={`${image._key}-${index}`}
           image={image}
           index={index}

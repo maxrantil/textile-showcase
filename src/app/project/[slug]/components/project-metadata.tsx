@@ -1,19 +1,21 @@
 import { Metadata } from 'next'
 import { getProject } from '../hooks/use-project-data'
-import { 
-  createProjectImageUrl, 
-  createProjectDescription, 
-  createProjectKeywords 
+import {
+  createProjectImageUrl,
+  createProjectDescription,
+  createProjectKeywords,
 } from '../utils/project-helpers'
 
 interface ProjectMetadataProps {
   slug: string
 }
 
-export async function generateProjectMetadata({ slug }: ProjectMetadataProps): Promise<Metadata> {
+export async function generateProjectMetadata({
+  slug,
+}: ProjectMetadataProps): Promise<Metadata> {
   try {
     const project = await getProject(slug)
-    
+
     if (!project) {
       return {
         title: 'Project Not Found - Ida Romme',
@@ -35,14 +37,16 @@ export async function generateProjectMetadata({ slug }: ProjectMetadataProps): P
         description,
         type: 'article',
         url: `https://idaromme.dk/project/${slug}`,
-        images: imageUrl ? [
-          {
-            url: imageUrl,
-            width: 1200,
-            height: 630,
-            alt: project.title,
-          }
-        ] : [],
+        images: imageUrl
+          ? [
+              {
+                url: imageUrl,
+                width: 1200,
+                height: 630,
+                alt: project.title,
+              },
+            ]
+          : [],
         publishedTime: project.year ? `${project.year}-01-01` : undefined,
       },
       twitter: {

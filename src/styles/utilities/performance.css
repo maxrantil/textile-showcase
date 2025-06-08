@@ -6,70 +6,69 @@
 
 /* GPU acceleration for smooth animations */
 .gpu-accelerated {
-    transform: translateZ(0);
-    will-change: transform;
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 /* Optimized transitions */
 .transition-fast {
-    transition: all 0.15s ease;
+  transition: all 0.15s ease;
 }
 
 .transition-normal {
-    transition: all 0.3s ease;
+  transition: all 0.3s ease;
 }
 
 .transition-slow {
-    transition: all 0.5s ease;
+  transition: all 0.5s ease;
 }
 
 /* Animation keyframes */
 @keyframes spin {
-    from {
-        transform: rotate(0deg);
-    }
+  from {
+    transform: rotate(0deg);
+  }
 
-    to {
-        transform: rotate(360deg);
-    }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
 
-    0%,
-    100% {
-        opacity: 1;
-    }
-
-    50% {
-        opacity: 0.5;
-    }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 @keyframes shimmer {
-    0% {
-        transform: translateX(-100%);
-    }
+  0% {
+    transform: translateX(-100%);
+  }
 
-    100% {
-        transform: translateX(100%);
-    }
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 /* Animation utility classes */
 .animate-spin {
-    animation: spin 1s linear infinite;
+  animation: spin 1s linear infinite;
 }
 
 .animate-pulse {
-    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 /* Performance optimizations */
 .will-change-transform {
-    will-change: transform;
+  will-change: transform;
 }
 
 .will-change-opacity {
-    will-change: opacity;
+  will-change: opacity;
 }

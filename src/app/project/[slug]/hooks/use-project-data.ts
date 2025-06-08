@@ -5,24 +5,24 @@ import { TextileDesign } from '@/sanity/types'
 export async function getProject(slug: string): Promise<TextileDesign | null> {
   try {
     console.log(`🔍 Fetching project: ${slug}`)
-    
+
     const project = await resilientFetch<TextileDesign>(
       queries.getProjectBySlug,
       { slug },
-      { 
-        retries: 3, 
+      {
+        retries: 3,
         timeout: 15000,
-        cache: true, 
-        cacheTTL: 600000
+        cache: true,
+        cacheTTL: 600000,
       }
     )
-    
+
     if (project) {
       console.log(`✅ Project found: ${project.title}`)
     } else {
       console.warn(`⚠️ Project not found: ${slug}`)
     }
-    
+
     return project
   } catch (error) {
     console.error(`❌ Failed to fetch project ${slug}:`, error)
@@ -33,27 +33,29 @@ export async function getProject(slug: string): Promise<TextileDesign | null> {
 export async function getAllProjectSlugs() {
   try {
     console.log('🏗️ Generating static params...')
-    
-    const designs = await resilientFetch<Array<{ slug: string; _updatedAt: string }>>(
+
+    const designs = await resilientFetch<
+      Array<{ slug: string; _updatedAt: string }>
+    >(
       queries.getAllSlugs,
       {},
-      { 
-        retries: 2, 
+      {
+        retries: 2,
         timeout: 20000,
         cache: true,
-        cacheTTL: 300000
+        cacheTTL: 300000,
       }
     )
-    
+
     if (!designs || designs.length === 0) {
       console.warn('⚠️ No designs found for static generation')
       return []
     }
-    
+
     console.log(`✅ Found ${designs.length} designs for static generation`)
-    
+
     return designs
-      .filter(design => design.slug)
+      .filter((design) => design.slug)
       .map((design) => ({
         slug: design.slug,
       }))

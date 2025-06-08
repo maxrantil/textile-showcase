@@ -34,7 +34,7 @@ export default function OptimizedImage({
   quality = 85,
   onClick,
   objectFit = 'contain',
-  fill = false
+  fill = false,
 }: OptimizedImageProps) {
   const [isLoaded, setIsLoaded] = useState(false)
   const [isError, setIsError] = useState(false)
@@ -55,9 +55,9 @@ export default function OptimizedImage({
           observer.disconnect()
         }
       },
-      { 
+      {
         threshold: 0.1,
-        rootMargin: '50px'
+        rootMargin: '50px',
       }
     )
 
@@ -69,14 +69,14 @@ export default function OptimizedImage({
   }, [priority])
 
   // Generate optimized URLs
-  const imageUrl = getOptimizedImageUrl(src, { 
-    width, 
-    height, 
-    quality, 
-    format: 'webp' 
+  const imageUrl = getOptimizedImageUrl(src, {
+    width,
+    height,
+    quality,
+    format: 'webp',
   })
   const blurDataUrl = getBlurDataUrl(src)
-  
+
   // Handle click with proper event handling
   const handleClick = (e: React.MouseEvent) => {
     if (onClick) {
@@ -93,13 +93,13 @@ export default function OptimizedImage({
   }
 
   return (
-    <div 
+    <div
       ref={imgRef}
-      className={`relative ${className}`} 
+      className={`relative ${className}`}
       style={{
         width: fill ? '100%' : 'auto',
         height: fill ? '100%' : 'auto',
-        ...style
+        ...style,
       }}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
@@ -109,10 +109,7 @@ export default function OptimizedImage({
     >
       {/* Loading placeholder */}
       {!isLoaded && !isError && (
-        <ImageLoadingPlaceholder 
-          width="100%" 
-          height="100%" 
-        />
+        <ImageLoadingPlaceholder width="100%" height="100%" />
       )}
 
       {/* The actual image - only render when in view */}
@@ -157,7 +154,7 @@ export default function OptimizedImage({
                 opacity: isLoaded ? 1 : 0,
                 transition: 'opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
                 // Only merge with parent style, don't override with defaults
-                ...(style || {})
+                ...(style || {}),
               }}
               decoding="async"
             />
@@ -167,7 +164,7 @@ export default function OptimizedImage({
 
       {/* Error state */}
       {isError && (
-        <div 
+        <div
           style={{
             position: 'absolute',
             inset: 0,
@@ -176,21 +173,21 @@ export default function OptimizedImage({
             alignItems: 'center',
             justifyContent: 'center',
             flexDirection: 'column',
-            color: '#666'
+            color: '#666',
           }}
         >
-          <svg 
-            width="48" 
-            height="48" 
-            viewBox="0 0 24 24" 
-            fill="none" 
-            stroke="currentColor" 
+          <svg
+            width="48"
+            height="48"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
             strokeWidth="1"
             style={{ marginBottom: '8px', opacity: 0.5 }}
           >
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-            <circle cx="8.5" cy="8.5" r="1.5"/>
-            <polyline points="21,15 16,10 5,21"/>
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+            <circle cx="8.5" cy="8.5" r="1.5" />
+            <polyline points="21,15 16,10 5,21" />
           </svg>
           <span style={{ fontSize: '12px', textAlign: 'center' }}>
             Failed to load image
@@ -200,7 +197,7 @@ export default function OptimizedImage({
 
       {/* Loading indicator for interactive images */}
       {onClick && !isLoaded && !isError && (
-        <div 
+        <div
           style={{
             position: 'absolute',
             top: '50%',
@@ -208,7 +205,7 @@ export default function OptimizedImage({
             transform: 'translate(-50%, -50%)',
             color: '#666',
             fontSize: '12px',
-            textAlign: 'center'
+            textAlign: 'center',
           }}
         >
           Loading...

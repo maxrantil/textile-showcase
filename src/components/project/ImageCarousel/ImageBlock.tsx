@@ -19,11 +19,11 @@ interface ImageBlockProps {
   projectTitle: string
 }
 
-export const ImageBlock = React.memo(function ImageBlock({ 
-  image, 
-  index, 
+export const ImageBlock = React.memo(function ImageBlock({
+  image,
+  index,
   isFirst,
-  projectTitle
+  projectTitle,
 }: ImageBlockProps) {
   const [imageLoaded, setImageLoaded] = useState(false)
   const [imageError, setImageError] = useState(false)
@@ -49,21 +49,25 @@ export const ImageBlock = React.memo(function ImageBlock({
     width: 400,
     height: 600,
     quality: 80,
-    format: 'webp'
+    format: 'webp',
   })
 
   return (
-    <div style={{
-      width: '100%',
-      position: 'relative'
-    }}>
-      <div style={{
+    <div
+      style={{
+        width: '100%',
         position: 'relative',
-        background: '#fff',
-        borderRadius: '8px',
-        overflow: 'hidden',
-        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
-      }}>
+      }}
+    >
+      <div
+        style={{
+          position: 'relative',
+          background: '#fff',
+          borderRadius: '8px',
+          overflow: 'hidden',
+          boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
+        }}
+      >
         <img
           src={imageUrl}
           alt={image.caption || `Project image ${index + 1}`}
@@ -75,7 +79,7 @@ export const ImageBlock = React.memo(function ImageBlock({
             maxHeight: '70vh',
             minHeight: '200px',
             opacity: imageLoaded ? 1 : 0,
-            transition: 'opacity 0.3s ease'
+            transition: 'opacity 0.3s ease',
           }}
           loading={isFirst ? 'eager' : 'lazy'}
           onLoad={() => {
@@ -94,59 +98,63 @@ export const ImageBlock = React.memo(function ImageBlock({
 
         {/* Loading overlay */}
         {!imageLoaded && !imageError && (
-          <div style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: '#f5f5f5',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#999',
-            fontSize: '14px',
-            minHeight: '200px'
-          }}>
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: '#f5f5f5',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#999',
+              fontSize: '14px',
+              minHeight: '200px',
+            }}
+          >
             Loading image {index + 1}...
           </div>
         )}
 
         {/* Error overlay */}
         {imageError && (
-          <div style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: '#f5f5f5',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#999',
-            fontSize: '14px',
-            flexDirection: 'column',
-            gap: '8px',
-            minHeight: '200px'
-          }}>
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: '#f5f5f5',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#999',
+              fontSize: '14px',
+              flexDirection: 'column',
+              gap: '8px',
+              minHeight: '200px',
+            }}
+          >
             <div>❌ Failed to load image {index + 1}</div>
-            <div style={{ fontSize: '12px' }}>
-              Key: {image._key}
-            </div>
+            <div style={{ fontSize: '12px' }}>Key: {image._key}</div>
           </div>
         )}
       </div>
 
       {/* Image caption */}
       {image.caption && !image.isMainImage && (
-        <p style={{
-          textAlign: 'center',
-          fontSize: '14px',
-          color: '#666',
-          margin: '12px 0 0 0',
-          fontStyle: 'italic'
-        }}>
+        <p
+          style={{
+            textAlign: 'center',
+            fontSize: '14px',
+            color: '#666',
+            margin: '12px 0 0 0',
+            fontStyle: 'italic',
+          }}
+        >
           {image.caption}
         </p>
       )}

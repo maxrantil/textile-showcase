@@ -8,9 +8,9 @@ interface UseHeaderScrollEffectsProps {
   isMobileMenuOpen: boolean
 }
 
-export function useHeaderScrollEffects({ 
-  breakpoint, 
-  isMobileMenuOpen 
+export function useHeaderScrollEffects({
+  breakpoint,
+  isMobileMenuOpen,
 }: UseHeaderScrollEffectsProps) {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isHeaderVisible, setIsHeaderVisible] = useState(true)
@@ -18,10 +18,10 @@ export function useHeaderScrollEffects({
 
   const handleScroll = useCallback(() => {
     const currentScrollY = window.scrollY
-    
+
     // Header background change
     setIsScrolled(currentScrollY > 10)
-    
+
     // Auto-hide header on mobile when scrolling down
     if (breakpoint === 'mobile' && !isMobileMenuOpen) {
       if (currentScrollY > lastScrollY && currentScrollY > 100) {
@@ -32,7 +32,7 @@ export function useHeaderScrollEffects({
     } else {
       setIsHeaderVisible(true)
     }
-    
+
     setLastScrollY(currentScrollY)
   }, [breakpoint, isMobileMenuOpen, lastScrollY])
 
@@ -51,6 +51,6 @@ export function useHeaderScrollEffects({
   return {
     isScrolled,
     isHeaderVisible,
-    lastScrollY
+    lastScrollY,
   }
 }

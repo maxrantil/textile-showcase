@@ -7,8 +7,8 @@ interface UseCarouselLayoutDetectorProps {
   mobileBreakpoint?: number
 }
 
-export function useCarouselLayoutDetector({ 
-  mobileBreakpoint = 768 
+export function useCarouselLayoutDetector({
+  mobileBreakpoint = 768,
 }: UseCarouselLayoutDetectorProps = {}) {
   const [isMobile, setIsMobile] = useState(false)
   const [isInitialized, setIsInitialized] = useState(false)
@@ -17,18 +17,18 @@ export function useCarouselLayoutDetector({
     const checkMobile = () => {
       const mobile = window.innerWidth < mobileBreakpoint
       setIsMobile(mobile)
-      
+
       if (!isInitialized) {
         setIsInitialized(true)
       }
     }
-    
+
     // Initial check
     checkMobile()
-    
+
     // Listen for resize events
     window.addEventListener('resize', checkMobile)
-    
+
     return () => window.removeEventListener('resize', checkMobile)
   }, [mobileBreakpoint, isInitialized])
 
@@ -36,27 +36,29 @@ export function useCarouselLayoutDetector({
     isMobile,
     isDesktop: !isMobile,
     isInitialized, // Useful for preventing hydration mismatches
-    breakpoint: isMobile ? 'mobile' : 'desktop' as const
+    breakpoint: isMobile ? 'mobile' : ('desktop' as const),
   }
 }
 
 // Alternative hook for more granular breakpoint detection
 export function useCarouselBreakpoint() {
-  const [breakpoint, setBreakpoint] = useState<'mobile' | 'tablet' | 'desktop'>('desktop')
+  const [breakpoint, setBreakpoint] = useState<'mobile' | 'tablet' | 'desktop'>(
+    'desktop'
+  )
   const [isInitialized, setIsInitialized] = useState(false)
 
   useEffect(() => {
     const getBreakpoint = () => {
       const width = window.innerWidth
       if (width < 768) return 'mobile'
-      if (width < 1024) return 'tablet' 
+      if (width < 1024) return 'tablet'
       return 'desktop'
     }
 
     const updateBreakpoint = () => {
       const newBreakpoint = getBreakpoint()
       setBreakpoint(newBreakpoint)
-      
+
       if (!isInitialized) {
         setIsInitialized(true)
       }
@@ -64,15 +66,15 @@ export function useCarouselBreakpoint() {
 
     updateBreakpoint()
     window.addEventListener('resize', updateBreakpoint)
-    
+
     return () => window.removeEventListener('resize', updateBreakpoint)
   }, [isInitialized])
 
   return {
     breakpoint,
     isMobile: breakpoint === 'mobile',
-    isTablet: breakpoint === 'tablet', 
+    isTablet: breakpoint === 'tablet',
     isDesktop: breakpoint === 'desktop',
-    isInitialized
+    isInitialized,
   }
 }

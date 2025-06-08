@@ -13,13 +13,15 @@ interface GalleryItemProps {
   isActive?: boolean
 }
 
-export const GalleryItem = memo(function GalleryItem({ 
-  design, 
-  index, 
+export const GalleryItem = memo(function GalleryItem({
+  design,
+  index,
   onClick,
 }: GalleryItemProps) {
-  const [breakpoint, setBreakpoint] = useState<'mobile' | 'tablet' | 'desktop'>('desktop')
-  
+  const [breakpoint, setBreakpoint] = useState<'mobile' | 'tablet' | 'desktop'>(
+    'desktop'
+  )
+
   // Detect current breakpoint
   useEffect(() => {
     const getBreakpoint = () => {
@@ -28,14 +30,14 @@ export const GalleryItem = memo(function GalleryItem({
       if (width < RESPONSIVE_CONFIG.breakpoints.lg) return 'tablet'
       return 'desktop'
     }
-    
+
     const handleResize = () => setBreakpoint(getBreakpoint())
     handleResize()
-    
+
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [])
-  
+
   // Responsive item width
   const getItemWidth = () => {
     switch (breakpoint) {
@@ -47,13 +49,13 @@ export const GalleryItem = memo(function GalleryItem({
         return 'auto' // Desktop uses height-based sizing
     }
   }
-  
+
   return (
-    <div 
+    <div
       role="button"
       tabIndex={0}
       aria-label={`View ${design.title} project`}
-      style={{ 
+      style={{
         flexShrink: 0,
         scrollSnapAlign: 'center',
         display: 'flex',
@@ -62,7 +64,7 @@ export const GalleryItem = memo(function GalleryItem({
         cursor: 'pointer',
         transition: 'transform 0.3s ease',
         width: getItemWidth(),
-        maxWidth: breakpoint === 'mobile' ? '90vw' : 'none'
+        maxWidth: breakpoint === 'mobile' ? '90vw' : 'none',
       }}
       onClick={onClick}
       onKeyDown={(e) => {
@@ -78,18 +80,15 @@ export const GalleryItem = memo(function GalleryItem({
         e.currentTarget.style.transform = 'scale(1)'
       }}
     >
-      <GalleryImage 
+      <GalleryImage
         src={design.image}
         alt={design.title}
         index={index}
         onClick={onClick}
         breakpoint={breakpoint}
       />
-      
-      <GalleryItemInfo 
-        title={design.title}
-        year={design.year}
-      />
+
+      <GalleryItemInfo title={design.title} year={design.year} />
     </div>
   )
 })

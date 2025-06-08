@@ -30,11 +30,11 @@ export function useSwipeGesture({
   maxSwipeTime = 500,
   enabled = true,
   preventScroll = false,
-  threshold = 10
+  threshold = 10,
 }: SwipeGestureOptions) {
   const [touchStart, setTouchStart] = useState<TouchPosition | null>(null)
   const [isSwiping, setIsSwiping] = useState(false)
-  const swipeRef = useRef<{ 
+  const swipeRef = useRef<{
     startX: number
     startY: number
     currentX: number
@@ -45,65 +45,75 @@ export function useSwipeGesture({
   const getTouchPosition = (e: TouchEvent): TouchPosition => ({
     x: e.touches[0].clientX,
     y: e.touches[0].clientY,
-    time: Date.now()
+    time: Date.now(),
   })
 
-  const handleTouchStart = useCallback((e: TouchEvent) => {
-    if (!enabled) return
-    
-    const touch = getTouchPosition(e)
-    setTouchStart(touch)
-    setIsSwiping(false)
-    
-    // Store initial touch data
-    swipeRef.current = {
-      startX: touch.x,
-      startY: touch.y,
-      currentX: touch.x,
-      currentY: touch.y,
-      startTime: touch.time
-    }
+  const handleTouchStart = useCallback(
+    (e: TouchEvent) => {
+      if (!enabled) return
 
-    console.log('🤏 Touch start:', { x: touch.x, y: touch.y })
-  }, [enabled])
+      const touch = getTouchPosition(e)
+      setTouchStart(touch)
+      setIsSwiping(false)
 
-  const handleTouchMove = useCallback((e: TouchEvent) => {
-    if (!enabled || !touchStart || !swipeRef.current) return
-    
-    const currentTouch = getTouchPosition(e)
-    swipeRef.current.currentX = currentTouch.x
-    swipeRef.current.currentY = currentTouch.y
-    
-    // Calculate movement
-    const deltaX = Math.abs(currentTouch.x - touchStart.x)
-    const deltaY = Math.abs(currentTouch.y - touchStart.y)
-    
-    // Determine if this is likely a swipe gesture
-    const isHorizontalMovement = deltaX > deltaY
-    const hasSignificantMovement = deltaX > threshold || deltaY > threshold
-    
-    if (hasSignificantMovement) {
-      if (!isSwiping) {
-        setIsSwiping(true)
-        console.log('🔄 Swipe detected:', { deltaX, deltaY, isHorizontal: isHorizontalMovement })
+      // Store initial touch data
+      swipeRef.current = {
+        startX: touch.x,
+        startY: touch.y,
+        currentX: touch.x,
+        currentY: touch.y,
+        startTime: touch.time,
       }
-      
-      // Prevent scroll if this is a horizontal swipe and we want to control it
-      if (preventScroll && isHorizontalMovement && deltaX > deltaY) {
-        e.preventDefault()
+
+      console.log('🤏 Touch start:', { x: touch.x, y: touch.y })
+    },
+    [enabled]
+  )
+
+  const handleTouchMove = useCallback(
+    (e: TouchEvent) => {
+      if (!enabled || !touchStart || !swipeRef.current) return
+
+      const currentTouch = getTouchPosition(e)
+      swipeRef.current.currentX = currentTouch.x
+      swipeRef.current.currentY = currentTouch.y
+
+      // Calculate movement
+      const deltaX = Math.abs(currentTouch.x - touchStart.x)
+      const deltaY = Math.abs(currentTouch.y - touchStart.y)
+
+      // Determine if this is likely a swipe gesture
+      const isHorizontalMovement = deltaX > deltaY
+      const hasSignificantMovement = deltaX > threshold || deltaY > threshold
+
+      if (hasSignificantMovement) {
+        if (!isSwiping) {
+          setIsSwiping(true)
+          console.log('🔄 Swipe detected:', {
+            deltaX,
+            deltaY,
+            isHorizontal: isHorizontalMovement,
+          })
+        }
+
+        // Prevent scroll if this is a horizontal swipe and we want to control it
+        if (preventScroll && isHorizontalMovement && deltaX > deltaY) {
+          e.preventDefault()
+        }
       }
-    }
-  }, [enabled, touchStart, threshold, preventScroll, isSwiping])
+    },
+    [enabled, touchStart, threshold, preventScroll, isSwiping]
+  )
 
   const handleTouchEnd = useCallback(() => {
     if (!enabled || !touchStart || !swipeRef.current) {
       console.log('🚫 Touch end - missing data')
       return
     }
-    
+
     const endTime = Date.now()
     const swipeTime = endTime - swipeRef.current.startTime
-    
+
     // Check if swipe was too slow
     if (swipeTime > maxSwipeTime) {
       console.log('⏰ Swipe too slow:', swipeTime + 'ms')
@@ -112,25 +122,25 @@ export function useSwipeGesture({
       swipeRef.current = null
       return
     }
-    
+
     const deltaX = swipeRef.current.startX - swipeRef.current.currentX
     const deltaY = swipeRef.current.startY - swipeRef.current.currentY
     const absDeltaX = Math.abs(deltaX)
     const absDeltaY = Math.abs(deltaY)
-    
+
     console.log('📊 Swipe analysis:', {
       deltaX,
       deltaY,
       absDeltaX,
       absDeltaY,
       minDistance: minSwipeDistance,
-      swipeTime
+      swipeTime,
     })
-    
+
     // Determine swipe direction and execute callback
     const isHorizontalSwipe = absDeltaX > absDeltaY
     const isVerticalSwipe = absDeltaY > absDeltaX
-    
+
     if (isHorizontalSwipe && absDeltaX > minSwipeDistance) {
       if (deltaX > 0) {
         // Swiped left (finger moved right to left)
@@ -154,12 +164,21 @@ export function useSwipeGesture({
     } else {
       console.log('❌ No valid swipe detected')
     }
-    
+
     // Reset state
     setTouchStart(null)
     setIsSwiping(false)
     swipeRef.current = null
-  }, [enabled, touchStart, maxSwipeTime, minSwipeDistance, onSwipeLeft, onSwipeRight, onSwipeUp, onSwipeDown])
+  }, [
+    enabled,
+    touchStart,
+    maxSwipeTime,
+    minSwipeDistance,
+    onSwipeLeft,
+    onSwipeRight,
+    onSwipeUp,
+    onSwipeDown,
+  ])
 
   // Return handlers and state
   return {
@@ -172,7 +191,7 @@ export function useSwipeGesture({
       onTouchStart: handleTouchStart,
       onTouchMove: handleTouchMove,
       onTouchEnd: handleTouchEnd,
-    }
+    },
   }
 }
 
@@ -182,7 +201,7 @@ export function useHorizontalSwipe({
   onSwipeRight,
   enabled = true,
   minSwipeDistance = 75,
-  maxSwipeTime = 400
+  maxSwipeTime = 400,
 }: {
   onSwipeLeft?: () => void
   onSwipeRight?: () => void
@@ -197,6 +216,6 @@ export function useHorizontalSwipe({
     minSwipeDistance,
     maxSwipeTime,
     preventScroll: true, // Always prevent scroll for horizontal gallery swipes
-    threshold: 15 // Slightly higher threshold for gallery
+    threshold: 15, // Slightly higher threshold for gallery
   })
 }

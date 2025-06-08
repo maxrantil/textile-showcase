@@ -7,12 +7,14 @@ A high-performance, SEO-optimized Next.js 14 portfolio website showcasing contem
 This website has been optimized for maximum performance, accessibility, and SEO:
 
 ### Image Optimization
+
 - **Next.js Image Component**: Automatic WebP/AVIF conversion, lazy loading, and responsive images
 - **Sanity Image URLs**: Optimized image delivery with dynamic resizing and quality adjustment
 - **Blur Placeholders**: Generated blur data URLs for smooth loading experiences
 - **Preloading**: Strategic preloading of critical images and adjacent carousel images
 
 ### Performance Features
+
 - **ISR (Incremental Static Regeneration)**: 1-hour revalidation for optimal balance of performance and freshness
 - **Memoization**: React.memo and useMemo for preventing unnecessary re-renders
 - **Code Splitting**: Automatic code splitting with dynamic imports
@@ -20,6 +22,7 @@ This website has been optimized for maximum performance, accessibility, and SEO:
 - **Caching Strategy**: Multi-layered caching with TTL and cleanup
 
 ### SEO Optimization
+
 - **Structured Data**: JSON-LD markup for better search engine understanding
 - **Meta Tags**: Comprehensive OpenGraph, Twitter Cards, and meta descriptions
 - **Sitemap**: Dynamic sitemap generation including all project pages
@@ -29,6 +32,7 @@ This website has been optimized for maximum performance, accessibility, and SEO:
 ## 🏗️ Architecture
 
 ### Tech Stack
+
 - **Framework**: Next.js 14 with App Router
 - **Styling**: Tailwind CSS + CSS-in-JS for responsive design
 - **Content Management**: Sanity CMS
@@ -37,6 +41,7 @@ This website has been optimized for maximum performance, accessibility, and SEO:
 - **Performance Monitoring**: Built-in Web Vitals tracking
 
 ### Key Components
+
 ```
 src/
 ├── app/                    # App Router pages
@@ -50,29 +55,34 @@ src/
 ## 🛠️ Setup Instructions
 
 ### Prerequisites
-- Node.js 18+ 
+
+- Node.js 18+
 - npm or yarn
 - Sanity account and project
 
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone [repository-url]
    cd ida-romme-portfolio
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    ```
 
 3. **Environment Setup**
+
    ```bash
    cp .env.example .env.local
    ```
-   
+
    Fill in your environment variables:
+
    ```env
    NEXT_PUBLIC_SANITY_PROJECT_ID=your_project_id
    NEXT_PUBLIC_SANITY_DATASET=production
@@ -81,10 +91,11 @@ src/
    ```
 
 4. **Sanity Setup**
+
    ```bash
    # Install Sanity CLI if you haven't
    npm install -g @sanity/cli
-   
+
    # Setup your Sanity project
    sanity init
    ```
@@ -97,6 +108,7 @@ src/
 ## 📱 Features
 
 ### User Experience
+
 - **Horizontal Gallery**: Smooth scrolling with snap points
 - **Keyboard Navigation**: Full keyboard support (arrows, escape, enter)
 - **Touch Gestures**: Mobile-optimized touch interactions
@@ -104,6 +116,7 @@ src/
 - **Error Boundaries**: Graceful error handling with fallback UI
 
 ### Accessibility
+
 - **ARIA Labels**: Comprehensive screen reader support
 - **Focus Management**: Proper focus indicators and keyboard navigation
 - **Color Contrast**: WCAG AA compliant color combinations
@@ -111,6 +124,7 @@ src/
 - **Semantic HTML**: Proper heading hierarchy and landmark elements
 
 ### Performance Monitoring
+
 ```javascript
 // Built-in performance tracking
 import { perf } from '@/utils/performance'
@@ -127,6 +141,7 @@ const memory = getMemoryUsage()
 ## 🎨 Customization
 
 ### Styling System
+
 The site uses a design system with CSS variables:
 
 ```css
@@ -140,6 +155,7 @@ The site uses a design system with CSS variables:
 ```
 
 ### Content Management
+
 All content is managed through Sanity CMS:
 
 ```javascript
@@ -154,17 +170,20 @@ const designs = await resilientFetch(
 ## 🚀 Deployment
 
 ### Vercel (Recommended)
+
 1. Connect your GitHub repository to Vercel
 2. Set environment variables in Vercel dashboard
 3. Deploy automatically on push
 
 ### Manual Deployment
+
 ```bash
 npm run build
 npm run start
 ```
 
 ### Docker Deployment
+
 ```bash
 docker build -t ida-romme-portfolio .
 docker run -p 3000:3000 ida-romme-portfolio
@@ -173,19 +192,21 @@ docker run -p 3000:3000 ida-romme-portfolio
 ## 📊 Performance Metrics
 
 Target performance scores:
+
 - **Lighthouse Performance**: 95+
 - **First Contentful Paint**: <1.5s
 - **Largest Contentful Paint**: <2s
 - **Cumulative Layout Shift**: <0.1
 
 ### Monitoring
+
 ```javascript
 // Web Vitals reporting
 export function reportWebVitals(metric) {
   // Send to analytics
   gtag('event', metric.name, {
     value: Math.round(metric.value),
-    event_category: 'Web Vitals'
+    event_category: 'Web Vitals',
   })
 }
 ```
@@ -193,6 +214,7 @@ export function reportWebVitals(metric) {
 ## 🔧 Advanced Configuration
 
 ### Image Optimization Settings
+
 ```javascript
 // next.config.js
 module.exports = {
@@ -212,6 +234,7 @@ module.exports = {
 ```
 
 ### Caching Strategy
+
 ```javascript
 // lib/sanity.ts
 export async function resilientFetch(query, params, options) {
@@ -252,7 +275,7 @@ npm test -- --testNamePattern="validation"
 ## 📈 SEO Features
 
 - **Dynamic Meta Tags**: Generated based on content
-- **Structured Data**: Rich snippets for better SERP appearance  
+- **Structured Data**: Rich snippets for better SERP appearance
 - **XML Sitemap**: Auto-generated from CMS content
 - **Canonical URLs**: Prevent duplicate content penalties
 - **Open Graph**: Social media sharing optimization
@@ -268,6 +291,7 @@ npm test -- --testNamePattern="validation"
 ## 📞 Support
 
 For questions about implementation or customization:
+
 - Review the comprehensive inline documentation
 - Check the error boundaries and fallback components
 - Monitor performance with built-in tracking tools
