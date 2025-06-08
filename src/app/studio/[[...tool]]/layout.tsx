@@ -1,5 +1,7 @@
 import { Metadata } from 'next'
 
+export { viewport } from 'next-sanity/studio'
+
 export const metadata: Metadata = {
   title: 'Textile Showcase CMS',
   robots: {
