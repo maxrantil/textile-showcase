@@ -5,7 +5,6 @@ import { useState, useCallback, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation'
 import { getOptimizedImageUrl } from '@/sanity/imageHelpers'
-import { SANITY_CDN_CONFIG } from '@/sanity/config'
 import NavigationArrows from '../../ui/NavigationArrows'
 import { UmamiEvents } from '@/utils/analytics'
 import { perf } from '@/utils/performance'
@@ -173,7 +172,7 @@ export function DesktopCarousel({
                   format: 'webp',
                 })}
                 alt={currentImage?.caption || projectTitle}
-                referrerPolicy={SANITY_CDN_CONFIG.referrerPolicy}
+                referrerPolicy="strict-origin-when-cross-origin"
                 style={{
                   height: '70vh',
                   width: 'auto',

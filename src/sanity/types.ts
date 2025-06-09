@@ -48,5 +48,10 @@ export interface TextileDesign {
   materials?: string
   dimensions?: string
   technique?: string
+  credits?: string
+  exhibitions?: string
+  availability?: string
+  processNotes?: string
+  careInstructions?: string
   featured?: boolean
 }

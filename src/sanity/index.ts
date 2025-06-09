@@ -2,17 +2,10 @@
 // Main barrel export for all Sanity functionality
 
 // Client and configuration
-export {
-  client,
-  sanityConfig,
-  isProduction,
-  projectId,
-  dataset,
-} from './client'
+export { client } from './client'
 
 // Image helpers
 export {
-  urlFor,
   getOptimizedImageUrl,
   getBlurDataUrl,
   getImageDimensions,

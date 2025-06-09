@@ -1,19 +1,17 @@
 // sanity.config.ts
 import { defineConfig } from 'sanity'
 import { structureTool } from 'sanity/structure'
-import { visionTool } from '@sanity/vision'
 import { schemaTypes } from './src/sanity/schemas'
-import { SANITY_PROJECT_CONFIG } from './src/sanity/config/project'
 
 export default defineConfig({
   name: 'default',
   title: 'Textile Showcase CMS',
-  projectId: '2y05n6hf',
-  dataset: 'production',
-  plugins: [structureTool(), visionTool()],
+  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || '2y05n6hf',
+  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || 'production',
+  plugins: [structureTool()],
   schema: {
     types: schemaTypes,
   },
-  basePath: '/studio', // Add this for proper routing
+  basePath: '/studio',
   studioHost: 'textile-studio',
 })

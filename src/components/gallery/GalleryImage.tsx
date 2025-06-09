@@ -1,7 +1,6 @@
 'use client'
 import { memo } from 'react'
 import { getOptimizedImageUrl } from '@/sanity/imageHelpers'
-import { SANITY_CDN_CONFIG } from '@/sanity/config'
 import { getGalleryConfig } from '@/config/responsiveConfig'
 import { GALLERY_CONFIG } from '@/config/galleryConfig'
 import type { SanityImageSource } from '@sanity/image-url/lib/types/types'
@@ -70,7 +69,7 @@ export const GalleryImage = memo(function GalleryImage({
           format: 'webp',
         })}
         alt={alt}
-        referrerPolicy={SANITY_CDN_CONFIG.referrerPolicy}
+        referrerPolicy="strict-origin-when-cross-origin"
         style={{
           width: '100%',
           height:
