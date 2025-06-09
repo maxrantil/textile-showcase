@@ -22,6 +22,11 @@ interface CarouselMobileLayoutProps {
   projectMaterials?: string
   projectTechnique?: string
   projectDimensions?: string
+  projectCredits?: string
+  projectExhibitions?: string[]
+  projectAvailableForPurchase?: string
+  projectProcessNotes?: string
+  projectCareInstructions?: string
   className?: string
   style?: React.CSSProperties
 }
@@ -35,6 +40,11 @@ const CarouselMobileLayout = memo(function CarouselMobileLayout({
   projectMaterials,
   projectTechnique,
   projectDimensions,
+  projectCredits,
+  projectExhibitions,
+  projectAvailableForPurchase,
+  projectProcessNotes,
+  projectCareInstructions,
   className = '',
   style,
 }: CarouselMobileLayoutProps) {
@@ -66,6 +76,11 @@ const CarouselMobileLayout = memo(function CarouselMobileLayout({
             projectMaterials={projectMaterials}
             projectTechnique={projectTechnique}
             projectDimensions={projectDimensions}
+            projectCredits={projectCredits}
+            projectExhibitions={projectExhibitions}
+            projectAvailableForPurchase={projectAvailableForPurchase}
+            projectProcessNotes={projectProcessNotes}
+            projectCareInstructions={projectCareInstructions}
             isMobile={true}
           />
 

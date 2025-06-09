@@ -38,6 +38,11 @@ export function ProjectContent({ project, slug }: ProjectContentProps) {
               }
               projectMaterials={project.materials}
               projectTechnique={project.technique}
+              projectCredits={project.credits}
+              projectExhibitions={project.exhibitions?.split(',') || []}
+              projectAvailableForPurchase={project.availability}
+              projectProcessNotes={project.processNotes}
+              projectCareInstructions={project.careInstructions}
               projectDimensions={project.dimensions}
             />
           </ErrorBoundary>

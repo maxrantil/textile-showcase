@@ -149,8 +149,6 @@ export default defineType({
       title: 'Technique',
       description: 'Weaving technique or method used',
     }),
-    // In src/sanity/schemaTypes/textileDesign.ts, add these fields after the existing ones:
-
     defineField({
       name: 'credits',
       type: 'string',
@@ -158,7 +156,6 @@ export default defineType({
       description:
         'Acknowledge any assistants, mentors, photographers, or collaborators',
     }),
-
     defineField({
       name: 'exhibitions',
       type: 'text',
@@ -167,7 +164,6 @@ export default defineType({
         'List where this piece has been shown (gallery, museum, year)',
       rows: 3,
     }),
-
     defineField({
       name: 'availability',
       type: 'string',
@@ -175,7 +171,6 @@ export default defineType({
       description:
         'e.g. "Available for purchase", "Sold", "$2,400", "Private collection"',
     }),
-
     defineField({
       name: 'processNotes',
       type: 'text',
@@ -184,7 +179,6 @@ export default defineType({
         'Technical details, challenges, or interesting aspects of the creation process',
       rows: 4,
     }),
-
     defineField({
       name: 'careInstructions',
       type: 'string',
@@ -192,6 +186,7 @@ export default defineType({
       description:
         'How to properly care for this piece (cleaning, storage, display)',
     }),
+
     defineField({
       name: 'featured',
       type: 'boolean',

@@ -85,7 +85,12 @@ export const projectQueries = {
         detailedDescription,
         materials,
         dimensions,
-        technique
+        technique,
+        credits,
+        exhibitions,
+        availability,
+        processNotes,
+        careInstructions
       }
     `,
 
@@ -156,6 +161,11 @@ export const adminQueries = {
         materials,
         dimensions,
         technique,
+        credits,
+        exhibitions,
+        availability,
+        processNotes,
+        careInstructions,
         _updatedAt
       } | order(order asc, _createdAt desc)
     `,

@@ -1,3 +1,4 @@
+// src/components/project/ImageCarousel/ProjectDetails.tsx
 'use client'
 
 interface ProjectDetailsProps {
@@ -7,6 +8,11 @@ interface ProjectDetailsProps {
   projectMaterials?: string
   projectTechnique?: string
   projectDimensions?: string
+  projectCredits?: string
+  projectExhibitions?: string[]
+  projectAvailableForPurchase?: string
+  projectProcessNotes?: string
+  projectCareInstructions?: string
   isMobile: boolean
 }
 
@@ -17,6 +23,11 @@ export function ProjectDetails({
   projectMaterials,
   projectTechnique,
   projectDimensions,
+  projectCredits,
+  projectExhibitions,
+  projectAvailableForPurchase,
+  projectProcessNotes,
+  projectCareInstructions,
   isMobile,
 }: ProjectDetailsProps) {
   if (isMobile) {
@@ -73,6 +84,16 @@ export function ProjectDetails({
             isMobile={true}
           />
         )}
+
+        {/* Additional Details - Mobile */}
+        <AdditionalDetails
+          credits={projectCredits}
+          exhibitions={projectExhibitions}
+          availability={projectAvailableForPurchase}
+          processNotes={projectProcessNotes}
+          careInstructions={projectCareInstructions}
+          isMobile={true}
+        />
       </div>
     )
   }
@@ -135,11 +156,21 @@ export function ProjectDetails({
           isMobile={false}
         />
       )}
+
+      {/* Additional Details - Desktop */}
+      <AdditionalDetails
+        credits={projectCredits}
+        exhibitions={projectExhibitions}
+        availability={projectAvailableForPurchase}
+        processNotes={projectProcessNotes}
+        careInstructions={projectCareInstructions}
+        isMobile={false}
+      />
     </div>
   )
 }
 
-// Technical Details Subcomponent
+// Technical Details Subcomponent (existing)
 function TechnicalDetails({
   materials,
   technique,
@@ -178,6 +209,94 @@ function TechnicalDetails({
   )
 }
 
+// NEW: Additional Details Subcomponent
+function AdditionalDetails({
+  credits,
+  exhibitions,
+  availability,
+  processNotes,
+  careInstructions,
+  isMobile,
+}: {
+  credits?: string
+  exhibitions?: string[]
+  availability?: string
+  processNotes?: string
+  careInstructions?: string
+  isMobile: boolean
+}) {
+  const hasAnyAdditionalDetails =
+    credits ||
+    exhibitions?.length ||
+    availability ||
+    processNotes ||
+    careInstructions
+
+  if (!hasAnyAdditionalDetails) return null
+
+  const containerStyle: React.CSSProperties = {
+    marginTop: '32px',
+    padding: '24px',
+    background: '#f9f9f9',
+    borderRadius: '12px',
+    border: '1px solid #e5e5e5',
+  }
+
+  const sectionStyle: React.CSSProperties = {
+    marginBottom: '20px',
+  }
+
+  const lastSectionStyle: React.CSSProperties = {
+    marginBottom: '0',
+  }
+
+  return (
+    <div style={containerStyle}>
+      <h3
+        style={{
+          fontSize: isMobile ? '18px' : '20px',
+          fontWeight: 400,
+          margin: '0 0 20px 0',
+          color: '#333',
+          textAlign: 'center',
+        }}
+      >
+        Additional Information
+      </h3>
+
+      {credits && (
+        <div style={sectionStyle}>
+          <DetailField label="Credits" value={credits} />
+        </div>
+      )}
+
+      {exhibitions && exhibitions.length > 0 && (
+        <div style={sectionStyle}>
+          <DetailField label="Exhibitions" value={exhibitions.join(', ')} />
+        </div>
+      )}
+
+      {availability && (
+        <div style={sectionStyle}>
+          <DetailField label="Availability" value={availability} />
+        </div>
+      )}
+
+      {processNotes && (
+        <div style={sectionStyle}>
+          <DetailField label="Process Notes" value={processNotes} />
+        </div>
+      )}
+
+      {careInstructions && (
+        <div style={lastSectionStyle}>
+          <DetailField label="Care Instructions" value={careInstructions} />
+        </div>
+      )}
+    </div>
+  )
+}
+
 function TechnicalDetail({ label, value }: { label: string; value: string }) {
   return (
     <div style={{ textAlign: 'center' }}>
@@ -199,6 +318,35 @@ function TechnicalDetail({ label, value }: { label: string; value: string }) {
           margin: 0,
           color: '#333',
           lineHeight: '1.4',
+        }}
+      >
+        {value}
+      </p>
+    </div>
+  )
+}
+
+function DetailField({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <h4
+        style={{
+          fontSize: '12px',
+          color: '#999',
+          textTransform: 'uppercase',
+          letterSpacing: '1px',
+          margin: '0 0 8px 0',
+          fontWeight: 500,
+        }}
+      >
+        {label}
+      </h4>
+      <p
+        style={{
+          fontSize: '14px',
+          margin: 0,
+          color: '#333',
+          lineHeight: '1.6',
         }}
       >
         {value}

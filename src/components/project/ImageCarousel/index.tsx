@@ -16,6 +16,11 @@ const ImageCarousel = memo(function ImageCarousel(props: ImageCarouselProps) {
     projectMaterials,
     projectTechnique,
     projectDimensions,
+    projectCredits,
+    projectExhibitions,
+    projectAvailableForPurchase,
+    projectProcessNotes,
+    projectCareInstructions,
     fallbackToMobile = false,
     customBreakpoint = 768,
   } = props
@@ -61,6 +66,11 @@ const ImageCarousel = memo(function ImageCarousel(props: ImageCarouselProps) {
         projectMaterials={projectMaterials}
         projectTechnique={projectTechnique}
         projectDimensions={projectDimensions}
+        projectCredits={projectCredits}
+        projectExhibitions={projectExhibitions}
+        projectAvailableForPurchase={projectAvailableForPurchase}
+        projectProcessNotes={projectProcessNotes}
+        projectCareInstructions={projectCareInstructions}
         customBreakpoint={customBreakpoint}
         fallbackToMobile={fallbackToMobile}
         enableLazyLoading={true}

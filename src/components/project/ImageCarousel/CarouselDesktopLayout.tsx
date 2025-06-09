@@ -22,6 +22,11 @@ interface CarouselDesktopLayoutProps {
   projectMaterials?: string
   projectTechnique?: string
   projectDimensions?: string
+  projectCredits?: string
+  projectExhibitions?: string[]
+  projectAvailableForPurchase?: string
+  projectProcessNotes?: string
+  projectCareInstructions?: string
   className?: string
   style?: React.CSSProperties
   maxWidth?: string
@@ -37,6 +42,11 @@ const CarouselDesktopLayout = memo(function CarouselDesktopLayout({
   projectMaterials,
   projectTechnique,
   projectDimensions,
+  projectCredits,
+  projectExhibitions,
+  projectAvailableForPurchase,
+  projectProcessNotes,
+  projectCareInstructions,
   className = '',
   style,
   maxWidth = '1400px',
@@ -74,6 +84,11 @@ const CarouselDesktopLayout = memo(function CarouselDesktopLayout({
           projectMaterials={projectMaterials}
           projectTechnique={projectTechnique}
           projectDimensions={projectDimensions}
+          projectCredits={projectCredits}
+          projectExhibitions={projectExhibitions}
+          projectAvailableForPurchase={projectAvailableForPurchase}
+          projectProcessNotes={projectProcessNotes}
+          projectCareInstructions={projectCareInstructions}
           isMobile={false}
         />
       </div>

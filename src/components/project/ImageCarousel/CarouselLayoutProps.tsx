@@ -16,6 +16,11 @@ export interface BaseCarouselProps {
   projectMaterials?: string
   projectTechnique?: string
   projectDimensions?: string
+  projectCredits?: string
+  projectExhibitions?: string[]
+  projectAvailableForPurchase?: string
+  projectProcessNotes?: string
+  projectCareInstructions?: string
 }
 
 export interface CarouselLayoutProps extends BaseCarouselProps {
