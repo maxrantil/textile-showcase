@@ -58,7 +58,7 @@ export function MobileMenu({ isOpen, onClose, pathname }: MobileMenuProps) {
   if (!isOpen) return null
 
   return createPortal(
-    <div className="mobile-menu-overlay">
+    <div className={`mobile-menu-overlay ${isOpen ? 'open' : ''}`}>
       <div className="mobile-menu-backdrop" onClick={handleBackdropClick} />
       <nav
         className="mobile-menu-panel"

@@ -8,49 +8,6 @@ export function useDeviceType(): DeviceType {
 
   useEffect(() => {
     const checkDevice = () => {
-      // Primary detection: User Agent
-      const userAgent = navigator.userAgent.toLowerCase()
-      const mobileKeywords = [
-        'android',
-        'webos',
-        'iphone',
-        'ipad',
-        'ipod',
-        'blackberry',
-        'windows phone',
-        'mobile',
-      ]
-
-      const isMobileUA = mobileKeywords.some((keyword) =>
-        userAgent.includes(keyword)
-      )
-
-      // Secondary check: Screen size AND touch capability
-      // Only consider touch if screen is small
-      const isSmallScreen = window.innerWidth < 768
-      const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0
-      const isMobileScreenAndTouch = isSmallScreen && hasTouch
-
-      // Final determination: Mobile if UA suggests mobile OR (small screen AND touch)
-      const isMobile = isMobileUA || isMobileScreenAndTouch
-
-      setDeviceType(isMobile ? 'mobile' : 'desktop')
-    }
-
-    checkDevice()
-    window.addEventListener('resize', checkDevice)
-    return () => window.removeEventListener('resize', checkDevice)
-  }, [])
-
-  return deviceType
-}
-
-// Alternative: More robust version with additional checks
-export function useDeviceTypeAdvanced(): DeviceType {
-  const [deviceType, setDeviceType] = useState<DeviceType>('desktop')
-
-  useEffect(() => {
-    const checkDevice = () => {
       // 1. User Agent check
       const userAgent = navigator.userAgent.toLowerCase()
       const mobileUA =

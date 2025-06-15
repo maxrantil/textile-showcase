@@ -1,6 +1,6 @@
 'use client'
 
-import { useDeviceTypeAdvanced } from '@/hooks/shared/useDeviceType'
+import { useDeviceType } from '@/hooks/shared/useDeviceType'
 import { MobileGallery } from '@/components/mobile/Gallery'
 import { DesktopGallery } from '@/components/desktop/Gallery'
 import { TextileDesign } from '@/sanity/types'
@@ -10,7 +10,7 @@ interface GalleryProps {
 }
 
 export default function Gallery({ designs }: GalleryProps) {
-  const deviceType = useDeviceTypeAdvanced()
+  const deviceType = useDeviceType()
 
   return deviceType === 'mobile' ? (
     <MobileGallery designs={designs} />

@@ -7,6 +7,7 @@ import { DesktopHeader } from '@/components/desktop/Header/DesktopHeader'
 
 export default function Header() {
   const deviceType = useDeviceType()
+  console.log('Device type:', deviceType)
 
   return deviceType === 'mobile' ? <MobileHeader /> : <DesktopHeader />
 }
