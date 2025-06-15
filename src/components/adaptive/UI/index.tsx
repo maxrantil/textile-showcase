@@ -1,33 +1,36 @@
-// src/components/layout/BackButton.tsx - Updated
+// src/components/layout/BackButton.tsx
 'use client'
-
 import { useRouter } from 'next/navigation'
+import { useDeviceType } from '@/hooks/shared/useDeviceType'
 import { scrollManager } from '@/lib/scrollManager'
 import { UmamiEvents } from '@/utils/analytics'
+import { MobileButton } from '@/components/mobile/UI/MobileButton'
+import { DesktopButton } from '@/components/desktop/UI/DesktopButton'
 
 export default function BackButton() {
   const router = useRouter()
+  const deviceType = useDeviceType()
 
   const handleBack = () => {
     if (process.env.NODE_ENV === 'development') {
       console.log('🔙 Back button clicked - returning to gallery')
     }
-
     UmamiEvents.backToGallery()
-
-    // Mark navigation start for smooth restoration
     scrollManager.triggerNavigationStart()
-
-    // Go back - the gallery will restore position automatically
     router.back()
   }
 
-  return (
-    <button
+  return deviceType === 'mobile' ? (
+    <MobileButton
       onClick={handleBack}
-      className="btn-mobile btn-mobile-secondary touch-feedback"
+      variant="secondary"
+      className="touch-feedback"
     >
       ← Back to Gallery
-    </button>
+    </MobileButton>
+  ) : (
+    <DesktopButton onClick={handleBack} variant="secondary">
+      ← Back to Gallery
+    </DesktopButton>
   )
 }

@@ -1,5 +1,5 @@
 import { TextileDesign } from '@/sanity/types'
-import ImageCarousel from '@/components/project/ImageCarousel/index'
+import ProjectView from '@/components/adaptive/Project'
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 import { generateProjectStructuredData } from '../utils/project-helpers'
 
@@ -21,30 +21,14 @@ export function ProjectContent({ project, slug }: ProjectContentProps) {
         }}
       />
 
-      <div style={{ minHeight: '100vh', background: '#fafafa' }}>
+      <div className="project-content-wrapper">
         {/* Header spacing */}
-        <div style={{ height: '80px' }} />
+        <div className="project-header-spacer" />
 
         {/* Project Content */}
-        <div style={{ paddingBottom: '40px' }}>
+        <div className="project-content-container">
           <ErrorBoundary>
-            <ImageCarousel
-              images={project.gallery || []}
-              mainImage={project.image}
-              projectTitle={project.title}
-              projectYear={project.year}
-              projectDescription={
-                project.detailedDescription || project.description
-              }
-              projectMaterials={project.materials}
-              projectTechnique={project.technique}
-              projectCredits={project.credits}
-              projectExhibitions={project.exhibitions?.split(',') || []}
-              projectAvailableForPurchase={project.availability}
-              projectProcessNotes={project.processNotes}
-              projectCareInstructions={project.careInstructions}
-              projectDimensions={project.dimensions}
-            />
+            <ProjectView project={project} />
           </ErrorBoundary>
         </div>
       </div>

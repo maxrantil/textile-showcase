@@ -1,4 +1,3 @@
-// src/components/mobile/Project/MobileImageStack.tsx
 'use client'
 
 import { useMemo } from 'react'
@@ -35,7 +34,7 @@ export function MobileImageStack({
       imageArray.push({
         _key: 'main-image',
         asset: mainImage,
-        caption: projectTitle, // Use projectTitle here
+        caption: projectTitle,
         isMainImage: true,
       })
     }
@@ -51,7 +50,7 @@ export function MobileImageStack({
     }
 
     return imageArray
-  }, [images, mainImage, projectTitle]) // Include projectTitle in dependencies
+  }, [images, mainImage, projectTitle])
 
   return (
     <div className="mobile-image-stack">

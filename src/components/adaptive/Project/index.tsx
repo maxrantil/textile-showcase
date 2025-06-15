@@ -1,9 +1,8 @@
-// src/components/adaptive/Project/index.tsx
 'use client'
 
 import { useDeviceType } from '@/hooks/shared/useDeviceType'
-import { MobileProjectView } from '@/components/mobile/Project/MobileProjectView'
-import { DesktopProjectView } from '@/components/desktop/Project/DesktopProjectView'
+import { MobileProjectView } from '@/components/mobile/Project'
+import { DesktopProjectView } from '@/components/desktop/Project'
 import { TextileDesign } from '@/sanity/types'
 
 interface ProjectProps {

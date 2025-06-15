@@ -1,5 +1,5 @@
-// src/components/mobile/Project/ImageBlock.tsx
 'use client'
+
 import React, { useState } from 'react'
 import Image from 'next/image'
 import {
@@ -63,19 +63,21 @@ export const ImageBlock = React.memo(function ImageBlock({
           loading={isFirst ? 'eager' : 'lazy'}
           onLoad={handleImageLoad}
           onError={() => setImageError(true)}
-          style={{ objectFit: 'contain' }}
         />
+
         {!imageLoaded && !imageError && (
           <div className="mobile-image-loading">
             Loading image {index + 1}...
           </div>
         )}
+
         {imageError && (
           <div className="mobile-image-error">
             Failed to load image {index + 1}
           </div>
         )}
       </div>
+
       {image.caption && !image.isMainImage && (
         <p className="mobile-image-caption">{image.caption}</p>
       )}

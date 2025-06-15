@@ -1,8 +1,6 @@
-// src/components/mobile/Project/MobileProjectNavigation.tsx
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { MobileButton } from '../UI/MobileButton'
 import { UmamiEvents } from '@/utils/analytics'
 
 interface MobileProjectNavigationProps {
@@ -39,13 +37,12 @@ export function MobileProjectNavigation({
     <nav className="mobile-project-navigation">
       {/* Back to Gallery Button */}
       <div className="mobile-nav-primary">
-        <MobileButton
+        <button
           onClick={handleBackToGallery}
-          variant="secondary"
-          fullWidth
+          className="btn-mobile btn-mobile-secondary mobile-nav-back"
         >
           ← Back to Gallery
-        </MobileButton>
+        </button>
       </div>
 
       {/* Previous/Next Navigation */}
@@ -80,16 +77,15 @@ export function MobileProjectNavigation({
       {/* Contact CTA */}
       <div className="mobile-nav-cta">
         <p className="mobile-cta-text">Interested in this piece?</p>
-        <MobileButton
+        <button
           onClick={() => {
             UmamiEvents.navigateToContact()
             router.push('/contact')
           }}
-          variant="primary"
-          size="small"
+          className="btn-mobile btn-mobile-primary mobile-nav-contact"
         >
           Get in Touch
-        </MobileButton>
+        </button>
       </div>
     </nav>
   )

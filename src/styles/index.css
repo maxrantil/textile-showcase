@@ -18,6 +18,9 @@
 @import './mobile/index.css';
 @import './desktop/index.css';
 
+/* shared components */
+@import './shared/index.css';
+
 /* Theme support */
 @import './themes/dark-mode.css';
 

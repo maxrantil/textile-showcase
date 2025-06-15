@@ -1,4 +1,4 @@
-import BackButton from '@/components/layout/BackButton'
+import BackButton from '@/components/adaptive/UI'
 
 interface ProjectNavigationProps {
   className?: string

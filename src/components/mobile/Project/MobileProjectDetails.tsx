@@ -1,4 +1,3 @@
-// src/components/mobile/Project/MobileProjectDetails.tsx
 'use client'
 
 import { TextileDesign } from '@/sanity/types'

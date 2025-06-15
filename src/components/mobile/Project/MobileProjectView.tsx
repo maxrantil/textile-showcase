@@ -1,4 +1,3 @@
-// src/components/mobile/Project/MobileProjectView.tsx
 'use client'
 
 import { MobileImageStack } from './MobileImageStack'
@@ -30,6 +29,14 @@ export function MobileProjectView({
     UmamiEvents.viewProject(project.title, project.year)
   }, [project.title, project.year])
 
+  // Convert gallery images to proper format
+  const galleryImages =
+    project.gallery?.map((img, index) => ({
+      _key: img._key || `gallery-${index}`,
+      asset: img.asset,
+      caption: img.caption,
+    })) || []
+
   return (
     <div className="mobile-project">
       <div className="mobile-project-content">
@@ -37,7 +44,7 @@ export function MobileProjectView({
 
         <MobileImageStack
           mainImage={project.image}
-          images={project.gallery}
+          images={galleryImages}
           projectTitle={project.title}
         />
 
