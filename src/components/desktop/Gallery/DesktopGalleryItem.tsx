@@ -62,7 +62,6 @@ export const DesktopGalleryItem = memo(function DesktopGalleryItem({
 
       <div className="desktop-gallery-info">
         <h3>{design.title}</h3>
-        {design.year && <p>{design.year}</p>}
       </div>
     </div>
   )
