@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { DesktopImageCarousel } from './DesktopImageCarousel'
 import { DesktopProjectDetails } from './DesktopProjectDetails'
-import { NavigationArrows } from '@/components/ui/NavigationArrows'
 import { TextileDesign } from '@/sanity/types'
 
 interface DesktopProjectViewProps {
@@ -21,22 +20,8 @@ export function DesktopProjectView({ project }: DesktopProjectViewProps) {
       caption: img.caption,
     })) || []
 
-  const totalImages = 1 + galleryImages.length // main image + gallery images
-
   return (
     <div className="desktop-project">
-      <NavigationArrows
-        canScrollLeft={currentIndex > 0}
-        canScrollRight={currentIndex < totalImages - 1}
-        onScrollLeft={() => setCurrentIndex((prev) => Math.max(0, prev - 1))}
-        onScrollRight={() =>
-          setCurrentIndex((prev) => Math.min(totalImages - 1, prev + 1))
-        }
-        showOnMobile={false}
-        position="absolute"
-        variant="project"
-      />
-
       <div className="desktop-project-content">
         <DesktopImageCarousel
           images={galleryImages}
@@ -45,7 +30,6 @@ export function DesktopProjectView({ project }: DesktopProjectViewProps) {
           currentIndex={currentIndex}
           onIndexChange={setCurrentIndex}
         />
-
         <DesktopProjectDetails project={project} />
       </div>
     </div>

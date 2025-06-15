@@ -52,14 +52,21 @@
   display: block !important;
 }
 
+/* Remove old counter styling */
 .desktop-carousel-counter {
-  text-align: right;
+  display: none;
+}
+
+/* New fixed counter - positioned outside image area */
+.desktop-carousel-counter-fixed {
+  position: absolute;
+  bottom: 0px;
+  right: 20px;
   font-size: 14px;
   color: #333;
   letter-spacing: 1px;
-  margin-top: 8px;
   font-weight: 400;
-  width: 100%;
+  z-index: 10;
 }
 
 .desktop-carousel-preload {
@@ -154,6 +161,21 @@
   text-align: left;
 }
 
+/* Instructions for navigation */
+.desktop-carousel-instructions {
+  text-align: center;
+  font-size: 12px;
+  color: #999;
+  margin-top: 16px;
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+}
+
+.desktop-carousel-container:hover + .desktop-carousel-instructions {
+  opacity: 1;
+}
+
+/* Responsive Media Queries */
 @media (max-width: 1024px) {
   .desktop-project {
     padding: 0 20px;
@@ -162,5 +184,25 @@
   .desktop-project-info {
     grid-template-columns: 1fr;
     gap: 20px;
+  }
+
+  .desktop-carousel-counter-fixed {
+    bottom: 15px;
+    right: 15px;
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+}
+
+@media (max-width: 768px) {
+  .desktop-carousel-instructions {
+    display: none;
+  }
+
+  .desktop-carousel-counter-fixed {
+    bottom: 10px;
+    right: 10px;
+    font-size: 11px;
+    padding: 4px 8px;
   }
 }
