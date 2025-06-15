@@ -1,4 +1,4 @@
-// src/components/gallery/HorizontalGallery.tsx
+// src/components/gallery/HorizontalGallery.tsx - Updated to use state
 'use client'
 
 import { memo, useMemo, useEffect } from 'react'
@@ -39,11 +39,12 @@ function HorizontalGallery({ designs }: HorizontalGalleryProps) {
     return () => window.removeEventListener('resize', checkMobile)
   }, [galleryState])
 
-  // Navigation logic
+  // Navigation logic with state instead of ref
   const navigation = useGalleryNavigationLogic({
     designs,
     currentIndex: galleryState.currentIndex,
-    realTimeCurrentIndex: galleryState.realTimeCurrentIndex,
+    realTimeCurrentIndex: galleryState.realTimeCurrentIndex, // Now a number
+    setRealTimeCurrentIndex: galleryState.setRealTimeCurrentIndex, // Add setter
     pathname,
     isFirstMount: galleryState.isFirstMount.current,
     isMobile: galleryState.isMobile,
@@ -58,7 +59,7 @@ function HorizontalGallery({ designs }: HorizontalGalleryProps) {
     isMobile: galleryState.isMobile,
   })
 
-  // Lifecycle management
+  // Lifecycle management (you might need to update this too)
   useGalleryLifecycle({
     pathname,
     designs,
@@ -66,7 +67,7 @@ function HorizontalGallery({ designs }: HorizontalGalleryProps) {
     scrollContainerRef: galleryState.scrollContainerRef,
     scrollToIndex: galleryState.scrollToIndex,
     setCurrentIndex: galleryState.setCurrentIndex,
-    realTimeCurrentIndex: galleryState.realTimeCurrentIndex,
+    realTimeCurrentIndex: { current: galleryState.realTimeCurrentIndex }, // Convert back to ref-like object
     markFirstMountComplete: galleryState.markFirstMountComplete,
   })
 
@@ -90,6 +91,36 @@ function HorizontalGallery({ designs }: HorizontalGalleryProps) {
 
   return (
     <>
+      {/* Debug info in development */}
+      {process.env.NODE_ENV === 'development' && (
+        <div
+          style={{
+            position: 'fixed',
+            top: '100px',
+            left: '20px',
+            background: 'rgba(0, 0, 0, 0.8)',
+            color: 'white',
+            padding: '10px',
+            borderRadius: '5px',
+            fontSize: '12px',
+            fontFamily: 'monospace',
+            zIndex: 100,
+          }}
+        >
+          <div>Current Index: {galleryState.currentIndex}</div>
+          <div>RealTime Index: {galleryState.realTimeCurrentIndex}</div>
+          <div>Total Designs: {designs.length}</div>
+          <div>
+            Current Design:{' '}
+            {designs[galleryState.realTimeCurrentIndex]?.title || 'None'}
+          </div>
+          <div>Is Mobile: {galleryState.isMobile ? 'Yes' : 'No'}</div>
+          <div>Keyboard Shortcuts:</div>
+          <div>← → : Navigate</div>
+          <div>Enter/Space : Open project</div>
+        </div>
+      )}
+
       {/* Navigation Arrows */}
       <NavigationArrows
         canScrollLeft={

@@ -1,10 +1,11 @@
-// src/components/gallery/GalleryNavigation.tsx
+// src/components/gallery/GalleryNavigation.tsx - Add more debugging
 'use client'
 
 import { useCallback } from 'react'
 import { useGalleryNavigation } from '@/hooks/gallery/useGalleryNavigation'
 import { useKeyboardNavigation } from '@/hooks/desktop/useKeyboardNavigation'
 import { useHorizontalSwipe } from '@/hooks/mobile/useSwipeGesture'
+import { scrollManager } from '@/lib/scrollManager'
 import { UmamiEvents } from '@/utils/analytics'
 import { perf } from '@/utils/performance'
 import { TextileDesign } from '@/sanity/types'
@@ -12,7 +13,8 @@ import { TextileDesign } from '@/sanity/types'
 interface GalleryNavigationProps {
   designs: TextileDesign[]
   currentIndex: number
-  realTimeCurrentIndex: React.MutableRefObject<number>
+  realTimeCurrentIndex: number
+  setRealTimeCurrentIndex: (index: number) => void
   pathname: string
   isFirstMount: boolean
   isMobile: boolean
@@ -32,18 +34,18 @@ export function useGalleryNavigationLogic({
   // Navigation logic
   const navigation = useGalleryNavigation({
     designs,
-    currentIndex: realTimeCurrentIndex.current,
+    currentIndex: realTimeCurrentIndex,
     pathname,
     isFirstMount,
   })
 
-  // Enhanced scroll function with analytics
+  // Enhanced scroll function
   const handleScrollToImage = useCallback(
     (direction: 'left' | 'right') => {
       perf.start('gallery-scroll')
 
       try {
-        const oldIndex = realTimeCurrentIndex.current
+        const oldIndex = realTimeCurrentIndex
         const newIndex =
           direction === 'left'
             ? Math.max(0, oldIndex - 1)
@@ -58,17 +60,13 @@ export function useGalleryNavigationLogic({
     [designs.length, scrollToImage, realTimeCurrentIndex]
   )
 
-  // Enhanced dot click with performance monitoring
+  // Enhanced dot click
   const handleDotClick = useCallback(
     (index: number) => {
       perf.start('gallery-dot-navigation')
 
       try {
-        UmamiEvents.galleryNavigation(
-          'dot-click',
-          realTimeCurrentIndex.current,
-          index
-        )
+        UmamiEvents.galleryNavigation('dot-click', realTimeCurrentIndex, index)
         scrollToIndex(index)
       } finally {
         perf.end('gallery-dot-navigation')
@@ -77,42 +75,23 @@ export function useGalleryNavigationLogic({
     [scrollToIndex, realTimeCurrentIndex]
   )
 
-  // SWIPE GESTURE SUPPORT
-  const swipeHandlers = useHorizontalSwipe({
-    onSwipeLeft: () => {
-      console.log('🚀 Gallery swipe left - going to next image')
-      UmamiEvents.galleryNavigation(
-        'swipe-left',
-        realTimeCurrentIndex.current,
-        Math.min(realTimeCurrentIndex.current + 1, designs.length - 1)
-      )
-      scrollToImage('right')
-    },
-    onSwipeRight: () => {
-      console.log('🚀 Gallery swipe right - going to previous image')
-      UmamiEvents.galleryNavigation(
-        'swipe-right',
-        realTimeCurrentIndex.current,
-        Math.max(realTimeCurrentIndex.current - 1, 0)
-      )
-      scrollToImage('left')
-    },
-    enabled: isMobile,
-    minSwipeDistance: 50,
-    maxSwipeTime: 400,
-  })
-
-  // Enhanced image click handler with analytics
+  // Enhanced image click with immediate save
   const handleImageClick = useCallback(
     (design: TextileDesign) => {
       perf.start('gallery-navigation')
 
       try {
+        // Save current position immediately before navigating
+        scrollManager.saveImmediate(realTimeCurrentIndex, pathname)
+
         UmamiEvents.viewProject(design.title, design.year)
+        scrollManager.triggerNavigationStart()
         navigation.handleImageClick(design)
 
         if (process.env.NODE_ENV === 'development') {
-          console.log(`🖱️ Gallery navigation completed for: ${design.title}`)
+          console.log(
+            `🖱️ Gallery navigation to: ${design.title} from index ${realTimeCurrentIndex}`
+          )
         }
       } catch (error) {
         console.error('❌ Error in gallery navigation:', error)
@@ -126,24 +105,99 @@ export function useGalleryNavigationLogic({
         }
       }
     },
-    [navigation]
+    [navigation, pathname, realTimeCurrentIndex]
   )
 
-  // Keyboard navigation
+  // Enhanced Enter/Space handler using state
+  const handleEnterPress = useCallback(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🎯 handleEnterPress called!')
+      console.log('🎯 realTimeCurrentIndex:', realTimeCurrentIndex)
+      console.log('🎯 designs.length:', designs.length)
+      console.log('🎯 designs:', designs)
+    }
+
+    const currentDesign = designs[realTimeCurrentIndex]
+    if (currentDesign) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(
+          `⌨️ SUCCESS: Opening project ${currentDesign.title} at index ${realTimeCurrentIndex}`
+        )
+      }
+      UmamiEvents.galleryNavigation(
+        'keyboard-enter',
+        realTimeCurrentIndex,
+        realTimeCurrentIndex
+      )
+      handleImageClick(currentDesign)
+    } else {
+      if (process.env.NODE_ENV === 'development') {
+        console.warn(
+          '⚠️ ERROR: No current design found for Enter/Space handler'
+        )
+        console.log('🎯 Current index:', realTimeCurrentIndex)
+        console.log('🎯 Designs length:', designs.length)
+        console.log('🎯 Design at index:', designs[realTimeCurrentIndex])
+      }
+    }
+  }, [designs, realTimeCurrentIndex, handleImageClick])
+
+  // Debug: Log when handleEnterPress changes
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🎯 handleEnterPress function created/updated')
+  }
+
+  // SWIPE GESTURE SUPPORT
+  const swipeHandlers = useHorizontalSwipe({
+    onSwipeLeft: () => {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🚀 Gallery swipe left - going to next image')
+      }
+      UmamiEvents.galleryNavigation(
+        'swipe-left',
+        realTimeCurrentIndex,
+        Math.min(realTimeCurrentIndex + 1, designs.length - 1)
+      )
+      scrollToImage('right')
+    },
+    onSwipeRight: () => {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🚀 Gallery swipe right - going to previous image')
+      }
+      UmamiEvents.galleryNavigation(
+        'swipe-right',
+        realTimeCurrentIndex,
+        Math.max(realTimeCurrentIndex - 1, 0)
+      )
+      scrollToImage('left')
+    },
+    enabled: isMobile,
+    minSwipeDistance: 50,
+    maxSwipeTime: 400,
+  })
+
+  // Enhanced keyboard navigation with explicit logging
+  if (process.env.NODE_ENV === 'development') {
+    console.log(
+      '🎹 About to call useKeyboardNavigation with onEnter:',
+      !!handleEnterPress
+    )
+  }
+
   useKeyboardNavigation({
     onPrevious: () => {
       UmamiEvents.galleryNavigation(
         'keyboard-left',
-        realTimeCurrentIndex.current,
-        Math.max(realTimeCurrentIndex.current - 1, 0)
+        realTimeCurrentIndex,
+        Math.max(realTimeCurrentIndex - 1, 0)
       )
       scrollToImage('left')
     },
     onNext: () => {
       UmamiEvents.galleryNavigation(
         'keyboard-right',
-        realTimeCurrentIndex.current,
-        Math.min(realTimeCurrentIndex.current + 1, designs.length - 1)
+        realTimeCurrentIndex,
+        Math.min(realTimeCurrentIndex + 1, designs.length - 1)
       )
       scrollToImage('right')
     },
@@ -161,13 +215,8 @@ export function useGalleryNavigationLogic({
       UmamiEvents.navigateToContact()
       navigation.handlePageNavigation('/contact')
     },
-    onEnter: () => {
-      const currentDesign = designs[realTimeCurrentIndex.current]
-      if (currentDesign) {
-        UmamiEvents.viewProject(currentDesign.title, currentDesign.year)
-        navigation.handleImageClick(currentDesign)
-      }
-    },
+    // Use the state-based Enter handler
+    onEnter: handleEnterPress,
     enabled: true,
   })
 

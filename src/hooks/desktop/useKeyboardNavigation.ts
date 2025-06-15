@@ -1,3 +1,4 @@
+// src/hooks/desktop/useKeyboardNavigation.ts - Add more debugging
 'use client'
 
 import { useEffect, useRef, useMemo } from 'react'
@@ -30,6 +31,19 @@ export function useKeyboardNavigation({
 }: UseKeyboardNavigationProps) {
   const scrollIntervals = useRef<Map<string, NodeJS.Timeout>>(new Map())
 
+  // Debug: Log when the hook initializes
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🎹 Keyboard navigation initialized with:', {
+        onEnter: !!onEnter,
+        onEscape: !!onEscape,
+        onPrevious: !!onPrevious,
+        onNext: !!onNext,
+        enabled,
+      })
+    }
+  }, [onEnter, onEscape, onPrevious, onNext, enabled])
+
   // Create throttled scroll functions
   const throttledScrollUp = useMemo(
     () => (onScrollUp ? throttle(onScrollUp, 100) : undefined),
@@ -48,12 +62,26 @@ export function useKeyboardNavigation({
     const currentIntervals = scrollIntervals.current
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't interfere with form inputs
-      if (
-        e.target instanceof HTMLInputElement ||
-        e.target instanceof HTMLTextAreaElement ||
-        e.target instanceof HTMLSelectElement
-      ) {
+      // Debug logging
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🎹 Key pressed:', e.key, 'Target:', e.target)
+      }
+
+      // Don't interfere with form inputs or when user is typing
+      const target = e.target as HTMLElement
+      const isTypingContext =
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        target instanceof HTMLSelectElement ||
+        target?.contentEditable === 'true' ||
+        target?.tagName === 'BUTTON' ||
+        target?.tagName === 'A' ||
+        target?.hasAttribute('tabindex')
+
+      if (isTypingContext) {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🎹 Ignoring key in typing context:', target.tagName)
+        }
         return
       }
 
@@ -101,21 +129,65 @@ export function useKeyboardNavigation({
         case 'ArrowLeft':
         case 'h': // Vim-like navigation
           e.preventDefault()
+          if (process.env.NODE_ENV === 'development') {
+            console.log('🎹 Previous triggered, function exists:', !!onPrevious)
+          }
           onPrevious?.()
           break
         case 'ArrowRight':
         case 'l': // Vim-like navigation
           e.preventDefault()
+          if (process.env.NODE_ENV === 'development') {
+            console.log('🎹 Next triggered, function exists:', !!onNext)
+          }
           onNext?.()
           break
         case 'Escape':
           e.preventDefault()
+          if (process.env.NODE_ENV === 'development') {
+            console.log('🎹 Escape triggered, function exists:', !!onEscape)
+          }
           onEscape?.()
           break
         case 'Enter':
+          e.preventDefault()
+          if (process.env.NODE_ENV === 'development') {
+            console.log(
+              '🎹 Enter triggered, onEnter function exists:',
+              !!onEnter
+            )
+            console.log('🎹 About to call onEnter...')
+          }
+          if (onEnter) {
+            onEnter()
+            if (process.env.NODE_ENV === 'development') {
+              console.log('🎹 onEnter called successfully')
+            }
+          } else {
+            if (process.env.NODE_ENV === 'development') {
+              console.warn('🎹 onEnter function is not defined!')
+            }
+          }
+          break
         case ' ': // Spacebar
           e.preventDefault()
-          onEnter?.()
+          if (process.env.NODE_ENV === 'development') {
+            console.log(
+              '🎹 Spacebar triggered, onEnter function exists:',
+              !!onEnter
+            )
+            console.log('🎹 About to call onEnter...')
+          }
+          if (onEnter) {
+            onEnter()
+            if (process.env.NODE_ENV === 'development') {
+              console.log('🎹 onEnter called successfully via Spacebar')
+            }
+          } else {
+            if (process.env.NODE_ENV === 'development') {
+              console.warn('🎹 onEnter function is not defined!')
+            }
+          }
           break
         case 'a':
           e.preventDefault()

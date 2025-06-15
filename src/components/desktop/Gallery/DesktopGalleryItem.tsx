@@ -1,8 +1,9 @@
-// src/components/desktop/Gallery/DesktopGalleryItem.tsx - Save position before navigation
+// src/components/desktop/Gallery/DesktopGalleryItem.tsx - Fixed
 'use client'
 
 import { memo } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { TextileDesign } from '@/sanity/types'
 import { getOptimizedImageUrl } from '@/sanity/imageHelpers'
 import { UmamiEvents } from '@/utils/analytics'
@@ -30,6 +31,12 @@ export const DesktopGalleryItem = memo(function DesktopGalleryItem({
     router.push(`/project/${design.slug?.current || design._id}`)
   }
 
+  const imageUrl = getOptimizedImageUrl(design.image, {
+    height: 800,
+    quality: 90,
+    format: 'webp',
+  })
+
   return (
     <div
       className={`desktop-gallery-item ${isActive ? 'active' : ''}`}
@@ -44,14 +51,19 @@ export const DesktopGalleryItem = memo(function DesktopGalleryItem({
       }}
     >
       <div className="desktop-gallery-image">
-        <img
-          src={getOptimizedImageUrl(design.image, {
-            height: 800,
-            quality: 90,
-            format: 'webp',
-          })}
+        <Image
+          src={imageUrl}
           alt={design.title}
-          loading={index < 3 ? 'eager' : 'lazy'}
+          width={600}
+          height={800}
+          priority={index < 3}
+          style={{
+            width: 'auto',
+            height: '75vh',
+            objectFit: 'contain',
+            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.15)',
+            borderRadius: '4px',
+          }}
         />
       </div>
 

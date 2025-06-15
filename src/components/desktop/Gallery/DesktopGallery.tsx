@@ -1,14 +1,14 @@
-// src/components/desktop/Gallery/DesktopGallery.tsx - Fixed version without loops
+// src/components/desktop/Gallery/DesktopGallery.tsx - Fixed
 'use client'
 
 import { useEffect, useRef, useState, useCallback } from 'react'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useKeyboardNavigation } from '@/hooks/desktop/useKeyboardNavigation'
 import { DesktopGalleryItem } from './DesktopGalleryItem'
 import { NavigationArrows } from '@/components/ui/NavigationArrows'
 import { TextileDesign } from '@/sanity/types'
 import { UmamiEvents } from '@/utils/analytics'
-import { simpleScrollManager } from '@/lib/simpleScrollManager'
+import { scrollManager } from '@/lib/scrollManager'
 
 interface DesktopGalleryProps {
   designs: TextileDesign[]
@@ -16,6 +16,7 @@ interface DesktopGalleryProps {
 
 export function DesktopGallery({ designs }: DesktopGalleryProps) {
   const pathname = usePathname()
+  const router = useRouter()
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
@@ -23,6 +24,7 @@ export function DesktopGallery({ designs }: DesktopGalleryProps) {
   const isScrollingRef = useRef(false)
   const hasRestoredRef = useRef(false)
   const lastSavedIndexRef = useRef<number>(-1)
+  const [isRestoring, setIsRestoring] = useState(true)
 
   // Simple scroll to index function
   const scrollToIndex = useCallback(
@@ -142,33 +144,48 @@ export function DesktopGallery({ designs }: DesktopGalleryProps) {
     }
   }, [checkScrollBounds])
 
-  // Restore scroll position ONCE on mount
+  // Restore scroll position ONCE on mount using new scrollManager
   useEffect(() => {
     if (designs.length === 0 || hasRestoredRef.current) return
 
-    simpleScrollManager.startRestoration()
+    const restorePosition = async () => {
+      try {
+        setIsRestoring(true)
 
-    const savedIndex = simpleScrollManager.get(pathname)
+        const savedIndex = await scrollManager.restore(pathname)
 
-    if (savedIndex !== null && savedIndex >= 0 && savedIndex < designs.length) {
-      // Restore to saved position
-      setTimeout(() => {
-        scrollToIndex(savedIndex, true)
-        hasRestoredRef.current = true
-        lastSavedIndexRef.current = savedIndex
-        simpleScrollManager.endRestoration()
+        if (
+          savedIndex !== null &&
+          savedIndex >= 0 &&
+          savedIndex < designs.length
+        ) {
+          // Restore to saved position
+          setTimeout(() => {
+            scrollToIndex(savedIndex, true)
+            hasRestoredRef.current = true
+            lastSavedIndexRef.current = savedIndex
+            setIsRestoring(false)
 
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`🔄 Restored to index ${savedIndex}`)
+            if (process.env.NODE_ENV === 'development') {
+              console.log(`🔄 Desktop Gallery restored to index ${savedIndex}`)
+            }
+          }, 200)
+        } else {
+          // No saved position, start at beginning
+          hasRestoredRef.current = true
+          lastSavedIndexRef.current = 0
+          setIsRestoring(false)
+          setTimeout(checkScrollBounds, 100)
         }
-      }, 200)
-    } else {
-      // No saved position, start at beginning
-      hasRestoredRef.current = true
-      lastSavedIndexRef.current = 0
-      simpleScrollManager.endRestoration()
-      setTimeout(checkScrollBounds, 100)
+      } catch (error) {
+        console.warn('Failed to restore desktop gallery position:', error)
+        hasRestoredRef.current = true
+        setIsRestoring(false)
+        setTimeout(checkScrollBounds, 100)
+      }
     }
+
+    restorePosition()
   }, [pathname, designs.length, scrollToIndex, checkScrollBounds])
 
   // Save position only when index changes (debounced)
@@ -178,14 +195,42 @@ export function DesktopGallery({ designs }: DesktopGalleryProps) {
     }
 
     const timeoutId = setTimeout(() => {
-      simpleScrollManager.save(currentIndex, pathname)
+      scrollManager.save(currentIndex, pathname)
       lastSavedIndexRef.current = currentIndex
     }, 1000) // Debounce saves by 1 second
 
     return () => clearTimeout(timeoutId)
   }, [currentIndex, pathname])
 
-  // Keyboard navigation
+  // Enhanced navigation function that actually opens projects
+  const navigateToProject = useCallback(
+    (design: TextileDesign) => {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(
+          `🎹 Opening project: ${design.title} at index ${currentIndex}`
+        )
+      }
+
+      // Save current position before navigating
+      scrollManager.saveImmediate(currentIndex, pathname)
+      lastSavedIndexRef.current = currentIndex
+
+      // Track analytics
+      UmamiEvents.viewProject(design.title, design.year)
+      UmamiEvents.galleryNavigation(
+        'keyboard-enter',
+        currentIndex,
+        currentIndex
+      )
+
+      // Navigate to project
+      scrollManager.triggerNavigationStart()
+      router.push(`/project/${design.slug?.current || design._id}`)
+    },
+    [currentIndex, pathname, router]
+  )
+
+  // Keyboard navigation with fixed onEnter
   useKeyboardNavigation({
     onPrevious: () => {
       UmamiEvents.galleryNavigation(
@@ -206,7 +251,11 @@ export function DesktopGallery({ designs }: DesktopGalleryProps) {
     onEnter: () => {
       const currentDesign = designs[currentIndex]
       if (currentDesign) {
-        UmamiEvents.viewProject(currentDesign.title, currentDesign.year)
+        navigateToProject(currentDesign)
+      } else {
+        if (process.env.NODE_ENV === 'development') {
+          console.warn(`🎹 No design found at index ${currentIndex}`)
+        }
       }
     },
     enabled: true,
@@ -237,7 +286,16 @@ export function DesktopGallery({ designs }: DesktopGalleryProps) {
       />
 
       <div className="desktop-gallery">
-        <div ref={scrollContainerRef} className="desktop-gallery-track">
+        <div
+          ref={scrollContainerRef}
+          className="desktop-gallery-track"
+          data-scroll-container="true"
+          data-current-index={currentIndex.toString()}
+          style={{
+            opacity: isRestoring ? 0 : 1,
+            transition: isRestoring ? 'none' : 'opacity 0.4s ease',
+          }}
+        >
           {designs.map((design, index) => (
             <DesktopGalleryItem
               key={design._id}
@@ -246,7 +304,7 @@ export function DesktopGallery({ designs }: DesktopGalleryProps) {
               isActive={index === currentIndex}
               onNavigate={() => {
                 // Save current position immediately before navigating
-                simpleScrollManager.save(currentIndex, pathname)
+                scrollManager.saveImmediate(currentIndex, pathname)
                 lastSavedIndexRef.current = currentIndex
               }}
             />

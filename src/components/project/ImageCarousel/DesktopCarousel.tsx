@@ -1,4 +1,4 @@
-/* eslint-disable @next/next/no-img-element */
+// src/components/project/ImageCarousel/DesktopCarousel.tsx - Add Escape handling
 'use client'
 
 import { useState, useCallback, useMemo, useEffect } from 'react'
@@ -8,6 +8,7 @@ import { getOptimizedImageUrl } from '@/sanity/imageHelpers'
 import { NavigationArrows } from '@/components/ui/NavigationArrows'
 import { UmamiEvents } from '@/utils/analytics'
 import { perf } from '@/utils/performance'
+import { scrollManager } from '@/lib/scrollManager'
 import type { SanityImageSource } from '@sanity/image-url/lib/types/types'
 
 interface GalleryImage {
@@ -92,14 +93,21 @@ export function DesktopCarousel({
     }
   }, [allImages.length, currentIndex, projectTitle])
 
-  // Keyboard navigation
+  // Handle going back to gallery
+  const goBackToGallery = useCallback(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('⌨️ Escape pressed: Going back to gallery')
+    }
+    UmamiEvents.backToGallery()
+    scrollManager.triggerNavigationStart()
+    router.back()
+  }, [router])
+
+  // Enhanced keyboard navigation with Escape
   useKeyboardNavigation({
     onPrevious: goToPrevious,
     onNext: goToNext,
-    onEscape: () => {
-      UmamiEvents.backToGallery()
-      router.back()
-    },
+    onEscape: goBackToGallery, // Add Escape handling
     enabled: true,
   })
 
@@ -165,6 +173,7 @@ export function DesktopCarousel({
             }}
           >
             {(currentImage?.asset || mainImage) && (
+              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={getOptimizedImageUrl(currentImage?.asset || mainImage, {
                   height: 800,
@@ -209,6 +218,7 @@ export function DesktopCarousel({
       {/* Preload adjacent images */}
       <div style={{ display: 'none' }} aria-hidden="true">
         {preloadImages.map((image, index) => (
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             key={`preload-${index}`}
             src={getOptimizedImageUrl(image.asset, {

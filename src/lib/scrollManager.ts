@@ -1,52 +1,33 @@
-// src/lib/scrollManager.ts - Updated version
+// src/lib/scrollManager.ts - Fix unused parameter
 'use client'
-
-import { debounce } from '@/utils/performance'
 
 interface ScrollPosition {
   index: number
   timestamp: number
+  container?: string
 }
 
 interface ScrollState {
-  [key: string]: ScrollPosition
+  [path: string]: ScrollPosition
 }
 
-class EnhancedScrollManager {
-  private storageKey = 'gallery-scroll-positions-v3'
+class ScrollManager {
+  private storageKey = 'gallery-scroll-positions-v4'
   private isNavigating = false
+  private isRestoring = false
+  private restorationPromise: Promise<void> | null = null
   private lastSavedIndex: number | null = null
-  private hasVisitedGallery = false
-  private debouncedSave: ReturnType<typeof debounce>
-  private isRestoring = false // Add this flag
+  private saveTimeout: NodeJS.Timeout | null = null
 
   constructor() {
-    this.debouncedSave = debounce((...args: unknown[]) => {
-      const index = args[0] as number
-      const path = args[1] as string
-      this.saveImmediate(index, path)
-    }, 500) // Increase debounce time
-
     if (typeof window !== 'undefined') {
       this.setupNavigationListeners()
       this.cleanupOldPositions()
-      this.checkFirstVisit()
-    }
-  }
-
-  private checkFirstVisit() {
-    this.hasVisitedGallery =
-      sessionStorage.getItem('gallery-visited') === 'true'
-  }
-
-  private markGalleryVisited() {
-    if (!this.hasVisitedGallery) {
-      sessionStorage.setItem('gallery-visited', 'true')
-      this.hasVisitedGallery = true
     }
   }
 
   private setupNavigationListeners() {
+    // Listen for navigation events
     window.addEventListener('gallery-navigation-start', () => {
       this.isNavigating = true
     })
@@ -54,110 +35,107 @@ class EnhancedScrollManager {
     window.addEventListener('gallery-navigation-complete', () => {
       setTimeout(() => {
         this.isNavigating = false
-      }, 300)
+      }, 100)
     })
 
-    window.addEventListener('beforeunload', this.handlePageUnload.bind(this))
+    // Save on page unload
+    window.addEventListener('beforeunload', () => {
+      this.saveCurrentPosition()
+    })
+
+    // Handle popstate (browser back/forward)
+    window.addEventListener('popstate', () => {
+      setTimeout(() => {
+        this.isNavigating = false
+      }, 50)
+    })
   }
 
-  private handlePageUnload = () => {
-    const currentIndexElement = document.querySelector(
-      '[data-current-index]'
-    ) as HTMLElement | null
-    if (currentIndexElement?.dataset.currentIndex) {
-      const currentIndex = parseInt(
-        currentIndexElement.dataset.currentIndex,
-        10
-      )
-      this.saveImmediate(currentIndex, window.location.pathname)
+  private saveCurrentPosition() {
+    const container = document.querySelector(
+      '[data-scroll-container]'
+    ) as HTMLElement
+    if (container?.dataset.currentIndex) {
+      const index = parseInt(container.dataset.currentIndex, 10)
+      this.saveImmediate(index, window.location.pathname)
     }
   }
 
-  save(currentIndex: number, path?: string): void {
-    // Don't save if we're navigating, restoring, or if index hasn't changed
-    if (
-      this.isNavigating ||
-      this.isRestoring ||
-      currentIndex === this.lastSavedIndex
-    ) {
-      return
+  // Debounced save to prevent excessive storage writes
+  save(index: number, path?: string): void {
+    if (this.isNavigating || this.isRestoring) return
+
+    // Clear existing timeout
+    if (this.saveTimeout) {
+      clearTimeout(this.saveTimeout)
     }
 
-    this.markGalleryVisited()
-    this.debouncedSave(currentIndex, path || window.location.pathname)
+    // Debounce saves by 300ms
+    this.saveTimeout = setTimeout(() => {
+      this.saveImmediate(index, path || window.location.pathname)
+    }, 300)
   }
 
-  saveImmediate(currentIndex: number, path?: string): void {
+  saveImmediate(index: number, path?: string): void {
     if (typeof window === 'undefined' || this.isRestoring) return
 
     const currentPath = this.normalizePath(path || window.location.pathname)
-    this.markGalleryVisited()
 
-    // Only save if the index has actually changed
-    if (this.lastSavedIndex === currentIndex) {
-      return
-    }
+    // Don't save if index hasn't changed
+    if (this.lastSavedIndex === index) return
 
     const positions = this.getAllPositions()
-
     positions[currentPath] = {
-      index: currentIndex,
+      index,
       timestamp: Date.now(),
     }
 
-    if (currentPath === '/') {
-      positions['gallery'] = positions[currentPath]
-    }
-
-    this.lastSavedIndex = currentIndex
+    this.lastSavedIndex = index
 
     try {
       sessionStorage.setItem(this.storageKey, JSON.stringify(positions))
       if (process.env.NODE_ENV === 'development') {
-        console.log(`💾 Saved current index for ${currentPath}:`, currentIndex)
+        console.log(`💾 Saved scroll position for ${currentPath}: ${index}`)
       }
     } catch (error) {
       console.warn('Failed to save scroll position:', error)
     }
   }
 
+  async restore(path?: string): Promise<number | null> {
+    if (this.restorationPromise) {
+      return this.restorationPromise.then(() => this.getSavedIndex(path))
+    }
+
+    this.restorationPromise = this.performRestore()
+    return this.restorationPromise.then(() => this.getSavedIndex(path))
+  }
+
+  private async performRestore(): Promise<void> {
+    this.isRestoring = true
+
+    // Small delay to ensure DOM is ready
+    await new Promise((resolve) => setTimeout(resolve, 50))
+
+    this.isRestoring = false
+  }
+
   getSavedIndex(path?: string): number | null {
     if (typeof window === 'undefined') return null
 
     const currentPath = this.normalizePath(path || window.location.pathname)
-
-    // Only log this once per session to reduce noise
-    if (process.env.NODE_ENV === 'development' && !this.isRestoring) {
-      console.log(`🔍 Getting saved index for path: ${currentPath}`)
-    }
-
-    if (!this.hasVisitedGallery && currentPath === '/') {
-      this.markGalleryVisited()
-      return 0
-    }
-
     const positions = this.getAllPositions()
-    const savedPosition =
-      positions[currentPath] || positions['gallery'] || positions['/']
+    const savedPosition = positions[currentPath]
 
-    if (savedPosition) {
+    if (savedPosition && savedPosition.index >= 0) {
       return savedPosition.index
     }
 
     return this.lastSavedIndex || 0
   }
 
-  startRestoration(): void {
-    this.isRestoring = true
-  }
-
-  completeRestoration(): void {
-    this.isRestoring = false
-  }
-
   private normalizePath(path: string): string {
-    if (!path || path === '/') return '/'
-    return path.replace(/\/$/, '')
+    return !path || path === '/' ? '/' : path.replace(/\/$/, '')
   }
 
   private getAllPositions(): ScrollState {
@@ -172,25 +150,10 @@ class EnhancedScrollManager {
     }
   }
 
-  clear(path?: string): void {
-    if (typeof window === 'undefined') return
-
-    if (path) {
-      const normalizedPath = this.normalizePath(path)
-      const positions = this.getAllPositions()
-      delete positions[normalizedPath]
-      sessionStorage.setItem(this.storageKey, JSON.stringify(positions))
-    } else {
-      sessionStorage.removeItem(this.storageKey)
-      sessionStorage.removeItem('gallery-visited')
-      this.hasVisitedGallery = false
-    }
-  }
-
   private cleanupOldPositions(): void {
     const positions = this.getAllPositions()
     const now = Date.now()
-    const maxAge = 24 * 60 * 60 * 1000
+    const maxAge = 24 * 60 * 60 * 1000 // 24 hours
 
     let hasChanges = false
     for (const [path, position] of Object.entries(positions)) {
@@ -205,6 +168,19 @@ class EnhancedScrollManager {
     }
   }
 
+  clear(path?: string): void {
+    if (typeof window === 'undefined') return
+
+    if (path) {
+      const normalizedPath = this.normalizePath(path)
+      const positions = this.getAllPositions()
+      delete positions[normalizedPath]
+      sessionStorage.setItem(this.storageKey, JSON.stringify(positions))
+    } else {
+      sessionStorage.removeItem(this.storageKey)
+    }
+  }
+
   triggerNavigationStart(): void {
     this.isNavigating = true
     window.dispatchEvent(new Event('gallery-navigation-start'))
@@ -214,18 +190,8 @@ class EnhancedScrollManager {
     setTimeout(() => {
       this.isNavigating = false
       window.dispatchEvent(new Event('gallery-navigation-complete'))
-    }, 100)
-  }
-
-  debug(): void {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('📊 All saved scroll positions:', this.getAllPositions())
-      console.log('📊 Last saved index:', this.lastSavedIndex)
-      console.log('📊 Has visited gallery:', this.hasVisitedGallery)
-      console.log('📊 Is navigating:', this.isNavigating)
-      console.log('📊 Is restoring:', this.isRestoring)
-    }
+    }, 50)
   }
 }
 
-export const scrollManager = new EnhancedScrollManager()
+export const scrollManager = new ScrollManager()
