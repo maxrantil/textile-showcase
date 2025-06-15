@@ -1,4 +1,3 @@
-// src/components/desktop/Gallery/DesktopGallery.tsx - Fixed
 'use client'
 
 import { useEffect, useRef, useState, useCallback } from 'react'
@@ -93,7 +92,7 @@ export function DesktopGallery({ designs }: DesktopGalleryProps) {
     let closestIndex = 0
     let closestDistance = Infinity
 
-    for (let i = 0; i < items.length; i++) {
+    for (let i = 0; i < items.length && i < designs.length; i++) {
       const item = items[i] as HTMLElement
       const itemCenter = item.offsetLeft + item.offsetWidth / 2
       const distance = Math.abs(containerCenter - itemCenter)
@@ -106,8 +105,11 @@ export function DesktopGallery({ designs }: DesktopGalleryProps) {
 
     if (closestIndex !== currentIndex) {
       setCurrentIndex(closestIndex)
+
+      // Update container attribute for scroll manager
+      container.setAttribute('data-current-index', closestIndex.toString())
     }
-  }, [currentIndex])
+  }, [currentIndex, designs.length])
 
   // Check scroll boundaries
   const checkScrollBounds = useCallback(() => {
@@ -144,7 +146,7 @@ export function DesktopGallery({ designs }: DesktopGalleryProps) {
     }
   }, [checkScrollBounds])
 
-  // Restore scroll position ONCE on mount using new scrollManager
+  // Restore scroll position ONCE on mount
   useEffect(() => {
     if (designs.length === 0 || hasRestoredRef.current) return
 
@@ -188,7 +190,7 @@ export function DesktopGallery({ designs }: DesktopGalleryProps) {
     restorePosition()
   }, [pathname, designs.length, scrollToIndex, checkScrollBounds])
 
-  // Save position only when index changes (debounced)
+  // Save position when index changes (debounced)
   useEffect(() => {
     if (!hasRestoredRef.current || currentIndex === lastSavedIndexRef.current) {
       return
@@ -197,12 +199,12 @@ export function DesktopGallery({ designs }: DesktopGalleryProps) {
     const timeoutId = setTimeout(() => {
       scrollManager.save(currentIndex, pathname)
       lastSavedIndexRef.current = currentIndex
-    }, 1000) // Debounce saves by 1 second
+    }, 1000)
 
     return () => clearTimeout(timeoutId)
   }, [currentIndex, pathname])
 
-  // Enhanced navigation function that actually opens projects
+  // Enhanced navigation function that opens projects
   const navigateToProject = useCallback(
     (design: TextileDesign) => {
       if (process.env.NODE_ENV === 'development') {
@@ -230,13 +232,13 @@ export function DesktopGallery({ designs }: DesktopGalleryProps) {
     [currentIndex, pathname, router]
   )
 
-  // Keyboard navigation with fixed onEnter
+  // Keyboard navigation
   useKeyboardNavigation({
     onPrevious: () => {
       UmamiEvents.galleryNavigation(
         'keyboard-left',
         currentIndex,
-        Math.max(0, currentIndex - 1)
+        Math.max(currentIndex - 1, 0)
       )
       scrollToImage('left')
     },
@@ -252,10 +254,6 @@ export function DesktopGallery({ designs }: DesktopGalleryProps) {
       const currentDesign = designs[currentIndex]
       if (currentDesign) {
         navigateToProject(currentDesign)
-      } else {
-        if (process.env.NODE_ENV === 'development') {
-          console.warn(`🎹 No design found at index ${currentIndex}`)
-        }
       }
     },
     enabled: true,

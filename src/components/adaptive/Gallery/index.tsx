@@ -1,9 +1,8 @@
-// src/components/adaptive/Gallery/index.tsx
 'use client'
 
 import { useDeviceTypeAdvanced } from '@/hooks/shared/useDeviceType'
-import { MobileGallery } from '@/components/mobile/Gallery/MobileGallery'
-import { DesktopGallery } from '@/components/desktop/Gallery/DesktopGallery'
+import { MobileGallery } from '@/components/mobile/Gallery'
+import { DesktopGallery } from '@/components/desktop/Gallery'
 import { TextileDesign } from '@/sanity/types'
 
 interface GalleryProps {

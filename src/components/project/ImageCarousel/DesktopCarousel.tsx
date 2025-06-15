@@ -174,6 +174,7 @@ export function DesktopCarousel({
               display: 'inline-block',
               lineHeight: 0,
               backgroundColor: 'transparent',
+              borderRadius: 0,
             }}
           >
             {(currentImage?.asset || mainImage) && (

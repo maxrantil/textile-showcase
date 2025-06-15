@@ -1,4 +1,3 @@
-// src/components/mobile/Gallery/MobileGallery.tsx - Update with analytics
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -49,17 +48,11 @@ export function MobileGallery({ designs }: MobileGalleryProps) {
   }
 
   return (
-    <div
-      className="mobile-gallery"
-      onTouchStart={swipeHandlers.onTouchStart}
-      onTouchMove={swipeHandlers.onTouchMove}
-      onTouchEnd={swipeHandlers.onTouchEnd}
-    >
+    <div className="mobile-gallery" {...swipeHandlers}>
       <div
         className="mobile-gallery-track"
         style={{
           transform: `translateX(-${currentIndex * 100}%)`,
-          transition: 'transform 0.3s ease',
         }}
       >
         {designs.map((design, index) => (
@@ -70,6 +63,7 @@ export function MobileGallery({ designs }: MobileGalleryProps) {
           />
         ))}
       </div>
+
       <MobileGalleryIndicators
         total={designs.length}
         current={currentIndex}

@@ -1,4 +1,3 @@
-// src/components/mobile/Gallery/MobileGalleryItem.tsx
 'use client'
 
 import { useRouter } from 'next/navigation'
@@ -31,6 +30,7 @@ export function MobileGalleryItem({
         width={400}
         height={600}
         priority={isActive}
+        className="mobile-gallery-image"
       />
 
       <div className="mobile-gallery-info">

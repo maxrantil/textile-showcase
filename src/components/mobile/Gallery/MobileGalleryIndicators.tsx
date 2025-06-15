@@ -1,4 +1,3 @@
-// src/components/mobile/Gallery/MobileGalleryIndicators.tsx
 'use client'
 
 interface MobileGalleryIndicatorsProps {

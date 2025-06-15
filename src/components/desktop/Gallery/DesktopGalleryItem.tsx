@@ -1,4 +1,3 @@
-// src/components/desktop/Gallery/DesktopGalleryItem.tsx - Fixed
 'use client'
 
 import { memo } from 'react'
@@ -57,13 +56,7 @@ export const DesktopGalleryItem = memo(function DesktopGalleryItem({
           width={600}
           height={800}
           priority={index < 3}
-          style={{
-            width: 'auto',
-            height: '75vh',
-            objectFit: 'contain',
-            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.15)',
-            borderRadius: '4px',
-          }}
+          className="desktop-gallery-img"
         />
       </div>
 
