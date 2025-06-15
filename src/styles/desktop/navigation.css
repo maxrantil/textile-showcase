@@ -1,0 +1,88 @@
+/* src/styles/desktop/navigation.css - Fixed positioning for both gallery and project pages */
+
+.nav-button {
+  display: flex;
+}
+
+.nav-hide-mobile {
+  display: flex;
+}
+
+.nav-show-mobile {
+  display: flex;
+}
+
+/* Main hover effects */
+.nav-button:hover .triangle-left {
+  border-right-color: #444444 !important;
+}
+
+.nav-button:hover .triangle-right {
+  border-left-color: #444444 !important;
+}
+
+/* Active state to maintain color during click */
+.nav-button:active .triangle-left {
+  border-right-color: #444444 !important;
+}
+
+.nav-button:active .triangle-right {
+  border-left-color: #444444 !important;
+}
+
+/* Focus state for accessibility */
+.nav-button:focus-visible .triangle-left {
+  border-right-color: #444444 !important;
+}
+
+.nav-button:focus-visible .triangle-right {
+  border-left-color: #444444 !important;
+}
+
+/* Alternative hover approach for better browser support */
+button.nav-button:hover .triangle-left {
+  border-right-color: #444444 !important;
+}
+
+button.nav-button:hover .triangle-right {
+  border-left-color: #444444 !important;
+}
+
+@media (max-width: 767px) {
+  .nav-hide-mobile {
+    display: none !important;
+  }
+
+  .nav-show-mobile {
+    display: flex !important;
+  }
+}
+
+@media (max-width: 1023px) {
+  .nav-button {
+    transform: scale(0.85);
+  }
+}
+
+@media (max-width: 767px) {
+  .nav-button {
+    transform: scale(0.7);
+  }
+}
+
+@media (max-width: 480px) {
+  .nav-button {
+    transform: scale(0.6);
+  }
+}
+
+@media (prefers-contrast: high) {
+  .nav-button div {
+    filter: contrast(2);
+  }
+}
+
+.nav-button:focus-visible {
+  outline: 2px solid #0066cc;
+  outline-offset: 2px;
+}

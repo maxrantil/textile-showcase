@@ -1,4 +1,4 @@
-// src/components/project/ImageCarousel/DesktopCarousel.tsx - Add Escape handling
+// src/components/project/ImageCarousel/DesktopCarousel.tsx - Fixed positioning
 'use client'
 
 import { useState, useCallback, useMemo, useEffect } from 'react'
@@ -107,7 +107,7 @@ export function DesktopCarousel({
   useKeyboardNavigation({
     onPrevious: goToPrevious,
     onNext: goToNext,
-    onEscape: goBackToGallery, // Add Escape handling
+    onEscape: goBackToGallery,
     enabled: true,
   })
 
@@ -128,23 +128,10 @@ export function DesktopCarousel({
   const canScrollLeft = allImages.length > 1
   const canScrollRight = allImages.length > 1
 
+  // Update the return statement in DesktopCarousel.tsx
   return (
     <>
-      {/* Navigation Arrows */}
-      {allImages.length > 1 && (
-        <NavigationArrows
-          canScrollLeft={canScrollLeft}
-          canScrollRight={canScrollRight}
-          onScrollLeft={goToPrevious}
-          onScrollRight={goToNext}
-          position="fixed"
-          size="large"
-          variant="project"
-          showOnMobile={false}
-        />
-      )}
-
-      {/* Image Container */}
+      {/* Main Image Container with Navigation - RESTORE position relative */}
       <div
         style={{
           display: 'flex',
@@ -153,8 +140,25 @@ export function DesktopCarousel({
           marginBottom: '20px',
           width: '100%',
           justifyContent: 'center',
+          position: 'relative', // RESTORE THIS - it's needed for absolute positioning
+          minHeight: '70vh', // Add this to give consistent height
         }}
       >
+        {/* Navigation Arrows - positioned relative to this container */}
+        {allImages.length > 1 && (
+          <NavigationArrows
+            canScrollLeft={canScrollLeft}
+            canScrollRight={canScrollRight}
+            onScrollLeft={goToPrevious}
+            onScrollRight={goToNext}
+            position="absolute" // CHANGE BACK to absolute
+            size="large"
+            variant="project"
+            showOnMobile={false}
+          />
+        )}
+
+        {/* Image Display */}
         <div
           style={{
             display: 'flex',
