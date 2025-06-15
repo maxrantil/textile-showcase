@@ -4,46 +4,76 @@ import { useState, useEffect } from 'react'
 type DeviceType = 'mobile' | 'desktop'
 
 export function useDeviceType(): DeviceType {
-  const [deviceType, setDeviceType] = useState<DeviceType>('desktop')
+  const [deviceType, setDeviceType] = useState<DeviceType>('desktop') // Default to desktop for SSR
+  const [isHydrated, setIsHydrated] = useState(false)
 
   useEffect(() => {
+    // Mark as hydrated immediately
+    setIsHydrated(true)
+
     const checkDevice = () => {
-      // 1. User Agent check
+      // User Agent check
       const userAgent = navigator.userAgent.toLowerCase()
       const mobileUA =
         /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(
           userAgent
         )
 
-      // 2. Screen characteristics
+      // Screen characteristics
       const screenWidth = window.screen.width
       const screenHeight = window.screen.height
+      const viewportWidth = window.innerWidth
       const isSmallScreen = Math.min(screenWidth, screenHeight) < 768
+      const isSmallViewport = viewportWidth < 768
 
-      // 3. Device pixel ratio (mobile devices often have higher DPR)
+      // Device pixel ratio
       const highDPR = window.devicePixelRatio > 1.5
 
-      // 4. Touch with context
+      // Touch capability
       const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0
 
-      // 5. Orientation API (mostly available on mobile)
+      // Orientation API
       const hasOrientation = 'orientation' in window
 
       // Score-based detection
       let mobileScore = 0
-      if (mobileUA) mobileScore += 3 // Strongest indicator
-      if (isSmallScreen) mobileScore += 2
-      if (hasTouch && isSmallScreen) mobileScore += 2 // Touch only counts if screen is small
-      if (highDPR && isSmallScreen) mobileScore += 1
+      if (mobileUA) mobileScore += 3
+      if (isSmallScreen || isSmallViewport) mobileScore += 2
+      if (hasTouch && (isSmallScreen || isSmallViewport)) mobileScore += 2
+      if (highDPR && (isSmallScreen || isSmallViewport)) mobileScore += 1
       if (hasOrientation) mobileScore += 1
 
-      setDeviceType(mobileScore >= 3 ? 'mobile' : 'desktop')
+      const detectedType = mobileScore >= 3 ? 'mobile' : 'desktop'
+
+      console.log('🔍 Device detection (stable):', {
+        viewportWidth,
+        mobileUA,
+        hasTouch,
+        mobileScore,
+        detectedType,
+        isHydrated: true, // We know we're hydrated at this point
+      })
+
+      setDeviceType(detectedType)
     }
 
+    // Initial detection after hydration
     checkDevice()
-    window.addEventListener('resize', checkDevice)
-    return () => window.removeEventListener('resize', checkDevice)
-  }, [])
 
-  return deviceType
+    // Debounced resize handler
+    let timeoutId: NodeJS.Timeout
+    const handleResize = () => {
+      clearTimeout(timeoutId)
+      timeoutId = setTimeout(checkDevice, 200) // Longer debounce
+    }
+
+    window.addEventListener('resize', handleResize)
+    return () => {
+      window.removeEventListener('resize', handleResize)
+      clearTimeout(timeoutId)
+    }
+  }, []) // Empty dependency array is correct here
+
+  // Only return the detected type after hydration
+  return isHydrated ? deviceType : 'desktop'
 }

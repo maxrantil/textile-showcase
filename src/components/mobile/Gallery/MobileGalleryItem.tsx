@@ -35,7 +35,6 @@ export function MobileGalleryItem({
 
       <div className="mobile-gallery-info">
         <h3>{design.title}</h3>
-        {design.year && <p>{design.year}</p>}
       </div>
     </div>
   )
