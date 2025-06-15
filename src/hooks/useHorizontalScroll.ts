@@ -1,4 +1,4 @@
-// src/hooks/useHorizontalScroll.ts - Updated to export setCurrentIndex
+// src/hooks/useHorizontalScroll.ts - Updated version
 'use client'
 
 import { useRef, useState, useEffect, useCallback } from 'react'
@@ -16,11 +16,13 @@ export function useHorizontalScroll({
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(true)
   const [currentIndex, setCurrentIndex] = useState(0)
-  const isUpdatingRef = useRef(false)
+  const isScrollingRef = useRef(false)
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const lastReportedIndex = useRef<number>(-1)
 
   const checkScrollPosition = useCallback(() => {
     const container = scrollContainerRef.current
-    if (!container || isUpdatingRef.current) return
+    if (!container || isScrollingRef.current) return
 
     const { scrollLeft, scrollWidth, clientWidth } = container
     setCanScrollLeft(scrollLeft > 10)
@@ -44,42 +46,30 @@ export function useHorizontalScroll({
       }
     }
 
-    // Only log when index actually changes
-    if (closestIndex !== currentIndex) {
-      if (process.env.NODE_ENV === 'development') {
-        console.log(
-          '🎯 Gallery index changed:',
-          currentIndex,
-          '→',
-          closestIndex
-        )
-      }
+    // Only update if the index has actually changed
+    if (closestIndex !== lastReportedIndex.current) {
+      lastReportedIndex.current = closestIndex
       setCurrentIndex(closestIndex)
       onIndexChange?.(closestIndex)
+
+      // Update container attribute for scroll manager
+      container.setAttribute('data-current-index', closestIndex.toString())
     }
-  }, [itemCount, currentIndex, onIndexChange])
+  }, [itemCount, onIndexChange])
 
   const scrollToImage = useCallback(
     (direction: 'left' | 'right') => {
       const container = scrollContainerRef.current
       if (!container) return
 
-      if (process.env.NODE_ENV === 'development') {
-        console.log(
-          '🚀 ScrollToImage called:',
-          direction,
-          'from index:',
-          currentIndex
-        )
-      }
+      isScrollingRef.current = true
 
-      isUpdatingRef.current = true
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current)
+      }
 
       const items = container.children
-      if (items.length === 0) {
-        console.log('❌ No items found')
-        return
-      }
+      if (items.length === 0) return
 
       let targetIndex = currentIndex
       if (direction === 'left') {
@@ -88,60 +78,27 @@ export function useHorizontalScroll({
         targetIndex = Math.min(items.length - 1, currentIndex + 1)
       }
 
-      if (process.env.NODE_ENV === 'development') {
-        console.log(
-          '🎯 Target index:',
-          targetIndex,
-          'of',
-          items.length,
-          'items'
-        )
-        console.log(
-          '🔧 FORCING index change from',
-          currentIndex,
-          'to',
-          targetIndex
-        )
-      }
-      setCurrentIndex(targetIndex)
-      onIndexChange?.(targetIndex)
-
-      // Ensure target index is valid
-      if (targetIndex < 0 || targetIndex >= items.length) {
-        console.log('❌ Invalid target index')
-        isUpdatingRef.current = false
-        return
-      }
-
       const targetItem = items[targetIndex] as HTMLElement
       if (targetItem) {
         const itemCenter = targetItem.offsetLeft + targetItem.offsetWidth / 2
         const viewportCenter = container.clientWidth / 2
-        const targetScroll = itemCenter - viewportCenter
+        const targetScroll = Math.max(0, itemCenter - viewportCenter)
 
-        if (process.env.NODE_ENV === 'development') {
-          console.log('📍 Scroll calculation:', {
-            targetIndex,
-            itemOffsetLeft: targetItem.offsetLeft,
-            itemWidth: targetItem.offsetWidth,
-            itemCenter,
-            viewportCenter,
-            targetScroll: Math.max(0, targetScroll),
-            containerScrollWidth: container.scrollWidth,
-            containerClientWidth: container.clientWidth,
-          })
-        }
         container.scrollTo({
-          left: Math.max(0, targetScroll),
+          left: targetScroll,
           behavior: 'smooth',
         })
+
+        // Update state immediately
+        setCurrentIndex(targetIndex)
+        lastReportedIndex.current = targetIndex
+        onIndexChange?.(targetIndex)
+        container.setAttribute('data-current-index', targetIndex.toString())
       }
 
-      // Reset the updating flag after animation
-      setTimeout(() => {
-        isUpdatingRef.current = false
-        // Don't call checkScrollPosition here - let the forced index stick
-      }, 700)
+      scrollTimeoutRef.current = setTimeout(() => {
+        isScrollingRef.current = false
+      }, 600)
     },
     [currentIndex, onIndexChange]
   )
@@ -151,82 +108,58 @@ export function useHorizontalScroll({
       const container = scrollContainerRef.current
       if (!container || index < 0 || index >= itemCount) return
 
-      if (process.env.NODE_ENV === 'development') {
-        console.log(
-          '🚀 scrollToIndex called:',
-          index,
-          'from index:',
-          currentIndex
-        )
+      isScrollingRef.current = true
+
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current)
       }
 
-      if (!instant) {
-        isUpdatingRef.current = true
-      }
-
-      // Force the index change first
-      setCurrentIndex(index)
-      onIndexChange?.(index)
-
-      // Use actual DOM elements
       const items = container.children
       const targetItem = items[index] as HTMLElement
 
       if (targetItem) {
         const itemCenter = targetItem.offsetLeft + targetItem.offsetWidth / 2
         const viewportCenter = container.clientWidth / 2
-        const targetScroll = itemCenter - viewportCenter
-
-        if (process.env.NODE_ENV === 'development') {
-          console.log('📍 Manual scroll calculation:', {
-            index,
-            itemOffsetLeft: targetItem.offsetLeft,
-            itemWidth: targetItem.offsetWidth,
-            itemCenter,
-            viewportCenter,
-            targetScroll: Math.max(0, targetScroll),
-            instant,
-          })
-        }
+        const targetScroll = Math.max(0, itemCenter - viewportCenter)
 
         if (instant) {
-          // Instant scroll without animation - for restoration
-          const originalBehavior = container.style.scrollBehavior
-          container.style.scrollBehavior = 'auto'
-          container.scrollLeft = Math.max(0, targetScroll)
-
-          // Force update the scroll position detection immediately
-          setTimeout(() => {
-            container.style.scrollBehavior = originalBehavior
-            // Trigger a manual scroll event to update position detection
-            container.dispatchEvent(new Event('scroll'))
-          }, 10)
+          container.scrollLeft = targetScroll
+          setCurrentIndex(index)
+          lastReportedIndex.current = index
+          onIndexChange?.(index)
+          container.setAttribute('data-current-index', index.toString())
+          isScrollingRef.current = false
         } else {
-          // Smooth animated scroll - for user navigation
           container.scrollTo({
-            left: Math.max(0, targetScroll),
+            left: targetScroll,
             behavior: 'smooth',
           })
+
+          setCurrentIndex(index)
+          lastReportedIndex.current = index
+          onIndexChange?.(index)
+          container.setAttribute('data-current-index', index.toString())
+
+          scrollTimeoutRef.current = setTimeout(() => {
+            isScrollingRef.current = false
+          }, 600)
         }
       }
-
-      if (!instant) {
-        setTimeout(() => {
-          isUpdatingRef.current = false
-        }, 700)
-      }
     },
-    [itemCount, currentIndex, onIndexChange]
+    [itemCount, onIndexChange]
   )
 
   useEffect(() => {
     const container = scrollContainerRef.current
     if (!container) return
 
-    // Throttled scroll handler for better performance
+    // Set initial attributes
+    container.setAttribute('data-scroll-container', 'true')
+    container.setAttribute('data-current-index', '0')
+
     let ticking = false
     const handleScroll = () => {
-      if (!ticking && !isUpdatingRef.current) {
+      if (!ticking) {
         requestAnimationFrame(() => {
           checkScrollPosition()
           ticking = false
@@ -235,54 +168,36 @@ export function useHorizontalScroll({
       }
     }
 
-    // Initial check with multiple attempts to ensure DOM is ready
     const initialCheck = () => {
       setTimeout(() => {
-        if (process.env.NODE_ENV === 'development') {
-          console.log('🔍 Initial scroll position check')
-          console.log('Container children count:', container.children.length)
-          console.log('Expected itemCount:', itemCount)
-        }
         checkScrollPosition()
-      }, 200)
-
-      // Extra check for safety
-      setTimeout(() => {
-        if (process.env.NODE_ENV === 'development') {
-          console.log('🔍 Secondary scroll position check')
-        }
-        checkScrollPosition()
-      }, 500)
+      }, 100)
     }
     initialCheck()
 
     container.addEventListener('scroll', handleScroll, { passive: true })
 
-    // Handle window resize
     const handleResize = () => {
-      if (!isUpdatingRef.current) {
-        setTimeout(() => {
-          if (process.env.NODE_ENV === 'development') {
-            console.log('🔍 Resize scroll position check')
-          }
-          checkScrollPosition()
-        }, 200)
-      }
+      setTimeout(checkScrollPosition, 100)
     }
     window.addEventListener('resize', handleResize)
 
     return () => {
       container.removeEventListener('scroll', handleScroll)
       window.removeEventListener('resize', handleResize)
+
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current)
+      }
     }
-  }, [checkScrollPosition, itemCount])
+  }, [checkScrollPosition])
 
   return {
     scrollContainerRef,
     canScrollLeft,
     canScrollRight,
     currentIndex,
-    setCurrentIndex, // Export setCurrentIndex for manual control
+    setCurrentIndex,
     scrollToImage,
     scrollToIndex,
   }

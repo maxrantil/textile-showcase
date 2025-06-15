@@ -36,6 +36,32 @@ export const UmamiEvents = {
       to: toIndex,
     }),
 
+  // Device-specific tracking
+  trackEvent: (eventName: string, data?: AnalyticsData) => {
+    const deviceType = window.innerWidth < 768 ? 'mobile' : 'desktop'
+    trackEvent(eventName, { ...data, deviceType })
+  },
+
+  // Form field interactions
+  formFieldFocus: (fieldName: string) =>
+    trackEvent('form-field-focus', { field: fieldName }),
+
+  formFieldBlur: (fieldName: string, hasValue: boolean) =>
+    trackEvent('form-field-blur', { field: fieldName, hasValue }),
+
+  // Image loading
+  imageLoadSuccess: (imageName: string, loadTime: number) =>
+    trackEvent('image-load-success', { image: imageName, loadTime }),
+
+  imageLoadError: (imageName: string) =>
+    trackEvent('image-load-error', { image: imageName }),
+
+  // User engagement
+  userScroll: (depth: number) => trackEvent('user-scroll', { depth }),
+
+  timeOnPage: (seconds: number, page: string) =>
+    trackEvent('time-on-page', { seconds, page }),
+
   // Contact form
   contactFormSubmit: () => trackEvent('contact-form-submit'),
   contactFormSuccess: () => trackEvent('contact-form-success'),

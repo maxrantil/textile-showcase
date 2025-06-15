@@ -3,8 +3,8 @@
 
 import { useCallback } from 'react'
 import { useGalleryNavigation } from '@/hooks/gallery/useGalleryNavigation'
-import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation'
-import { useHorizontalSwipe } from '@/hooks/useSwipeGesture'
+import { useKeyboardNavigation } from '@/hooks/desktop/useKeyboardNavigation'
+import { useHorizontalSwipe } from '@/hooks/mobile/useSwipeGesture'
 import { UmamiEvents } from '@/utils/analytics'
 import { perf } from '@/utils/performance'
 import { TextileDesign } from '@/sanity/types'

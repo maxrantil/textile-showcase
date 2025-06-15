@@ -1,0 +1,10 @@
+/* src/styles/mobile/index.css */
+
+/* Mobile Components Index */
+@import './header.css';
+@import './buttons.css';
+@import './forms.css';
+@import './gallery.css';
+@import './project.css';
+@import './navigation.css';
+@import './touch.css';

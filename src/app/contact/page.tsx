@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import ContactForm from '@/components/forms/ContactForm'
+import ContactForm from '@/components/adaptive/Forms'
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 import KeyboardScrollHandler from '@/components/KeyboardScrollHandler'
 

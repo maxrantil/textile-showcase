@@ -1,0 +1,140 @@
+/* src/styles/mobile/gallery.css */
+
+/* Mobile Gallery */
+.mobile-gallery {
+  position: relative;
+  width: 100%;
+  height: calc(100vh - 60px);
+  overflow: hidden;
+}
+
+.mobile-gallery-track {
+  display: flex;
+  height: 100%;
+  transition: transform 0.3s ease;
+}
+
+.mobile-gallery-item {
+  flex: 0 0 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+/* Mobile Image Stack */
+.mobile-image-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 20px 0;
+  margin-top: 40px;
+}
+
+.mobile-image-block {
+  width: 100%;
+}
+
+.mobile-image-container {
+  position: relative;
+  width: 100%;
+  background: #f5f5f5;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.mobile-gallery-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.mobile-gallery-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* Image optimization styles */
+.mobile-image-responsive {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.mobile-project-image {
+  width: 100%;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.mobile-image {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.mobile-image.loaded {
+  opacity: 1;
+}
+
+.mobile-image-loading,
+.mobile-image-error {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: #666;
+  font-size: 14px;
+  padding: 20px;
+}
+
+.mobile-image-error {
+  color: #ef4444;
+}
+
+.mobile-image-caption {
+  margin-top: 12px;
+  text-align: center;
+  font-size: 14px;
+  color: #666;
+  font-style: italic;
+}
+
+/* Aspect ratio containers */
+.mobile-aspect-square {
+  aspect-ratio: 1 / 1;
+}
+
+.mobile-aspect-video {
+  aspect-ratio: 16 / 9;
+}
+
+.mobile-aspect-portrait {
+  aspect-ratio: 3 / 4;
+}
+
+/* Loading skeleton */
+.mobile-skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}

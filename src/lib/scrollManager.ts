@@ -1,3 +1,4 @@
+// src/lib/scrollManager.ts - Updated version
 'use client'
 
 import { debounce } from '@/utils/performance'
@@ -13,19 +14,18 @@ interface ScrollState {
 
 class EnhancedScrollManager {
   private storageKey = 'gallery-scroll-positions-v3'
-  private debounceTimeout: NodeJS.Timeout | null = null
   private isNavigating = false
   private lastSavedIndex: number | null = null
   private hasVisitedGallery = false
   private debouncedSave: ReturnType<typeof debounce>
+  private isRestoring = false // Add this flag
 
   constructor() {
-    // Fix the debounce typing issue
     this.debouncedSave = debounce((...args: unknown[]) => {
       const index = args[0] as number
       const path = args[1] as string
       this.saveImmediate(index, path)
-    }, 300)
+    }, 500) // Increase debounce time
 
     if (typeof window !== 'undefined') {
       this.setupNavigationListeners()
@@ -37,42 +37,27 @@ class EnhancedScrollManager {
   private checkFirstVisit() {
     this.hasVisitedGallery =
       sessionStorage.getItem('gallery-visited') === 'true'
-    if (!this.hasVisitedGallery) {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('🆕 First visit to gallery - will start from beginning')
-      }
-    }
   }
 
   private markGalleryVisited() {
     if (!this.hasVisitedGallery) {
       sessionStorage.setItem('gallery-visited', 'true')
       this.hasVisitedGallery = true
-      if (process.env.NODE_ENV === 'development') {
-        console.log('✅ Marked gallery as visited')
-      }
     }
   }
 
   private setupNavigationListeners() {
     window.addEventListener('gallery-navigation-start', () => {
       this.isNavigating = true
-      if (process.env.NODE_ENV === 'development') {
-        console.log('🚫 Navigation started - stopping scroll saves')
-      }
     })
 
     window.addEventListener('gallery-navigation-complete', () => {
       setTimeout(() => {
         this.isNavigating = false
-        if (process.env.NODE_ENV === 'development') {
-          console.log('✅ Navigation complete - resuming scroll saves')
-        }
       }, 300)
     })
 
     window.addEventListener('beforeunload', this.handlePageUnload.bind(this))
-    window.addEventListener('popstate', this.handlePopState.bind(this))
   }
 
   private handlePageUnload = () => {
@@ -88,39 +73,30 @@ class EnhancedScrollManager {
     }
   }
 
-  private handlePopState = () => {
-    setTimeout(() => {
-      window.dispatchEvent(new Event('gallery-navigation-complete'))
-    }, 50)
-  }
-
   save(currentIndex: number, path?: string): void {
-    if (this.isNavigating) {
-      if (process.env.NODE_ENV === 'development') {
-        console.log(
-          '🚫 Navigation in progress, skipping save for index:',
-          currentIndex
-        )
-      }
+    // Don't save if we're navigating, restoring, or if index hasn't changed
+    if (
+      this.isNavigating ||
+      this.isRestoring ||
+      currentIndex === this.lastSavedIndex
+    ) {
       return
     }
 
     this.markGalleryVisited()
-    this.lastSavedIndex = currentIndex
-
-    if (this.debounceTimeout) {
-      clearTimeout(this.debounceTimeout)
-    }
-
     this.debouncedSave(currentIndex, path || window.location.pathname)
   }
 
   saveImmediate(currentIndex: number, path?: string): void {
-    if (typeof window === 'undefined') return
+    if (typeof window === 'undefined' || this.isRestoring) return
 
     const currentPath = this.normalizePath(path || window.location.pathname)
-
     this.markGalleryVisited()
+
+    // Only save if the index has actually changed
+    if (this.lastSavedIndex === currentIndex) {
+      return
+    }
 
     const positions = this.getAllPositions()
 
@@ -149,73 +125,34 @@ class EnhancedScrollManager {
     if (typeof window === 'undefined') return null
 
     const currentPath = this.normalizePath(path || window.location.pathname)
-    if (process.env.NODE_ENV === 'development') {
+
+    // Only log this once per session to reduce noise
+    if (process.env.NODE_ENV === 'development' && !this.isRestoring) {
       console.log(`🔍 Getting saved index for path: ${currentPath}`)
-      console.log(`🔍 Has visited gallery before: ${this.hasVisitedGallery}`)
     }
 
     if (!this.hasVisitedGallery && currentPath === '/') {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('🆕 First visit - returning index 0')
-      }
       this.markGalleryVisited()
       return 0
     }
 
-    const pathsToTry = [
-      currentPath,
-      currentPath === '/' ? 'gallery' : currentPath,
-      '/',
-      'gallery',
-    ]
-
-    let savedPosition: ScrollPosition | null = null
     const positions = this.getAllPositions()
-
-    for (const pathToTry of pathsToTry) {
-      if (positions[pathToTry]) {
-        savedPosition = positions[pathToTry]
-        if (process.env.NODE_ENV === 'development') {
-          console.log(
-            `🔍 Found saved position for path: ${pathToTry} - index: ${savedPosition.index}`
-          )
-        }
-        break
-      }
-    }
-
-    if (
-      !savedPosition &&
-      this.lastSavedIndex !== null &&
-      this.hasVisitedGallery
-    ) {
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`🔄 Using last saved index: ${this.lastSavedIndex}`)
-      }
-      return this.lastSavedIndex
-    }
+    const savedPosition =
+      positions[currentPath] || positions['gallery'] || positions['/']
 
     if (savedPosition) {
       return savedPosition.index
     }
 
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`ℹ️ No saved index found for ${currentPath} - returning 0`)
-    }
-    return 0
+    return this.lastSavedIndex || 0
   }
 
-  restore(container: HTMLElement, path?: string): boolean {
-    const savedIndex = this.getSavedIndex(path)
-    if (savedIndex !== null) {
-      container.setAttribute('data-restore-index', savedIndex.toString())
-      container.setAttribute('data-restore-instantly', 'true')
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`🔄 Marked container to restore to index: ${savedIndex}`)
-      }
-      return true
-    }
-    return false
+  startRestoration(): void {
+    this.isRestoring = true
+  }
+
+  completeRestoration(): void {
+    this.isRestoring = false
   }
 
   private normalizePath(path: string): string {
@@ -265,18 +202,11 @@ class EnhancedScrollManager {
 
     if (hasChanges) {
       sessionStorage.setItem(this.storageKey, JSON.stringify(positions))
-      if (process.env.NODE_ENV === 'development') {
-        console.log('🧹 Cleaned up old scroll positions')
-      }
     }
   }
 
   triggerNavigationStart(): void {
     this.isNavigating = true
-    if (this.debounceTimeout) {
-      clearTimeout(this.debounceTimeout)
-      this.debounceTimeout = null
-    }
     window.dispatchEvent(new Event('gallery-navigation-start'))
   }
 
@@ -284,7 +214,7 @@ class EnhancedScrollManager {
     setTimeout(() => {
       this.isNavigating = false
       window.dispatchEvent(new Event('gallery-navigation-complete'))
-    }, 50)
+    }, 100)
   }
 
   debug(): void {
@@ -293,14 +223,7 @@ class EnhancedScrollManager {
       console.log('📊 Last saved index:', this.lastSavedIndex)
       console.log('📊 Has visited gallery:', this.hasVisitedGallery)
       console.log('📊 Is navigating:', this.isNavigating)
-    }
-  }
-
-  resetFirstVisit(): void {
-    sessionStorage.removeItem('gallery-visited')
-    this.hasVisitedGallery = false
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🔄 Reset first visit flag')
+      console.log('📊 Is restoring:', this.isRestoring)
     }
   }
 }

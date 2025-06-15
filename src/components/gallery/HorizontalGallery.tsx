@@ -11,7 +11,7 @@ import { useGalleryLifecycle } from './GalleryLifecycle'
 import { GalleryIndicators } from './GalleryIndicators'
 import { GalleryContainer } from './GalleryContainer'
 import { GalleryItem } from './GalleryItem'
-import NavigationArrows from '../ui/NavigationArrows'
+import { NavigationArrows } from '../ui/NavigationArrows'
 
 interface HorizontalGalleryProps {
   designs: TextileDesign[]

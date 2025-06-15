@@ -2,7 +2,7 @@ import { Metadata } from 'next'
 import { queries } from '@/sanity/queries'
 import { resilientFetch } from '@/sanity/dataFetcher'
 import { TextileDesign } from '@/sanity/types'
-import { HorizontalGallery } from '@/components/gallery'
+import Gallery from '@/components/adaptive/Gallery'
 import { GalleryLoadingSkeleton } from '@/components/ui/LoadingSpinner'
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 import { Suspense } from 'react'
@@ -105,7 +105,7 @@ function GalleryWithErrorBoundary({ designs }: { designs: TextileDesign[] }) {
 
   return (
     <ErrorBoundary>
-      <HorizontalGallery designs={designs} />
+      <Gallery designs={designs} />
     </ErrorBoundary>
   )
 }

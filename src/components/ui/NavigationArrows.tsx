@@ -266,4 +266,4 @@ const NavigationArrows = memo(function NavigationArrows({
   )
 })
 
-export default NavigationArrows
+export { NavigationArrows }

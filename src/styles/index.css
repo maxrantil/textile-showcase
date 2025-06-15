@@ -14,14 +14,9 @@
 @import './utilities/accessibility.css';
 @import './utilities/performance.css';
 
-/* Component styles - specific component styling */
-@import './components/buttons.css';
-@import './components/forms.css';
-@import './components/navigation.css';
-@import './components/gallery.css';
-
-/* Mobile-specific styles */
-@import './mobile/touch.css';
+/* Platform-specific styles */
+@import './mobile/index.css';
+@import './desktop/index.css';
 
 /* Theme support */
 @import './themes/dark-mode.css';

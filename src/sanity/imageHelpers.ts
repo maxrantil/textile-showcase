@@ -63,7 +63,6 @@ export const getOptimizedImageUrl = (
   }
 
   const url = imageBuilder.quality(quality).format(format).url()
-
   return url
 }
 
@@ -74,7 +73,6 @@ export const getBlurDataUrl = (
   source: SanityImageSource | null | undefined
 ): string | undefined => {
   if (!source) return undefined
-
   return urlFor(source).width(20).height(20).blur(50).quality(20).url()
 }
 
@@ -103,6 +101,60 @@ export const getImageDimensions = (source: SanityImage | null | undefined) => {
       width: asset.width,
       height: asset.height,
       aspectRatio: asset.width / asset.height,
+    }
+  }
+
+  // Default fallback
+  return {
+    width: 800,
+    height: 600,
+    aspectRatio: 4 / 3,
+  }
+}
+
+/**
+ * Get dimensions from SanityImageSource (asset reference or object)
+ */
+export const getImageDimensionsFromSource = (
+  source: SanityImageSource | null | undefined
+) => {
+  if (!source) return null
+
+  // If source is a string (asset reference), we can't get dimensions
+  if (typeof source === 'string') {
+    return {
+      width: 800,
+      height: 600,
+      aspectRatio: 4 / 3,
+    }
+  }
+
+  // If source is an object with asset property
+  if (typeof source === 'object' && 'asset' in source) {
+    return getImageDimensions(source as SanityImage)
+  }
+
+  // If source is an asset object directly
+  if (typeof source === 'object' && ('_id' in source || 'metadata' in source)) {
+    const asset = source as SanityImageAsset
+
+    // Check for dimensions in metadata
+    if (asset.metadata?.dimensions) {
+      return {
+        width: asset.metadata.dimensions.width,
+        height: asset.metadata.dimensions.height,
+        aspectRatio:
+          asset.metadata.dimensions.width / asset.metadata.dimensions.height,
+      }
+    }
+
+    // Fallback to checking asset directly
+    if (asset.width && asset.height) {
+      return {
+        width: asset.width,
+        height: asset.height,
+        aspectRatio: asset.width / asset.height,
+      }
     }
   }
 

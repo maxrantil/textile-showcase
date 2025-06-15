@@ -1,7 +1,7 @@
+// src/components/layout/BackButton.tsx - Updated for simple scroll manager
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { scrollManager } from '@/lib/scrollManager'
 import { UmamiEvents } from '@/utils/analytics'
 
 export default function BackButton() {
@@ -9,31 +9,13 @@ export default function BackButton() {
 
   const handleBack = () => {
     if (process.env.NODE_ENV === 'development') {
-      console.log('🔙 Back button clicked - navigating to previous page')
+      console.log('🔙 Back button clicked - returning to gallery')
     }
 
-    // Track back button usage
     UmamiEvents.backToGallery()
 
-    // Save current position before going back (if any)
-    const container = document.querySelector(
-      '[data-scroll-container]'
-    ) as HTMLElement
-    if (container) {
-      const currentIndex = parseInt(
-        container.getAttribute('data-current-index') || '0',
-        10
-      )
-      scrollManager.saveImmediate(currentIndex, window.location.pathname)
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`💾 Saved current index ${currentIndex} before going back`)
-      }
-    }
-
-    scrollManager.debug()
-    scrollManager.triggerNavigationStart()
+    // Simply go back - the gallery will restore position automatically
     router.back()
-    scrollManager.triggerNavigationComplete()
   }
 
   return (

@@ -3,9 +3,9 @@
 
 import { useState, useCallback, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation'
+import { useKeyboardNavigation } from '@/hooks/desktop/useKeyboardNavigation'
 import { getOptimizedImageUrl } from '@/sanity/imageHelpers'
-import NavigationArrows from '../../ui/NavigationArrows'
+import { NavigationArrows } from '@/components/ui/NavigationArrows'
 import { UmamiEvents } from '@/utils/analytics'
 import { perf } from '@/utils/performance'
 import type { SanityImageSource } from '@sanity/image-url/lib/types/types'
