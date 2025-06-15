@@ -36,7 +36,6 @@ export default function AboutPage() {
             {/* Artist Statement */}
             <section
               style={{
-                textAlign: 'center',
                 marginBottom: '80px',
                 width: '100%',
                 maxWidth: '800px',
@@ -137,7 +136,6 @@ export default function AboutPage() {
                       margin: '0 0 32px 0',
                       color: '#333',
                       letterSpacing: '-0.5px',
-                      textAlign: 'center',
                     }}
                   >
                     About the Studio
@@ -154,7 +152,6 @@ export default function AboutPage() {
                       className="text-body-mobile"
                       style={{
                         color: '#666',
-                        textAlign: 'center',
                       }}
                     >
                       Founded in 2018, our studio operates from a converted
@@ -169,7 +166,6 @@ export default function AboutPage() {
                       className="text-body-mobile"
                       style={{
                         color: '#666',
-                        textAlign: 'center',
                       }}
                     >
                       We work exclusively with natural and regenerated fibers,
@@ -182,7 +178,6 @@ export default function AboutPage() {
                       className="text-body-mobile"
                       style={{
                         color: '#666',
-                        textAlign: 'center',
                       }}
                     >
                       Our works have been exhibited internationally and are held
@@ -213,7 +208,6 @@ export default function AboutPage() {
                       margin: '0 0 32px 0',
                       color: '#333',
                       letterSpacing: '-0.3px',
-                      textAlign: 'center',
                     }}
                   >
                     Our Approach
@@ -233,7 +227,6 @@ export default function AboutPage() {
                         style={{
                           color: '#555',
                           lineHeight: '1.8',
-                          textAlign: 'center',
                         }}
                       >
                         <strong style={{ color: '#333' }}>Materials:</strong>{' '}
@@ -246,7 +239,6 @@ export default function AboutPage() {
                         style={{
                           color: '#555',
                           lineHeight: '1.8',
-                          textAlign: 'center',
                         }}
                       >
                         <strong style={{ color: '#333' }}>Techniques:</strong>{' '}
@@ -259,7 +251,6 @@ export default function AboutPage() {
                         style={{
                           color: '#555',
                           lineHeight: '1.8',
-                          textAlign: 'center',
                         }}
                       >
                         <strong style={{ color: '#333' }}>Philosophy:</strong>{' '}
@@ -272,7 +263,6 @@ export default function AboutPage() {
                         style={{
                           color: '#555',
                           lineHeight: '1.8',
-                          textAlign: 'center',
                         }}
                       >
                         <strong style={{ color: '#333' }}>Impact:</strong>{' '}
@@ -287,7 +277,6 @@ export default function AboutPage() {
                         fontWeight: 500,
                         margin: '0 0 16px 0',
                         color: '#333',
-                        textAlign: 'center',
                       }}
                     >
                       Recent Recognition
@@ -298,7 +287,7 @@ export default function AboutPage() {
                         display: 'flex',
                         flexDirection: 'column',
                         gap: '8px',
-                        alignItems: 'center',
+                        alignItems: 'left',
                       }}
                     >
                       <span
@@ -344,7 +333,6 @@ export default function AboutPage() {
                   style={{
                     width: '100%',
                     maxWidth: '700px',
-                    textAlign: 'center',
                   }}
                 >
                   <h3
@@ -391,7 +379,6 @@ export default function AboutPage() {
             {/* Back Link - Centered */}
             <div
               style={{
-                textAlign: 'center',
                 paddingBottom: '60px', // Extra padding for better spacing
               }}
             >

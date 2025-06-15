@@ -1,5 +1,4 @@
 'use client'
-
 import { useState, useEffect } from 'react'
 import { useHorizontalSwipe } from '@/hooks/mobile/useSwipeGesture'
 import { MobileGalleryItem } from './MobileGalleryItem'
@@ -37,7 +36,8 @@ export function MobileGallery({ designs }: MobileGalleryProps) {
     }
   }
 
-  const swipeHandlers = useHorizontalSwipe({
+  // Destructure to get only what you need
+  const { swipeHandlers } = useHorizontalSwipe({
     onSwipeLeft: handleSwipeLeft,
     onSwipeRight: handleSwipeRight,
   })
@@ -63,7 +63,6 @@ export function MobileGallery({ designs }: MobileGalleryProps) {
           />
         ))}
       </div>
-
       <MobileGalleryIndicators
         total={designs.length}
         current={currentIndex}
