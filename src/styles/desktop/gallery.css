@@ -40,7 +40,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 16px;
+  margin-bottom: 2px;
   align-self: center;
 }
 
@@ -48,14 +48,14 @@
   height: 75vh !important;
   width: auto !important;
   object-fit: contain;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.02);
   border-radius: 0 !important;
 }
 
 .desktop-gallery-info {
   text-align: left;
   flex-shrink: 0;
-  padding: 0 20px;
+  padding: 0 4px;
 }
 
 .desktop-gallery-info h3 {

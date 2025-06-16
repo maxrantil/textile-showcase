@@ -93,10 +93,8 @@ export function useSwipeGesture({
           })
         }
 
-        // Prevent scroll for horizontal swipes
-        if (preventScroll && isHorizontalMovement && deltaX > deltaY) {
-          e.preventDefault()
-        }
+        // Remove preventDefault entirely - rely on CSS touch-action
+        // CSS touch-action: pan-y pinch-zoom handles scroll prevention
       }
     },
     [enabled, touchStart, threshold, preventScroll, isSwiping]
@@ -221,7 +219,7 @@ export function useHorizontalSwipe({
     enabled,
     minSwipeDistance,
     maxSwipeTime,
-    preventScroll: true,
+    preventScroll: true, // This now only affects CSS, not JS
     threshold: 15,
   })
 }

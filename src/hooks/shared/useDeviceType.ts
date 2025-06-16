@@ -19,12 +19,20 @@ export function useDeviceType(): DeviceType {
           userAgent
         )
 
-      // Screen characteristics
+      // Screen and viewport characteristics
       const screenWidth = window.screen.width
       const screenHeight = window.screen.height
       const viewportWidth = window.innerWidth
+      const viewportHeight = window.innerHeight
+
+      // Check if in landscape mode
+      const isLandscape = viewportWidth > viewportHeight
+
+      // Adjusted thresholds for landscape (not too aggressive)
       const isSmallScreen = Math.min(screenWidth, screenHeight) < 768
-      const isSmallViewport = viewportWidth < 768
+      const isSmallViewport = isLandscape
+        ? viewportWidth < 812 // iPhone X/11/12/13 landscape width
+        : viewportWidth < 768
 
       // Device pixel ratio
       const highDPR = window.devicePixelRatio > 1.5
@@ -35,23 +43,42 @@ export function useDeviceType(): DeviceType {
       // Orientation API
       const hasOrientation = 'orientation' in window
 
-      // Score-based detection
+      // Score-based detection with moderate landscape adjustments
       let mobileScore = 0
-      if (mobileUA) mobileScore += 3
-      if (isSmallScreen || isSmallViewport) mobileScore += 2
-      if (hasTouch && (isSmallScreen || isSmallViewport)) mobileScore += 2
+
+      // User agent still important but slightly less in landscape
+      if (mobileUA) mobileScore += isLandscape ? 2.5 : 3
+
+      // Screen size checks with landscape consideration
+      if (isSmallScreen || isSmallViewport) {
+        mobileScore += isLandscape ? 1.5 : 2
+      }
+
+      // Touch + small screen combo
+      if (hasTouch && (isSmallScreen || isSmallViewport)) {
+        mobileScore += isLandscape ? 1.5 : 2
+      }
+
+      // Additional factors
       if (highDPR && (isSmallScreen || isSmallViewport)) mobileScore += 1
-      if (hasOrientation) mobileScore += 1
+      if (hasOrientation) mobileScore += 0.5
+
+      // Special case: tablets in landscape should be desktop
+      if (isLandscape && viewportWidth >= 1024) {
+        mobileScore = 0 // Force desktop for tablet landscape
+      }
 
       const detectedType = mobileScore >= 3 ? 'mobile' : 'desktop'
 
-      console.log('🔍 Device detection (stable):', {
+      console.log('🔍 Device detection (balanced):', {
         viewportWidth,
+        viewportHeight,
+        isLandscape,
         mobileUA,
         hasTouch,
         mobileScore,
         detectedType,
-        isHydrated: true, // We know we're hydrated at this point
+        isHydrated: true,
       })
 
       setDeviceType(detectedType)
@@ -60,16 +87,24 @@ export function useDeviceType(): DeviceType {
     // Initial detection after hydration
     checkDevice()
 
+    // Handle orientation changes with a small delay
+    const handleOrientationChange = () => {
+      setTimeout(checkDevice, 100)
+    }
+
     // Debounced resize handler
     let timeoutId: NodeJS.Timeout
     const handleResize = () => {
       clearTimeout(timeoutId)
-      timeoutId = setTimeout(checkDevice, 200) // Longer debounce
+      timeoutId = setTimeout(checkDevice, 150) // Balanced debounce
     }
 
     window.addEventListener('resize', handleResize)
+    window.addEventListener('orientationchange', handleOrientationChange)
+
     return () => {
       window.removeEventListener('resize', handleResize)
+      window.removeEventListener('orientationchange', handleOrientationChange)
       clearTimeout(timeoutId)
     }
   }, []) // Empty dependency array is correct here
