@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation'
+import { useKeyboardNavigation } from '@/hooks/desktop/useKeyboardNavigation'
 
 interface KeyboardScrollHandlerProps {
   scrollAmount?: number

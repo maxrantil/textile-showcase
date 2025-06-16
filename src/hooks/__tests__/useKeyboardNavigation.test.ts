@@ -1,6 +1,6 @@
 import { renderHook } from '@testing-library/react'
 import { fireEvent } from '@testing-library/react'
-import { useKeyboardNavigation } from '../useKeyboardNavigation'
+import { useKeyboardNavigation } from '../desktop/useKeyboardNavigation'
 
 describe('useKeyboardNavigation Hook', () => {
   it('calls onNext when right arrow is pressed', () => {

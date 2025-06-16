@@ -15,7 +15,7 @@ import {
 import { HtmlHead } from './components/html-head'
 import { SkipNavigation } from './components/skip-navigation'
 import { AnalyticsProvider } from './components/analytics-provider'
-import Header from '@/components/layout/Header/ResponsiveHeader'
+import Header from '@/components/adaptive/Header'
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 
 // Combine metadata

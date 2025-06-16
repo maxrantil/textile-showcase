@@ -1,0 +1,168 @@
+/* Mobile Gallery - Vertical Stack Layout */
+.mobile-gallery {
+  width: 100%;
+  min-height: 100vh;
+  background: white;
+  padding-top: 60px;
+  /* Account for header */
+}
+
+.mobile-gallery-stack {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  padding: 20px 0;
+}
+
+/* Gallery Item */
+.mobile-gallery-item {
+  width: 100%;
+  cursor: pointer;
+  transition: opacity 0.3s ease;
+}
+
+.mobile-gallery-item:active {
+  opacity: 0.9;
+}
+
+/* Image Container */
+.mobile-gallery-image-container {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background: #f8f8f8;
+}
+
+/* Image Styles */
+.mobile-gallery-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.mobile-gallery-image.loaded {
+  opacity: 1;
+}
+
+/* Loading and Error States */
+.mobile-gallery-loading,
+.mobile-gallery-error {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 14px;
+  color: #999;
+  font-weight: 300;
+}
+
+.mobile-gallery-error {
+  color: #e74c3c;
+}
+
+/* Info Section */
+.mobile-gallery-info {
+  padding: 0 4px;
+  background: white;
+}
+
+.mobile-gallery-title {
+  font-size: 14px;
+  font-weight: 420;
+  margin: 0;
+  color: #333;
+  letter-spacing: 0.2px;
+  line-height: 1.4;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 480px) {
+  .mobile-gallery-stack {
+    gap: 32px;
+    padding: 16px 0;
+  }
+
+  .mobile-gallery-info {
+    padding: 14px 16px;
+  }
+
+  .mobile-gallery-title {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 360px) {
+  .mobile-gallery-stack {
+    gap: 28px;
+    padding: 12px 0;
+  }
+
+  .mobile-gallery-info {
+    padding: 12px;
+  }
+
+  .mobile-gallery-title {
+    font-size: 15px;
+  }
+}
+
+/* Landscape Phone Optimization */
+@media (orientation: landscape) and (max-height: 500px) {
+  .mobile-gallery {
+    padding-top: 50px;
+  }
+
+  .mobile-gallery-stack {
+    gap: 24px;
+    padding: 12px 0;
+  }
+
+  .mobile-gallery-info {
+    padding: 10px 16px;
+  }
+
+  .mobile-gallery-title {
+    font-size: 12px;
+  }
+}
+
+/* Ultra-wide Landscape Phones */
+@media (orientation: landscape) and (max-height: 400px) {
+  .mobile-gallery-stack {
+    gap: 20px;
+    padding: 10px 0;
+  }
+
+  .mobile-gallery-info {
+    padding: 8px 16px;
+  }
+
+  .mobile-gallery-title {
+    font-size: 14px;
+  }
+}
+
+/* High-density Display Optimization */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .mobile-gallery-image {
+    image-rendering: -webkit-optimize-contrast;
+  }
+}
+
+/* Smooth Scrolling */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Optional: Add subtle hover effect for devices with hover capability */
+@media (hover: hover) {
+  .mobile-gallery-item:hover .mobile-gallery-image {
+    transform: scale(1.02);
+    transition: transform 0.3s ease;
+  }
+}

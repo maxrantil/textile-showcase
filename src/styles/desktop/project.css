@@ -1,0 +1,208 @@
+/* Desktop Project */
+.desktop-project {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 1400px;
+  margin: 80px auto 0;
+  padding: 0 40px;
+  min-height: 70vh;
+}
+
+.desktop-project-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.desktop-carousel-container {
+  display: flex;
+  align-items: center;
+  gap: 60px;
+  margin-bottom: 20px;
+  width: 100%;
+  justify-content: center;
+  position: relative;
+  min-height: 70vh;
+}
+
+.desktop-carousel-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.desktop-carousel-image {
+  position: relative;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  display: inline-block;
+  line-height: 0;
+  background: transparent;
+  border-radius: 0;
+}
+
+.desktop-project-img {
+  height: 70vh !important;
+  width: auto !important;
+  max-height: 700px !important;
+  min-height: 300px !important;
+  object-fit: contain !important;
+  display: block !important;
+}
+
+/* Remove old counter styling */
+.desktop-carousel-counter {
+  display: none;
+}
+
+/* New fixed counter - positioned outside image area */
+.desktop-carousel-counter-fixed {
+  position: absolute;
+  bottom: 0px;
+  right: 20px;
+  font-size: 14px;
+  color: #333;
+  letter-spacing: 1px;
+  font-weight: 400;
+  z-index: 10;
+}
+
+.desktop-carousel-preload {
+  display: none;
+}
+
+.desktop-project-details {
+  width: 100%;
+  max-width: 800px;
+  margin-top: 40px;
+}
+
+.desktop-project-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.desktop-project-title {
+  font-size: 32px;
+  font-weight: 300;
+  margin: 0 0 8px 0;
+  color: #333;
+  letter-spacing: -0.5px;
+}
+
+.desktop-project-year {
+  font-size: 16px;
+  color: #666;
+  margin: 0 0 20px 0;
+}
+
+.desktop-project-section {
+  margin-bottom: 32px;
+  text-align: center;
+}
+
+.desktop-section-title {
+  font-size: 20px;
+  font-weight: 400;
+  margin: 0 0 20px 0;
+  color: #333;
+}
+
+.desktop-project-description {
+  font-size: 16px;
+  color: #333;
+  line-height: 1.6;
+  margin: 0 0 24px 0;
+}
+
+.desktop-project-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.desktop-info-item {
+  text-align: center;
+}
+
+.desktop-info-item h3 {
+  font-size: 12px;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 0 0 8px 0;
+  font-weight: 500;
+}
+
+.desktop-info-item p {
+  font-size: 14px;
+  margin: 0;
+  color: #333;
+  line-height: 1.4;
+}
+
+.desktop-info-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 24px;
+}
+
+.desktop-care-instructions {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #555;
+  background: #f9f9f9;
+  padding: 24px;
+  border-radius: 12px;
+  border: 1px solid #e5e5e5;
+  text-align: left;
+}
+
+/* Instructions for navigation */
+.desktop-carousel-instructions {
+  text-align: center;
+  font-size: 12px;
+  color: #999;
+  margin-top: 16px;
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+}
+
+.desktop-carousel-container:hover + .desktop-carousel-instructions {
+  opacity: 1;
+}
+
+/* Responsive Media Queries */
+@media (max-width: 1024px) {
+  .desktop-project {
+    padding: 0 20px;
+  }
+
+  .desktop-project-info {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .desktop-carousel-counter-fixed {
+    bottom: 15px;
+    right: 15px;
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+}
+
+@media (max-width: 768px) {
+  .desktop-carousel-instructions {
+    display: none;
+  }
+
+  .desktop-carousel-counter-fixed {
+    bottom: 10px;
+    right: 10px;
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+}

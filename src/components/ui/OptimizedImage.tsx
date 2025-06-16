@@ -22,7 +22,7 @@ interface OptimizedImageProps {
   fill?: boolean
 }
 
-export default function OptimizedImage({
+export function OptimizedImage({
   src,
   alt,
   width = 800,
@@ -148,12 +148,9 @@ export default function OptimizedImage({
               onLoad={() => setIsLoaded(true)}
               onError={() => setIsError(true)}
               style={{
-                // REMOVED the default width/height/maxWidth/maxHeight styles that were interfering
-                // Let the parent's style prop take full control
                 objectFit: objectFit,
                 opacity: isLoaded ? 1 : 0,
                 transition: 'opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
-                // Only merge with parent style, don't override with defaults
                 ...(style || {}),
               }}
               decoding="async"

@@ -1,0 +1,29 @@
+/* styles/desktop/header.css */
+
+/* Desktop Header */
+.desktop-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  z-index: 50;
+}
+
+.desktop-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 100%;
+  padding: 0 40px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.desktop-nav {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+}

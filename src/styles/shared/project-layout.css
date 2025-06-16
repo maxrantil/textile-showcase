@@ -1,0 +1,22 @@
+/* Project Content Layout - Shared across mobile and desktop */
+.project-content-wrapper {
+  min-height: 100vh;
+  background: #fafafa;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+.project-header-spacer {
+  height: 80px;
+}
+
+.project-content-container {
+  padding-bottom: 40px;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .project-header-spacer {
+    height: 60px;
+  }
+}

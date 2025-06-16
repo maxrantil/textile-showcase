@@ -1,0 +1,8 @@
+/* styles/desktop/index.css */
+@import './header.css';
+@import './buttons.css';
+@import './forms.css';
+@import './gallery.css';
+@import './navigation.css';
+@import './project.css';
+/* @import './navigation.css'; */
