@@ -29,7 +29,6 @@ export function useSwipeGesture({
   minSwipeDistance = 50,
   maxSwipeTime = 500,
   enabled = true,
-  preventScroll = false,
   threshold = 10,
 }: SwipeGestureOptions) {
   const [touchStart, setTouchStart] = useState<TouchPosition | null>(null)
@@ -92,12 +91,9 @@ export function useSwipeGesture({
             isHorizontal: isHorizontalMovement,
           })
         }
-
-        // Remove preventDefault entirely - rely on CSS touch-action
-        // CSS touch-action: pan-y pinch-zoom handles scroll prevention
       }
     },
-    [enabled, touchStart, threshold, preventScroll, isSwiping]
+    [enabled, touchStart, threshold, isSwiping]
   )
 
   const handleTouchEnd = useCallback(() => {
