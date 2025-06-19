@@ -56,7 +56,7 @@ export const MobileGalleryItem = React.memo(function MobileGalleryItem({
   const imageUrl = getOptimizedImageUrl(design.image, {
     width: 800,
     quality: 85,
-    format: 'webp',
+    format: 'auto',
   })
 
   // Get image dimensions for proper aspect ratio
