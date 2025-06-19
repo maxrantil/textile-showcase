@@ -1,12 +1,12 @@
-// src/components/mobile/Project/MobileProjectNavigation.tsx
+// src/components/desktop/Project/DesktopProjectNavigation.tsx
 'use client'
 
 import { useRouter } from 'next/navigation'
 import { UmamiEvents } from '@/utils/analytics'
 import { scrollManager } from '@/lib/scrollManager'
-import { MobileButton } from '@/components/mobile/UI/MobileButton'
+import { DesktopButton } from '@/components/desktop/UI/DesktopButton'
 
-interface MobileProjectNavigationProps {
+interface DesktopProjectNavigationProps {
   nextProject?: {
     slug: string
     title: string
@@ -17,22 +17,22 @@ interface MobileProjectNavigationProps {
   }
 }
 
-export function MobileProjectNavigation({
+export function DesktopProjectNavigation({
   nextProject,
   previousProject,
-}: MobileProjectNavigationProps) {
+}: DesktopProjectNavigationProps) {
   const router = useRouter()
 
   const handleBackToGallery = () => {
+    UmamiEvents.backToGallery()
     scrollManager.triggerNavigationStart()
-    // router.push('/')
-    window.dispatchEvent(new Event('navigate-back-to-gallery'))
+    router.push('/')
   }
 
   const handleNextProject = () => {
     if (!nextProject) return
 
-    UmamiEvents.trackEvent('mobile-project-navigation', {
+    UmamiEvents.trackEvent('desktop-project-navigation', {
       direction: 'next',
       project: nextProject.slug,
     })
@@ -43,7 +43,7 @@ export function MobileProjectNavigation({
   const handlePreviousProject = () => {
     if (!previousProject) return
 
-    UmamiEvents.trackEvent('mobile-project-navigation', {
+    UmamiEvents.trackEvent('desktop-project-navigation', {
       direction: 'previous',
       project: previousProject.slug,
     })
@@ -52,41 +52,41 @@ export function MobileProjectNavigation({
   }
 
   return (
-    <nav className="mobile-project-navigation">
-      <div className="mobile-nav-buttons">
+    <nav className="desktop-project-navigation">
+      <div className="desktop-nav-buttons">
         {/* Previous Project Button */}
         {previousProject ? (
-          <MobileButton
+          <DesktopButton
             onClick={handlePreviousProject}
             variant="secondary"
-            className="mobile-nav-previous"
+            className="desktop-nav-previous"
           >
-            &lt; Previous
-          </MobileButton>
+            ← Previous
+          </DesktopButton>
         ) : (
-          <div className="mobile-nav-spacer" />
+          <div className="desktop-nav-spacer" />
         )}
 
-        {/* Back to Gallery Button */}
-        <MobileButton
+        {/* Back to Gallery Button - Center */}
+        <DesktopButton
           onClick={handleBackToGallery}
           variant="ghost"
-          className="mobile-nav-back"
+          className="desktop-nav-back"
         >
-          Gallery
-        </MobileButton>
+          Back to Gallery
+        </DesktopButton>
 
         {/* Next Project Button */}
         {nextProject ? (
-          <MobileButton
+          <DesktopButton
             onClick={handleNextProject}
             variant="secondary"
-            className="mobile-nav-next"
+            className="desktop-nav-next"
           >
-            Next &gt;
-          </MobileButton>
+            Next →
+          </DesktopButton>
         ) : (
-          <div className="mobile-nav-spacer" />
+          <div className="desktop-nav-spacer" />
         )}
       </div>
     </nav>

@@ -1,8 +1,12 @@
+// Update src/app/project/[slug]/page.tsx
+
 import { notFound } from 'next/navigation'
-import { getProject, getAllProjectSlugs } from './hooks/use-project-data'
+import {
+  getProjectWithNavigation,
+  getAllProjectSlugs,
+} from './hooks/use-project-data'
 import { generateProjectMetadata } from './components/project-metadata'
 import { ProjectContent } from './components/project-content'
-import { ProjectNavigation } from './components/project-navigation'
 
 interface ProjectPageProps {
   params: Promise<{
@@ -28,7 +32,8 @@ export async function generateMetadata({ params }: ProjectPageProps) {
 export default async function ProjectPage({ params }: ProjectPageProps) {
   try {
     const { slug } = await params
-    const project = await getProject(slug)
+    const { project, nextProject, previousProject } =
+      await getProjectWithNavigation(slug)
 
     if (!project) {
       console.log(`🚫 Project not found, showing 404: ${slug}`)
@@ -37,8 +42,12 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
 
     return (
       <>
-        <ProjectContent project={project} slug={slug} />
-        <ProjectNavigation />
+        <ProjectContent
+          project={project}
+          slug={slug}
+          nextProject={nextProject}
+          previousProject={previousProject}
+        />
       </>
     )
   } catch (error) {

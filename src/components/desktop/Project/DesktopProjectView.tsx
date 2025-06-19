@@ -1,15 +1,23 @@
-'use client'
+// Update src/components/desktop/Project/DesktopProjectView.tsx
 
+'use client'
 import { useState } from 'react'
 import { DesktopImageCarousel } from './DesktopImageCarousel'
 import { DesktopProjectDetails } from './DesktopProjectDetails'
+import { DesktopProjectNavigation } from './DesktopProjectNavigation'
 import { TextileDesign } from '@/sanity/types'
 
 interface DesktopProjectViewProps {
   project: TextileDesign
+  nextProject?: { slug: string; title: string }
+  previousProject?: { slug: string; title: string }
 }
 
-export function DesktopProjectView({ project }: DesktopProjectViewProps) {
+export function DesktopProjectView({
+  project,
+  nextProject,
+  previousProject,
+}: DesktopProjectViewProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
 
   // Convert gallery images to proper format and combine with main image
@@ -31,6 +39,12 @@ export function DesktopProjectView({ project }: DesktopProjectViewProps) {
           onIndexChange={setCurrentIndex}
         />
         <DesktopProjectDetails project={project} />
+
+        {/* Add navigation */}
+        <DesktopProjectNavigation
+          nextProject={nextProject}
+          previousProject={previousProject}
+        />
       </div>
     </div>
   )

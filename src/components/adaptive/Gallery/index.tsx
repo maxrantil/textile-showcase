@@ -22,8 +22,6 @@ export default function Gallery({ designs }: GalleryProps) {
     return <div className="gallery-loading">Loading...</div>
   }
 
-  console.log('Device type gallery (final):', deviceType)
-
   return deviceType === 'mobile' ? (
     <MobileGallery designs={designs} />
   ) : (

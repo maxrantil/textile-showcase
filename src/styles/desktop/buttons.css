@@ -1,20 +1,181 @@
-/* styles/desktop/buttons.css */
+/* Desktop Button Base Styles */
+.btn-desktop,
 .desktop-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: 12px 24px;
   border-radius: 6px;
   font-size: 14px;
   font-weight: 500;
-  border: none;
+  border: 1px solid #333;
   cursor: pointer;
   transition: all 0.3s ease;
+  text-decoration: none;
+  user-select: none;
+  box-sizing: border-box;
+  background: transparent;
+  color: #333;
 }
 
+/* Primary Button Variant */
+.btn-desktop-primary,
 .desktop-btn-primary {
   background: #333;
   color: white;
+  border: 1px solid #333;
 }
 
+/* Secondary Button Variant */
+.btn-desktop-secondary,
+.desktop-btn-secondary {
+  background: transparent;
+  color: #333;
+  border: 1px solid #333;
+}
+
+/* Ghost Button Variant */
+.btn-desktop-ghost,
+.desktop-btn-ghost {
+  background: transparent;
+  color: #666;
+  border: 1px solid #e5e5e5;
+}
+
+/* Button States */
+.btn-desktop:disabled,
+.desktop-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Hover Effects */
+.btn-desktop:hover,
 .desktop-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-desktop-primary:hover,
+.desktop-btn-primary:hover {
+  background: #000;
+  border-color: #000;
+}
+
+.btn-desktop-secondary:hover,
+.desktop-btn-secondary:hover,
+.btn-desktop-ghost:hover,
+.desktop-btn-ghost:hover {
+  background: #333;
+  color: white;
+  border-color: #333;
+}
+
+/* Navigation Button Specific Styles */
+.desktop-nav-back,
+.desktop-nav-next-primary,
+.desktop-nav-prev {
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+.desktop-nav-back {
+  background: transparent;
+  color: #333;
+  border: 1px solid #333;
+}
+
+.desktop-nav-next-primary {
+  background: #333;
+  color: white;
+  border: 1px solid #333;
+}
+
+.desktop-nav-prev {
+  background: transparent;
+  color: #666;
+  border: 1px solid #e5e5e5;
+}
+
+/* Active States */
+.btn-desktop:active,
+.desktop-btn:active {
+  transform: translateY(-1px);
+}
+
+/* Loading State */
+.btn-desktop-loading,
+.desktop-btn-loading {
+  color: transparent;
+  position: relative;
+}
+
+.btn-desktop-loading::after,
+.desktop-btn-loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.btn-desktop-secondary.btn-desktop-loading::after,
+.desktop-btn-secondary.desktop-btn-loading::after,
+.btn-desktop-ghost.btn-desktop-loading::after,
+.desktop-btn-ghost.desktop-btn-loading::after {
+  border-color: rgba(51, 51, 51, 0.3);
+  border-top-color: #333;
+}
+
+@keyframes spin {
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+/* Size Variants */
+.btn-desktop-small,
+.desktop-btn-small {
+  padding: 8px 16px;
+  font-size: 12px;
+}
+
+.btn-desktop-large,
+.desktop-btn-large {
+  padding: 16px 32px;
+  font-size: 16px;
+}
+
+/* Full Width */
+.btn-desktop-full,
+.desktop-btn-full {
+  width: 100%;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .btn-desktop,
+  .desktop-btn {
+    padding: 10px 20px;
+    font-size: 13px;
+  }
+
+  .btn-desktop-small,
+  .desktop-btn-small {
+    padding: 6px 12px;
+    font-size: 11px;
+  }
+
+  .btn-desktop-large,
+  .desktop-btn-large {
+    padding: 14px 28px;
+    font-size: 15px;
+  }
 }

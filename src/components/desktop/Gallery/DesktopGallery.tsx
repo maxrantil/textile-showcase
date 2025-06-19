@@ -171,7 +171,7 @@ export function DesktopGallery({ designs }: DesktopGalleryProps) {
             if (process.env.NODE_ENV === 'development') {
               console.log(`🔄 Desktop Gallery restored to index ${savedIndex}`)
             }
-          }, 200)
+          }, 150)
         } else {
           // No saved position, start at beginning
           hasRestoredRef.current = true

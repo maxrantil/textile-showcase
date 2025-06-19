@@ -1,3 +1,5 @@
+// Update src/app/project/[slug]/components/project-content.tsx
+
 import { TextileDesign } from '@/sanity/types'
 import ProjectView from '@/components/adaptive/Project'
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
@@ -6,9 +8,16 @@ import { generateProjectStructuredData } from '../utils/project-helpers'
 interface ProjectContentProps {
   project: TextileDesign
   slug: string
+  nextProject?: { slug: string; title: string }
+  previousProject?: { slug: string; title: string }
 }
 
-export function ProjectContent({ project, slug }: ProjectContentProps) {
+export function ProjectContent({
+  project,
+  slug,
+  nextProject,
+  previousProject,
+}: ProjectContentProps) {
   const structuredData = generateProjectStructuredData(project, slug)
 
   return (
@@ -28,7 +37,11 @@ export function ProjectContent({ project, slug }: ProjectContentProps) {
         {/* Project Content */}
         <div className="project-content-container">
           <ErrorBoundary>
-            <ProjectView project={project} />
+            <ProjectView
+              project={project}
+              nextProject={nextProject}
+              previousProject={previousProject}
+            />
           </ErrorBoundary>
         </div>
       </div>

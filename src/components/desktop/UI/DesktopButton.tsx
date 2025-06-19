@@ -1,29 +1,31 @@
+// src/components/desktop/UI/DesktopButton.tsx
 'use client'
-import { forwardRef, ForwardedRef, ButtonHTMLAttributes } from 'react'
+
+import { forwardRef } from 'react'
+import { BaseButton, BaseButtonProps } from '@/components/ui/BaseButton'
 import { useHoverEffects } from '@/hooks/desktop/useHoverEffects'
 
-interface DesktopButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'tertiary'
-  children: React.ReactNode
+interface DesktopButtonProps extends BaseButtonProps {
+  hoverAnimation?: boolean
 }
 
-function DesktopButtonComponent(
-  props: DesktopButtonProps,
-  ref: ForwardedRef<HTMLButtonElement>
-) {
-  const { children, variant = 'primary', ...otherProps } = props
-  const { hoverProps } = useHoverEffects()
+const DesktopButton = forwardRef<HTMLButtonElement, DesktopButtonProps>(
+  function DesktopButton({ hoverAnimation = true, ...props }, ref) {
+    const { hoverProps } = useHoverEffects()
 
-  return (
-    <button
-      ref={ref}
-      className={`desktop-btn desktop-btn-${variant}`}
-      {...hoverProps}
-      {...otherProps}
-    >
-      {children}
-    </button>
-  )
-}
+    return (
+      <BaseButton
+        ref={ref}
+        className={`btn-desktop ${props.className || ''}`}
+        {...(hoverAnimation ? hoverProps : {})}
+        {...props}
+      />
+    )
+  }
+)
 
-export const DesktopButton = forwardRef(DesktopButtonComponent)
+// Default export
+export default DesktopButton
+
+// Also export as named export for flexibility
+export { DesktopButton }

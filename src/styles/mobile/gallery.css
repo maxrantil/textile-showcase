@@ -3,8 +3,7 @@
   width: 100%;
   min-height: 100vh;
   background: white;
-  padding-top: 60px;
-  /* Account for header */
+  /* Remove padding-top to eliminate gap under header */
 }
 
 .mobile-gallery-stack {
@@ -13,6 +12,9 @@
   flex-direction: column;
   gap: 40px;
   padding: 20px 0;
+  /* Add top padding here instead, but account for header */
+  padding-top: 60px;
+  /* Move the header spacing here */
 }
 
 /* Gallery Item */
@@ -63,6 +65,94 @@
   color: #e74c3c;
 }
 
+.scroll-to-top-button {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  color: #333;
+  cursor: pointer;
+  font-size: 2.25rem;
+  font-weight: 700;
+  font-family: monospace;
+  transition: all 0.2s ease;
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.scroll-to-top-button:hover {
+  transform: translateX(-50%) translateY(-2px);
+  color: #000;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.scroll-to-top-button:active {
+  transform: translateX(-50%);
+  color: #666;
+}
+
+@media (max-width: 480px) {
+  .scroll-to-top-button {
+    bottom: 1.5rem;
+    font-size: 2rem;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .scroll-to-top-button {
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  }
+
+  .scroll-to-top-button:hover {
+    color: #f0f0f0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
+  }
+}
+
+.mobile-gallery-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #666;
+}
+
+.mobile-gallery-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #e74c3c;
+  text-align: center;
+}
+
+.retry-button {
+  margin-top: 8px;
+  padding: 4px 8px;
+  background: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.retry-button:hover {
+  background: #c0392b;
+}
+
+.retry-button:active {
+  transform: translateY(1px);
+}
+
 /* Info Section */
 .mobile-gallery-info {
   padding: 0 4px;
@@ -82,22 +172,35 @@
 @media (max-width: 480px) {
   .mobile-gallery-stack {
     gap: 32px;
-    padding: 16px 0;
+    padding: 56px 0 16px 0;
+    /* Adjust top padding for smaller header */
   }
 
   .mobile-gallery-info {
-    padding: 14px 16px;
+    padding: 2px 3px;
   }
 
   .mobile-gallery-title {
     font-size: 13px;
+  }
+
+  .loading-spinner {
+    width: 16px;
+    height: 16px;
+    border-width: 1.5px;
+  }
+
+  .retry-button {
+    font-size: 11px;
+    padding: 3px 6px;
   }
 }
 
 @media (max-width: 360px) {
   .mobile-gallery-stack {
     gap: 28px;
-    padding: 12px 0;
+    padding: 52px 0 12px 0;
+    /* Further adjust for very small screens */
   }
 
   .mobile-gallery-info {
@@ -107,17 +210,24 @@
   .mobile-gallery-title {
     font-size: 15px;
   }
+
+  .mobile-gallery-loading,
+  .mobile-gallery-error {
+    font-size: 13px;
+  }
+
+  .loading-spinner {
+    width: 14px;
+    height: 14px;
+  }
 }
 
 /* Landscape Phone Optimization */
 @media (orientation: landscape) and (max-height: 500px) {
-  .mobile-gallery {
-    padding-top: 50px;
-  }
-
   .mobile-gallery-stack {
     gap: 24px;
-    padding: 12px 0;
+    padding: 50px 0 12px 0;
+    /* Smaller header in landscape */
   }
 
   .mobile-gallery-info {
@@ -127,13 +237,24 @@
   .mobile-gallery-title {
     font-size: 12px;
   }
+
+  .loading-spinner {
+    width: 16px;
+    height: 16px;
+  }
+
+  .mobile-gallery-loading,
+  .mobile-gallery-error {
+    font-size: 12px;
+  }
 }
 
 /* Ultra-wide Landscape Phones */
 @media (orientation: landscape) and (max-height: 400px) {
   .mobile-gallery-stack {
     gap: 20px;
-    padding: 10px 0;
+    padding: 45px 0 10px 0;
+    /* Even smaller header for ultra-wide */
   }
 
   .mobile-gallery-info {
@@ -142,6 +263,11 @@
 
   .mobile-gallery-title {
     font-size: 14px;
+  }
+
+  .loading-spinner {
+    width: 14px;
+    height: 14px;
   }
 }
 
@@ -159,6 +285,19 @@
   }
 }
 
+/* Reduced Motion Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .loading-spinner {
+    animation: none;
+  }
+
+  .mobile-gallery-item,
+  .mobile-gallery-image,
+  .retry-button {
+    transition: none;
+  }
+}
+
 /* Optional: Add subtle hover effect for devices with hover capability */
 @media (hover: hover) {
   .mobile-gallery-item:hover .mobile-gallery-image {
@@ -166,3 +305,6 @@
     transition: transform 0.3s ease;
   }
 }
+
+/* Remove dark mode support to prevent black background */
+/* Commented out the dark mode section that was causing the black background */

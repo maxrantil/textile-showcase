@@ -5,7 +5,6 @@
   min-height: 100vh;
   background: #fafafa;
   padding: 80px 20px 60px;
-  /* Account for mobile header */
 }
 
 .mobile-project-content {
@@ -103,25 +102,6 @@
   border: 1px solid #e5e5e5;
 }
 
-/* Responsive adjustments for very small screens */
-@media (max-width: 380px) {
-  .mobile-project-content {
-    padding: 16px;
-  }
-}
-
-/* Landscape mode adjustments */
-@media (orientation: landscape) and (max-height: 500px) {
-  .mobile-project-header {
-    margin-bottom: 20px;
-  }
-
-  .mobile-project-section {
-    margin-bottom: 20px;
-    padding-bottom: 20px;
-  }
-}
-
 /* Mobile Image Stack */
 .mobile-image-stack {
   margin: 32px 0;
@@ -172,4 +152,92 @@
   color: #666;
   font-style: italic;
   line-height: 1.4;
+}
+
+/* Mobile Next Project CTA */
+.mobile-next-project-cta {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid #e5e5e5;
+  text-align: center;
+}
+
+.mobile-next-project-label {
+  font-size: 0.75rem;
+  color: #888;
+  margin-bottom: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+}
+
+.mobile-next-project-button {
+  width: 100%;
+  padding: 1rem;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+/* Mobile Project Navigation - Simple 3 Buttons */
+.mobile-project-navigation {
+  margin-top: 2rem;
+  padding: 1.5rem 0;
+  border-top: 1px solid #e5e5e5;
+}
+
+.mobile-nav-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.mobile-nav-previous,
+.mobile-nav-next,
+.mobile-nav-back {
+  padding: 0.875rem 0.5rem;
+  font-size: 0.875rem;
+  text-align: center;
+  font-weight: 500;
+}
+
+.mobile-nav-spacer {
+  height: 48px;
+}
+
+/* Responsive adjustments for very small screens */
+@media (max-width: 380px) {
+  .mobile-project-content {
+    padding: 16px;
+  }
+
+  .mobile-nav-buttons {
+    gap: 0.5rem;
+  }
+
+  .mobile-nav-previous,
+  .mobile-nav-next,
+  .mobile-nav-back {
+    padding: 0.75rem 0.375rem;
+    font-size: 0.8125rem;
+  }
+}
+
+/* Landscape mode adjustments */
+@media (orientation: landscape) and (max-height: 500px) {
+  .mobile-project-header {
+    margin-bottom: 20px;
+  }
+
+  .mobile-project-section {
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+  }
+
+  .mobile-project-navigation {
+    margin-top: 1.5rem;
+    padding: 1rem 0;
+  }
 }

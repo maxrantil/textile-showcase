@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import Button from '../Button'
+import { BaseButton as Button } from '../BaseButton'
 
 // Mock LoadingSpinner
 jest.mock('../LoadingSpinner', () => ({

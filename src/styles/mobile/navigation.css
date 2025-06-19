@@ -97,56 +97,113 @@
 
 /* Mobile Project Navigation */
 .mobile-project-navigation {
-  margin-top: 60px;
-  padding-top: 32px;
-  border-top: 1px solid #e5e5e5;
+  width: 100%;
+  padding: 20px;
+  background: white;
+  border: none;
 }
 
 .mobile-nav-primary {
-  margin-bottom: 32px;
+  margin-bottom: 24px;
 }
 
-.mobile-nav-back {
+.mobile-nav-primary-buttons {
+  display: flex;
+  gap: 12px;
   width: 100%;
 }
 
-.mobile-nav-secondary {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 40px;
-}
-
-.mobile-nav-button {
-  padding: 16px;
-  background: #fff;
-  border: 1px solid #e5e5e5;
-  border-radius: 8px;
+.mobile-nav-back {
+  flex: 1;
   text-align: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  -webkit-tap-highlight-color: transparent;
+  min-width: 0;
+  /* Allows flex shrinking */
 }
 
-.mobile-nav-button:active {
-  transform: scale(0.98);
-  background: #f5f5f5;
+.mobile-nav-next-primary {
+  flex: 1;
+  text-align: center;
+  min-width: 0;
+  /* Allows flex shrinking */
+}
+
+.mobile-nav-secondary {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.mobile-nav-project {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .mobile-nav-label {
-  display: block;
   font-size: 12px;
+  color: #666;
+  font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: #999;
-  margin-bottom: 4px;
 }
 
-.mobile-nav-title {
-  display: block;
+.mobile-nav-button {
+  width: 100%;
+  text-align: left;
+  justify-content: flex-start;
+  padding: 12px 16px;
+  background: #f8f8f8;
+  border-radius: 8px;
   font-size: 14px;
+  font-weight: 400;
   color: #333;
+}
+
+.mobile-nav-button:active {
+  background: #eee;
+  transform: translateY(1px);
+}
+
+.mobile-nav-prev {
+  /* Previous project specific styling */
+}
+
+/* Mobile Project Actions (for Option 2 implementation) */
+.mobile-project-actions {
+  padding: 24px 20px;
+  background: white;
+}
+
+.mobile-next-project-cta,
+.mobile-next-project-section {
+  margin-bottom: 24px;
+}
+
+.mobile-next-project-label,
+.mobile-action-label {
+  display: block;
+  font-size: 12px;
+  color: #666;
   font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.mobile-next-project-button,
+.mobile-action-button {
+  margin-bottom: 12px;
+}
+
+.mobile-secondary-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
 }
 
 .mobile-nav-cta {
@@ -165,6 +222,49 @@
 
 .mobile-nav-contact {
   padding: 12px 24px;
+}
+
+.mobile-nav-next {
+  text-align: right;
+  justify-content: flex-end;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .mobile-project-navigation {
+    padding: 16px;
+  }
+
+  .mobile-nav-primary-buttons {
+    gap: 8px;
+  }
+
+  .mobile-nav-secondary {
+    gap: 12px;
+    margin-top: 12px;
+    padding-top: 12px;
+  }
+
+  .mobile-nav-button {
+    font-size: 13px;
+    padding: 10px 14px;
+  }
+
+  .mobile-project-actions {
+    padding: 20px 16px;
+  }
+}
+
+/* Very small screens - stack buttons vertically */
+@media (max-width: 360px) {
+  .mobile-nav-primary-buttons {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .mobile-nav-secondary {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Responsive adjustments for very small screens */
@@ -188,4 +288,14 @@
     margin-bottom: 20px;
     padding-bottom: 20px;
   }
+}
+
+/* Remove any unwanted lines/borders */
+.mobile-project-navigation * {
+  border: none !important;
+}
+
+/* Override the border-top we want to keep */
+.mobile-nav-secondary {
+  border-top: 1px solid #f0f0f0 !important;
 }

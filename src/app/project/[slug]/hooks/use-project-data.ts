@@ -64,3 +64,71 @@ export async function getAllProjectSlugs() {
     return []
   }
 }
+
+export async function getProjectWithNavigation(slug: string): Promise<{
+  project: TextileDesign | null
+  nextProject?: { slug: string; title: string }
+  previousProject?: { slug: string; title: string }
+}> {
+  try {
+    console.log(`🔍 Fetching project with navigation: ${slug}`)
+
+    // Fetch current project and navigation data
+    const [project, navigation] = await Promise.all([
+      getProject(slug),
+      resilientFetch<{
+        current: {
+          _id: string
+          title: string
+          slug: { current: string }
+          order: number
+        } | null
+        previous: {
+          _id: string
+          title: string
+          slug: { current: string }
+        } | null
+        next: { _id: string; title: string; slug: { current: string } } | null
+      }>(
+        queries.getProjectNavigation,
+        { slug },
+        {
+          retries: 2,
+          timeout: 10000,
+          cache: true,
+          cacheTTL: 300000,
+        }
+      ),
+    ])
+
+    if (!project) {
+      console.warn(`⚠️ Project not found: ${slug}`)
+      return { project: null }
+    }
+
+    // Extract navigation data
+    const nextProject = navigation?.next
+      ? { slug: navigation.next.slug.current, title: navigation.next.title }
+      : undefined
+
+    const previousProject = navigation?.previous
+      ? {
+          slug: navigation.previous.slug.current,
+          title: navigation.previous.title,
+        }
+      : undefined
+
+    console.log(
+      `✅ Navigation data: previous=${previousProject?.title}, next=${nextProject?.title}`
+    )
+
+    return {
+      project,
+      nextProject,
+      previousProject,
+    }
+  } catch (error) {
+    console.error(`❌ Failed to fetch project with navigation ${slug}:`, error)
+    return { project: null }
+  }
+}

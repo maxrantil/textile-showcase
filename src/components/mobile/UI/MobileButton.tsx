@@ -1,57 +1,41 @@
-// src/components/mobile/UI/MobileButton.tsx - Update with better touch feedback
+// src/components/mobile/UI/MobileButton.tsx
 'use client'
 
 import { forwardRef } from 'react'
+import { BaseButton, BaseButtonProps } from '@/components/ui/BaseButton'
 import { useTouchFeedback } from '@/hooks/mobile/useTouchFeedback'
-import { MobileLoadingSpinner } from './MobileLoadingSpinner'
 
-interface MobileButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  children: React.ReactNode
-  variant?: 'primary' | 'secondary' | 'ghost'
-  size?: 'small' | 'medium' | 'large'
-  fullWidth?: boolean
-  loading?: boolean
+interface MobileButtonProps extends BaseButtonProps {
+  hapticFeedback?: boolean
 }
 
 export const MobileButton = forwardRef<HTMLButtonElement, MobileButtonProps>(
   function MobileButton(
-    {
-      children,
-      variant = 'primary',
-      size = 'medium',
-      fullWidth = false,
-      disabled = false,
-      loading = false,
-      className = '',
-      ...props
-    },
+    { hapticFeedback = true, disabled, loading, onClick, ...props },
     ref
   ) {
-    const { touchProps } = useTouchFeedback({ disabled: disabled || loading })
+    const { touchProps } = useTouchFeedback({
+      disabled: disabled || loading,
+    })
 
-    const buttonClasses = [
-      'mobile-btn',
-      `mobile-btn-${variant}`,
-      `mobile-btn-${size}`,
-      fullWidth ? 'mobile-btn-full' : '',
-      loading ? 'mobile-btn-loading' : '',
-      className,
-    ]
-      .filter(Boolean)
-      .join(' ')
+    const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+      // Add haptic feedback if enabled and supported
+      if (hapticFeedback && 'vibrate' in navigator) {
+        navigator.vibrate(50) // Light haptic feedback (50ms)
+      }
+      onClick?.(e)
+    }
 
     return (
-      <button
+      <BaseButton
         ref={ref}
-        className={buttonClasses}
-        disabled={disabled || loading}
+        disabled={disabled}
+        loading={loading}
+        className={`btn-mobile ${props.className || ''}`}
+        onClick={handleClick}
         {...touchProps}
         {...props}
-      >
-        {loading && <MobileLoadingSpinner size="small" />}
-        <span className={loading ? 'opacity-0' : ''}>{children}</span>
-      </button>
+      />
     )
   }
 )
