@@ -32,7 +32,7 @@ export const urlFor = (source: SanityImageSource | null | undefined) => {
   return builder.image(source)
 }
 
-// Detect iOS and Safari for format compatibility
+// Enhanced device and mode detection
 const isIOSOrSafari = () => {
   if (typeof window === 'undefined') return false
   const userAgent = window.navigator.userAgent
@@ -40,6 +40,35 @@ const isIOSOrSafari = () => {
     /iPad|iPhone|iPod/.test(userAgent) ||
     (/Safari/.test(userAgent) && !/Chrome/.test(userAgent))
   )
+}
+
+// Detect iOS lockdown mode (heuristic approach)
+const isLockdownMode = () => {
+  if (typeof window === 'undefined') return false
+
+  // Lockdown mode detection heuristics
+  try {
+    // Check if IntersectionObserver is available (disabled in lockdown)
+    const hasIntersectionObserver = 'IntersectionObserver' in window
+
+    // Check if certain Web APIs are available
+    const hasWebGL = !!window.WebGLRenderingContext
+    const hasGamepad = 'getGamepads' in navigator
+
+    // iOS device but missing multiple APIs suggests lockdown mode
+    const isIOS = /iPad|iPhone|iPod/.test(window.navigator.userAgent)
+
+    if (isIOS && (!hasIntersectionObserver || !hasWebGL || !hasGamepad)) {
+      console.log('🔒 iOS Lockdown Mode detected')
+      return true
+    }
+
+    return false
+  } catch (error) {
+    // If we can't run these checks, assume lockdown mode for safety
+    console.warn('Error detecting lockdown mode:', error)
+    return isIOSOrSafari()
+  }
 }
 
 // Image optimization interface
@@ -64,6 +93,22 @@ export const getOptimizedImageUrl = (
 
   let imageBuilder = urlFor(source)
 
+  // For lockdown mode, use simpler image URLs
+  const lockdownMode = isLockdownMode()
+
+  if (lockdownMode) {
+    // Minimal transformations for lockdown mode
+    if (width && width > 400) {
+      imageBuilder = imageBuilder.width(Math.min(width, 800)) // Limit size
+    }
+
+    // Always use JPG for lockdown mode - most compatible
+    const url = imageBuilder.quality(Math.min(quality, 80)).format('jpg').url()
+    console.log('🔒 Lockdown mode image URL:', url)
+    return url
+  }
+
+  // Normal mode - full transformations
   if (width && !height) {
     imageBuilder = imageBuilder.width(width)
   } else if (height && !width) {
@@ -75,7 +120,7 @@ export const getOptimizedImageUrl = (
   // Smart format selection - convert 'auto' to actual format
   let selectedFormat: 'webp' | 'jpg' | 'png' = 'webp' // Default
   if (format === 'auto') {
-    // Use JPG for iOS/Safari to avoid lockdown mode issues
+    // Use JPG for iOS/Safari to avoid issues
     selectedFormat = isIOSOrSafari() ? 'jpg' : 'webp'
   } else if (format === 'webp' || format === 'jpg' || format === 'png') {
     selectedFormat = format
@@ -86,8 +131,19 @@ export const getOptimizedImageUrl = (
 }
 
 /**
- * Generate fallback image URL with JPG format
+ * Generate a simple, lockdown-mode compatible image URL
  */
+export const getSimpleImageUrl = (
+  source: SanityImageSource | null | undefined,
+  maxWidth: number = 800
+): string => {
+  if (!source) return ''
+
+  // Simplest possible URL for maximum compatibility
+  return urlFor(source).width(maxWidth).quality(75).format('jpg').url()
+}
+
+// Keep all other functions the same...
 export const getFallbackImageUrl = (
   source: SanityImageSource | null | undefined,
   options: ImageOptimizationOptions = {}
@@ -96,20 +152,16 @@ export const getFallbackImageUrl = (
 
   const fallbackOptions = {
     ...options,
-    format: 'jpg' as const, // Always use JPG as fallback
+    format: 'jpg' as const,
   }
 
   return getOptimizedImageUrl(source, fallbackOptions)
 }
 
-/**
- * Generate blur data URL for better loading experience
- */
 export const getBlurDataUrl = (
   source: SanityImageSource | null | undefined
 ): string | undefined => {
   if (!source) return undefined
-  // Always use JPG for blur placeholder to avoid compatibility issues
   return urlFor(source)
     .width(20)
     .height(20)
@@ -119,16 +171,12 @@ export const getBlurDataUrl = (
     .url()
 }
 
-/**
- * Get image dimensions and aspect ratio from Sanity image
- */
+// ... rest of the functions remain the same
 export const getImageDimensions = (source: SanityImage | null | undefined) => {
   if (!source?.asset) return null
 
-  // Try to get dimensions from the asset metadata
   const asset = source.asset
 
-  // Check for dimensions in metadata
   if (asset.metadata?.dimensions) {
     return {
       width: asset.metadata.dimensions.width,
@@ -138,7 +186,6 @@ export const getImageDimensions = (source: SanityImage | null | undefined) => {
     }
   }
 
-  // Fallback to checking asset directly
   if (asset.width && asset.height) {
     return {
       width: asset.width,
@@ -147,7 +194,6 @@ export const getImageDimensions = (source: SanityImage | null | undefined) => {
     }
   }
 
-  // Default fallback
   return {
     width: 800,
     height: 600,
@@ -155,15 +201,11 @@ export const getImageDimensions = (source: SanityImage | null | undefined) => {
   }
 }
 
-/**
- * Get dimensions from SanityImageSource (asset reference or object)
- */
 export const getImageDimensionsFromSource = (
   source: SanityImageSource | null | undefined
 ) => {
   if (!source) return null
 
-  // If source is a string (asset reference), we can't get dimensions
   if (typeof source === 'string') {
     return {
       width: 800,
@@ -172,16 +214,13 @@ export const getImageDimensionsFromSource = (
     }
   }
 
-  // If source is an object with asset property
   if (typeof source === 'object' && 'asset' in source) {
     return getImageDimensions(source as SanityImage)
   }
 
-  // If source is an asset object directly
   if (typeof source === 'object' && ('_id' in source || 'metadata' in source)) {
     const asset = source as SanityImageAsset
 
-    // Check for dimensions in metadata
     if (asset.metadata?.dimensions) {
       return {
         width: asset.metadata.dimensions.width,
@@ -191,7 +230,6 @@ export const getImageDimensionsFromSource = (
       }
     }
 
-    // Fallback to checking asset directly
     if (asset.width && asset.height) {
       return {
         width: asset.width,
@@ -201,7 +239,6 @@ export const getImageDimensionsFromSource = (
     }
   }
 
-  // Default fallback
   return {
     width: 800,
     height: 600,
@@ -209,9 +246,6 @@ export const getImageDimensionsFromSource = (
   }
 }
 
-/**
- * Generate responsive image srcSet for better performance
- */
 export const getResponsiveImageSrcSet = (
   source: SanityImageSource | null | undefined,
   baseSizes: number[] = [400, 800, 1200, 1600]
@@ -222,7 +256,7 @@ export const getResponsiveImageSrcSet = (
     const url = getOptimizedImageUrl(source, {
       width: size,
       quality: 85,
-      format: 'auto', // Use auto format selection
+      format: 'auto',
     })
     return `${url} ${size}w`
   })
@@ -230,9 +264,6 @@ export const getResponsiveImageSrcSet = (
   return srcSetEntries.join(', ')
 }
 
-/**
- * Preload image for better performance
- */
 export const preloadImage = (url: string): Promise<void> => {
   return new Promise((resolve, reject) => {
     const img = new Image()
@@ -242,9 +273,6 @@ export const preloadImage = (url: string): Promise<void> => {
   })
 }
 
-/**
- * Preload multiple images with error handling
- */
 export const preloadImages = async (urls: string[]): Promise<void> => {
   try {
     await Promise.all(urls.map(preloadImage))

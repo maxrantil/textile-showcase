@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { useKeyboardNavigation } from '@/hooks/desktop/useKeyboardNavigation'
 import { NavigationArrows } from '@/components/ui/NavigationArrows'
 import { getOptimizedImageUrl } from '@/sanity/imageHelpers'
+import { LockdownImage } from '@/components/ui/LockdownImage'
 import { UmamiEvents } from '@/utils/analytics'
 import { perf } from '@/utils/performance'
 import { scrollManager } from '@/lib/scrollManager'
@@ -29,6 +30,25 @@ interface DesktopImageCarouselProps {
   onIndexChange?: (index: number) => void
 }
 
+// Lightweight lockdown mode detection - only for iOS devices
+const isIOSLockdownMode = () => {
+  if (typeof window === 'undefined') return false
+
+  try {
+    // Only check on iOS devices (iPhone/iPad)
+    const isIOS = /iPad|iPhone|iPod/.test(window.navigator.userAgent)
+    if (!isIOS) return false // Not iOS, no lockdown mode
+
+    // Check for missing APIs that indicate lockdown mode
+    const hasIntersectionObserver = 'IntersectionObserver' in window
+    const hasWebGL = !!window.WebGLRenderingContext
+
+    return !hasIntersectionObserver || !hasWebGL
+  } catch {
+    return false
+  }
+}
+
 export function DesktopImageCarousel({
   images = [],
   mainImage,
@@ -38,12 +58,22 @@ export function DesktopImageCarousel({
 }: DesktopImageCarouselProps) {
   const router = useRouter()
   const [internalCurrentIndex, setInternalCurrentIndex] = useState(0)
+  const [useLockdownMode, setUseLockdownMode] = useState(false)
   const carouselRef = useRef<HTMLDivElement>(null)
   const lastScrollTime = useRef(0)
   const lastNavigationTime = useRef(0)
   const scrollAccumulator = useRef(0)
   const isNavigating = useRef(false)
   const lastKeyboardDirection = useRef<'next' | 'previous' | null>(null)
+
+  // Check for iOS lockdown mode on mount (only for iPads)
+  useEffect(() => {
+    const lockdownMode = isIOSLockdownMode()
+    if (lockdownMode) {
+      console.log('🔒 iOS Lockdown Mode detected on tablet/iPad')
+    }
+    setUseLockdownMode(lockdownMode)
+  }, [])
 
   // Use external index if provided, otherwise use internal
   const currentIndex = externalCurrentIndex ?? internalCurrentIndex
@@ -182,25 +212,26 @@ export function DesktopImageCarousel({
     navigateWithCooldown('next', 'keyboard')
   }, [navigateWithCooldown])
 
-  // Use the existing keyboard navigation hook
+  // Use the existing keyboard navigation hook (disable in lockdown mode)
   useKeyboardNavigation({
     onPrevious: handleKeyboardPrevious,
     onNext: handleKeyboardNext,
     onEscape: goBackToGallery,
     onScrollUp: () => {
-      // Handle 'k' key - scroll page up
       window.scrollBy({ top: -100, behavior: 'smooth' })
     },
     onScrollDown: () => {
-      // Handle 'j' key - scroll page down
       window.scrollBy({ top: 100, behavior: 'smooth' })
     },
-    enabled: true,
+    enabled: !useLockdownMode, // Disable keyboard nav in lockdown mode
   })
 
   // Enhanced horizontal scroll support
   const handleWheel = useCallback(
     (event: WheelEvent) => {
+      // Skip wheel events in lockdown mode for simplicity
+      if (useLockdownMode) return
+
       const carouselElement = carouselRef.current
       if (!carouselElement?.contains(event.target as Node)) return
 
@@ -209,7 +240,6 @@ export function DesktopImageCarousel({
       const deltaY = Math.abs(event.deltaY)
 
       // Only handle horizontal scrolling (left/right)
-      // If vertical scroll is dominant, let the page scroll normally
       if (deltaY > deltaX * 1.2) {
         return // Let the page scroll vertically
       }
@@ -255,17 +285,16 @@ export function DesktopImageCarousel({
         }
       }
     },
-    [navigateWithCooldown]
+    [navigateWithCooldown, useLockdownMode]
   )
 
-  // Set up wheel event listener with proper cleanup
+  // Set up wheel event listener with proper cleanup (skip in lockdown mode)
   useEffect(() => {
     const carouselElement = carouselRef.current
-    if (!carouselElement) return
+    if (!carouselElement || useLockdownMode) return
 
     const handleWheelWrapper = (event: WheelEvent) => handleWheel(event)
 
-    // Use passive: false only when we might prevent default
     carouselElement.addEventListener('wheel', handleWheelWrapper, {
       passive: false,
     })
@@ -273,30 +302,12 @@ export function DesktopImageCarousel({
     return () => {
       carouselElement.removeEventListener('wheel', handleWheelWrapper)
     }
-  }, [handleWheel])
+  }, [handleWheel, useLockdownMode])
 
   // Track initial project view
   useEffect(() => {
     UmamiEvents.projectImageView(projectTitle, 1)
   }, [projectTitle])
-
-  // Get optimized image URLs for preloading
-  const preloadUrls = useMemo(() => {
-    const indices = [
-      currentIndex === 0 ? allImages.length - 1 : currentIndex - 1,
-      currentIndex === allImages.length - 1 ? 0 : currentIndex + 1,
-    ]
-    return indices
-      .map((i) => allImages[i])
-      .filter(Boolean)
-      .map((image) =>
-        getOptimizedImageUrl(image.asset, {
-          height: 600,
-          quality: 80,
-          format: 'webp',
-        })
-      )
-  }, [currentIndex, allImages])
 
   // Get current image URL
   const currentImageUrl = getOptimizedImageUrl(
@@ -304,16 +315,16 @@ export function DesktopImageCarousel({
     {
       height: 800,
       quality: 90,
-      format: 'webp',
+      format: 'auto', // Use auto format for lockdown detection
     }
   )
 
   return (
     <>
-      {/* Main Image Container with relative positioning for arrows */}
+      {/* Main Image Container */}
       <div className="desktop-carousel-container" ref={carouselRef}>
-        {/* Navigation Arrows - Positioned relative to image container */}
-        {allImages.length > 1 && (
+        {/* Navigation Arrows - Hide in lockdown mode for simplicity */}
+        {allImages.length > 1 && !useLockdownMode && (
           <NavigationArrows
             canScrollLeft={currentIndex > 0}
             canScrollRight={currentIndex < allImages.length - 1}
@@ -326,43 +337,121 @@ export function DesktopImageCarousel({
 
         {/* Image Display */}
         <div className="desktop-carousel-main">
-          {/* Main Image */}
           <div className="desktop-carousel-image">
-            {currentImageUrl && (
-              <Image
-                src={currentImageUrl}
+            {useLockdownMode ? (
+              // Lockdown mode - use simple image for iPads
+              <LockdownImage
+                src={currentImage?.asset || mainImage}
                 alt={currentImage?.caption || projectTitle}
-                width={800}
-                height={600}
                 className="desktop-project-img"
-                loading={currentIndex === 0 ? 'eager' : 'lazy'}
-                priority={currentIndex === 0}
-                sizes="(max-width: 768px) 100vw, 800px"
+                style={{
+                  height: '70vh',
+                  maxHeight: '700px',
+                  minHeight: '300px',
+                  width: 'auto',
+                  objectFit: 'contain',
+                }}
               />
+            ) : (
+              // Normal mode - use Next.js Image
+              currentImageUrl && (
+                <Image
+                  src={currentImageUrl}
+                  alt={currentImage?.caption || projectTitle}
+                  width={800}
+                  height={600}
+                  className="desktop-project-img"
+                  loading={currentIndex === 0 ? 'eager' : 'lazy'}
+                  priority={currentIndex === 0}
+                  sizes="(max-width: 768px) 100vw, 800px"
+                  onError={() => {
+                    // If image fails and we're on iOS, try lockdown mode
+                    if (/iPad|iPhone|iPod/.test(window.navigator.userAgent)) {
+                      console.log(
+                        '🔒 Image failed on iOS device, switching to lockdown mode'
+                      )
+                      setUseLockdownMode(true)
+                    }
+                  }}
+                />
+              )
             )}
           </div>
         </div>
 
-        {/* Image Counter - Fixed position outside image area */}
+        {/* Image Counter */}
         {allImages.length > 1 && (
           <div className="desktop-carousel-counter-fixed">{formatCounter}</div>
         )}
+
+        {/* Simple navigation for lockdown mode */}
+        {useLockdownMode && allImages.length > 1 && (
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '20px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              display: 'flex',
+              gap: '10px',
+              background: 'rgba(0,0,0,0.7)',
+              padding: '8px 12px',
+              borderRadius: '20px',
+            }}
+          >
+            <button
+              onClick={goToPrevious}
+              disabled={currentIndex === 0}
+              style={{
+                background: 'white',
+                border: 'none',
+                padding: '8px 12px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '12px',
+              }}
+            >
+              ←
+            </button>
+            <span style={{ color: 'white', padding: '8px', fontSize: '12px' }}>
+              {formatCounter}
+            </span>
+            <button
+              onClick={goToNext}
+              disabled={currentIndex === allImages.length - 1}
+              style={{
+                background: 'white',
+                border: 'none',
+                padding: '8px 12px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '12px',
+              }}
+            >
+              →
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Preload adjacent images */}
-      <div className="desktop-carousel-preload">
-        {preloadUrls.map((url, index) => (
-          <Image
-            key={`preload-${index}`}
-            src={url}
-            alt=""
-            width={600}
-            height={400}
-            loading="lazy"
-            className="sr-only"
-          />
-        ))}
-      </div>
+      {/* Debug indicator */}
+      {process.env.NODE_ENV === 'development' && useLockdownMode && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '4px',
+            right: '4px',
+            background: 'red',
+            color: 'white',
+            fontSize: '10px',
+            padding: '2px 4px',
+            borderRadius: '2px',
+            zIndex: 10,
+          }}
+        >
+          LOCKDOWN (iPad)
+        </div>
+      )}
     </>
   )
 }

@@ -1,11 +1,11 @@
 'use client'
-
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
 import {
   getOptimizedImageUrl,
   getImageDimensionsFromSource,
 } from '@/sanity/imageHelpers'
+import { LockdownImage } from '@/components/ui/LockdownImage'
 import { UmamiEvents } from '@/utils/analytics'
 import type { SanityImageSource } from '@sanity/image-url/lib/types/types'
 
@@ -21,6 +21,21 @@ interface ImageBlockProps {
   projectTitle: string
 }
 
+// Simple lockdown mode detection
+const isLockdownMode = () => {
+  if (typeof window === 'undefined') return false
+
+  try {
+    const isIOS = /iPad|iPhone|iPod/.test(window.navigator.userAgent)
+    const hasIntersectionObserver = 'IntersectionObserver' in window
+    const hasWebGL = !!window.WebGLRenderingContext
+
+    return isIOS && (!hasIntersectionObserver || !hasWebGL)
+  } catch {
+    return false
+  }
+}
+
 export const ImageBlock = React.memo(function ImageBlock({
   image,
   index,
@@ -29,17 +44,17 @@ export const ImageBlock = React.memo(function ImageBlock({
 }: ImageBlockProps) {
   const [imageLoaded, setImageLoaded] = useState(false)
   const [imageError, setImageError] = useState(false)
+  const [useLockdownMode, setUseLockdownMode] = useState(false)
+
+  // Check for lockdown mode on mount
+  useEffect(() => {
+    setUseLockdownMode(isLockdownMode())
+  }, [])
 
   // Don't render if no asset
   if (!image?.asset) {
     return null
   }
-
-  const imageUrl = getOptimizedImageUrl(image.asset, {
-    width: 800,
-    quality: 80,
-    format: 'webp',
-  })
 
   // Get image dimensions for proper aspect ratio
   const dimensions = getImageDimensionsFromSource(image.asset)
@@ -51,35 +66,107 @@ export const ImageBlock = React.memo(function ImageBlock({
     UmamiEvents.projectImageView(projectTitle, index + 1)
   }
 
+  const handleImageError = () => {
+    setImageError(true)
+
+    // If error occurs and not already in lockdown mode, try switching
+    if (!useLockdownMode && isLockdownMode()) {
+      console.log(
+        '🔒 Image failed, switching to lockdown mode for project image'
+      )
+      setUseLockdownMode(true)
+      setImageError(false)
+    }
+  }
+
   return (
     <div className="mobile-image-block">
       <div className="mobile-image-container" style={{ aspectRatio }}>
-        <Image
-          src={imageUrl}
-          alt={image.caption || `${projectTitle} - Image ${index + 1}`}
-          fill
-          sizes="(max-width: 768px) 100vw, 800px"
-          className={`mobile-image ${imageLoaded ? 'loaded' : ''}`}
-          loading={isFirst ? 'eager' : 'lazy'}
-          onLoad={handleImageLoad}
-          onError={() => setImageError(true)}
-        />
+        {useLockdownMode ? (
+          // Lockdown mode - use simple image
+          <LockdownImage
+            src={image.asset}
+            alt={image.caption || `${projectTitle} - Image ${index + 1}`}
+            className="mobile-image loaded"
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+            }}
+          />
+        ) : (
+          // Normal mode - use Next.js Image
+          <>
+            <Image
+              src={getOptimizedImageUrl(image.asset, {
+                width: 800,
+                quality: 80,
+                format: 'auto', // Use auto format for lockdown detection
+              })}
+              alt={image.caption || `${projectTitle} - Image ${index + 1}`}
+              fill
+              sizes="(max-width: 768px) 100vw, 800px"
+              className={`mobile-image ${imageLoaded ? 'loaded' : ''}`}
+              loading={isFirst ? 'eager' : 'lazy'}
+              onLoad={handleImageLoad}
+              onError={handleImageError}
+            />
 
-        {!imageLoaded && !imageError && (
-          <div className="mobile-image-loading">
-            Loading image {index + 1}...
-          </div>
-        )}
+            {!imageLoaded && !imageError && (
+              <div className="mobile-image-loading">
+                Loading image {index + 1}...
+              </div>
+            )}
 
-        {imageError && (
-          <div className="mobile-image-error">
-            Failed to load image {index + 1}
-          </div>
+            {imageError && (
+              <div className="mobile-image-error">
+                <span>Failed to load image {index + 1}</span>
+                <button
+                  onClick={() => {
+                    setImageError(false)
+                    setImageLoaded(false)
+                    setUseLockdownMode(true) // Try lockdown mode
+                  }}
+                  style={{
+                    marginTop: '8px',
+                    padding: '4px 8px',
+                    fontSize: '12px',
+                    background: '#007bff',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Retry
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
 
       {image.caption && !image.isMainImage && (
         <p className="mobile-image-caption">{image.caption}</p>
+      )}
+
+      {/* Debug indicator */}
+      {process.env.NODE_ENV === 'development' && useLockdownMode && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '4px',
+            right: '4px',
+            background: 'red',
+            color: 'white',
+            fontSize: '10px',
+            padding: '2px 4px',
+            borderRadius: '2px',
+            zIndex: 10,
+          }}
+        >
+          LOCKDOWN
+        </div>
       )}
     </div>
   )
