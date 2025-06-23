@@ -2,7 +2,11 @@
 
 import { useState, useRef, useEffect } from 'react'
 import Image from 'next/image'
-import { getOptimizedImageUrl, getBlurDataUrl } from '@/sanity/imageHelpers'
+import {
+  getOptimizedImageUrl,
+  getFallbackImageUrl,
+  getBlurDataUrl,
+} from '@/sanity/imageHelpers'
 import { ImageLoadingPlaceholder } from './LoadingSpinner'
 import type { SanityImageSource } from '@sanity/image-url/lib/types/types'
 
@@ -38,12 +42,40 @@ export function OptimizedImage({
 }: OptimizedImageProps) {
   const [isLoaded, setIsLoaded] = useState(false)
   const [isError, setIsError] = useState(false)
-  const [isInView, setIsInView] = useState(false)
+  const [isInView, setIsInView] = useState(priority) // Start true if priority
+  const [currentImageUrl, setCurrentImageUrl] = useState<string>('')
+  const [usesFallback, setUsesFallback] = useState(false)
   const imgRef = useRef<HTMLDivElement>(null)
 
-  // Intersection Observer for lazy loading
+  // Generate image URLs
+  const primaryImageUrl = getOptimizedImageUrl(src, {
+    width,
+    height,
+    quality,
+    format: 'auto', // Use auto format detection
+  })
+
+  const fallbackImageUrl = getFallbackImageUrl(src, {
+    width,
+    height,
+    quality,
+  })
+
+  const blurDataUrl = getBlurDataUrl(src)
+
+  // Set initial image URL
   useEffect(() => {
-    if (priority) {
+    setCurrentImageUrl(primaryImageUrl)
+  }, [primaryImageUrl])
+
+  // Intersection Observer for lazy loading - with fallback for lockdown mode
+  useEffect(() => {
+    if (priority || isInView) {
+      return
+    }
+
+    // Fallback: if IntersectionObserver is not available or fails, load immediately
+    if (typeof IntersectionObserver === 'undefined') {
       setIsInView(true)
       return
     }
@@ -65,17 +97,39 @@ export function OptimizedImage({
       observer.observe(imgRef.current)
     }
 
-    return () => observer.disconnect()
-  }, [priority])
+    // Fallback timeout - if observer doesn't trigger within 3 seconds, load anyway
+    const fallbackTimeout = setTimeout(() => {
+      setIsInView(true)
+      observer.disconnect()
+    }, 3000)
 
-  // Generate optimized URLs
-  const imageUrl = getOptimizedImageUrl(src, {
-    width,
-    height,
-    quality,
-    format: 'webp',
-  })
-  const blurDataUrl = getBlurDataUrl(src)
+    return () => {
+      observer.disconnect()
+      clearTimeout(fallbackTimeout)
+    }
+  }, [priority, isInView])
+
+  // Handle image load error - try fallback format
+  const handleImageError = () => {
+    if (
+      !usesFallback &&
+      fallbackImageUrl &&
+      fallbackImageUrl !== currentImageUrl
+    ) {
+      console.warn(`Primary image failed, trying fallback for: ${alt}`)
+      setUsesFallback(true)
+      setCurrentImageUrl(fallbackImageUrl)
+      setIsError(false) // Reset error state to try again
+    } else {
+      console.error(`All image formats failed for: ${alt}`)
+      setIsError(true)
+    }
+  }
+
+  const handleImageLoad = () => {
+    setIsLoaded(true)
+    setIsError(false)
+  }
 
   // Handle click with proper event handling
   const handleClick = (e: React.MouseEvent) => {
@@ -112,12 +166,12 @@ export function OptimizedImage({
         <ImageLoadingPlaceholder width="100%" height="100%" />
       )}
 
-      {/* The actual image - only render when in view */}
-      {isInView && imageUrl && (
+      {/* The actual image - only render when in view and URL is available */}
+      {isInView && currentImageUrl && (
         <>
           {fill ? (
             <Image
-              src={imageUrl}
+              src={currentImageUrl}
               alt={alt}
               fill
               loading={priority ? 'eager' : 'lazy'}
@@ -125,8 +179,8 @@ export function OptimizedImage({
               sizes={sizes}
               placeholder={blurDataUrl ? 'blur' : 'empty'}
               blurDataURL={blurDataUrl}
-              onLoad={() => setIsLoaded(true)}
-              onError={() => setIsError(true)}
+              onLoad={handleImageLoad}
+              onError={handleImageError}
               style={{
                 objectFit: objectFit,
                 opacity: isLoaded ? 1 : 0,
@@ -136,7 +190,7 @@ export function OptimizedImage({
             />
           ) : (
             <Image
-              src={imageUrl}
+              src={currentImageUrl}
               alt={alt}
               width={width}
               height={height}
@@ -145,8 +199,8 @@ export function OptimizedImage({
               sizes={sizes}
               placeholder={blurDataUrl ? 'blur' : 'empty'}
               blurDataURL={blurDataUrl}
-              onLoad={() => setIsLoaded(true)}
-              onError={() => setIsError(true)}
+              onLoad={handleImageLoad}
+              onError={handleImageError}
               style={{
                 objectFit: objectFit,
                 opacity: isLoaded ? 1 : 0,
@@ -159,7 +213,7 @@ export function OptimizedImage({
         </>
       )}
 
-      {/* Error state */}
+      {/* Error state with retry option */}
       {isError && (
         <div
           style={{
@@ -171,6 +225,8 @@ export function OptimizedImage({
             justifyContent: 'center',
             flexDirection: 'column',
             color: '#666',
+            padding: '16px',
+            textAlign: 'center',
           }}
         >
           <svg
@@ -186,26 +242,48 @@ export function OptimizedImage({
             <circle cx="8.5" cy="8.5" r="1.5" />
             <polyline points="21,15 16,10 5,21" />
           </svg>
-          <span style={{ fontSize: '12px', textAlign: 'center' }}>
+          <span style={{ fontSize: '12px', marginBottom: '8px' }}>
             Failed to load image
           </span>
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              setIsError(false)
+              setIsLoaded(false)
+              setUsesFallback(false)
+              setCurrentImageUrl(primaryImageUrl)
+            }}
+            style={{
+              padding: '4px 8px',
+              fontSize: '10px',
+              background: '#007bff',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+            }}
+          >
+            Retry
+          </button>
         </div>
       )}
 
-      {/* Loading indicator for interactive images */}
-      {onClick && !isLoaded && !isError && (
+      {/* Debug info in development */}
+      {process.env.NODE_ENV === 'development' && usesFallback && (
         <div
           style={{
             position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            color: '#666',
-            fontSize: '12px',
-            textAlign: 'center',
+            top: '4px',
+            left: '4px',
+            background: 'orange',
+            color: 'white',
+            fontSize: '10px',
+            padding: '2px 4px',
+            borderRadius: '2px',
+            zIndex: 10,
           }}
         >
-          Loading...
+          FALLBACK
         </div>
       )}
     </div>

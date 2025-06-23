@@ -32,12 +32,22 @@ export const urlFor = (source: SanityImageSource | null | undefined) => {
   return builder.image(source)
 }
 
+// Detect iOS and Safari for format compatibility
+const isIOSOrSafari = () => {
+  if (typeof window === 'undefined') return false
+  const userAgent = window.navigator.userAgent
+  return (
+    /iPad|iPhone|iPod/.test(userAgent) ||
+    (/Safari/.test(userAgent) && !/Chrome/.test(userAgent))
+  )
+}
+
 // Image optimization interface
 interface ImageOptimizationOptions {
   width?: number
   height?: number
   quality?: number
-  format?: 'webp' | 'jpg' | 'png'
+  format?: 'webp' | 'jpg' | 'png' | 'auto'
   fit?: 'clip' | 'crop' | 'fill' | 'fillmax' | 'max' | 'scale' | 'min'
 }
 
@@ -50,7 +60,7 @@ export const getOptimizedImageUrl = (
 ): string => {
   if (!source) return ''
 
-  const { width, height, quality = 85, format = 'webp', fit = 'max' } = options
+  const { width, height, quality = 85, format = 'auto', fit = 'max' } = options
 
   let imageBuilder = urlFor(source)
 
@@ -62,8 +72,34 @@ export const getOptimizedImageUrl = (
     imageBuilder = imageBuilder.width(width).height(height).fit(fit)
   }
 
-  const url = imageBuilder.quality(quality).format(format).url()
+  // Smart format selection - convert 'auto' to actual format
+  let selectedFormat: 'webp' | 'jpg' | 'png' = 'webp' // Default
+  if (format === 'auto') {
+    // Use JPG for iOS/Safari to avoid lockdown mode issues
+    selectedFormat = isIOSOrSafari() ? 'jpg' : 'webp'
+  } else if (format === 'webp' || format === 'jpg' || format === 'png') {
+    selectedFormat = format
+  }
+
+  const url = imageBuilder.quality(quality).format(selectedFormat).url()
   return url
+}
+
+/**
+ * Generate fallback image URL with JPG format
+ */
+export const getFallbackImageUrl = (
+  source: SanityImageSource | null | undefined,
+  options: ImageOptimizationOptions = {}
+): string => {
+  if (!source) return ''
+
+  const fallbackOptions = {
+    ...options,
+    format: 'jpg' as const, // Always use JPG as fallback
+  }
+
+  return getOptimizedImageUrl(source, fallbackOptions)
 }
 
 /**
@@ -73,7 +109,14 @@ export const getBlurDataUrl = (
   source: SanityImageSource | null | undefined
 ): string | undefined => {
   if (!source) return undefined
-  return urlFor(source).width(20).height(20).blur(50).quality(20).url()
+  // Always use JPG for blur placeholder to avoid compatibility issues
+  return urlFor(source)
+    .width(20)
+    .height(20)
+    .blur(50)
+    .quality(20)
+    .format('jpg')
+    .url()
 }
 
 /**
@@ -179,7 +222,7 @@ export const getResponsiveImageSrcSet = (
     const url = getOptimizedImageUrl(source, {
       width: size,
       quality: 85,
-      format: 'webp',
+      format: 'auto', // Use auto format selection
     })
     return `${url} ${size}w`
   })
