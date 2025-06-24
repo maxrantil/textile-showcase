@@ -26,6 +26,15 @@
   justify-content: center;
   position: relative;
   min-height: 70vh;
+  /* Add space for thumbnails */
+  padding-right: 120px;
+}
+
+@media (max-width: 1200px) {
+  .desktop-carousel-container {
+    padding-right: 0;
+    flex-direction: column;
+  }
 }
 
 .desktop-carousel-main {
@@ -50,6 +59,93 @@
   min-height: 300px !important;
   object-fit: contain !important;
   display: block !important;
+}
+
+/* Thumbnail Strip */
+.desktop-carousel-thumbnails {
+  position: absolute;
+  left: -100px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 70vh;
+  overflow-y: auto;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  scrollbar-width: thin;
+  scrollbar-color: #ccc transparent;
+}
+
+.desktop-carousel-thumbnails::-webkit-scrollbar {
+  width: 4px;
+}
+
+.desktop-carousel-thumbnails::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.desktop-carousel-thumbnails::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 2px;
+}
+
+.desktop-thumbnail {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  border-radius: 4px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+  background: #f5f5f5;
+}
+
+.desktop-thumbnail:hover {
+  transform: scale(1.05);
+  border-color: #007bff;
+}
+
+.desktop-thumbnail.active {
+  border-color: #333;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.desktop-thumbnail-img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  display: block !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .desktop-carousel-thumbnails {
+    position: static;
+    transform: none;
+    flex-direction: row;
+    margin-top: 20px;
+    max-height: none;
+    overflow-x: auto;
+    overflow-y: hidden;
+    max-width: 100%;
+    justify-content: center;
+  }
+
+  .desktop-carousel-container {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 768px) {
+  .desktop-carousel-thumbnails {
+    display: none;
+    /* Hide on mobile - they can swipe */
+  }
 }
 
 /* Remove old counter styling */
