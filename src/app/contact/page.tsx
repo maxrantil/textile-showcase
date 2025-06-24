@@ -12,7 +12,7 @@ export default function ContactPage() {
 
       <div
         style={{
-          background: '#fafafa',
+          background: '#ffffff',
           width: '100%',
           overflowX: 'hidden',
           minHeight: '100vh', // Changed from height to minHeight

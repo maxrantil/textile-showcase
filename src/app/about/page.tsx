@@ -11,7 +11,7 @@ export default function AboutPage() {
 
       <div
         style={{
-          background: '#fafafa',
+          background: '#ffffff',
           width: '100%',
           overflowX: 'hidden',
           minHeight: '100vh', // Changed from height to minHeight
