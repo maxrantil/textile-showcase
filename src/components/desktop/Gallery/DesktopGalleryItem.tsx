@@ -31,9 +31,10 @@ export const DesktopGalleryItem = memo(function DesktopGalleryItem({
   }
 
   const imageUrl = getOptimizedImageUrl(design.image, {
-    height: 800,
-    quality: 90,
+    height: 1200, // 2x of ~600px (60vh on typical screen)
+    quality: 95,
     format: 'webp',
+    fit: 'max',
   })
 
   return (
@@ -53,8 +54,13 @@ export const DesktopGalleryItem = memo(function DesktopGalleryItem({
         <Image
           src={imageUrl}
           alt={design.title}
-          width={600}
-          height={800}
+          height={600} // Approximate 60vh in pixels
+          width={800} // Reasonable fallback width
+          style={{
+            width: 'auto', // Let CSS control the actual width
+            height: '60vh', // Match your desired CSS height
+            objectFit: 'contain',
+          }}
           priority={index < 3}
           className="desktop-gallery-img"
         />
