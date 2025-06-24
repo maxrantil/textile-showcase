@@ -1,7 +1,7 @@
 /* Project Content Layout - Shared across mobile and desktop */
 .project-content-wrapper {
   min-height: 100vh;
-  background: #fafafa;
+  background: #ffffff;
   width: 100%;
   overflow-x: hidden;
 }
