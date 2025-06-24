@@ -21,19 +21,20 @@
   display: flex;
   align-items: center;
   gap: 60px;
-  margin-bottom: 20px;
+  margin-bottom: 100px;
+  /* Increased to accommodate navigation */
   width: 100%;
   justify-content: center;
   position: relative;
-  min-height: 70vh;
-  /* Add space for thumbnails */
-  padding-right: 120px;
+  min-height: 60vh;
+  padding-left: 0;
 }
 
 @media (max-width: 1200px) {
   .desktop-carousel-container {
-    padding-right: 0;
+    padding-left: 0;
     flex-direction: column;
+    margin-bottom: 80px;
   }
 }
 
@@ -41,6 +42,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  position: relative;
 }
 
 .desktop-carousel-image {
@@ -52,9 +54,9 @@
 }
 
 .desktop-project-img {
-  height: 70vh !important;
+  height: 60vh !important;
   width: auto !important;
-  max-height: 700px !important;
+  max-height: 600px !important;
   min-height: 300px !important;
   object-fit: contain !important;
   display: block !important;
@@ -63,13 +65,13 @@
 /* Thumbnail Strip */
 .desktop-carousel-thumbnails {
   position: absolute;
-  left: -100px;
+  left: -120px;
   top: 50%;
   transform: translateY(-50%);
   display: flex;
   flex-direction: column;
   gap: 12px;
-  max-height: 70vh;
+  max-height: 60vh;
   overflow-y: auto;
   padding: 10px;
   background: rgba(255, 255, 255, 0.95);
@@ -120,7 +122,7 @@
   display: block !important;
 }
 
-/* Responsive adjustments */
+/* Responsive adjustments for thumbnails */
 @media (max-width: 1200px) {
   .desktop-carousel-thumbnails {
     position: static;
@@ -142,117 +144,265 @@
 @media (max-width: 768px) {
   .desktop-carousel-thumbnails {
     display: none;
-    /* Hide on mobile - they can swipe */
   }
 }
 
-/* Remove old counter styling */
-.desktop-carousel-counter {
-  display: none;
+/* Elegant Arrow Navigation - Fixed Counter Position */
+.elegant-navigation {
+  position: absolute;
+  bottom: -70px;
+  /* Positioned below the image */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 50px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  /* Space between counter and arrows */
 }
 
-/* New fixed counter - positioned outside image area */
-.desktop-carousel-counter-fixed {
-  position: absolute;
-  bottom: 0px;
-  right: 20px;
+.elegant-counter {
+  text-align: center;
   font-size: 14px;
-  color: #333;
-  letter-spacing: 1px;
+  /* Match project year size */
+  font-family: inherit;
   font-weight: 400;
-  z-index: 10;
+  /* Match project typography weight */
+  letter-spacing: 1px;
+  /* Match project year letter-spacing */
+  color: #888;
+  /* Match project year color */
+  text-transform: none;
+  /* Keep numbers as-is */
+  margin: 0;
+  order: 1;
+  /* Counter comes first */
+}
+
+.paginate {
+  position: relative;
+  /* Changed from absolute */
+  margin: 0 8px;
+  /* Horizontal spacing between arrows */
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  transform: translate3d(0, 0, 0);
+  filter: drop-shadow(0 0.5px 0px rgba(0, 0, 0, 0.08));
+  background: transparent;
+  border: 0;
+  outline: 0;
+  -webkit-appearance: none;
+  order: 2;
+  /* Arrows come second */
+}
+
+.paginate i {
+  position: absolute;
+  top: 45%;
+  left: 0;
+  width: 20px;
+  height: 2px;
+  border-radius: 1px;
+  background: #555;
+  transition: all 0.12s ease;
+}
+
+.paginate.left i {
+  transform-origin: 0% 50%;
+}
+
+.paginate.left i:first-child {
+  transform: translate(0, -0.3px) rotate(30deg);
+}
+
+.paginate.left i:last-child {
+  transform: translate(0, 0.3px) rotate(-30deg);
+}
+
+.paginate.left:hover i:first-child {
+  transform: translate(0, -0.3px) rotate(22deg);
+}
+
+.paginate.left:hover i:last-child {
+  transform: translate(0, 0.3px) rotate(-22deg);
+}
+
+.paginate.left:active i:first-child {
+  transform: translate(0.3px, -0.3px) rotate(18deg);
+}
+
+.paginate.left:active i:last-child {
+  transform: translate(0.3px, 0.3px) rotate(-18deg);
+}
+
+.paginate.right i {
+  transform-origin: 100% 50%;
+}
+
+.paginate.right i:first-child {
+  transform: translate(0, 0.3px) rotate(30deg);
+}
+
+.paginate.right i:last-child {
+  transform: translate(0, -0.3px) rotate(-30deg);
+}
+
+.paginate.right:hover i:first-child {
+  transform: translate(0, 0.3px) rotate(22deg);
+}
+
+.paginate.right:hover i:last-child {
+  transform: translate(0, -0.3px) rotate(-22deg);
+}
+
+.paginate.right:active i:first-child {
+  transform: translate(0.3px, 0.3px) rotate(18deg);
+}
+
+.paginate.right:active i:last-child {
+  transform: translate(0.3px, -0.3px) rotate(-18deg);
+}
+
+.paginate[data-state='disabled'] {
+  opacity: 0.25;
+  cursor: default;
+}
+
+.paginate[data-state='disabled'].left i:first-child {
+  transform: translate(-2px, 0) rotate(0deg);
+}
+
+.paginate[data-state='disabled'].left i:last-child {
+  transform: translate(-2px, 0) rotate(0deg);
+}
+
+.paginate[data-state='disabled'].right i:first-child {
+  transform: translate(2px, 0) rotate(0deg);
+}
+
+.paginate[data-state='disabled'].right i:last-child {
+  transform: translate(2px, 0) rotate(0deg);
+}
+
+/* Arrow container */
+.elegant-navigation .paginate-container {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  order: 2;
+}
+
+/* Hide old navigation elements */
+.desktop-carousel-counter-fixed {
+  display: none !important;
 }
 
 .desktop-carousel-preload {
   display: none;
 }
 
+/* Nordic/Scandinavian Typography */
 .desktop-project-details {
   width: 100%;
-  max-width: 800px;
-  margin-top: 40px;
+  max-width: 600px;
+  margin-top: 60px;
 }
 
 .desktop-project-header {
-  text-align: center;
-  margin-bottom: 24px;
+  text-align: left;
+  margin-bottom: 48px;
 }
 
 .desktop-project-title {
-  font-size: 32px;
-  font-weight: 300;
-  margin: 0 0 8px 0;
-  color: #333;
-  letter-spacing: -0.5px;
+  font-size: 28px;
+  font-weight: 400;
+  margin: 0 0 12px 0;
+  color: #222;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  line-height: 1.2;
 }
 
 .desktop-project-year {
-  font-size: 16px;
-  color: #666;
-  margin: 0 0 20px 0;
+  font-size: 14px;
+  color: #888;
+  margin: 0 0 24px 0;
+  font-weight: 400;
+  letter-spacing: 1px;
 }
 
 .desktop-project-section {
-  margin-bottom: 32px;
-  text-align: center;
+  margin-bottom: 48px;
+  text-align: left;
 }
 
 .desktop-section-title {
-  font-size: 20px;
-  font-weight: 400;
-  margin: 0 0 20px 0;
+  font-size: 16px;
+  font-weight: 500;
+  margin: 0 0 24px 0;
   color: #333;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
 }
 
 .desktop-project-description {
   font-size: 16px;
-  color: #333;
-  line-height: 1.6;
-  margin: 0 0 24px 0;
+  color: #444;
+  line-height: 1.7;
+  margin: 0 0 32px 0;
+  max-width: 500px;
 }
 
 .desktop-project-info {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 24px;
-  margin-top: 24px;
+  grid-template-columns: 1fr;
+  gap: 32px;
+  margin-top: 32px;
 }
 
 .desktop-info-item {
-  text-align: center;
+  text-align: left;
+  border-left: 2px solid #f0f0f0;
+  padding-left: 16px;
 }
 
 .desktop-info-item h3 {
-  font-size: 12px;
+  font-size: 11px;
   color: #999;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 2px;
   margin: 0 0 8px 0;
   font-weight: 500;
 }
 
 .desktop-info-item p {
-  font-size: 14px;
+  font-size: 15px;
   margin: 0;
-  color: #333;
-  line-height: 1.4;
+  color: #555;
+  line-height: 1.5;
+  font-weight: 400;
 }
 
 .desktop-info-list {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 24px;
+  grid-template-columns: 1fr;
+  gap: 32px;
 }
 
 .desktop-care-instructions {
   font-size: 14px;
   line-height: 1.6;
-  color: #555;
-  background: #f9f9f9;
-  padding: 24px;
-  border-radius: 12px;
-  border: 1px solid #e5e5e5;
+  color: #666;
+  background: #fafafa;
+  padding: 32px;
+  border-radius: 0;
+  border: none;
+  border-left: 3px solid #e0e0e0;
   text-align: left;
+  font-weight: 400;
 }
 
 /* Instructions for navigation */
@@ -414,16 +564,12 @@
     padding: 0 20px;
   }
 
-  .desktop-project-info {
-    grid-template-columns: 1fr;
-    gap: 20px;
+  .desktop-project-details {
+    max-width: 100%;
   }
 
-  .desktop-carousel-counter-fixed {
-    bottom: 15px;
-    right: 15px;
-    font-size: 12px;
-    padding: 6px 10px;
+  .desktop-project-title {
+    font-size: 24px;
   }
 
   .desktop-nav-primary-buttons {
@@ -437,18 +583,35 @@
   .desktop-nav-next {
     min-width: 140px;
   }
+
+  .elegant-navigation {
+    bottom: -60px;
+    width: 100px;
+    height: 45px;
+  }
+
+  .paginate {
+    width: 20px;
+    height: 20px;
+  }
+
+  .paginate i {
+    width: 16px;
+    height: 1.5px;
+  }
+
+  .elegant-counter {
+    font-size: 13px;
+  }
+
+  .desktop-carousel-container {
+    margin-bottom: 90px;
+  }
 }
 
 @media (max-width: 768px) {
   .desktop-carousel-instructions {
     display: none;
-  }
-
-  .desktop-carousel-counter-fixed {
-    bottom: 10px;
-    right: 10px;
-    font-size: 11px;
-    padding: 4px 8px;
   }
 
   .desktop-project-navigation {
@@ -490,5 +653,28 @@
   .desktop-nav-next-primary {
     width: 100%;
     min-width: auto;
+  }
+
+  .desktop-project-header {
+    margin-bottom: 32px;
+  }
+
+  .desktop-project-title {
+    font-size: 22px;
+    letter-spacing: 0.3px;
+  }
+
+  .desktop-section-title {
+    font-size: 14px;
+    letter-spacing: 1px;
+  }
+
+  .elegant-navigation {
+    display: none;
+    /* Hide elegant navigation on mobile */
+  }
+
+  .desktop-carousel-container {
+    margin-bottom: 40px;
   }
 }

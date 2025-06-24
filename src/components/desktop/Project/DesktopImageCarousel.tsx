@@ -4,7 +4,6 @@ import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { useKeyboardNavigation } from '@/hooks/desktop/useKeyboardNavigation'
-import { NavigationArrows } from '@/components/ui/NavigationArrows'
 import { getOptimizedImageUrl } from '@/sanity/imageHelpers'
 import { LockdownImage } from '@/components/ui/LockdownImage'
 import { UmamiEvents } from '@/utils/analytics'
@@ -325,18 +324,6 @@ export function DesktopImageCarousel({
     <>
       {/* Main Image Container */}
       <div className="desktop-carousel-container" ref={carouselRef}>
-        {/* Navigation Arrows - Hide in lockdown mode for simplicity */}
-        {allImages.length > 1 && !useLockdownMode && (
-          <NavigationArrows
-            canScrollLeft={currentIndex > 0}
-            canScrollRight={currentIndex < allImages.length - 1}
-            onScrollLeft={goToPrevious}
-            onScrollRight={goToNext}
-            showOnMobile={false}
-            position="absolute"
-          />
-        )}
-
         {/* Thumbnail Strip - Gallery Images Only */}
         {allImages.length > 1 && !useLockdownMode && (
           <div className="desktop-carousel-thumbnails">
@@ -380,8 +367,8 @@ export function DesktopImageCarousel({
                 }
                 className="desktop-project-img"
                 style={{
-                  height: '70vh',
-                  maxHeight: '700px',
+                  height: '60vh',
+                  maxHeight: '600px',
                   minHeight: '300px',
                   width: 'auto',
                   objectFit: 'contain',
@@ -414,12 +401,36 @@ export function DesktopImageCarousel({
               )
             )}
           </div>
-        </div>
 
-        {/* Image Counter */}
-        {allImages.length > 1 && (
-          <div className="desktop-carousel-counter-fixed">{formatCounter}</div>
-        )}
+          {/* Elegant Arrow Navigation */}
+          {allImages.length > 1 && !useLockdownMode && (
+            <div className="elegant-navigation">
+              <div className="elegant-counter">{formatCounter}</div>
+              <div className="paginate-container">
+                <button
+                  className="paginate left"
+                  data-state={currentIndex === 0 ? 'disabled' : ''}
+                  onClick={goToPrevious}
+                  disabled={currentIndex === 0}
+                >
+                  <i></i>
+                  <i></i>
+                </button>
+                <button
+                  className="paginate right"
+                  data-state={
+                    currentIndex === allImages.length - 1 ? 'disabled' : ''
+                  }
+                  onClick={goToNext}
+                  disabled={currentIndex === allImages.length - 1}
+                >
+                  <i></i>
+                  <i></i>
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Simple navigation for lockdown mode */}
         {useLockdownMode && allImages.length > 1 && (
