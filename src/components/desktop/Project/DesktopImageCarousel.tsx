@@ -51,7 +51,6 @@ const isIOSLockdownMode = () => {
 
 export function DesktopImageCarousel({
   images = [],
-  mainImage,
   projectTitle,
   currentIndex: externalCurrentIndex,
   onIndexChange,
@@ -79,21 +78,11 @@ export function DesktopImageCarousel({
   const currentIndex = externalCurrentIndex ?? internalCurrentIndex
   const setCurrentIndex = onIndexChange ?? setInternalCurrentIndex
 
-  // Create array of all images for carousel
+  // Create array of gallery images only (exclude main image)
   const allImages = useMemo((): ExtendedGalleryImage[] => {
     const imageArray: ExtendedGalleryImage[] = []
 
-    // Add main image first
-    if (mainImage) {
-      imageArray.push({
-        _key: 'main-image',
-        asset: mainImage,
-        caption: projectTitle,
-        isMainImage: true,
-      })
-    }
-
-    // Add gallery images
+    // Only add gallery images (skip main image completely)
     if (images && images.length > 0) {
       imageArray.push(
         ...images.map((img) => ({
@@ -104,9 +93,9 @@ export function DesktopImageCarousel({
     }
 
     return imageArray
-  }, [images, mainImage, projectTitle])
+  }, [images])
 
-  const currentImage = allImages[currentIndex]
+  const currentImage = allImages[currentIndex] || (images && images[0])
 
   // Format counter based on total count
   const formatCounter = useMemo(() => {
@@ -311,13 +300,26 @@ export function DesktopImageCarousel({
 
   // Get current image URL
   const currentImageUrl = getOptimizedImageUrl(
-    currentImage?.asset || mainImage,
+    currentImage?.asset || (images && images[0]?.asset),
     {
       height: 800,
       quality: 90,
       format: 'auto', // Use auto format for lockdown detection
     }
   )
+
+  // Don't render if no gallery images
+  if (!images || images.length === 0) {
+    return (
+      <div className="desktop-carousel-container">
+        <div className="desktop-carousel-main">
+          <div className="desktop-carousel-image">
+            <p>No gallery images available</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <>
@@ -335,14 +337,47 @@ export function DesktopImageCarousel({
           />
         )}
 
+        {/* Thumbnail Strip - Gallery Images Only */}
+        {allImages.length > 1 && !useLockdownMode && (
+          <div className="desktop-carousel-thumbnails">
+            {allImages.map((image, index) => (
+              <div
+                key={image._key}
+                className={`desktop-thumbnail ${index === currentIndex ? 'active' : ''}`}
+                onClick={() => {
+                  setCurrentIndex(index)
+                  UmamiEvents.projectImageView(projectTitle, index + 1)
+                }}
+              >
+                <Image
+                  src={getOptimizedImageUrl(image.asset, {
+                    width: 120,
+                    height: 120,
+                    quality: 75,
+                    format: 'auto',
+                    fit: 'crop',
+                  })}
+                  alt={`Gallery image ${index + 1}`}
+                  width={60}
+                  height={60}
+                  className="desktop-thumbnail-img"
+                  loading="lazy"
+                />
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Image Display */}
         <div className="desktop-carousel-main">
           <div className="desktop-carousel-image">
             {useLockdownMode ? (
               // Lockdown mode - use simple image for iPads
               <LockdownImage
-                src={currentImage?.asset || mainImage}
-                alt={currentImage?.caption || projectTitle}
+                src={currentImage?.asset || (images && images[0]?.asset)}
+                alt={
+                  currentImage?.caption || `Gallery image ${currentIndex + 1}`
+                }
                 className="desktop-project-img"
                 style={{
                   height: '70vh',
@@ -357,7 +392,9 @@ export function DesktopImageCarousel({
               currentImageUrl && (
                 <Image
                   src={currentImageUrl}
-                  alt={currentImage?.caption || projectTitle}
+                  alt={
+                    currentImage?.caption || `Gallery image ${currentIndex + 1}`
+                  }
                   width={800}
                   height={600}
                   className="desktop-project-img"
