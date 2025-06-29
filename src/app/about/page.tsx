@@ -21,28 +21,35 @@ export default function AboutPage() {
 
             <div className="nordic-content">
               <p className="nordic-body-large nordic-spacing-md">
-                My work explores the intersection between traditional textile
-                craftsmanship and contemporary sustainable practices. Each piece
-                is a meditation on the relationship between material, process,
-                and time — honoring the slow, deliberate nature of hand-weaving
-                while addressing urgent questions about our environmental
-                future.
+                My work springs from a fascination of color combinations - how
+                colors react, transform, and create new meanings when they meet
+                in unexpected contexts. This cornerstone drives my work into the
+                tension field between textiles&apos traditional associations and
+                the contrasts I create through my material choices.
               </p>
 
               <p className="nordic-body-large nordic-spacing-md">
-                Through the rhythmic process of weaving, I create works that
-                speak to both intimacy and universality. The tactile quality of
-                natural fibers, the precise geometry of pattern, and the subtle
-                interplay of color and texture form a visual language that
-                transcends cultural boundaries while remaining deeply rooted in
-                material authenticity.
+                Through meticulous precision, I explore how this approach can
+                create an aesthetic that challenges our preconceived notions of
+                what textiles can be. My practice is built on methodical
+                repetition, where I work through series of color compositions -
+                I investigate how specific color combinations behave through
+                different techniques, or how a single technique can reveal
+                hidden potentials when applied across different color palettes.
               </p>
 
-              <p className="nordic-body-large">
-                Each textile is conceived as both functional object and
-                contemplative space — inviting viewers to slow down, to feel,
-                and to consider our collective relationship with the materials
-                that surround us in daily life.
+              <p className="nordic-body-large nordic-spacing-md">
+                This color-based focus drives my process, regardless of whether
+                the final expression becomes interior, sculpture, body-related
+                work, or pure research. Research and intuition meet in equal
+                measure, where each combination is examined with both analytical
+                rigor and sensory openness.
+              </p>
+
+              <p className="nordic-body-large nordic-spacing-md">
+                Through this exploration of color interplay, I create space for
+                reflection, where each work becomes a step in a larger
+                investigation of textiles&apos unexplored potentials.
               </p>
             </div>
           </section>
