@@ -11,68 +11,25 @@ export default function ContactPage() {
       <KeyboardScrollHandler />
 
       <div
-        style={{
-          background: '#ffffff',
-          width: '100%',
-          overflowX: 'hidden',
-          minHeight: '100vh', // Changed from height to minHeight
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-        }}
+        className="nordic-container"
+        style={{ minHeight: '100vh', paddingTop: '100px' }}
       >
-        <div style={{ height: '100px' }} />
+        <ErrorBoundary>
+          {/* Header Section */}
+          <section className="nordic-section" style={{ textAlign: 'center' }}>
+            <h1 className="nordic-display nordic-spacing-md">Contact</h1>
 
-        <div
-          style={{
-            width: '100%',
-            maxWidth: '800px',
-            padding: '60px clamp(16px, 4vw, 40px)',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-          }}
-        >
-          <ErrorBoundary>
-            <div
-              style={{
-                textAlign: 'center',
-                marginBottom: '48px',
-                width: '100%',
-                maxWidth: '600px',
-              }}
-            >
-              <h1
-                className="text-display-mobile text-crisp"
-                style={{
-                  margin: '0 0 24px 0',
-                  color: '#333',
-                  letterSpacing: '-1px',
-                }}
-              >
-                Contact
-              </h1>
-
-              <p
-                className="text-body-large"
-                style={{
-                  color: '#666',
-                  lineHeight: '1.6',
-                }}
-              >
+            <div className="nordic-content">
+              <p className="nordic-body-large">
                 Interested in collaborating or learning more about my work?
-                I&apos;d love to hear from you.
+                I&aposd love to hear from you.
               </p>
             </div>
+          </section>
 
-            {/* Contact Form - Centered */}
-            <div
-              style={{
-                width: '100%',
-                maxWidth: '600px',
-                marginBottom: '48px',
-              }}
-            >
+          {/* Contact Form Section */}
+          <section className="nordic-section">
+            <div className="nordic-content">
               <ContactForm
                 onSuccess={() => console.log('Form submitted successfully!')}
                 onError={(error) =>
@@ -80,147 +37,89 @@ export default function ContactPage() {
                 }
               />
             </div>
+          </section>
 
-            {/* Additional Contact Information */}
-            <div
-              style={{
-                padding: 'clamp(20px, 5vw, 40px)',
-                background: '#fff',
-                borderRadius: '12px',
-                boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
-                width: '100%',
-                maxWidth: '600px',
-                marginBottom: '48px',
-              }}
-            >
-              <h2
-                className="text-h2-mobile text-crisp"
-                style={{
-                  margin: '0 0 24px 0',
-                  color: '#333',
-                  textAlign: 'center',
-                }}
-              >
-                Other Ways to Connect
-              </h2>
-
+          {/* Contact Information */}
+          <section className="nordic-section">
+            <div className="nordic-content">
               <div
                 style={{
-                  display: 'grid',
-                  gridTemplateColumns: '1fr',
-                  gap: '24px',
+                  padding: 'var(--spacing-2xl)',
+                  background: '#fff',
+                  borderRadius: 'var(--border-radius)',
+                  boxShadow: 'var(--shadow-sm)',
                   textAlign: 'center',
                 }}
               >
-                <div>
-                  <h3
-                    className="text-caption-mobile"
-                    style={{
-                      fontWeight: 500,
-                      margin: '0 0 8px 0',
-                      color: '#333',
-                      textTransform: 'uppercase',
-                      letterSpacing: '1px',
-                    }}
-                  >
-                    Studio Location
-                  </h3>
-                  <p
-                    className="text-body-mobile"
-                    style={{ color: '#666', margin: 0 }}
-                  >
-                    Stockholm, Sweden
-                  </p>
-                </div>
+                <h2 className="nordic-h3 nordic-spacing-md">
+                  Other Ways to Connect
+                </h2>
 
-                <div>
-                  <h3
-                    className="text-caption-mobile"
-                    style={{
-                      fontWeight: 500,
-                      margin: '0 0 8px 0',
-                      color: '#333',
-                      textTransform: 'uppercase',
-                      letterSpacing: '1px',
-                    }}
-                  >
-                    Response Time
-                  </h3>
-                  <p
-                    className="text-body-mobile"
-                    style={{ color: '#666', margin: 0 }}
-                  >
-                    Usually within 48 hours
-                  </p>
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr',
+                    gap: 'var(--spacing-lg)',
+                  }}
+                >
+                  <div>
+                    <h3 className="nordic-label nordic-spacing-sm">
+                      Studio Location
+                    </h3>
+                    <p className="nordic-body">Stockholm, Sweden</p>
+                  </div>
+
+                  <div>
+                    <h3 className="nordic-label nordic-spacing-sm">
+                      Response Time
+                    </h3>
+                    <p className="nordic-body">Usually within 48 hours</p>
+                  </div>
                 </div>
               </div>
             </div>
+          </section>
 
-            {/* Add some extra content for better desktop scrolling */}
-            <div
-              style={{
-                padding: 'clamp(20px, 5vw, 40px)',
-                background: '#fff',
-                borderRadius: '12px',
-                boxShadow: '0 4px 16px rgba(0,0,0,0.05)',
-                width: '100%',
-                maxWidth: '600px',
-                marginBottom: '48px',
-                textAlign: 'center',
-              }}
-            >
-              <h3
-                className="text-h2-mobile text-crisp"
+          {/* Collaboration Section */}
+          <section className="nordic-section">
+            <div className="nordic-content">
+              <div
                 style={{
-                  margin: '0 0 16px 0',
-                  color: '#333',
+                  padding: 'var(--spacing-2xl)',
+                  background: '#fff',
+                  borderRadius: 'var(--border-radius)',
+                  boxShadow: 'var(--shadow-sm)',
+                  textAlign: 'center',
                 }}
               >
-                Let&apos;s Create Together
-              </h3>
+                <h3 className="nordic-h3 nordic-spacing-md">
+                  Let&aposs Create Together
+                </h3>
 
-              <p
-                className="text-body-mobile"
-                style={{
-                  color: '#666',
-                  lineHeight: '1.6',
-                  marginBottom: '16px',
-                }}
-              >
-                Whether you&apos;re interested in commissioning a piece,
-                collaborating on a project, or simply learning more about
-                sustainable textile practices, I&apos;m here to help.
-              </p>
+                <p className="nordic-body nordic-spacing-sm">
+                  Whether you&aposre interested in commissioning a piece,
+                  collaborating on a project, or simply learning more about
+                  sustainable textile practices, I&aposm here to help.
+                </p>
 
-              <p
-                className="text-body-mobile"
-                style={{
-                  color: '#666',
-                  lineHeight: '1.6',
-                }}
-              >
-                Each inquiry is unique, and I take time to understand your
-                vision and needs. Together, we can create something meaningful
-                and lasting.
-              </p>
+                <p className="nordic-body">
+                  Each inquiry is unique, and I take time to understand your
+                  vision and needs. Together, we can create something meaningful
+                  and lasting.
+                </p>
+              </div>
             </div>
+          </section>
 
-            {/* Back Link - Centered */}
-            <div
-              style={{
-                textAlign: 'center',
-                paddingBottom: '60px', // Extra padding for better spacing
-              }}
-            >
-              <Link
-                href="/"
-                className="btn-mobile btn-mobile-secondary touch-feedback"
-              >
-                ← Back to Gallery
-              </Link>
-            </div>
-          </ErrorBoundary>
-        </div>
+          {/* Back Link */}
+          <section
+            style={{ textAlign: 'center', paddingBottom: 'var(--spacing-3xl)' }}
+          >
+            <Link href="/" className="nordic-btn nordic-btn-secondary">
+              ← Back to Gallery
+            </Link>
+          </section>
+        </ErrorBoundary>
       </div>
     </>
   )

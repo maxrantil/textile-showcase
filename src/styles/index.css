@@ -8,6 +8,10 @@
 @import './base/reset.css';
 @import './base/typography.css';
 
+/* Nordic system utilities */
+@import './utilities/nordic-layout.css';
+@import './utilities/nordic-buttons.css';
+
 /* Utility classes - reusable functional styles */
 @import './utilities/layout.css';
 @import './utilities/spacing.css';

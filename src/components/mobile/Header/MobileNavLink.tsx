@@ -1,6 +1,5 @@
 // src/components/mobile/Header/MobileNavLink.tsx
 'use client'
-
 import Link from 'next/link'
 
 interface MobileNavLinkProps {
@@ -19,7 +18,7 @@ export function MobileNavLink({
   return (
     <Link
       href={href}
-      className={`mobile-nav-link ${isActive ? 'active' : ''}`}
+      className={`mobile-nav-link nordic-h3 ${isActive ? 'active' : ''}`}
       onClick={onClick}
     >
       {children}

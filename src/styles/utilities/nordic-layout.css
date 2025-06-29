@@ -1,0 +1,237 @@
+/* src/styles/utilities/nordic-layout.css */
+
+/* ==========================================================================
+   Nordic Layout System
+   Based on desktop project page layout patterns
+   ========================================================================== */
+
+/* Main Containers */
+.nordic-container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 clamp(16px, 4vw, 40px);
+  box-sizing: border-box;
+}
+
+.nordic-content {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.nordic-content-narrow {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.nordic-content-wide {
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+/* Section Spacing */
+.nordic-section {
+  margin-bottom: var(--spacing-4xl);
+}
+
+.nordic-section-sm {
+  margin-bottom: var(--spacing-2xl);
+}
+
+.nordic-section-lg {
+  margin-bottom: 100px;
+}
+
+/* Vertical Spacing Classes */
+.nordic-spacing-xs {
+  margin-bottom: var(--spacing-xs);
+}
+
+.nordic-spacing-sm {
+  margin-bottom: var(--spacing-sm);
+}
+
+.nordic-spacing-md {
+  margin-bottom: var(--spacing-md);
+}
+
+.nordic-spacing-lg {
+  margin-bottom: var(--spacing-lg);
+}
+
+.nordic-spacing-xl {
+  margin-bottom: var(--spacing-xl);
+}
+
+.nordic-spacing-2xl {
+  margin-bottom: var(--spacing-2xl);
+}
+
+.nordic-spacing-3xl {
+  margin-bottom: var(--spacing-3xl);
+}
+
+.nordic-spacing-4xl {
+  margin-bottom: var(--spacing-4xl);
+}
+
+/* Top spacing variants */
+.nordic-spacing-top-xs {
+  margin-top: var(--spacing-xs);
+}
+
+.nordic-spacing-top-sm {
+  margin-top: var(--spacing-sm);
+}
+
+.nordic-spacing-top-md {
+  margin-top: var(--spacing-md);
+}
+
+.nordic-spacing-top-lg {
+  margin-top: var(--spacing-lg);
+}
+
+.nordic-spacing-top-xl {
+  margin-top: var(--spacing-xl);
+}
+
+.nordic-spacing-top-2xl {
+  margin-top: var(--spacing-2xl);
+}
+
+.nordic-spacing-top-3xl {
+  margin-top: var(--spacing-3xl);
+}
+
+.nordic-spacing-top-4xl {
+  margin-top: var(--spacing-4xl);
+}
+
+/* Grid Layouts */
+.nordic-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-lg);
+  width: 100%;
+}
+
+.nordic-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-lg);
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .nordic-grid-2 {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.nordic-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-lg);
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .nordic-grid-3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .nordic-grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Flex Layouts */
+.nordic-flex {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  width: 100%;
+}
+
+.nordic-flex-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .nordic-flex-row {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+}
+
+/* Text Alignment */
+.nordic-text-left {
+  text-align: left;
+}
+
+.nordic-text-center {
+  text-align: center;
+}
+
+.nordic-text-right {
+  text-align: right;
+}
+
+/* Card/Panel Styles */
+.nordic-card {
+  padding: var(--spacing-2xl);
+  background: #ffffff;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-normal);
+}
+
+.nordic-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.nordic-card-minimal {
+  padding: var(--spacing-xl);
+  background: #fafafa;
+  border-left: 3px solid #e0e0e0;
+}
+
+/* Page Headers */
+.nordic-page-header {
+  padding: 100px 0 var(--spacing-3xl) 0;
+  text-align: center;
+}
+
+.nordic-page-header-left {
+  padding: 100px 0 var(--spacing-3xl) 0;
+  text-align: left;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .nordic-container {
+    padding: 0 var(--spacing-md);
+  }
+
+  .nordic-page-header,
+  .nordic-page-header-left {
+    padding: 60px 0 var(--spacing-2xl) 0;
+  }
+
+  .nordic-section {
+    margin-bottom: var(--spacing-2xl);
+  }
+
+  .nordic-section-lg {
+    margin-bottom: var(--spacing-3xl);
+  }
+}

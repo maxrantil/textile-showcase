@@ -77,27 +77,11 @@ function GalleryWithErrorBoundary({ designs }: { designs: TextileDesign[] }) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: '#fafafa',
         }}
       >
-        <div className="container-mobile" style={{ textAlign: 'center' }}>
-          <h2
-            className="text-h2-mobile text-crisp"
-            style={{
-              margin: '0 0 16px 0',
-              color: '#333',
-            }}
-          >
-            No designs available
-          </h2>
-          <p
-            className="text-body-mobile"
-            style={{
-              color: '#666',
-            }}
-          >
-            Please check back later for new work.
-          </p>
+        <div className="nordic-container" style={{ textAlign: 'center' }}>
+          <h2 className="nordic-h2 nordic-spacing-sm">No designs available</h2>
+          <p className="nordic-body">Please check back later for new work.</p>
         </div>
       </div>
     )

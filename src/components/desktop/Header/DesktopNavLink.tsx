@@ -1,6 +1,5 @@
 // src/components/desktop/Header/DesktopNavLink.tsx
 'use client'
-
 import Link from 'next/link'
 import { UmamiEvents } from '@/utils/analytics'
 
@@ -32,7 +31,7 @@ export function DesktopNavLink({
   return (
     <Link
       href={href}
-      className={`desktop-nav-link ${isActive ? 'active' : ''}`}
+      className={`desktop-nav-link nordic-caption ${isActive ? 'active' : ''}`}
       onClick={handleClick}
     >
       {children}
