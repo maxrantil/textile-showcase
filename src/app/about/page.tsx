@@ -86,19 +86,26 @@ export default function AboutPage() {
               <h3 className="nordic-section-title nordic-spacing-md">
                 Recent Recognition
               </h3>
-
               <div className="nordic-spacing-sm">
                 <p className="nordic-caption">
-                  2025 — Sustainable Design Award, Stockholm Design Week
+                  3daysofdesign, Group Exhibition, Copenhagen, Denmark 2025
                 </p>
                 <p className="nordic-caption">
-                  2023 — Featured in Textile Arts International
+                  MA Graduation Exhibition, Exit, Textilmuseet, Borås, Sweden
+                  2025
                 </p>
                 <p className="nordic-caption">
-                  2022 — Solo exhibition, Craft Contemporary, London
+                  Paul Frankenius Stiftelse Grant, 2025
                 </p>
                 <p className="nordic-caption">
-                  2021 — Nordic Craft Prize finalist
+                  Work in Progress Exhibition, Textilmuseet, Borås, Sweden 2024
+                </p>
+                <p className="nordic-caption">
+                  BA Graduation Exhibition, FABRIKKEN for Kunst og Design,
+                  Copenhagen, Denmark 2023
+                </p>
+                <p className="nordic-caption">
+                  Tage Vanggaard og Hustrus Fond Grant, 2023
                 </p>
               </div>
             </div>
