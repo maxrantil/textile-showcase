@@ -111,7 +111,9 @@ export function DesktopContactForm({
       <div className="desktop-form-submit">
         <DesktopButton
           type="submit"
-          variant="primary"
+          variant="secondary"
+          size="small"
+          loading={isSubmitting}
           disabled={isSubmitting || !validator.isFormValid()}
         >
           Send Message

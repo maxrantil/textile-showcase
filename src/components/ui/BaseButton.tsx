@@ -6,7 +6,7 @@ import { LoadingSpinner } from './LoadingSpinner'
 
 export interface BaseButtonProps
   extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost'
+  variant?: 'primary' | 'secondary' | 'ghost' | 'submit'
   size?: 'small' | 'medium' | 'large'
   loading?: boolean
   fullWidth?: boolean
@@ -16,7 +16,7 @@ export interface BaseButtonProps
 export const BaseButton = forwardRef<HTMLButtonElement, BaseButtonProps>(
   function BaseButton(
     {
-      variant = 'primary',
+      variant = 'secondary',
       size = 'medium',
       loading = false,
       fullWidth = false,
@@ -24,87 +24,72 @@ export const BaseButton = forwardRef<HTMLButtonElement, BaseButtonProps>(
       children,
       className = '',
       style,
-      onMouseEnter,
-      onMouseLeave,
-      onFocus,
-      onBlur,
+      type = 'button',
       ...props
     },
     ref
   ) {
-    // Get base mobile button classes (matching your old implementation)
-    const baseClasses = `btn-mobile touch-feedback ${className}`
+    // Build Nordic classes
+    const baseClasses = 'nordic-btn'
 
-    // Get variant classes (matching your old implementation)
-    const variantClasses = (() => {
+    const variantClass = (() => {
       switch (variant) {
         case 'primary':
-          return 'btn-mobile-primary'
-        case 'secondary':
-          return 'btn-mobile-secondary'
-        case 'outline':
-          return 'btn-mobile-secondary' // Your test expects this
+          return 'nordic-btn-primary'
         case 'ghost':
-          return 'btn-mobile-ghost'
+          return 'nordic-btn-ghost'
+        case 'submit':
+          return 'nordic-btn-submit'
         default:
-          return 'btn-mobile-secondary'
+          return 'nordic-btn-secondary'
       }
     })()
 
-    // Size adjustments (matching your old implementation)
-    const sizeStyles: React.CSSProperties = (() => {
+    const sizeClass = (() => {
       switch (size) {
         case 'small':
-          return { padding: '8px 16px', fontSize: '14px' }
+          return 'nordic-btn-sm'
         case 'large':
-          return { padding: '16px 32px', fontSize: '16px' }
+          return 'nordic-btn-lg'
         default:
-          return {}
+          return ''
       }
     })()
 
-    const combinedClasses = `${baseClasses} ${variantClasses}`
+    const loadingClass = loading ? 'nordic-btn-loading' : ''
+
+    const combinedClasses = [
+      baseClasses,
+      variantClass,
+      sizeClass,
+      loadingClass,
+      className,
+    ]
+      .filter(Boolean)
+      .join(' ')
 
     const combinedStyles: React.CSSProperties = {
       width: fullWidth ? '100%' : 'auto',
-      opacity: disabled ? 0.6 : 1,
-      ...sizeStyles,
       ...style,
-    }
-
-    // Mouse event handlers (matching your old implementation)
-    const handleMouseEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
-      if (!disabled && !loading) {
-        onMouseEnter?.(e)
-      }
-    }
-
-    const handleMouseLeave = (e: React.MouseEvent<HTMLButtonElement>) => {
-      onMouseLeave?.(e)
-    }
-
-    const handleFocus = (e: React.FocusEvent<HTMLButtonElement>) => {
-      onFocus?.(e)
-    }
-
-    const handleBlur = (e: React.FocusEvent<HTMLButtonElement>) => {
-      onBlur?.(e)
     }
 
     return (
       <button
         ref={ref}
+        type={type}
         className={combinedClasses}
         style={combinedStyles}
         disabled={disabled || loading}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        onFocus={handleFocus}
-        onBlur={handleBlur}
         {...props}
       >
-        {loading && <LoadingSpinner size="small" />}
-        {loading ? 'Loading...' : children}
+        {loading ? (
+          <>
+            <LoadingSpinner size="small" />
+            <span style={{ marginLeft: '8px' }}>Sending...</span>
+          </>
+        ) : (
+          children
+        )}
       </button>
     )
   }

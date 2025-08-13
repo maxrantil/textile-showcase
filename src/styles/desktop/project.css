@@ -62,7 +62,7 @@
   display: block !important;
 }
 
-/* Thumbnail Strip */
+/* Thumbnail Strip - Nordic Style */
 .desktop-carousel-thumbnails {
   position: absolute;
   left: -120px;
@@ -70,12 +70,13 @@
   transform: translateY(-50%);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   max-height: 60vh;
   overflow-y: auto;
-  padding: 10px;
+  padding: 8px;
   background: rgba(255, 255, 255, 0.95);
-  border-radius: 8px;
+  border-radius: 0;
+  border: none;
   scrollbar-width: thin;
   scrollbar-color: #ccc transparent;
 }
@@ -90,29 +91,27 @@
 
 .desktop-carousel-thumbnails::-webkit-scrollbar-thumb {
   background: #ccc;
-  border-radius: 2px;
+  border-radius: 0;
 }
 
 .desktop-thumbnail {
   position: relative;
   width: 60px;
   height: 60px;
-  border-radius: 4px;
+  border-radius: 0;
   overflow: hidden;
   cursor: pointer;
-  transition: all 0.2s ease;
-  border: 2px solid transparent;
+  transition: border-color 0.2s ease;
+  border: 1px solid transparent;
   background: #f5f5f5;
 }
 
 .desktop-thumbnail:hover {
-  transform: scale(1.05);
-  border-color: #007bff;
+  opacity: 0.8;
 }
 
 .desktop-thumbnail.active {
-  border-color: #333;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  opacity: 0.6;
 }
 
 .desktop-thumbnail-img {
@@ -147,11 +146,10 @@
   }
 }
 
-/* Elegant Arrow Navigation - Fixed Counter Position */
+/* Elegant Arrow Navigation - Nordic Style */
 .elegant-navigation {
   position: absolute;
   bottom: -70px;
-  /* Positioned below the image */
   left: 50%;
   transform: translateX(-50%);
   width: 120px;
@@ -160,54 +158,42 @@
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  /* Space between counter and arrows */
 }
 
 .elegant-counter {
   text-align: center;
-  font-size: 14px;
-  /* Match project year size */
+  font-size: 12px;
   font-family: inherit;
   font-weight: 400;
-  /* Match project typography weight */
   letter-spacing: 1px;
-  /* Match project year letter-spacing */
   color: #888;
-  /* Match project year color */
   text-transform: none;
-  /* Keep numbers as-is */
   margin: 0;
   order: 1;
-  /* Counter comes first */
 }
 
 .paginate {
   position: relative;
-  /* Changed from absolute */
   margin: 0 8px;
-  /* Horizontal spacing between arrows */
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   cursor: pointer;
-  transform: translate3d(0, 0, 0);
-  filter: drop-shadow(0 0.5px 0px rgba(0, 0, 0, 0.08));
   background: transparent;
   border: 0;
   outline: 0;
   -webkit-appearance: none;
   order: 2;
-  /* Arrows come second */
 }
 
 .paginate i {
   position: absolute;
   top: 45%;
   left: 0;
-  width: 20px;
-  height: 2px;
-  border-radius: 1px;
+  width: 16px;
+  height: 1px;
+  border-radius: 0;
   background: #555;
-  transition: all 0.12s ease;
+  transition: all 0.15s ease;
 }
 
 .paginate.left i {
@@ -223,19 +209,11 @@
 }
 
 .paginate.left:hover i:first-child {
-  transform: translate(0, -0.3px) rotate(22deg);
+  transform: translate(0, -0.3px) rotate(25deg);
 }
 
 .paginate.left:hover i:last-child {
-  transform: translate(0, 0.3px) rotate(-22deg);
-}
-
-.paginate.left:active i:first-child {
-  transform: translate(0.3px, -0.3px) rotate(18deg);
-}
-
-.paginate.left:active i:last-child {
-  transform: translate(0.3px, 0.3px) rotate(-18deg);
+  transform: translate(0, 0.3px) rotate(-25deg);
 }
 
 .paginate.right i {
@@ -251,47 +229,39 @@
 }
 
 .paginate.right:hover i:first-child {
-  transform: translate(0, 0.3px) rotate(22deg);
+  transform: translate(0, 0.3px) rotate(25deg);
 }
 
 .paginate.right:hover i:last-child {
-  transform: translate(0, -0.3px) rotate(-22deg);
-}
-
-.paginate.right:active i:first-child {
-  transform: translate(0.3px, 0.3px) rotate(18deg);
-}
-
-.paginate.right:active i:last-child {
-  transform: translate(0.3px, -0.3px) rotate(-18deg);
+  transform: translate(0, -0.3px) rotate(-25deg);
 }
 
 .paginate[data-state='disabled'] {
-  opacity: 0.25;
+  opacity: 0.3;
   cursor: default;
 }
 
 .paginate[data-state='disabled'].left i:first-child {
-  transform: translate(-2px, 0) rotate(0deg);
+  transform: translate(-1px, 0) rotate(0deg);
 }
 
 .paginate[data-state='disabled'].left i:last-child {
-  transform: translate(-2px, 0) rotate(0deg);
+  transform: translate(-1px, 0) rotate(0deg);
 }
 
 .paginate[data-state='disabled'].right i:first-child {
-  transform: translate(2px, 0) rotate(0deg);
+  transform: translate(1px, 0) rotate(0deg);
 }
 
 .paginate[data-state='disabled'].right i:last-child {
-  transform: translate(2px, 0) rotate(0deg);
+  transform: translate(1px, 0) rotate(0deg);
 }
 
 /* Arrow container */
 .elegant-navigation .paginate-container {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
   order: 2;
 }
 
@@ -419,7 +389,7 @@
   opacity: 1;
 }
 
-/* Desktop Project Navigation - Updated */
+/* Desktop Project Navigation - Nordic Style */
 .desktop-project-navigation {
   margin-top: 3rem;
   padding-top: 2rem;
@@ -428,24 +398,13 @@
   max-width: 800px;
 }
 
-.desktop-nav-main {
-  margin-bottom: 1rem;
-}
-
 .desktop-nav-buttons {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
-  gap: 1rem;
+  gap: 1.5rem;
   align-items: center;
   max-width: 800px;
   margin: 0 auto;
-}
-
-.desktop-nav-previous,
-.desktop-nav-next {
-  min-width: 120px;
-  padding: 12px 24px;
-  font-size: 14px;
 }
 
 .desktop-nav-previous {
@@ -454,9 +413,6 @@
 
 .desktop-nav-back {
   justify-self: center;
-  min-width: 160px;
-  padding: 12px 24px;
-  font-size: 14px;
 }
 
 .desktop-nav-next {
@@ -467,6 +423,7 @@
   width: 120px;
 }
 
+/* Project titles below buttons */
 .desktop-nav-titles {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
@@ -499,7 +456,27 @@
   text-overflow: ellipsis;
 }
 
-/* Legacy styles for backward compatibility */
+/* Remove all conflicting button hover effects - let Nordic buttons handle their own styles */
+.desktop-nav-back,
+.desktop-nav-previous,
+.desktop-nav-next,
+.desktop-nav-next-primary,
+.desktop-nav-prev {
+  /* Remove any conflicting styles */
+}
+
+.desktop-nav-back:hover,
+.desktop-nav-previous:hover,
+.desktop-nav-next:hover,
+.desktop-nav-next-primary:hover,
+.desktop-nav-prev:hover {
+  /* Let Nordic button system handle all hover effects */
+  transform: none !important;
+  box-shadow: none !important;
+  transition: none !important;
+}
+
+/* Legacy styles for backward compatibility - cleaned up */
 .desktop-nav-primary {
   margin-bottom: 32px;
 }
@@ -536,28 +513,6 @@
   align-self: center;
 }
 
-.desktop-nav-next-primary {
-  min-width: 160px;
-  padding: 12px 24px;
-  font-size: 14px;
-}
-
-.desktop-nav-prev {
-  padding: 8px 16px;
-  font-size: 14px;
-}
-
-/* Hover effects for desktop navigation */
-.desktop-nav-back:hover,
-.desktop-nav-previous:hover,
-.desktop-nav-next:hover,
-.desktop-nav-next-primary:hover,
-.desktop-nav-prev:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  transition: all 0.3s ease;
-}
-
 /* Responsive adjustments */
 @media (max-width: 1024px) {
   .desktop-project {
@@ -577,11 +532,8 @@
     justify-content: center;
   }
 
-  .desktop-nav-back,
-  .desktop-nav-next-primary,
-  .desktop-nav-previous,
-  .desktop-nav-next {
-    min-width: 140px;
+  .desktop-nav-buttons {
+    gap: 1rem;
   }
 
   .elegant-navigation {
@@ -591,17 +543,17 @@
   }
 
   .paginate {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
   }
 
   .paginate i {
-    width: 16px;
-    height: 1.5px;
+    width: 14px;
+    height: 1px;
   }
 
   .elegant-counter {
-    font-size: 13px;
+    font-size: 11px;
   }
 
   .desktop-carousel-container {
@@ -615,13 +567,13 @@
   }
 
   .desktop-project-navigation {
-    margin-top: 32px;
-    padding-top: 32px;
+    margin-top: 2rem;
+    padding-top: 2rem;
   }
 
   .desktop-nav-buttons {
     grid-template-columns: 1fr;
-    gap: 12px;
+    gap: 1rem;
   }
 
   .desktop-nav-previous,
@@ -629,7 +581,10 @@
   .desktop-nav-next {
     justify-self: stretch;
     width: 100%;
-    min-width: auto;
+  }
+
+  .desktop-nav-spacer {
+    display: none;
   }
 
   .desktop-nav-titles {
@@ -649,12 +604,6 @@
     gap: 12px;
   }
 
-  .desktop-nav-back,
-  .desktop-nav-next-primary {
-    width: 100%;
-    min-width: auto;
-  }
-
   .desktop-project-header {
     margin-bottom: 32px;
   }
@@ -671,7 +620,6 @@
 
   .elegant-navigation {
     display: none;
-    /* Hide elegant navigation on mobile */
   }
 
   .desktop-carousel-container {

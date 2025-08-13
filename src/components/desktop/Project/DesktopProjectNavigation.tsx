@@ -59,6 +59,7 @@ export function DesktopProjectNavigation({
           <DesktopButton
             onClick={handlePreviousProject}
             variant="secondary"
+            size="small"
             className="desktop-nav-previous"
           >
             ← Previous
@@ -71,6 +72,7 @@ export function DesktopProjectNavigation({
         <DesktopButton
           onClick={handleBackToGallery}
           variant="ghost"
+          size="small"
           className="desktop-nav-back"
         >
           Back to Gallery
@@ -81,6 +83,7 @@ export function DesktopProjectNavigation({
           <DesktopButton
             onClick={handleNextProject}
             variant="secondary"
+            size="small"
             className="desktop-nav-next"
           >
             Next →
@@ -88,6 +91,25 @@ export function DesktopProjectNavigation({
         ) : (
           <div className="desktop-nav-spacer" />
         )}
+      </div>
+
+      {/* Optional: Project titles below buttons */}
+      <div className="desktop-nav-titles">
+        <div className="desktop-nav-title-previous">
+          {previousProject && (
+            <span className="desktop-nav-project-title">
+              {previousProject.title}
+            </span>
+          )}
+        </div>
+        <div className="desktop-nav-title-spacer" />
+        <div className="desktop-nav-title-next">
+          {nextProject && (
+            <span className="desktop-nav-project-title">
+              {nextProject.title}
+            </span>
+          )}
+        </div>
       </div>
     </nav>
   )

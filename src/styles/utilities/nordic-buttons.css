@@ -1,40 +1,42 @@
 /* src/styles/utilities/nordic-buttons.css */
 
 /* ==========================================================================
-   Nordic Button System
+   Minimal Nordic Button System
    ========================================================================== */
 
 .nordic-btn {
   display: inline-block;
   padding: 12px 24px;
-  font-size: 14px;
+  font-size: 11px;
   font-weight: 400;
-  letter-spacing: 1px;
+  letter-spacing: 0.8px;
   text-transform: uppercase;
   text-decoration: none;
-  border: 2px solid transparent;
+  border: 1px solid transparent;
   border-radius: 0;
+  /* Sharp edges like your project pages */
   background: transparent;
   color: var(--color-text-secondary);
   cursor: pointer;
-  transition: all var(--transition-normal);
+  transition: all 0.2s ease;
   text-align: center;
   line-height: 1;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-family: inherit;
 }
 
 .nordic-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-color: var(--color-text-secondary);
+  background: rgba(0, 0, 0, 0.02);
 }
 
 .nordic-btn:active {
-  transform: translateY(0);
+  background: rgba(0, 0, 0, 0.04);
 }
 
 .nordic-btn:focus-visible {
-  outline: 2px solid var(--color-text-secondary);
+  outline: 1px solid var(--color-text-secondary);
   outline-offset: 2px;
 }
 
@@ -51,18 +53,18 @@
   color: #ffffff;
 }
 
-/* Secondary Button */
+/* Secondary Button - Clean minimal outline */
 .nordic-btn-secondary {
-  border-color: var(--color-text-secondary);
+  border-color: #ddd;
   color: var(--color-text-secondary);
 }
 
 .nordic-btn-secondary:hover {
-  background: var(--color-text-secondary);
-  color: #ffffff;
+  border-color: var(--color-text-secondary);
+  background: rgba(0, 0, 0, 0.02);
 }
 
-/* Ghost Button */
+/* Ghost Button - Ultra minimal */
 .nordic-btn-ghost {
   color: var(--color-text-light);
   border: none;
@@ -71,21 +73,43 @@
 
 .nordic-btn-ghost:hover {
   color: var(--color-text-secondary);
-  background: rgba(0, 0, 0, 0.05);
-  transform: translateY(-1px);
-  box-shadow: none;
+  background: rgba(0, 0, 0, 0.02);
+}
+
+/* Submit Button - For forms */
+.nordic-btn-submit {
+  background: var(--color-text-secondary);
+  color: #ffffff;
+  border: 1px solid var(--color-text-secondary);
+  padding: 14px 28px;
+  font-size: 10px;
+  letter-spacing: 1px;
+  min-width: 120px;
+}
+
+.nordic-btn-submit:hover {
+  background: var(--color-text-primary);
+  border-color: var(--color-text-primary);
+}
+
+.nordic-btn-submit:disabled {
+  background: #f0f0f0;
+  color: #999;
+  border-color: #ddd;
+  cursor: not-allowed;
 }
 
 /* Size Variants */
 .nordic-btn-sm {
   padding: 8px 16px;
-  font-size: 12px;
+  font-size: 10px;
+  letter-spacing: 0.6px;
 }
 
 .nordic-btn-lg {
   padding: 16px 32px;
-  font-size: 16px;
-  min-width: 160px;
+  font-size: 12px;
+  letter-spacing: 1px;
 }
 
 /* Link styling */
@@ -93,7 +117,8 @@
   color: inherit;
   text-decoration: none;
   border-bottom: 1px solid transparent;
-  transition: border-color var(--transition-fast);
+  transition: border-color 0.2s ease;
+  padding-bottom: 1px;
 }
 
 .nordic-link:hover {
@@ -102,9 +127,53 @@
 
 .nordic-link-subtle {
   color: var(--color-text-light);
-  transition: color var(--transition-fast);
+  transition: color 0.2s ease;
+  font-size: 11px;
+  letter-spacing: 0.3px;
 }
 
 .nordic-link-subtle:hover {
   color: var(--color-text-secondary);
+}
+
+/* Loading state */
+.nordic-btn-loading {
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .nordic-btn {
+    padding: 14px 20px;
+    font-size: 10px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .nordic-btn-submit {
+    padding: 16px 24px;
+    min-width: 100px;
+  }
+}
+
+/* Remove any unwanted effects */
+.nordic-btn,
+.nordic-btn-primary,
+.nordic-btn-secondary,
+.nordic-btn-ghost,
+.nordic-btn-submit {
+  box-shadow: none;
+  transform: none;
+}
+
+.nordic-btn:hover,
+.nordic-btn-primary:hover,
+.nordic-btn-secondary:hover,
+.nordic-btn-ghost:hover,
+.nordic-btn-submit:hover {
+  box-shadow: none;
+  transform: none;
 }

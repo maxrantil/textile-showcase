@@ -57,7 +57,8 @@ export default function ContactPage() {
                   </p>
                   <button
                     onClick={() => setSubmitStatus(null)}
-                    className="nordic-btn nordic-btn-ghost"
+                    className="nordic-btn nordic-btn-secondary nordic-btn-sm"
+                    style={{ marginTop: 'var(--spacing-md)' }}
                   >
                     Send Another Message
                   </button>
