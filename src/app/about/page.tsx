@@ -20,12 +20,13 @@ export default function AboutPage() {
             </h1>
 
             <div className="nordic-content">
+              {}
               <p className="nordic-body-large nordic-spacing-md">
                 My work springs from a fascination of color combinations - how
                 colors react, transform, and create new meanings when they meet
                 in unexpected contexts. This cornerstone drives my work into the
-                tension field between textiles&apos traditional associations and
-                the contrasts I create through my material choices.
+                tension field between textiles&apos; traditional associations
+                and the contrasts I create through my material choices.
               </p>
 
               <p className="nordic-body-large nordic-spacing-md">
@@ -46,16 +47,17 @@ export default function AboutPage() {
                 rigor and sensory openness.
               </p>
 
+              {}
               <p className="nordic-body-large nordic-spacing-md">
                 Through this exploration of color interplay, I create space for
                 reflection, where each work becomes a step in a larger
-                investigation of textiles&apos unexplored potentials.
+                investigation of textiles&apos; unexplored potentials.
               </p>
             </div>
           </section>
 
           {/* Studio Info */}
-          <section className="nordic-section">
+          {/* <section className="nordic-section">
             <div className="nordic-content">
               <h2 className="nordic-h2 nordic-spacing-md">About the Studio</h2>
 
@@ -76,7 +78,7 @@ export default function AboutPage() {
                 private collections across Europe and North America.
               </p>
             </div>
-          </section>
+          </section> */}
 
           {/* Recognition */}
           <section className="nordic-section">
@@ -87,7 +89,7 @@ export default function AboutPage() {
 
               <div className="nordic-spacing-sm">
                 <p className="nordic-caption">
-                  2024 — Sustainable Design Award, Stockholm Design Week
+                  2025 — Sustainable Design Award, Stockholm Design Week
                 </p>
                 <p className="nordic-caption">
                   2023 — Featured in Textile Arts International
