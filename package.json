@@ -14,6 +14,10 @@
     "test:coverage": "jest --coverage",
     "test:ci": "jest --ci --coverage --watchAll=false",
     "test:performance": "jest tests/performance --coverage=false",
+    "test:mobile-hooks": "jest tests/unit/mobile-hooks --coverage",
+    "test:integration": "jest tests/integration --coverage",
+    "test:regression": "node -r ts-node/register tests/scripts/regression-check.ts",
+    "test:phase3": "npm run test:mobile-hooks && npm run test:integration && npm run test:regression",
     "build:analyze": "ANALYZE=true npm run build",
     "build:test": "npm run build && npm run test:performance"
   },
