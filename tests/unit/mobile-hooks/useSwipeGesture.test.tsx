@@ -5,15 +5,7 @@ import {
   useSwipeGesture,
   useHorizontalSwipe,
 } from '@/hooks/mobile/useSwipeGesture'
-
-// Mock TouchEvent for testing environment
-class MockTouchEvent {
-  touches: Array<{ clientX: number; clientY: number }>
-
-  constructor(x: number, y: number) {
-    this.touches = [{ clientX: x, clientY: y }]
-  }
-}
+import { testUtils } from '../../setup/jest.setup'
 
 describe('useSwipeGesture Hook (Phase 3 TDD)', () => {
   beforeEach(() => {
@@ -41,12 +33,12 @@ describe('useSwipeGesture Hook (Phase 3 TDD)', () => {
 
       // Simulate swipe left (start at 200, move to 100)
       act(() => {
-        result.current.onTouchStart(new MockTouchEvent(200, 100) as unknown as TouchEvent)
+        result.current.onTouchStart(testUtils.createMockTouchEvent(200, 100))
       })
 
       // Simulate move to trigger swipe detection
       act(() => {
-        result.current.onTouchMove(new MockTouchEvent(100, 100) as unknown as TouchEvent)
+        result.current.onTouchMove(testUtils.createMockTouchEvent(100, 100))
       })
 
       // Mock time progression
@@ -72,8 +64,7 @@ describe('useSwipeGesture Hook (Phase 3 TDD)', () => {
         })
       )
 
-      const startEvent = new MockTouchEvent(100, 100) as unknown as TouchEvent
-
+      const startEvent = testUtils.createMockTouchEvent(100, 100)
       act(() => {
         result.current.onTouchStart(startEvent)
       })
@@ -83,7 +74,7 @@ describe('useSwipeGesture Hook (Phase 3 TDD)', () => {
 
       // Simulate swipe right by updating internal state
       act(() => {
-        result.current.onTouchMove(new MockTouchEvent(200, 100) as unknown as TouchEvent)
+        result.current.onTouchMove(testUtils.createMockTouchEvent(200, 100))
       })
 
       act(() => {
@@ -106,8 +97,7 @@ describe('useSwipeGesture Hook (Phase 3 TDD)', () => {
         })
       )
 
-      const startEvent = new MockTouchEvent(100, 200) as unknown as TouchEvent
-
+      const startEvent = testUtils.createMockTouchEvent(100, 200)
       act(() => {
         result.current.onTouchStart(startEvent)
       })
@@ -116,7 +106,7 @@ describe('useSwipeGesture Hook (Phase 3 TDD)', () => {
       jest.spyOn(Date, 'now').mockReturnValue(1200)
 
       act(() => {
-        result.current.onTouchMove(new MockTouchEvent(100, 100) as unknown as TouchEvent)
+        result.current.onTouchMove(testUtils.createMockTouchEvent(100, 100))
       })
 
       act(() => {
@@ -139,15 +129,14 @@ describe('useSwipeGesture Hook (Phase 3 TDD)', () => {
         })
       )
 
-      const startEvent = new MockTouchEvent(200, 100) as unknown as TouchEvent
-
+      const startEvent = testUtils.createMockTouchEvent(200, 100)
       act(() => {
         result.current.onTouchStart(startEvent)
       })
 
       // Small movement (only 30px)
       act(() => {
-        result.current.onTouchMove(new MockTouchEvent(170, 100) as unknown as TouchEvent)
+        result.current.onTouchMove(testUtils.createMockTouchEvent(170, 100))
       })
 
       jest.spyOn(Date, 'now').mockReturnValue(1200)
@@ -170,14 +159,13 @@ describe('useSwipeGesture Hook (Phase 3 TDD)', () => {
         })
       )
 
-      const startEvent = new MockTouchEvent(200, 100) as unknown as TouchEvent
-
+      const startEvent = testUtils.createMockTouchEvent(200, 100)
       act(() => {
         result.current.onTouchStart(startEvent)
       })
 
       act(() => {
-        result.current.onTouchMove(new MockTouchEvent(100, 100) as unknown as TouchEvent)
+        result.current.onTouchMove(testUtils.createMockTouchEvent(100, 100))
       })
 
       // Mock time progression beyond limit
@@ -201,14 +189,13 @@ describe('useSwipeGesture Hook (Phase 3 TDD)', () => {
         })
       )
 
-      const startEvent = new MockTouchEvent(200, 100) as unknown as TouchEvent
-
+      const startEvent = testUtils.createMockTouchEvent(200, 100)
       act(() => {
         result.current.onTouchStart(startEvent)
       })
 
       act(() => {
-        result.current.onTouchMove(new MockTouchEvent(100, 100) as unknown as TouchEvent)
+        result.current.onTouchMove(testUtils.createMockTouchEvent(100, 100))
       })
 
       jest.spyOn(Date, 'now').mockReturnValue(1200)
@@ -232,8 +219,7 @@ describe('useSwipeGesture Hook (Phase 3 TDD)', () => {
 
       expect(result.current.isSwiping).toBe(false)
 
-      const startEvent = new MockTouchEvent(100, 100) as unknown as TouchEvent
-
+      const startEvent = testUtils.createMockTouchEvent(100, 100)
       act(() => {
         result.current.onTouchStart(startEvent)
       })
@@ -242,7 +228,7 @@ describe('useSwipeGesture Hook (Phase 3 TDD)', () => {
 
       // Significant movement should trigger swiping state
       act(() => {
-        result.current.onTouchMove(new MockTouchEvent(120, 100) as unknown as TouchEvent)
+        result.current.onTouchMove(testUtils.createMockTouchEvent(120, 100))
       })
 
       expect(result.current.isSwiping).toBe(true)
@@ -261,14 +247,13 @@ describe('useSwipeGesture Hook (Phase 3 TDD)', () => {
         })
       )
 
-      const startEvent = new MockTouchEvent(100, 100) as unknown as TouchEvent
-
+      const startEvent = testUtils.createMockTouchEvent(100, 100)
       act(() => {
         result.current.onTouchStart(startEvent)
       })
 
       act(() => {
-        result.current.onTouchMove(new MockTouchEvent(200, 100) as unknown as TouchEvent)
+        result.current.onTouchMove(testUtils.createMockTouchEvent(200, 100))
       })
 
       expect(result.current.isSwiping).toBe(true)
@@ -295,12 +280,12 @@ describe('useSwipeGesture Hook (Phase 3 TDD)', () => {
 
       // Start touch
       act(() => {
-        result.current.onTouchStart(new MockTouchEvent(50, 200) as unknown as TouchEvent)
+        result.current.onTouchStart(testUtils.createMockTouchEvent(50, 200))
       })
 
       // Move touch significantly
       act(() => {
-        result.current.onTouchMove(new MockTouchEvent(150, 200) as unknown as TouchEvent)
+        result.current.onTouchMove(testUtils.createMockTouchEvent(150, 200))
       })
 
       expect(result.current.isSwiping).toBe(true)
@@ -360,14 +345,13 @@ describe('useHorizontalSwipe Hook (Phase 3 TDD)', () => {
       })
     )
 
-    const startEvent = new MockTouchEvent(200, 100) as unknown as TouchEvent
-
+    const startEvent = testUtils.createMockTouchEvent(200, 100)
     act(() => {
       result.current.onTouchStart(startEvent)
     })
 
     act(() => {
-      result.current.onTouchMove(new MockTouchEvent(90, 100) as unknown as TouchEvent)
+      result.current.onTouchMove(testUtils.createMockTouchEvent(90, 100))
     })
 
     jest.spyOn(Date, 'now').mockReturnValue(1500) // 500ms elapsed (under 600ms limit)
@@ -392,14 +376,13 @@ describe('useHorizontalSwipe Hook (Phase 3 TDD)', () => {
     )
 
     // Diagonal swipe with more horizontal than vertical component
-    const startEvent = new MockTouchEvent(200, 200) as unknown as TouchEvent
-
+    const startEvent = testUtils.createMockTouchEvent(200, 200)
     act(() => {
       result.current.onTouchStart(startEvent)
     })
 
     act(() => {
-      result.current.onTouchMove(new MockTouchEvent(100, 180) as unknown as TouchEvent) // 100px horizontal, 20px vertical
+      result.current.onTouchMove(testUtils.createMockTouchEvent(100, 180)) // 100px horizontal, 20px vertical
     })
 
     jest.spyOn(Date, 'now').mockReturnValue(1200)
@@ -424,8 +407,8 @@ describe('Performance and Edge Cases (Phase 3)', () => {
     // Simulate rapid touch events
     for (let i = 0; i < 100; i++) {
       act(() => {
-        result.current.onTouchStart(new MockTouchEvent(i, 100) as unknown as TouchEvent)
-        result.current.onTouchMove(new MockTouchEvent(i + 10, 100) as unknown as TouchEvent)
+        result.current.onTouchStart(testUtils.createMockTouchEvent(i, 100))
+        result.current.onTouchMove(testUtils.createMockTouchEvent(i + 10, 100))
         result.current.onTouchEnd()
       })
     }
@@ -463,11 +446,11 @@ describe('Performance and Edge Cases (Phase 3)', () => {
     )
 
     act(() => {
-      result.current.onTouchStart(new MockTouchEvent(0, 0) as unknown as TouchEvent)
+      result.current.onTouchStart(testUtils.createMockTouchEvent(0, 0))
     })
 
     act(() => {
-      result.current.onTouchMove(new MockTouchEvent(60, 0) as unknown as TouchEvent)
+      result.current.onTouchMove(testUtils.createMockTouchEvent(60, 0))
     })
 
     jest.spyOn(Date, 'now').mockReturnValue(1200)

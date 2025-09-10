@@ -1,11 +1,6 @@
 // ABOUTME: Jest test environment setup for Phase 3 comprehensive testing
 
 import '@testing-library/jest-dom'
-import {
-  loadTestBaseline,
-  saveTestBaseline,
-  createRegressionReport,
-} from '../utils/test-regression'
 
 // Mock Next.js navigation
 jest.mock('next/navigation', () => ({
@@ -38,13 +33,14 @@ jest.mock('@/hooks/shared/useDeviceType', () => ({
 }))
 
 // Global test utilities
-global.mockTouchEvent = class MockTouchEvent {
-  touches: Array<{ clientX: number; clientY: number }>
+;(global as typeof globalThis & { mockTouchEvent: unknown }).mockTouchEvent =
+  class MockTouchEvent {
+    touches: Array<{ clientX: number; clientY: number }>
 
-  constructor(x: number, y: number) {
-    this.touches = [{ clientX: x, clientY: y }]
+    constructor(x: number, y: number) {
+      this.touches = [{ clientX: x, clientY: y }]
+    }
   }
-}
 
 // Performance timing mock
 Object.defineProperty(global, 'performance', {
@@ -59,18 +55,21 @@ Object.defineProperty(global, 'performance', {
 })
 
 // Intersection Observer mock for image loading tests
-global.IntersectionObserver = jest.fn(() => ({
+;(
+  global as typeof globalThis & { IntersectionObserver: unknown }
+).IntersectionObserver = jest.fn().mockImplementation(() => ({
   observe: jest.fn(),
   disconnect: jest.fn(),
   unobserve: jest.fn(),
 }))
 
 // ResizeObserver mock
-global.ResizeObserver = jest.fn(() => ({
-  observe: jest.fn(),
-  disconnect: jest.fn(),
-  unobserve: jest.fn(),
-}))
+;(global as typeof globalThis & { ResizeObserver: unknown }).ResizeObserver =
+  jest.fn().mockImplementation(() => ({
+    observe: jest.fn(),
+    disconnect: jest.fn(),
+    unobserve: jest.fn(),
+  }))
 
 // Canvas mock for image processing tests
 global.HTMLCanvasElement.prototype.getContext = jest.fn(() => ({
@@ -105,7 +104,7 @@ global.HTMLCanvasElement.prototype.getContext = jest.fn(() => ({
   createLinearGradient: jest.fn(() => ({
     addColorStop: jest.fn(),
   })),
-}))
+})) as unknown as typeof global.HTMLCanvasElement.prototype.getContext
 
 // Mock URL.createObjectURL for image tests
 global.URL.createObjectURL = jest.fn(() => 'mock-object-url')
@@ -116,7 +115,7 @@ const originalError = console.error
 const originalWarn = console.warn
 
 beforeAll(() => {
-  console.error = (message: any, ...args: any[]) => {
+  console.error = (message: unknown, ...args: unknown[]) => {
     // Suppress React warnings in tests
     if (
       typeof message === 'string' &&
@@ -129,7 +128,7 @@ beforeAll(() => {
     originalError(message, ...args)
   }
 
-  console.warn = (message: any, ...args: any[]) => {
+  console.warn = (message: unknown, ...args: unknown[]) => {
     // Suppress development warnings
     if (typeof message === 'string' && message.includes('Warning:')) {
       return
@@ -147,7 +146,10 @@ afterAll(() => {
 jest.setTimeout(10000) // 10 seconds
 
 // Test environment variables
-process.env.NODE_ENV = 'test'
+Object.defineProperty(process.env, 'NODE_ENV', {
+  value: 'test',
+  writable: true,
+})
 process.env.NEXT_PUBLIC_SANITY_PROJECT_ID = 'test-project'
 process.env.NEXT_PUBLIC_SANITY_DATASET = 'test'
 
@@ -182,29 +184,42 @@ export const testUtils = {
     title: 'Test Design',
     slug: { current: 'test-design' },
     description: 'Test description',
-    images: [
-      {
-        _key: 'img-1',
-        asset: {
-          _ref: 'image-ref',
-          _type: 'reference',
-        },
-        alt: 'Test image',
-        _type: 'image',
+    image: {
+      asset: {
+        _ref: 'image-ref',
+        _type: 'reference',
       },
-    ],
-    _createdAt: '2024-01-01',
-    _updatedAt: '2024-01-01',
-    _rev: 'rev1',
-    _type: 'textileDesign',
+      alt: 'Test image',
+    },
     ...overrides,
   }),
 
-  createMockTouchEvent: (x: number, y: number) => ({
-    touches: [{ clientX: x, clientY: y }],
-    preventDefault: jest.fn(),
-    stopPropagation: jest.fn(),
-  }),
+  createMockTouchEvent: (x: number, y: number) =>
+    ({
+      touches: [{ clientX: x, clientY: y }],
+      preventDefault: jest.fn(),
+      stopPropagation: jest.fn(),
+      nativeEvent: {} as TouchEvent,
+      getModifierState: jest.fn(),
+      isDefaultPrevented: jest.fn(() => false),
+      isPropagationStopped: jest.fn(() => false),
+      persist: jest.fn(),
+      altKey: false,
+      changedTouches: [{ clientX: x, clientY: y }],
+      ctrlKey: false,
+      metaKey: false,
+      shiftKey: false,
+      targetTouches: [{ clientX: x, clientY: y }],
+      detail: 0,
+      view: window,
+      bubbles: false,
+      cancelable: true,
+      defaultPrevented: false,
+      eventPhase: 0,
+      isTrusted: false,
+      timeStamp: 0,
+      type: 'touchstart',
+    }) as unknown as React.TouchEvent<Element>,
 
   waitForNextTick: () => new Promise((resolve) => setTimeout(resolve, 0)),
 
@@ -233,6 +248,7 @@ export const testUtils = {
 
 // Phase 3: Global test quality enforcement
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace jest {
     interface Matchers<R> {
       toHaveAccessibleName(): R
@@ -291,7 +307,6 @@ expect.extend({
   toHaveCorrectARIA(received: HTMLElement) {
     // Basic ARIA validation
     const role = received.getAttribute('role')
-    const ariaLabel = received.getAttribute('aria-label')
     const ariaLabelledby = received.getAttribute('aria-labelledby')
 
     let pass = true
