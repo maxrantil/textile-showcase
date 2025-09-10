@@ -76,7 +76,7 @@ export function useKeyboardNavigation({
         target?.contentEditable === 'true' ||
         target?.tagName === 'BUTTON' ||
         target?.tagName === 'A' ||
-        target?.hasAttribute('tabindex')
+        (target instanceof HTMLElement && target.hasAttribute('tabindex'))
 
       if (isTypingContext) {
         if (process.env.NODE_ENV === 'development') {

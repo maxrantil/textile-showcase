@@ -21,6 +21,7 @@
     "@sanity/image-url": "^1.1.0",
     "@sanity/vision": "^3.91.0",
     "critters": "^0.0.23",
+    "isomorphic-dompurify": "^2.26.0",
     "next": "15.3.2",
     "next-sanity": "^9.12.0",
     "react": "^19.0.0",
