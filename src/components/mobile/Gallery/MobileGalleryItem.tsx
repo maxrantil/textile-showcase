@@ -97,6 +97,7 @@ export const MobileGalleryItem = React.memo(function MobileGalleryItem({
   return (
     <div
       className="mobile-gallery-item"
+      data-testid={`mobile-gallery-item-${index}`}
       onClick={handleClick}
       data-index={index}
     >

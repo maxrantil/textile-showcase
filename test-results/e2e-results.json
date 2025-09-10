@@ -1,0 +1,1093 @@
+{
+  "config": {
+    "configFile": "/home/mqx/workspace/textile-showcase/playwright.config.ts",
+    "rootDir": "/home/mqx/workspace/textile-showcase/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 4
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      ["html", null],
+      [
+        "json",
+        {
+          "outputFile": "test-results/e2e-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "/home/mqx/workspace/textile-showcase/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 4
+        },
+        "id": "Desktop Chrome",
+        "name": "Desktop Chrome",
+        "testDir": "/home/mqx/workspace/textile-showcase/tests/e2e",
+        "testIgnore": [],
+        "testMatch": ["**/*.@(spec|test).?(c|m)[jt]s?(x)"],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/home/mqx/workspace/textile-showcase/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 4
+        },
+        "id": "Desktop Firefox",
+        "name": "Desktop Firefox",
+        "testDir": "/home/mqx/workspace/textile-showcase/tests/e2e",
+        "testIgnore": [],
+        "testMatch": ["**/*.@(spec|test).?(c|m)[jt]s?(x)"],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/home/mqx/workspace/textile-showcase/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 4
+        },
+        "id": "Mobile Chrome",
+        "name": "Mobile Chrome",
+        "testDir": "/home/mqx/workspace/textile-showcase/tests/e2e",
+        "testIgnore": [],
+        "testMatch": ["**/*.@(spec|test).?(c|m)[jt]s?(x)"],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/home/mqx/workspace/textile-showcase/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 4
+        },
+        "id": "iPad",
+        "name": "iPad",
+        "testDir": "/home/mqx/workspace/textile-showcase/tests/e2e",
+        "testIgnore": [],
+        "testMatch": ["**/*.@(spec|test).?(c|m)[jt]s?(x)"],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/home/mqx/workspace/textile-showcase/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 4
+        },
+        "id": "Small Desktop",
+        "name": "Small Desktop",
+        "testDir": "/home/mqx/workspace/textile-showcase/tests/e2e",
+        "testIgnore": [],
+        "testMatch": ["**/*.@(spec|test).?(c|m)[jt]s?(x)"],
+        "timeout": 30000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.55.0",
+    "workers": 4,
+    "webServer": {
+      "command": "npm run dev",
+      "url": "http://localhost:3000",
+      "reuseExistingServer": true,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "workflows/smoke-test.spec.ts",
+      "file": "workflows/smoke-test.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Smoke Tests - Basic Application Health",
+          "file": "workflows/smoke-test.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Homepage loads successfully",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Desktop Chrome",
+                  "projectName": "Desktop Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1305,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ Homepage loads successfully\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-10T21:33:38.157Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "363fc1977146b39b4105-1e549ffcdfd569a82575",
+              "file": "workflows/smoke-test.spec.ts",
+              "line": 5,
+              "column": 7
+            },
+            {
+              "title": "Contact page loads successfully",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Desktop Chrome",
+                  "projectName": "Desktop Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 1215,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ Contact page loads successfully\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-10T21:33:37.908Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "363fc1977146b39b4105-de30aa1facaa7dbdae0f",
+              "file": "workflows/smoke-test.spec.ts",
+              "line": 18,
+              "column": 7
+            },
+            {
+              "title": "Basic navigation works",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Desktop Chrome",
+                  "projectName": "Desktop Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 2167,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ Basic navigation works\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-10T21:33:37.914Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "363fc1977146b39b4105-1f69d78e3ed3cf467902",
+              "file": "workflows/smoke-test.spec.ts",
+              "line": 34,
+              "column": 7
+            },
+            {
+              "title": "Page responds to viewport changes",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Desktop Chrome",
+                  "projectName": "Desktop Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 1659,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ Responsive design works\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-10T21:33:38.153Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "363fc1977146b39b4105-33e21593f36db4cb17bb",
+              "file": "workflows/smoke-test.spec.ts",
+              "line": 47,
+              "column": 7
+            },
+            {
+              "title": "No critical JavaScript errors",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Desktop Chrome",
+                  "projectName": "Desktop Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 2994,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ No critical JavaScript errors\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-10T21:33:39.298Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "363fc1977146b39b4105-0301a954e7752dd4e212",
+              "file": "workflows/smoke-test.spec.ts",
+              "line": 65,
+              "column": 7
+            },
+            {
+              "title": "Homepage loads successfully",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Desktop Firefox",
+                  "projectName": "Desktop Firefox",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3219,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ Homepage loads successfully\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-10T21:33:40.743Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "363fc1977146b39b4105-b5b6ff6c6b2b4b70c47f",
+              "file": "workflows/smoke-test.spec.ts",
+              "line": 5,
+              "column": 7
+            },
+            {
+              "title": "Contact page loads successfully",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Desktop Firefox",
+                  "projectName": "Desktop Firefox",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 3941,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ Contact page loads successfully\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-10T21:33:40.923Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "363fc1977146b39b4105-db65bfc6dd03c323785d",
+              "file": "workflows/smoke-test.spec.ts",
+              "line": 18,
+              "column": 7
+            },
+            {
+              "title": "Basic navigation works",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Desktop Firefox",
+                  "projectName": "Desktop Firefox",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 4361,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ Basic navigation works\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-10T21:33:41.217Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "363fc1977146b39b4105-c061803bb2954d37e97c",
+              "file": "workflows/smoke-test.spec.ts",
+              "line": 34,
+              "column": 7
+            },
+            {
+              "title": "Page responds to viewport changes",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Desktop Firefox",
+                  "projectName": "Desktop Firefox",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 3693,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ Responsive design works\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-10T21:33:43.571Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "363fc1977146b39b4105-3cc10923bf65f7d89f34",
+              "file": "workflows/smoke-test.spec.ts",
+              "line": 47,
+              "column": 7
+            },
+            {
+              "title": "No critical JavaScript errors",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Desktop Firefox",
+                  "projectName": "Desktop Firefox",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3588,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ No critical JavaScript errors\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-10T21:33:44.745Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "363fc1977146b39b4105-b36b9ebbba2f2de3238d",
+              "file": "workflows/smoke-test.spec.ts",
+              "line": 65,
+              "column": 7
+            },
+            {
+              "title": "Homepage loads successfully",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 832,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ Homepage loads successfully\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-10T21:33:48.629Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "363fc1977146b39b4105-c23bf13e01af36562b05",
+              "file": "workflows/smoke-test.spec.ts",
+              "line": 5,
+              "column": 7
+            },
+            {
+              "title": "Contact page loads successfully",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 915,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ Contact page loads successfully\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-10T21:33:48.902Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "363fc1977146b39b4105-836678c7420629242924",
+              "file": "workflows/smoke-test.spec.ts",
+              "line": 18,
+              "column": 7
+            },
+            {
+              "title": "Basic navigation works",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2319,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ Basic navigation works\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-10T21:33:50.430Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "363fc1977146b39b4105-6db12684872330c7d375",
+              "file": "workflows/smoke-test.spec.ts",
+              "line": 34,
+              "column": 7
+            },
+            {
+              "title": "Page responds to viewport changes",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 2477,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ Responsive design works\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-10T21:33:50.550Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "363fc1977146b39b4105-5ba91a5e8b0fd701cd06",
+              "file": "workflows/smoke-test.spec.ts",
+              "line": 47,
+              "column": 7
+            },
+            {
+              "title": "No critical JavaScript errors",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 3576,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ No critical JavaScript errors\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-10T21:33:49.585Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "363fc1977146b39b4105-fe80de22a80825b8a88d",
+              "file": "workflows/smoke-test.spec.ts",
+              "line": 65,
+              "column": 7
+            },
+            {
+              "title": "Homepage loads successfully",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "iPad",
+                  "projectName": "iPad",
+                  "results": [
+                    {
+                      "workerIndex": 12,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 1025,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ Homepage loads successfully\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-10T21:33:51.150Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "363fc1977146b39b4105-8b57620fd14b8abba55d",
+              "file": "workflows/smoke-test.spec.ts",
+              "line": 5,
+              "column": 7
+            },
+            {
+              "title": "Contact page loads successfully",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "iPad",
+                  "projectName": "iPad",
+                  "results": [
+                    {
+                      "workerIndex": 12,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 599,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ Contact page loads successfully\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-10T21:33:52.340Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "363fc1977146b39b4105-f05e1e9c618646a10403",
+              "file": "workflows/smoke-test.spec.ts",
+              "line": 18,
+              "column": 7
+            },
+            {
+              "title": "Basic navigation works",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "iPad",
+                  "projectName": "iPad",
+                  "results": [
+                    {
+                      "workerIndex": 13,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1591,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ Basic navigation works\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-10T21:33:53.869Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "363fc1977146b39b4105-2baff6e64635be7986b7",
+              "file": "workflows/smoke-test.spec.ts",
+              "line": 34,
+              "column": 7
+            },
+            {
+              "title": "Page responds to viewport changes",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "iPad",
+                  "projectName": "iPad",
+                  "results": [
+                    {
+                      "workerIndex": 12,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 1328,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ Responsive design works\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-10T21:33:52.965Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "363fc1977146b39b4105-e0a946bf6b83e1eb71cc",
+              "file": "workflows/smoke-test.spec.ts",
+              "line": 47,
+              "column": 7
+            },
+            {
+              "title": "No critical JavaScript errors",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "iPad",
+                  "projectName": "iPad",
+                  "results": [
+                    {
+                      "workerIndex": 14,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 2877,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ No critical JavaScript errors\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-10T21:33:54.296Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "363fc1977146b39b4105-eae813318bc656b43ff5",
+              "file": "workflows/smoke-test.spec.ts",
+              "line": 65,
+              "column": 7
+            },
+            {
+              "title": "Homepage loads successfully",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Small Desktop",
+                  "projectName": "Small Desktop",
+                  "results": [
+                    {
+                      "workerIndex": 15,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 1067,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ Homepage loads successfully\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-10T21:33:54.323Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "363fc1977146b39b4105-9d0b4340cbfd5e317824",
+              "file": "workflows/smoke-test.spec.ts",
+              "line": 5,
+              "column": 7
+            },
+            {
+              "title": "Contact page loads successfully",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Small Desktop",
+                  "projectName": "Small Desktop",
+                  "results": [
+                    {
+                      "workerIndex": 16,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 885,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ Contact page loads successfully\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-10T21:33:55.865Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "363fc1977146b39b4105-1e6f01938bd87abed7fb",
+              "file": "workflows/smoke-test.spec.ts",
+              "line": 18,
+              "column": 7
+            },
+            {
+              "title": "Basic navigation works",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Small Desktop",
+                  "projectName": "Small Desktop",
+                  "results": [
+                    {
+                      "workerIndex": 15,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 1443,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ Basic navigation works\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-10T21:33:55.541Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "363fc1977146b39b4105-b5a25dc1ff5a20370136",
+              "file": "workflows/smoke-test.spec.ts",
+              "line": 34,
+              "column": 7
+            },
+            {
+              "title": "Page responds to viewport changes",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Small Desktop",
+                  "projectName": "Small Desktop",
+                  "results": [
+                    {
+                      "workerIndex": 17,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1353,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ Responsive design works\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-10T21:33:56.802Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "363fc1977146b39b4105-2ad948dd7dcc62cd5a70",
+              "file": "workflows/smoke-test.spec.ts",
+              "line": 47,
+              "column": 7
+            },
+            {
+              "title": "No critical JavaScript errors",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Small Desktop",
+                  "projectName": "Small Desktop",
+                  "results": [
+                    {
+                      "workerIndex": 16,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 2636,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ No critical JavaScript errors\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-10T21:33:56.883Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "363fc1977146b39b4105-1446207200446ede3760",
+              "file": "workflows/smoke-test.spec.ts",
+              "line": 65,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2025-09-10T21:33:37.006Z",
+    "duration": 22562.537,
+    "expected": 25,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

@@ -283,7 +283,7 @@ export function DesktopGallery({ designs }: DesktopGalleryProps) {
         showOnMobile={false}
       />
 
-      <div className="desktop-gallery">
+      <div className="desktop-gallery" data-testid="desktop-gallery">
         <div
           ref={scrollContainerRef}
           className="desktop-gallery-track"

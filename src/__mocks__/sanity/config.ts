@@ -1,3 +1,10 @@
+export const sanityConfig = {
+  projectId: 'test-project-id',
+  dataset: 'test',
+  apiVersion: '2024-01-01',
+  useCdn: false,
+}
+
 export const SANITY_PROJECT_CONFIG = {
   projectId: 'test-project-id',
   dataset: 'test',

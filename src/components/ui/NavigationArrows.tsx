@@ -147,6 +147,7 @@ const NavigationArrows = memo(function NavigationArrows({
           type="button"
           onKeyDown={(e) => handleKeyDown(e, onScrollLeft)}
           data-nav="left"
+          data-testid="nav-arrow-left"
           className={`nav-button ${showOnMobile ? 'nav-show-mobile' : 'nav-hide-mobile'}`}
         >
           <LeftTriangle size={triangleSize} />
@@ -162,6 +163,7 @@ const NavigationArrows = memo(function NavigationArrows({
           type="button"
           onKeyDown={(e) => handleKeyDown(e, onScrollRight)}
           data-nav="right"
+          data-testid="nav-arrow-right"
           className={`nav-button ${showOnMobile ? 'nav-show-mobile' : 'nav-hide-mobile'}`}
         >
           <RightTriangle size={triangleSize} />

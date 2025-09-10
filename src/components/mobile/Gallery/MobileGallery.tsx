@@ -136,12 +136,13 @@ export function MobileGallery({ designs }: MobileGalleryProps) {
   }
 
   return (
-    <div className="mobile-gallery">
+    <div className="mobile-gallery" data-testid="mobile-gallery">
       <div
         ref={containerRef}
         className="mobile-gallery-stack"
         data-scroll-container
         data-current-index={currentIndex}
+        data-testid="mobile-gallery-stack"
       >
         {designs.map((design, index) => (
           <MobileGalleryItem

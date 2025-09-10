@@ -43,6 +43,7 @@ export const DesktopGalleryItem = memo(function DesktopGalleryItem({
       onClick={handleClick}
       role="button"
       tabIndex={0}
+      data-testid={`desktop-gallery-item-${index}`}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault()

@@ -24,7 +24,11 @@ const config: Config = {
     '!src/app/layout.tsx',
     '!src/__mocks__/**/*',
   ],
-  testPathIgnorePatterns: ['<rootDir>/.next/', '<rootDir>/node_modules/'],
+  testPathIgnorePatterns: [
+    '<rootDir>/.next/',
+    '<rootDir>/node_modules/',
+    '<rootDir>/tests/e2e/',
+  ],
 }
 
 export default createJestConfig(config)
