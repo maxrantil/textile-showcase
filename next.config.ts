@@ -1,4 +1,8 @@
 /** @type {import('next').NextConfig} */
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+})
 
 const nextConfig = {
   images: {
@@ -18,6 +22,54 @@ const nextConfig = {
   },
   experimental: {
     optimizeCss: true,
+  },
+  bundlePagesRouterDependencies: true, // Reduce bundle duplication
+
+  // PERFORMANCE: Webpack bundle optimization for TDD tests
+  webpack: (
+    config: { optimization?: Record<string, unknown> },
+    { dev, isServer }: { dev: boolean; isServer: boolean }
+  ) => {
+    if (!dev && !isServer) {
+      // Bundle splitting optimization
+      config.optimization = {
+        ...config.optimization,
+        splitChunks: {
+          chunks: 'all',
+          cacheGroups: {
+            // CRITICAL: Isolate Sanity Studio (fixes 1.44MB issue)
+            sanity: {
+              test: /[\\/]node_modules[\\/](@sanity|sanity)[\\/]/,
+              name: 'sanity',
+              priority: 30,
+              chunks: 'all',
+              enforce: true,
+              reuseExistingChunk: false, // Force separate chunk
+            },
+            // Vendor chunk optimization - exclude Sanity completely
+            vendor: {
+              test: /[\\/]node_modules[\\/](?!(@sanity|sanity)).*[\\/]/,
+              name: 'vendors',
+              priority: 20,
+              chunks: 'all',
+              reuseExistingChunk: true,
+            },
+            // Common code splitting
+            common: {
+              name: 'common',
+              minChunks: 2,
+              chunks: 'async',
+              priority: 10,
+            },
+          },
+        },
+        // Enhanced tree shaking
+        usedExports: true,
+        sideEffects: false,
+      }
+    }
+
+    return config
   },
   // Handle build optimization
   typescript: {
@@ -92,4 +144,4 @@ const nextConfig = {
   generateEtags: false,
 }
 
-module.exports = nextConfig
+module.exports = withBundleAnalyzer(nextConfig)

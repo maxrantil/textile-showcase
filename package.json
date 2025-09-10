@@ -12,7 +12,10 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "test:ci": "jest --ci --coverage --watchAll=false"
+    "test:ci": "jest --ci --coverage --watchAll=false",
+    "test:performance": "jest tests/performance --coverage=false",
+    "build:analyze": "ANALYZE=true npm run build",
+    "build:test": "npm run build && npm run test:performance"
   },
   "dependencies": {
     "@sanity/cli": "^3.90.0",
@@ -29,10 +32,12 @@
     "react-is": "^19.1.0",
     "resend": "^4.5.2",
     "sanity": "^3.91.0",
+    "sharp": "^0.34.3",
     "styled-components": "^6.1.18"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@next/bundle-analyzer": "^15.5.2",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
@@ -41,6 +46,7 @@
     "@types/node": "^20.17.50",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "canvas": "^3.2.0",
     "eslint": "^9",
     "eslint-config-next": "15.3.2",
     "glob": "^11.0.2",
@@ -50,7 +56,9 @@
     "prettier-plugin-tailwindcss": "^0.6.11",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
-    "typescript": "^5"
+    "typescript": "^5",
+    "web-vitals": "^5.1.0",
+    "webpack-bundle-analyzer": "^4.10.2"
   },
   "resolutions": {
     "**/glob": "^11.0.2",
