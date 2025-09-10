@@ -40,21 +40,32 @@ jest.mock('next/navigation', () => ({
   }),
 }))
 
-const mockScrollManager = {
-  saveImmediate: jest.fn(),
-  triggerNavigationStart: jest.fn(),
-}
+jest.mock('@/lib/scrollManager', () => ({
+  scrollManager: {
+    saveImmediate: jest.fn(),
+    triggerNavigationStart: jest.fn(),
+  },
+}))
 
-jest.mock('@/lib/scrollManager', () => mockScrollManager)
+// Get the mocked scroll manager
+const { scrollManager } = jest.requireMock('@/lib/scrollManager')
 
 describe('useGalleryNavigation Real Functionality Tests', () => {
   beforeEach(() => {
     mockRouterPush.mockClear()
-    mockScrollManager.saveImmediate.mockClear()
-    mockScrollManager.triggerNavigationStart.mockClear()
+    scrollManager.saveImmediate.mockClear()
+    scrollManager.triggerNavigationStart.mockClear()
   })
 
   describe('Real Navigation Behavior', () => {
+    beforeEach(() => {
+      jest.useFakeTimers()
+    })
+
+    afterEach(() => {
+      jest.useRealTimers()
+    })
+
     it('should navigate to correct project URLs with real slugs', () => {
       const { result } = renderHook(() =>
         useGalleryNavigation({
@@ -70,16 +81,20 @@ describe('useGalleryNavigation Real Functionality Tests', () => {
         result.current.handleImageClick(realDesigns[0])
       })
 
-      expect(mockRouterPush).toHaveBeenCalledWith(
-        '/projects/sustainable-cotton'
-      )
+      expect(mockRouterPush).toHaveBeenCalledWith('/project/sustainable-cotton')
+
+      // Clear mock and advance time to allow next navigation
+      mockRouterPush.mockClear()
+
+      // Advance time past debounce period
+      jest.advanceTimersByTime(300)
 
       // Navigate to second design
       act(() => {
         result.current.handleImageClick(realDesigns[1])
       })
 
-      expect(mockRouterPush).toHaveBeenCalledWith('/projects/hemp-innovation')
+      expect(mockRouterPush).toHaveBeenCalledWith('/project/hemp-innovation')
     })
 
     it('should handle designs without slugs using _id fallback', () => {
@@ -101,7 +116,7 @@ describe('useGalleryNavigation Real Functionality Tests', () => {
         result.current.handleImageClick(designWithoutSlug)
       })
 
-      expect(mockRouterPush).toHaveBeenCalledWith('/projects/design-1')
+      expect(mockRouterPush).toHaveBeenCalledWith('/project/design-1')
     })
   })
 
@@ -137,10 +152,7 @@ describe('useGalleryNavigation Real Functionality Tests', () => {
         result.current.handleImageClick(realDesigns[0])
       })
 
-      expect(mockScrollManager.saveImmediate).toHaveBeenCalledWith(
-        1,
-        '/gallery'
-      )
+      expect(scrollManager.saveImmediate).toHaveBeenCalledWith(1, '/gallery')
     })
   })
 
@@ -172,9 +184,7 @@ describe('useGalleryNavigation Real Functionality Tests', () => {
 
       // Only first navigation should go through initially
       expect(mockRouterPush).toHaveBeenCalledTimes(1)
-      expect(mockRouterPush).toHaveBeenCalledWith(
-        '/projects/sustainable-cotton'
-      )
+      expect(mockRouterPush).toHaveBeenCalledWith('/project/sustainable-cotton')
 
       // Fast forward past debounce period
       act(() => {
@@ -188,7 +198,7 @@ describe('useGalleryNavigation Real Functionality Tests', () => {
 
       expect(mockRouterPush).toHaveBeenCalledTimes(2)
       expect(mockRouterPush).toHaveBeenLastCalledWith(
-        '/projects/hemp-innovation'
+        '/project/hemp-innovation'
       )
     })
   })
@@ -257,7 +267,7 @@ describe('useGalleryNavigation Real Functionality Tests', () => {
         result.current.handleImageClick(realDesigns[0])
       })
 
-      expect(mockScrollManager.triggerNavigationStart).toHaveBeenCalled()
+      expect(scrollManager.triggerNavigationStart).toHaveBeenCalled()
     })
 
     it('should not save scroll position on first mount', () => {
@@ -274,7 +284,7 @@ describe('useGalleryNavigation Real Functionality Tests', () => {
         result.current.handleImageClick(realDesigns[0])
       })
 
-      expect(mockScrollManager.saveImmediate).not.toHaveBeenCalled()
+      expect(scrollManager.saveImmediate).not.toHaveBeenCalled()
     })
   })
 })
