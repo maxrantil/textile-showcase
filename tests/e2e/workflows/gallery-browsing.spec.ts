@@ -1,0 +1,89 @@
+// ABOUTME: Comprehensive E2E tests for gallery browsing workflows across devices and interaction methods
+import { test, expect } from '@playwright/test'
+import { GalleryPage } from '../utils/page-objects/gallery-page'
+
+test.describe('Gallery Browsing Complete Workflows', () => {
+  let galleryPage: GalleryPage
+
+  test.beforeEach(async ({ page }) => {
+    galleryPage = new GalleryPage(page)
+    await galleryPage.goto()
+  })
+
+  test.describe('Desktop Gallery Navigation', () => {
+    test('Complete keyboard navigation workflow', async ({ page }) => {
+      // Validate initial gallery state
+      await galleryPage.validateGalleryStructure()
+
+      const itemCount = await galleryPage.getGalleryItemCount()
+      expect(itemCount).toBeGreaterThan(0)
+
+      // Test right arrow navigation
+      const initialIndex = await galleryPage.getActiveItemIndex()
+      await galleryPage.navigateRight()
+
+      // Test navigation to project
+      await galleryPage.openActiveProject()
+      await page.waitForLoadState('networkidle')
+
+      // Test return to gallery
+      await page.keyboard.press('Escape')
+      await page.waitForURL('/')
+    })
+
+    test('Gallery performance and loading', async ({ page }) => {
+      const startTime = Date.now()
+      await galleryPage.goto()
+      const loadTime = Date.now() - startTime
+
+      // Gallery should load within reasonable time
+      expect(loadTime).toBeLessThan(5000)
+
+      // Validate all expected elements are loaded
+      const itemCount = await galleryPage.getGalleryItemCount()
+      expect(itemCount).toBeGreaterThanOrEqual(1)
+    })
+  })
+
+  test.describe('Mobile Gallery Navigation', () => {
+    test.use({ viewport: { width: 375, height: 667 } }) // iPhone SE size
+
+    test('Mobile accessibility and navigation', async ({ page }) => {
+      await galleryPage.validateGalleryStructure()
+
+      // Test touch targets are appropriately sized for mobile
+      const galleryItems = page.locator('[data-testid="gallery-item"]')
+      const firstItem = galleryItems.first()
+
+      const boundingBox = await firstItem.boundingBox()
+      expect(boundingBox).toBeTruthy()
+
+      if (boundingBox) {
+        // Touch targets should be at least 44px in each dimension
+        expect(boundingBox.width).toBeGreaterThanOrEqual(44)
+        expect(boundingBox.height).toBeGreaterThanOrEqual(44)
+      }
+    })
+  })
+
+  test.describe('Cross-Device Consistency', () => {
+    test('Desktop to mobile layout transition', async ({ page }) => {
+      // Start with desktop viewport
+      await page.setViewportSize({ width: 1920, height: 1080 })
+      await galleryPage.goto()
+      await galleryPage.validateGalleryStructure()
+
+      const itemCountDesktop = await galleryPage.getGalleryItemCount()
+
+      // Switch to mobile viewport
+      await page.setViewportSize({ width: 375, height: 667 })
+      await page.waitForTimeout(500) // Allow for responsive layout adjustment
+
+      await galleryPage.validateGalleryStructure()
+      const itemCountMobile = await galleryPage.getGalleryItemCount()
+
+      // Should have the same number of items regardless of viewport
+      expect(itemCountMobile).toBe(itemCountDesktop)
+    })
+  })
+})

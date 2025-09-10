@@ -18,6 +18,12 @@
     "test:integration": "jest tests/integration --coverage",
     "test:regression": "node -r ts-node/register tests/scripts/regression-check.ts",
     "test:phase3": "npm run test:mobile-hooks && npm run test:integration && npm run test:regression",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:report": "playwright show-report",
+    "test:e2e:smoke": "playwright test tests/e2e/workflows/smoke-test.spec.ts",
     "build:analyze": "ANALYZE=true npm run build",
     "build:test": "npm run build && npm run test:performance"
   },
@@ -40,8 +46,10 @@
     "styled-components": "^6.1.18"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.10.2",
     "@eslint/eslintrc": "^3",
     "@next/bundle-analyzer": "^15.5.2",
+    "@playwright/test": "^1.55.0",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
