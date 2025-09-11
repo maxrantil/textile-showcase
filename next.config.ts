@@ -25,47 +25,122 @@ const nextConfig = {
   },
   bundlePagesRouterDependencies: true, // Reduce bundle duplication
 
-  // PERFORMANCE: Webpack bundle optimization for TDD tests
+  // PERFORMANCE: Enhanced webpack bundle optimization for bundle size testing
   webpack: (
-    config: { optimization?: Record<string, unknown> },
+    config: {
+      optimization?: Record<string, unknown>
+      resolve?: Record<string, unknown>
+    },
     { dev, isServer }: { dev: boolean; isServer: boolean }
   ) => {
     if (!dev && !isServer) {
-      // Bundle splitting optimization
+      // CRITICAL: Advanced bundle splitting optimization
       config.optimization = {
         ...config.optimization,
         splitChunks: {
           chunks: 'all',
+          maxInitialRequests: 10, // Lower to reduce initial bundle size
+          maxAsyncRequests: 30,
+          minSize: 20000,
+          maxSize: 200000, // Smaller chunks
           cacheGroups: {
-            // CRITICAL: Isolate Sanity Studio (fixes 1.44MB issue)
-            sanity: {
-              test: /[\\/]node_modules[\\/](@sanity|sanity)[\\/]/,
-              name: 'sanity',
-              priority: 30,
+            // CRITICAL: Studio chunks - should never be in initial bundle
+            sanityStudio: {
+              test: /[\\/]node_modules[\\/](next-sanity)[\\/].*studio/,
+              name: 'sanity-studio',
+              priority: 100,
+              chunks: 'async',
+              enforce: true,
+            },
+            // CRITICAL: Large Sanity runtime - split but don't force async (needed for SSR)
+            sanityRuntime: {
+              test: /[\\/]node_modules[\\/](@sanity\/client|sanity)[\\/]/,
+              name: 'sanity-runtime',
+              priority: 90,
+              chunks: 'all', // Allow in both sync and async
+              enforce: true,
+              maxSize: 200000, // Split large chunks
+            },
+            // Smaller Sanity utilities
+            sanityUtils: {
+              test: /[\\/]node_modules[\\/](@sanity|next-sanity)[\\/]/,
+              name: 'sanity-utils',
+              priority: 85,
               chunks: 'all',
               enforce: true,
-              reuseExistingChunk: false, // Force separate chunk
+              maxSize: 150000,
             },
-            // Vendor chunk optimization - exclude Sanity completely
+            // Split large vendor libraries for better caching
+            react: {
+              test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
+              name: 'react',
+              priority: 40,
+              chunks: 'all',
+              reuseExistingChunk: true,
+            },
+            // UI libraries chunk
+            ui: {
+              test: /[\\/]node_modules[\\/](@radix-ui|framer-motion|@headlessui)[\\/]/,
+              name: 'ui-libs',
+              priority: 30,
+              chunks: 'all',
+              reuseExistingChunk: true,
+            },
+            // Vendor chunk optimization - exclude large libraries
             vendor: {
-              test: /[\\/]node_modules[\\/](?!(@sanity|sanity)).*[\\/]/,
+              test: /[\\/]node_modules[\\/](?!(@sanity|sanity|next-sanity|react|react-dom|@radix-ui|framer-motion)).*[\\/]/,
               name: 'vendors',
               priority: 20,
               chunks: 'all',
               reuseExistingChunk: true,
+              maxSize: 200000, // 200KB max per vendor chunk
             },
-            // Common code splitting
+            // Common code splitting with size limits
             common: {
               name: 'common',
               minChunks: 2,
               chunks: 'async',
               priority: 10,
+              maxSize: 100000, // 100KB max common chunks
             },
           },
         },
-        // Enhanced tree shaking
+        // ENHANCED: Aggressive tree shaking and module optimization
         usedExports: true,
         sideEffects: false,
+        providedExports: true,
+        concatenateModules: true, // Enable module concatenation
+        // Minimize bundle overhead
+        moduleIds: 'deterministic',
+        chunkIds: 'deterministic',
+        // Remove unused code aggressively
+        innerGraph: true,
+        mangleExports: 'deterministic',
+        // PERFORMANCE: Enhanced minification (let Next.js handle minimizer)
+        minimize: true,
+      }
+
+      // ENHANCED: Advanced module resolution optimizations
+      config.resolve = {
+        ...config.resolve,
+        // Reduce module resolution overhead
+        symlinks: false,
+        // Speed up module resolution
+        extensionAlias: {
+          '.js': ['.js', '.ts', '.tsx'],
+          '.jsx': ['.jsx', '.tsx'],
+        },
+      }
+
+      // CRITICAL: Minimize polyfills for modern browsers
+      if (config.resolve?.fallback) {
+        config.resolve.fallback = {
+          ...config.resolve.fallback,
+          fs: false,
+          os: false,
+          path: false,
+          crypto: false,
+        }
       }
     }
 

@@ -1,10 +1,14 @@
-import { resilientFetch } from '@/sanity/dataFetcher'
-import { queries } from '@/sanity/queries'
 import { TextileDesign } from '@/sanity/types'
 
 export async function getProject(slug: string): Promise<TextileDesign | null> {
   try {
     console.log(`🔍 Fetching project: ${slug}`)
+
+    // Dynamic import to prevent Sanity from being bundled in main chunk
+    const [{ queries }, { resilientFetch }] = await Promise.all([
+      import('@/sanity/queries'),
+      import('@/sanity/dataFetcher'),
+    ])
 
     const project = await resilientFetch<TextileDesign>(
       queries.getProjectBySlug,
@@ -33,6 +37,12 @@ export async function getProject(slug: string): Promise<TextileDesign | null> {
 export async function getAllProjectSlugs() {
   try {
     console.log('🏗️ Generating static params...')
+
+    // Dynamic import to prevent Sanity from being bundled in main chunk
+    const [{ queries }, { resilientFetch }] = await Promise.all([
+      import('@/sanity/queries'),
+      import('@/sanity/dataFetcher'),
+    ])
 
     const designs = await resilientFetch<
       Array<{ slug: string; _updatedAt: string }>
@@ -72,6 +82,12 @@ export async function getProjectWithNavigation(slug: string): Promise<{
 }> {
   try {
     console.log(`🔍 Fetching project with navigation: ${slug}`)
+
+    // Dynamic import to prevent Sanity from being bundled in main chunk
+    const [{ queries }, { resilientFetch }] = await Promise.all([
+      import('@/sanity/queries'),
+      import('@/sanity/dataFetcher'),
+    ])
 
     // Fetch current project and navigation data
     const [project, navigation] = await Promise.all([

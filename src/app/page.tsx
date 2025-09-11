@@ -1,6 +1,4 @@
 import { Metadata } from 'next'
-import { queries } from '@/sanity/queries'
-import { resilientFetch } from '@/sanity/dataFetcher'
 import { TextileDesign } from '@/sanity/types'
 import Gallery from '@/components/adaptive/Gallery'
 import { GalleryLoadingSkeleton } from '@/components/ui/LoadingSpinner'
@@ -49,6 +47,12 @@ export const revalidate = 3600
 
 async function getDesigns(): Promise<TextileDesign[]> {
   try {
+    // Dynamic import to prevent Sanity from being bundled in main chunk
+    const [{ queries }, { resilientFetch }] = await Promise.all([
+      import('@/sanity/queries'),
+      import('@/sanity/dataFetcher'),
+    ])
+
     const designs = await resilientFetch<TextileDesign[]>(
       queries.getDesignsForHome,
       {},
