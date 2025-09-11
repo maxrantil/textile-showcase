@@ -42,16 +42,19 @@ export class GPGCredentialManager {
       const gpg = spawn('gpg', [
         '--encrypt',
         '--armor',
-        '--trust-model', 'always',
-        '--recipient', this.gpgKeyId,
-        '--output', '-'
+        '--trust-model',
+        'always',
+        '--recipient',
+        this.gpgKeyId,
+        '--output',
+        '-',
       ])
 
       let encrypted = ''
       let errorOutput = ''
 
-      gpg.stdout.on('data', (data) => encrypted += data)
-      gpg.stderr.on('data', (data) => errorOutput += data)
+      gpg.stdout.on('data', (data) => (encrypted += data))
+      gpg.stderr.on('data', (data) => (errorOutput += data))
 
       gpg.on('close', (code) => {
         if (code === 0) {
@@ -76,25 +79,22 @@ export class GPGCredentialManager {
    */
   async decryptCredential(ciphertext: string): Promise<string> {
     return new Promise((resolve, reject) => {
-      const gpg = spawn('gpg', [
-        '--decrypt',
-        '--quiet',
-        '--batch',
-        '--no-tty'
-      ])
+      const gpg = spawn('gpg', ['--decrypt', '--quiet', '--batch', '--no-tty'])
 
       let decrypted = ''
       let errorOutput = ''
 
-      gpg.stdout.on('data', (data) => decrypted += data)
-      gpg.stderr.on('data', (data) => errorOutput += data)
+      gpg.stdout.on('data', (data) => (decrypted += data))
+      gpg.stderr.on('data', (data) => (errorOutput += data))
 
       gpg.on('close', (code) => {
         if (code === 0) {
           this.auditLogger.logDecryption(this.gpgKeyId).catch(console.error)
           resolve(decrypted.trim())
         } else {
-          this.auditLogger.logDecryptionFailure(this.gpgKeyId, errorOutput).catch(console.error)
+          this.auditLogger
+            .logDecryptionFailure(this.gpgKeyId, errorOutput)
+            .catch(console.error)
           reject(new Error(`GPG decryption failed: ${errorOutput}`))
         }
       })
@@ -111,11 +111,17 @@ export class GPGCredentialManager {
   /**
    * Loads and validates encrypted credentials
    */
-  async loadCredentials(options: CredentialLoadOptions = {}): Promise<Record<string, string>> {
+  async loadCredentials(
+    options: CredentialLoadOptions = {}
+  ): Promise<Record<string, string>> {
     const { useCache = true, cacheTtl = 5 * 60 * 1000 } = options
 
     // Check cache if enabled
-    if (useCache && GPGCredentialManager.credentialCache && GPGCredentialManager.cacheExpiry) {
+    if (
+      useCache &&
+      GPGCredentialManager.credentialCache &&
+      GPGCredentialManager.cacheExpiry
+    ) {
       if (new Date() < GPGCredentialManager.cacheExpiry) {
         return GPGCredentialManager.credentialCache
       }
@@ -133,7 +139,7 @@ export class GPGCredentialManager {
       }
 
       const result = {
-        RESEND_API_KEY: credentials.apiKey
+        RESEND_API_KEY: credentials.apiKey,
       }
 
       // Update cache if enabled
@@ -144,21 +150,24 @@ export class GPGCredentialManager {
 
       await this.auditLogger.logLoadSuccess(this.gpgKeyId)
       return result
-
     } catch (error) {
       await this.auditLogger.logLoadFailure(error)
-      throw new Error(`Failed to load credentials: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Failed to load credentials: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
   /**
    * Stores encrypted credentials with integrity validation
    */
-  async storeCredentials(config: Omit<CredentialConfig, 'integrityHash'>): Promise<void> {
+  async storeCredentials(
+    config: Omit<CredentialConfig, 'integrityHash'>
+  ): Promise<void> {
     try {
       const credentialWithHash: CredentialConfig = {
         ...config,
-        integrityHash: this.computeIntegrityHash(config)
+        integrityHash: this.computeIntegrityHash(config),
       }
 
       const plaintext = JSON.stringify(credentialWithHash, null, 2)
@@ -172,7 +181,9 @@ export class GPGCredentialManager {
       await this.auditLogger.logStoreSuccess(this.gpgKeyId)
     } catch (error) {
       await this.auditLogger.logStoreFailure(error)
-      throw new Error(`Failed to store credentials: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Failed to store credentials: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   }
 
@@ -210,7 +221,9 @@ export class GPGCredentialManager {
   /**
    * Computes integrity hash for credential validation
    */
-  private computeIntegrityHash(config: Omit<CredentialConfig, 'integrityHash'>): string {
+  private computeIntegrityHash(
+    config: Omit<CredentialConfig, 'integrityHash'>
+  ): string {
     const data = `${config.apiKey}${config.environment}${config.rotationSchedule}${config.lastRotated}`
     return createHash('sha256').update(data).digest('hex')
   }

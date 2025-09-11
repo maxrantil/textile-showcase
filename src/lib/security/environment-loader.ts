@@ -26,29 +26,35 @@ const CREDENTIAL_VALIDATORS: CredentialValidation[] = [
   {
     key: 'RESEND_API_KEY',
     validator: (value: string) => {
-      return value &&
-             value !== 'dummy_key_for_build' &&
-             value.startsWith('re_') &&
-             value.length > 20
+      return (
+        value &&
+        value !== 'dummy_key_for_build' &&
+        value.startsWith('re_') &&
+        value.length > 20
+      )
     },
-    errorMessage: 'RESEND_API_KEY must be a valid Resend API key starting with "re_"'
-  }
+    errorMessage:
+      'RESEND_API_KEY must be a valid Resend API key starting with "re_"',
+  },
 ]
 
 /**
  * Loads secure environment variables using GPG credential management
  */
-export async function loadSecureEnvironment(options: LoadEnvironmentOptions = {}): Promise<void> {
+export async function loadSecureEnvironment(
+  options: LoadEnvironmentOptions = {}
+): Promise<void> {
   const {
     useCache = true,
     cacheTtl = 5 * 60 * 1000, // 5 minutes
     validateCredentials = true,
-    throwOnFailure = true
+    throwOnFailure = true,
   } = options
 
   try {
     const keyId = process.env.GPG_KEY_ID
-    const credentialPath = process.env.CREDENTIAL_PATH || './credentials/encrypted.gpg'
+    const credentialPath =
+      process.env.CREDENTIAL_PATH || './credentials/encrypted.gpg'
 
     if (!keyId) {
       throw new Error('GPG_KEY_ID environment variable not set')
@@ -76,15 +82,25 @@ export async function loadSecureEnvironment(options: LoadEnvironmentOptions = {}
       await validateLoadedCredentials(credentials, throwOnFailure)
     }
 
-    await auditLogger.logSecurityEvent('ENVIRONMENT_LOADED', 'LOW', `Loaded ${Object.keys(credentials).length} credentials`)
-
+    await auditLogger.logSecurityEvent(
+      'ENVIRONMENT_LOADED',
+      'LOW',
+      `Loaded ${Object.keys(credentials).length} credentials`
+    )
   } catch (error) {
-    await auditLogger.logSecurityEvent('ENVIRONMENT_LOAD_FAILED', 'HIGH', error instanceof Error ? error.message : 'Unknown error')
+    await auditLogger.logSecurityEvent(
+      'ENVIRONMENT_LOAD_FAILED',
+      'HIGH',
+      error instanceof Error ? error.message : 'Unknown error'
+    )
 
     if (throwOnFailure) {
       throw error
     } else {
-      console.warn('Failed to load secure environment:', error instanceof Error ? error.message : error)
+      console.warn(
+        'Failed to load secure environment:',
+        error instanceof Error ? error.message : error
+      )
     }
   }
 }
@@ -114,7 +130,11 @@ async function validateLoadedCredentials(
   if (errors.length > 0) {
     const errorMessage = `Credential validation failed:\n${errors.join('\n')}`
 
-    await auditLogger.logSecurityEvent('CREDENTIAL_VALIDATION_FAILED', 'HIGH', errorMessage)
+    await auditLogger.logSecurityEvent(
+      'CREDENTIAL_VALIDATION_FAILED',
+      'HIGH',
+      errorMessage
+    )
 
     if (throwOnFailure) {
       throw new Error(errorMessage)
@@ -122,7 +142,11 @@ async function validateLoadedCredentials(
       console.warn(errorMessage)
     }
   } else {
-    await auditLogger.logSecurityEvent('CREDENTIAL_VALIDATION_PASSED', 'LOW', `Validated ${CREDENTIAL_VALIDATORS.length} credentials`)
+    await auditLogger.logSecurityEvent(
+      'CREDENTIAL_VALIDATION_PASSED',
+      'LOW',
+      `Validated ${CREDENTIAL_VALIDATORS.length} credentials`
+    )
   }
 }
 
@@ -144,7 +168,10 @@ export async function testCredentialSystem(): Promise<boolean> {
       return false
     }
 
-    const manager = new GPGCredentialManager(keyId, './credentials/test-encrypted.gpg')
+    const manager = new GPGCredentialManager(
+      keyId,
+      './credentials/test-encrypted.gpg'
+    )
 
     // Test encryption/decryption
     const testResult = await manager.testEncryptionDecryption()
@@ -155,9 +182,11 @@ export async function testCredentialSystem(): Promise<boolean> {
 
     console.log('✅ Credential system test passed')
     return true
-
   } catch (error) {
-    console.error('❌ Credential system test failed:', error instanceof Error ? error.message : error)
+    console.error(
+      '❌ Credential system test failed:',
+      error instanceof Error ? error.message : error
+    )
     return false
   }
 }
@@ -173,17 +202,19 @@ export async function emergencyLoadCredentials(): Promise<boolean> {
     await loadSecureEnvironment({
       useCache: false,
       validateCredentials: false,
-      throwOnFailure: false
+      throwOnFailure: false,
     })
 
     console.log('✅ Emergency credential loading successful')
     return true
-
   } catch (error) {
     console.error('❌ Emergency credential loading failed:', error)
 
     // Fall back to environment variables if available
-    if (process.env.RESEND_API_KEY && process.env.RESEND_API_KEY !== 'dummy_key_for_build') {
+    if (
+      process.env.RESEND_API_KEY &&
+      process.env.RESEND_API_KEY !== 'dummy_key_for_build'
+    ) {
       console.log('⚠️ Using fallback environment variables')
       return true
     }
@@ -211,7 +242,10 @@ export async function getCredentialStatus(): Promise<{
       return { loaded: false, cached: false, valid: false, errors }
     }
 
-    const manager = new GPGCredentialManager(keyId, process.env.CREDENTIAL_PATH || './credentials/encrypted.gpg')
+    const manager = new GPGCredentialManager(
+      keyId,
+      process.env.CREDENTIAL_PATH || './credentials/encrypted.gpg'
+    )
 
     // Check if GPG key is valid
     const keyValid = await manager.validateGPGKey()
@@ -220,15 +254,16 @@ export async function getCredentialStatus(): Promise<{
     }
 
     // Check if credentials are loaded
-    const hasResendKey = !!process.env.RESEND_API_KEY && process.env.RESEND_API_KEY !== 'dummy_key_for_build'
+    const hasResendKey =
+      !!process.env.RESEND_API_KEY &&
+      process.env.RESEND_API_KEY !== 'dummy_key_for_build'
 
     return {
       loaded: hasResendKey,
       cached: true, // This would need to be checked against actual cache
       valid: keyValid && hasResendKey,
-      errors
+      errors,
     }
-
   } catch (error) {
     errors.push(error instanceof Error ? error.message : 'Unknown error')
     return { loaded: false, cached: false, valid: false, errors }

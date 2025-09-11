@@ -5,11 +5,11 @@ import DOMPurify from 'isomorphic-dompurify'
 // Simple Resend initialization without GPG complexity
 function getResendInstance(): Resend {
   const apiKey = process.env.RESEND_API_KEY
-  
+
   if (!apiKey || apiKey === 'dummy_key_for_build') {
     throw new Error('RESEND_API_KEY is not configured properly')
   }
-  
+
   return new Resend(apiKey)
 }
 

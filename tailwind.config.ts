@@ -14,16 +14,16 @@ export default {
       },
       fontFamily: {
         sans: [
-          'var(--font-inter)', 
-          'Hiragino Sans',           // macOS native
+          'var(--font-inter)',
+          'Hiragino Sans', // macOS native
           'Hiragino Kaku Gothic ProN', // macOS fallback
-          'var(--font-noto-sans)',   // Web font fallback for other platforms
-          'system-ui', 
+          'var(--font-noto-sans)', // Web font fallback for other platforms
+          'system-ui',
           '-apple-system',
           'BlinkMacSystemFont',
           'Segoe UI',
           'Roboto',
-          'sans-serif'
+          'sans-serif',
         ],
       },
     },

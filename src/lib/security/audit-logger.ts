@@ -35,7 +35,7 @@ export class AuditLogger {
       success: true,
       requestId: this.generateRequestId(),
       pid: process.pid,
-      environment: process.env.NODE_ENV || 'unknown'
+      environment: process.env.NODE_ENV || 'unknown',
     })
   }
 
@@ -47,7 +47,7 @@ export class AuditLogger {
       success: true,
       requestId: this.generateRequestId(),
       pid: process.pid,
-      environment: process.env.NODE_ENV || 'unknown'
+      environment: process.env.NODE_ENV || 'unknown',
     })
   }
 
@@ -60,7 +60,7 @@ export class AuditLogger {
       error: error.substring(0, 500), // Limit error length
       requestId: this.generateRequestId(),
       pid: process.pid,
-      environment: process.env.NODE_ENV || 'unknown'
+      environment: process.env.NODE_ENV || 'unknown',
     })
   }
 
@@ -72,7 +72,7 @@ export class AuditLogger {
       success: true,
       requestId: this.generateRequestId(),
       pid: process.pid,
-      environment: process.env.NODE_ENV || 'unknown'
+      environment: process.env.NODE_ENV || 'unknown',
     })
   }
 
@@ -82,10 +82,13 @@ export class AuditLogger {
       action: 'LOAD_CREDENTIALS',
       keyId: 'unknown',
       success: false,
-      error: error instanceof Error ? error.message.substring(0, 500) : 'Unknown error',
+      error:
+        error instanceof Error
+          ? error.message.substring(0, 500)
+          : 'Unknown error',
       requestId: this.generateRequestId(),
       pid: process.pid,
-      environment: process.env.NODE_ENV || 'unknown'
+      environment: process.env.NODE_ENV || 'unknown',
     })
   }
 
@@ -97,7 +100,7 @@ export class AuditLogger {
       success: true,
       requestId: this.generateRequestId(),
       pid: process.pid,
-      environment: process.env.NODE_ENV || 'unknown'
+      environment: process.env.NODE_ENV || 'unknown',
     })
   }
 
@@ -107,14 +110,21 @@ export class AuditLogger {
       action: 'STORE_CREDENTIALS',
       keyId: 'unknown',
       success: false,
-      error: error instanceof Error ? error.message.substring(0, 500) : 'Unknown error',
+      error:
+        error instanceof Error
+          ? error.message.substring(0, 500)
+          : 'Unknown error',
       requestId: this.generateRequestId(),
       pid: process.pid,
-      environment: process.env.NODE_ENV || 'unknown'
+      environment: process.env.NODE_ENV || 'unknown',
     })
   }
 
-  async logRotation(credentialType: string, success: boolean, error?: string): Promise<void> {
+  async logRotation(
+    credentialType: string,
+    success: boolean,
+    error?: string
+  ): Promise<void> {
     await this.writeAuditEvent({
       timestamp: new Date(),
       action: 'ROTATE_CREDENTIAL',
@@ -123,11 +133,15 @@ export class AuditLogger {
       error: error?.substring(0, 500),
       requestId: this.generateRequestId(),
       pid: process.pid,
-      environment: process.env.NODE_ENV || 'unknown'
+      environment: process.env.NODE_ENV || 'unknown',
     })
   }
 
-  async logSecurityEvent(event: string, severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL', details?: string): Promise<void> {
+  async logSecurityEvent(
+    event: string,
+    severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL',
+    details?: string
+  ): Promise<void> {
     await this.writeAuditEvent({
       timestamp: new Date(),
       action: `SECURITY_${severity}`,
@@ -136,7 +150,7 @@ export class AuditLogger {
       error: details?.substring(0, 500),
       requestId: this.generateRequestId(),
       pid: process.pid,
-      environment: process.env.NODE_ENV || 'unknown'
+      environment: process.env.NODE_ENV || 'unknown',
     })
   }
 
@@ -146,7 +160,10 @@ export class AuditLogger {
   async getRecentEvents(hours: number = 24): Promise<AuditEvent[]> {
     try {
       const logContent = await fs.readFile(this.logPath, 'utf8')
-      const lines = logContent.trim().split('\n').filter(line => line)
+      const lines = logContent
+        .trim()
+        .split('\n')
+        .filter((line) => line)
       const cutoff = new Date(Date.now() - hours * 60 * 60 * 1000)
 
       const events: AuditEvent[] = []
@@ -164,7 +181,9 @@ export class AuditLogger {
         }
       }
 
-      return events.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+      return events.sort(
+        (a, b) => b.timestamp.getTime() - a.timestamp.getTime()
+      )
     } catch {
       return []
     }
@@ -175,11 +194,12 @@ export class AuditLogger {
    */
   async getSecurityAlerts(): Promise<AuditEvent[]> {
     const events = await this.getRecentEvents(24)
-    return events.filter(event =>
-      !event.success ||
-      event.action.startsWith('SECURITY_') ||
-      event.error?.includes('failed') ||
-      event.error?.includes('unauthorized')
+    return events.filter(
+      (event) =>
+        !event.success ||
+        event.action.startsWith('SECURITY_') ||
+        event.error?.includes('failed') ||
+        event.error?.includes('unauthorized')
     )
   }
 
@@ -198,7 +218,7 @@ export class AuditLogger {
         // Keep only the last 5 backup files
         const files = await fs.readdir(this.logDir)
         const backupFiles = files
-          .filter(file => file.startsWith('credential-access.log.'))
+          .filter((file) => file.startsWith('credential-access.log.'))
           .sort()
           .reverse()
 
@@ -223,7 +243,6 @@ export class AuditLogger {
 
       // Check if log rotation is needed (don't await to avoid blocking)
       this.rotateLogs().catch(console.warn)
-
     } catch (error) {
       console.error('Failed to write audit log:', error)
       // Don't throw - logging failures shouldn't break credential operations
