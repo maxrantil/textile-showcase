@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
   let resend: Resend
   try {
     resend = getResendInstance()
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       {
         error:
