@@ -1,5 +1,7 @@
-# ABOUTME: Secure environment loader that integrates GPG credential management with Next.js runtime
-# Handles credential loading, caching, and integration with application startup
+/**
+ * ABOUTME: Secure environment loader that integrates GPG credential management with Next.js runtime
+ * Handles credential loading, caching, and integration with application startup
+ */
 
 import { GPGCredentialManager } from './credential-manager'
 import { AuditLogger } from './audit-logger'
@@ -24,9 +26,9 @@ const CREDENTIAL_VALIDATORS: CredentialValidation[] = [
   {
     key: 'RESEND_API_KEY',
     validator: (value: string) => {
-      return value && 
-             value !== 'dummy_key_for_build' && 
-             value.startsWith('re_') && 
+      return value &&
+             value !== 'dummy_key_for_build' &&
+             value.startsWith('re_') &&
              value.length > 20
     },
     errorMessage: 'RESEND_API_KEY must be a valid Resend API key starting with "re_"'
@@ -47,14 +49,14 @@ export async function loadSecureEnvironment(options: LoadEnvironmentOptions = {}
   try {
     const keyId = process.env.GPG_KEY_ID
     const credentialPath = process.env.CREDENTIAL_PATH || './credentials/encrypted.gpg'
-    
+
     if (!keyId) {
       throw new Error('GPG_KEY_ID environment variable not set')
     }
 
     // Initialize credential manager
     const manager = new GPGCredentialManager(keyId, credentialPath)
-    
+
     // Validate GPG key is available
     const keyValid = await manager.validateGPGKey()
     if (!keyValid) {
@@ -63,7 +65,7 @@ export async function loadSecureEnvironment(options: LoadEnvironmentOptions = {}
 
     // Load credentials
     const credentials = await manager.loadCredentials({ useCache, cacheTtl })
-    
+
     // Set environment variables
     Object.entries(credentials).forEach(([key, value]) => {
       process.env[key] = value
@@ -78,7 +80,7 @@ export async function loadSecureEnvironment(options: LoadEnvironmentOptions = {}
 
   } catch (error) {
     await auditLogger.logSecurityEvent('ENVIRONMENT_LOAD_FAILED', 'HIGH', error instanceof Error ? error.message : 'Unknown error')
-    
+
     if (throwOnFailure) {
       throw error
     } else {
@@ -91,14 +93,14 @@ export async function loadSecureEnvironment(options: LoadEnvironmentOptions = {}
  * Validates that loaded credentials meet security requirements
  */
 async function validateLoadedCredentials(
-  credentials: Record<string, string>, 
+  credentials: Record<string, string>,
   throwOnFailure: boolean = true
 ): Promise<void> {
   const errors: string[] = []
 
   for (const validator of CREDENTIAL_VALIDATORS) {
     const value = credentials[validator.key]
-    
+
     if (!value) {
       errors.push(`Missing required credential: ${validator.key}`)
       continue
@@ -111,9 +113,9 @@ async function validateLoadedCredentials(
 
   if (errors.length > 0) {
     const errorMessage = `Credential validation failed:\n${errors.join('\n')}`
-    
+
     await auditLogger.logSecurityEvent('CREDENTIAL_VALIDATION_FAILED', 'HIGH', errorMessage)
-    
+
     if (throwOnFailure) {
       throw new Error(errorMessage)
     } else {
@@ -143,7 +145,7 @@ export async function testCredentialSystem(): Promise<boolean> {
     }
 
     const manager = new GPGCredentialManager(keyId, './credentials/test-encrypted.gpg')
-    
+
     // Test encryption/decryption
     const testResult = await manager.testEncryptionDecryption()
     if (!testResult) {
@@ -165,27 +167,27 @@ export async function testCredentialSystem(): Promise<boolean> {
  */
 export async function emergencyLoadCredentials(): Promise<boolean> {
   console.log('🚨 Emergency credential loading initiated')
-  
+
   try {
     // Try normal loading first
-    await loadSecureEnvironment({ 
-      useCache: false, 
-      validateCredentials: false, 
-      throwOnFailure: false 
+    await loadSecureEnvironment({
+      useCache: false,
+      validateCredentials: false,
+      throwOnFailure: false
     })
-    
+
     console.log('✅ Emergency credential loading successful')
     return true
-    
+
   } catch (error) {
     console.error('❌ Emergency credential loading failed:', error)
-    
+
     // Fall back to environment variables if available
     if (process.env.RESEND_API_KEY && process.env.RESEND_API_KEY !== 'dummy_key_for_build') {
       console.log('⚠️ Using fallback environment variables')
       return true
     }
-    
+
     return false
   }
 }
@@ -201,7 +203,7 @@ export async function getCredentialStatus(): Promise<{
   errors: string[]
 }> {
   const errors: string[] = []
-  
+
   try {
     const keyId = process.env.GPG_KEY_ID
     if (!keyId) {
@@ -210,7 +212,7 @@ export async function getCredentialStatus(): Promise<{
     }
 
     const manager = new GPGCredentialManager(keyId, process.env.CREDENTIAL_PATH || './credentials/encrypted.gpg')
-    
+
     // Check if GPG key is valid
     const keyValid = await manager.validateGPGKey()
     if (!keyValid) {
@@ -219,7 +221,7 @@ export async function getCredentialStatus(): Promise<{
 
     // Check if credentials are loaded
     const hasResendKey = !!process.env.RESEND_API_KEY && process.env.RESEND_API_KEY !== 'dummy_key_for_build'
-    
+
     return {
       loaded: hasResendKey,
       cached: true, // This would need to be checked against actual cache

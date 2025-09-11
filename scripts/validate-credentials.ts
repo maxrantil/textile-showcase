@@ -5,7 +5,10 @@
  */
 
 import { GPGCredentialManager } from '../src/lib/security/credential-manager'
-import { getCredentialStatus, testCredentialSystem } from '../src/lib/security/environment-loader'
+import {
+  getCredentialStatus,
+  testCredentialSystem,
+} from '../src/lib/security/environment-loader'
 
 interface ValidationResult {
   success: boolean
@@ -19,11 +22,12 @@ async function validateGPGConfiguration(): Promise<ValidationResult> {
     success: false,
     errors: [],
     warnings: [],
-    details: {}
+    details: {},
   }
 
   const keyId = process.env.GPG_KEY_ID
-  const credentialPath = process.env.CREDENTIAL_PATH || './credentials/encrypted.gpg'
+  const credentialPath =
+    process.env.CREDENTIAL_PATH || './credentials/encrypted.gpg'
 
   if (!keyId) {
     result.errors.push('GPG_KEY_ID environment variable not set')
@@ -79,14 +83,20 @@ async function validateGPGConfiguration(): Promise<ValidationResult> {
     }
 
     // Validate Resend API key format
-    if (credentials.RESEND_API_KEY && !credentials.RESEND_API_KEY.startsWith('re_')) {
-      result.warnings.push('RESEND_API_KEY does not follow expected format (should start with "re_")')
+    if (
+      credentials.RESEND_API_KEY &&
+      !credentials.RESEND_API_KEY.startsWith('re_')
+    ) {
+      result.warnings.push(
+        'RESEND_API_KEY does not follow expected format (should start with "re_")'
+      )
     }
 
     result.success = result.errors.length === 0
-
   } catch (error) {
-    result.errors.push(`Validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    result.errors.push(
+      `Validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+    )
   }
 
   return result
@@ -97,17 +107,17 @@ async function validateRuntimeEnvironment(): Promise<ValidationResult> {
     success: false,
     errors: [],
     warnings: [],
-    details: {}
+    details: {},
   }
 
   try {
     const status = await getCredentialStatus()
-    
+
     result.details.credentialStatus = {
       loaded: status.loaded,
       cached: status.cached,
       valid: status.valid,
-      errors: status.errors
+      errors: status.errors,
     }
 
     if (!status.valid) {
@@ -120,9 +130,10 @@ async function validateRuntimeEnvironment(): Promise<ValidationResult> {
     }
 
     result.success = status.valid && status.loaded
-
   } catch (error) {
-    result.errors.push(`Runtime validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    result.errors.push(
+      `Runtime validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+    )
   }
 
   return result
@@ -133,12 +144,12 @@ async function validateSystemIntegration(): Promise<ValidationResult> {
     success: false,
     errors: [],
     warnings: [],
-    details: {}
+    details: {},
   }
 
   try {
     const testResult = await testCredentialSystem()
-    
+
     if (!testResult) {
       result.errors.push('System integration test failed')
     } else {
@@ -147,24 +158,25 @@ async function validateSystemIntegration(): Promise<ValidationResult> {
 
     // Check log directory permissions
     try {
-      const fs = require('fs').promises
+      const fs = await import('fs/promises')
       const logDir = process.env.AUDIT_LOG_DIR || './logs'
       await fs.mkdir(logDir, { recursive: true })
-      
+
       // Test write permissions
       const testFile = `${logDir}/.test-${Date.now()}`
       await fs.writeFile(testFile, 'test')
       await fs.unlink(testFile)
-      
+
       result.details.logDirectoryWritable = true
     } catch {
       result.warnings.push('Cannot write to audit log directory')
     }
 
     result.success = result.errors.length === 0
-
   } catch (error) {
-    result.errors.push(`System integration validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    result.errors.push(
+      `System integration validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+    )
   }
 
   return result
@@ -182,18 +194,19 @@ function printValidationResult(title: string, result: ValidationResult): void {
 
   if (result.errors.length > 0) {
     console.log('\nErrors:')
-    result.errors.forEach(error => console.log(`  ❌ ${error}`))
+    result.errors.forEach((error) => console.log(`  ❌ ${error}`))
   }
 
   if (result.warnings.length > 0) {
     console.log('\nWarnings:')
-    result.warnings.forEach(warning => console.log(`  ⚠️ ${warning}`))
+    result.warnings.forEach((warning) => console.log(`  ⚠️ ${warning}`))
   }
 
   if (Object.keys(result.details).length > 0) {
     console.log('\nDetails:')
     Object.entries(result.details).forEach(([key, value]) => {
-      const displayValue = typeof value === 'object' ? JSON.stringify(value, null, 2) : value
+      const displayValue =
+        typeof value === 'object' ? JSON.stringify(value, null, 2) : value
       console.log(`  ${key}: ${displayValue}`)
     })
   }
@@ -238,11 +251,15 @@ async function main(): Promise<void> {
   }
 }
 
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   main().catch((error) => {
     console.error('Validation failed:', error)
     process.exit(1)
   })
 }
 
-export { validateGPGConfiguration, validateRuntimeEnvironment, validateSystemIntegration }
+export {
+  validateGPGConfiguration,
+  validateRuntimeEnvironment,
+  validateSystemIntegration,
+}

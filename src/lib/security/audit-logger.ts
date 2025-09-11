@@ -1,5 +1,7 @@
-# ABOUTME: Comprehensive audit logging system for credential access and security events
-# Tracks all credential operations with timestamps, success/failure status, and error details
+/**
+ * ABOUTME: Comprehensive audit logging system for credential access and security events
+ * Tracks all credential operations with timestamps, success/failure status, and error details
+ */
 
 import { promises as fs } from 'fs'
 import { randomBytes } from 'crypto'
@@ -146,13 +148,13 @@ export class AuditLogger {
       const logContent = await fs.readFile(this.logPath, 'utf8')
       const lines = logContent.trim().split('\n').filter(line => line)
       const cutoff = new Date(Date.now() - hours * 60 * 60 * 1000)
-      
+
       const events: AuditEvent[] = []
       for (const line of lines) {
         try {
           const event = JSON.parse(line) as AuditEvent
           event.timestamp = new Date(event.timestamp)
-          
+
           if (event.timestamp >= cutoff) {
             events.push(event)
           }
@@ -161,7 +163,7 @@ export class AuditLogger {
           continue
         }
       }
-      
+
       return events.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
     } catch {
       return []
@@ -173,8 +175,8 @@ export class AuditLogger {
    */
   async getSecurityAlerts(): Promise<AuditEvent[]> {
     const events = await this.getRecentEvents(24)
-    return events.filter(event => 
-      !event.success || 
+    return events.filter(event =>
+      !event.success ||
       event.action.startsWith('SECURITY_') ||
       event.error?.includes('failed') ||
       event.error?.includes('unauthorized')
@@ -188,18 +190,18 @@ export class AuditLogger {
     try {
       const stats = await fs.stat(this.logPath)
       const maxSize = 10 * 1024 * 1024 // 10MB
-      
+
       if (stats.size > maxSize) {
         const backupPath = `${this.logPath}.${Date.now()}`
         await fs.rename(this.logPath, backupPath)
-        
+
         // Keep only the last 5 backup files
         const files = await fs.readdir(this.logDir)
         const backupFiles = files
           .filter(file => file.startsWith('credential-access.log.'))
           .sort()
           .reverse()
-        
+
         if (backupFiles.length > 5) {
           for (const file of backupFiles.slice(5)) {
             await fs.unlink(join(this.logDir, file))
@@ -215,13 +217,13 @@ export class AuditLogger {
     try {
       // Ensure log directory exists
       await fs.mkdir(this.logDir, { recursive: true })
-      
+
       const logEntry = JSON.stringify(event) + '\n'
       await fs.appendFile(this.logPath, logEntry, 'utf8')
-      
+
       // Check if log rotation is needed (don't await to avoid blocking)
       this.rotateLogs().catch(console.warn)
-      
+
     } catch (error) {
       console.error('Failed to write audit log:', error)
       // Don't throw - logging failures shouldn't break credential operations

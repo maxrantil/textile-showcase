@@ -405,29 +405,27 @@ export function DesktopImageCarousel({
           {/* Elegant Arrow Navigation */}
           {allImages.length > 1 && !useLockdownMode && (
             <div className="elegant-navigation">
+              <button
+                className="paginate left"
+                data-state={currentIndex === 0 ? 'disabled' : ''}
+                onClick={goToPrevious}
+                disabled={currentIndex === 0}
+              >
+                <i></i>
+                <i></i>
+              </button>
               <div className="elegant-counter">{formatCounter}</div>
-              <div className="paginate-container">
-                <button
-                  className="paginate left"
-                  data-state={currentIndex === 0 ? 'disabled' : ''}
-                  onClick={goToPrevious}
-                  disabled={currentIndex === 0}
-                >
-                  <i></i>
-                  <i></i>
-                </button>
-                <button
-                  className="paginate right"
-                  data-state={
-                    currentIndex === allImages.length - 1 ? 'disabled' : ''
-                  }
-                  onClick={goToNext}
-                  disabled={currentIndex === allImages.length - 1}
-                >
-                  <i></i>
-                  <i></i>
-                </button>
-              </div>
+              <button
+                className="paginate right"
+                data-state={
+                  currentIndex === allImages.length - 1 ? 'disabled' : ''
+                }
+                onClick={goToNext}
+                disabled={currentIndex === allImages.length - 1}
+              >
+                <i></i>
+                <i></i>
+              </button>
             </div>
           )}
         </div>

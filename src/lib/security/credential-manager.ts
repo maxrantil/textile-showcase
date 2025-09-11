@@ -1,5 +1,7 @@
-# ABOUTME: GPG-based credential management system for secure API key storage and access
-# Provides encryption, decryption, and integrity validation of sensitive credentials
+/**
+ * ABOUTME: GPG-based credential management system for secure API key storage and access
+ * Provides encryption, decryption, and integrity validation of sensitive credentials
+ */
 
 import { spawn } from 'child_process'
 import { promises as fs } from 'fs'
@@ -44,13 +46,13 @@ export class GPGCredentialManager {
         '--recipient', this.gpgKeyId,
         '--output', '-'
       ])
-      
+
       let encrypted = ''
       let errorOutput = ''
 
       gpg.stdout.on('data', (data) => encrypted += data)
       gpg.stderr.on('data', (data) => errorOutput += data)
-      
+
       gpg.on('close', (code) => {
         if (code === 0) {
           this.auditLogger.logEncryption(this.gpgKeyId).catch(console.error)
@@ -86,7 +88,7 @@ export class GPGCredentialManager {
 
       gpg.stdout.on('data', (data) => decrypted += data)
       gpg.stderr.on('data', (data) => errorOutput += data)
-      
+
       gpg.on('close', (code) => {
         if (code === 0) {
           this.auditLogger.logDecryption(this.gpgKeyId).catch(console.error)
@@ -123,7 +125,7 @@ export class GPGCredentialManager {
       const encryptedContent = await fs.readFile(this.credentialPath, 'utf8')
       const decryptedContent = await this.decryptCredential(encryptedContent)
       const credentials = JSON.parse(decryptedContent) as CredentialConfig
-      
+
       // Validate integrity
       const computedHash = this.computeIntegrityHash(credentials)
       if (computedHash !== credentials.integrityHash) {
@@ -161,12 +163,12 @@ export class GPGCredentialManager {
 
       const plaintext = JSON.stringify(credentialWithHash, null, 2)
       const encrypted = await this.encryptCredential(plaintext)
-      
+
       await fs.writeFile(this.credentialPath, encrypted, 'utf8')
-      
+
       // Clear cache to force reload
       GPGCredentialManager.clearCache()
-      
+
       await this.auditLogger.logStoreSuccess(this.gpgKeyId)
     } catch (error) {
       await this.auditLogger.logStoreFailure(error)
@@ -180,7 +182,7 @@ export class GPGCredentialManager {
   async validateGPGKey(): Promise<boolean> {
     return new Promise((resolve) => {
       const gpg = spawn('gpg', ['--list-keys', this.gpgKeyId])
-      
+
       gpg.on('close', (code) => {
         resolve(code === 0)
       })

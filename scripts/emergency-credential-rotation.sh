@@ -36,22 +36,22 @@ error() {
 # Check prerequisites
 check_prerequisites() {
     log "Checking prerequisites..."
-    
+
     if [ -z "$GPG_KEY_ID" ]; then
         error "GPG_KEY_ID environment variable not set"
         exit 1
     fi
-    
+
     if ! command -v gpg &> /dev/null; then
         error "GPG is not installed or not in PATH"
         exit 1
     fi
-    
+
     if ! command -v node &> /dev/null; then
         error "Node.js is not installed or not in PATH"
         exit 1
     fi
-    
+
     log "✅ Prerequisites check passed"
 }
 
@@ -59,7 +59,7 @@ check_prerequisites() {
 create_backup_dir() {
     log "Creating backup directory: $BACKUP_DIR"
     mkdir -p "$BACKUP_DIR"
-    
+
     # Backup current state
     if [ -f "$CREDENTIAL_PATH" ]; then
         cp "$CREDENTIAL_PATH" "$BACKUP_DIR/encrypted.gpg.backup" 2>/dev/null || warn "Failed to backup existing credentials"
@@ -67,7 +67,7 @@ create_backup_dir() {
     else
         warn "No existing credential file to backup"
     fi
-    
+
     # Backup environment configuration
     if [ -f ".env.local" ]; then
         cp ".env.local" "$BACKUP_DIR/env.local.backup"
@@ -78,36 +78,36 @@ create_backup_dir() {
 # Get new credentials from user
 get_new_credentials() {
     log "Collecting new credentials..."
-    
+
     echo ""
     echo "Please provide the new Resend API key:"
     echo "You can get one from: https://resend.com/api-keys"
     echo ""
-    
+
     read -s -p "Enter new RESEND_API_KEY: " NEW_API_KEY
     echo ""
-    
+
     # Validate API key format
     if [[ ! "$NEW_API_KEY" =~ ^re_ ]]; then
         error "Invalid API key format. Resend API keys should start with 're_'"
         exit 1
     fi
-    
+
     if [ ${#NEW_API_KEY} -lt 20 ]; then
         error "API key seems too short. Please check the key."
         exit 1
     fi
-    
+
     log "✅ API key validated"
 }
 
 # Create new credential configuration
 create_emergency_credentials() {
     log "Creating emergency credential configuration..."
-    
+
     # Generate integrity hash
     INTEGRITY_HASH=$(echo -n "$NEW_API_KEY$NODE_ENV" | shasum -a 256 | cut -d' ' -f1)
-    
+
     # Create credential JSON
     cat > "$BACKUP_DIR/emergency-credentials.json" << EOF
 {
@@ -117,22 +117,22 @@ create_emergency_credentials() {
   "lastRotated": "$(date -u -Iseconds)"
 }
 EOF
-    
+
     log "✅ Credential configuration created"
 }
 
 # Encrypt credentials with GPG
 encrypt_credentials() {
     log "Encrypting credentials with GPG..."
-    
+
     # Ensure credentials directory exists
     mkdir -p "$(dirname "$CREDENTIAL_PATH")"
-    
+
     # Encrypt with GPG
     if gpg --encrypt --armor --trust-model always --recipient "$GPG_KEY_ID" \
         --output "$CREDENTIAL_PATH" "$BACKUP_DIR/emergency-credentials.json" 2>/dev/null; then
         log "✅ Emergency credentials encrypted successfully"
-        
+
         # Remove plaintext credential file
         rm "$BACKUP_DIR/emergency-credentials.json"
         log "✅ Plaintext credentials securely deleted"
@@ -145,7 +145,7 @@ encrypt_credentials() {
 # Validate new credentials
 validate_credentials() {
     log "Validating new credentials..."
-    
+
     # Use the validation script if available
     if [ -f "scripts/validate-credentials.ts" ]; then
         if npx ts-node scripts/validate-credentials.ts > "$BACKUP_DIR/validation.log" 2>&1; then
@@ -162,7 +162,7 @@ validate_credentials() {
 # Test credential functionality
 test_credentials() {
     log "Testing credential functionality..."
-    
+
     # Simple decryption test
     if gpg --decrypt --quiet --batch --no-tty "$CREDENTIAL_PATH" > /dev/null 2>&1; then
         log "✅ Credential decryption test passed"
@@ -170,7 +170,7 @@ test_credentials() {
         error "Credential decryption test failed"
         exit 1
     fi
-    
+
     # If contact form test is available, run it
     if [ -f "scripts/test-contact-form.ts" ]; then
         log "Testing contact form functionality..."
@@ -185,7 +185,7 @@ test_credentials() {
 # Generate rotation report
 generate_report() {
     log "Generating rotation report..."
-    
+
     cat > "$BACKUP_DIR/rotation-report.md" << EOF
 # Emergency Credential Rotation Report
 
@@ -248,10 +248,10 @@ EOF
 # Cleanup function
 cleanup() {
     log "Cleaning up temporary files..."
-    
+
     # Remove any remaining plaintext files
     find "$BACKUP_DIR" -name "*.json" -type f -delete 2>/dev/null || true
-    
+
     # Set proper permissions on backup directory
     chmod -R 600 "$BACKUP_DIR" 2>/dev/null || warn "Could not set secure permissions on backup directory"
 }
@@ -259,12 +259,12 @@ cleanup() {
 # Rollback function
 rollback() {
     error "Rolling back due to failure..."
-    
+
     if [ -f "$BACKUP_DIR/encrypted.gpg.backup" ]; then
         cp "$BACKUP_DIR/encrypted.gpg.backup" "$CREDENTIAL_PATH"
         log "✅ Previous credentials restored"
     fi
-    
+
     cleanup
     exit 1
 }
@@ -273,7 +273,7 @@ rollback() {
 main() {
     # Set up error handling
     trap rollback ERR
-    
+
     check_prerequisites
     create_backup_dir
     get_new_credentials
@@ -283,7 +283,7 @@ main() {
     test_credentials
     generate_report
     cleanup
-    
+
     echo ""
     echo "🎉 EMERGENCY ROTATION COMPLETE"
     echo "=============================="
@@ -296,7 +296,7 @@ main() {
     echo "📧 Test the contact form to ensure it works"
     echo "📊 Monitor logs for any credential-related issues"
     echo ""
-    
+
     log "Emergency credential rotation completed successfully"
 }
 

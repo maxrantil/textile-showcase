@@ -33,6 +33,7 @@
     "credentials:status": "ts-node -e \"import('./src/lib/security/environment-loader').then(m => m.getCredentialStatus().then(console.log))\""
   },
   "dependencies": {
+    "@next/font": "^14.2.15",
     "@sanity/cli": "^3.90.0",
     "@sanity/client": "^7.3.0",
     "@sanity/icons": "^3.7.0",

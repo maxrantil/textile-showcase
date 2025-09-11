@@ -1,61 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import DOMPurify from 'isomorphic-dompurify'
-import { loadSecureEnvironment } from '@/lib/security/environment-loader'
 
-// Initialize secure credential system
-let resend: Resend | null = null
-
-async function initializeResend(): Promise<void> {
-  if (resend) return // Already initialized
-
-  try {
-    // Load credentials using GPG system if configured
-    if (process.env.GPG_KEY_ID) {
-      await loadSecureEnvironment({
-        useCache: true,
-        validateCredentials: true,
-        throwOnFailure: false, // Allow fallback to env vars
-      })
-    }
-
-    // Validate API key is properly configured
-    if (
-      !process.env.RESEND_API_KEY ||
-      process.env.RESEND_API_KEY === 'dummy_key_for_build'
-    ) {
-      throw new Error(
-        'RESEND_API_KEY environment variable is missing or using dummy value. ' +
-          'Please run "npm run setup-credentials" to configure GPG-based credential management, ' +
-          'or set a valid Resend API key in your environment.'
-      )
-    }
-
-    resend = new Resend(process.env.RESEND_API_KEY)
-  } catch (error) {
-    console.warn('Failed to initialize Resend with secure credentials:', error instanceof Error ? error.message : error)
-    throw error
+// Simple Resend initialization without GPG complexity
+function getResendInstance(): Resend {
+  const apiKey = process.env.RESEND_API_KEY
+  
+  if (!apiKey || apiKey === 'dummy_key_for_build') {
+    throw new Error('RESEND_API_KEY is not configured properly')
   }
+  
+  return new Resend(apiKey)
 }
 
 export async function POST(request: NextRequest) {
-  // Initialize Resend lazily when route is called
+  // Initialize Resend instance
+  let resend: Resend
   try {
-    await initializeResend()
+    resend = getResendInstance()
   } catch (error) {
     return NextResponse.json(
       {
-        error: 'Contact form is temporarily unavailable due to configuration issues. Please try again later.',
-        timestamp: new Date().toISOString(),
-      },
-      { status: 503 }
-    )
-  }
-
-  if (!resend) {
-    return NextResponse.json(
-      {
-        error: 'Contact form service is currently unavailable. Please try again later.',
+        error:
+          'Contact form is temporarily unavailable due to configuration issues. Please try again later.',
         timestamp: new Date().toISOString(),
       },
       { status: 503 }

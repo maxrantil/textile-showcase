@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 
-import { inter } from './fonts'
+import { inter, notoSans } from './fonts'
 import {
   baseMetadata,
   openGraphMetadata,
@@ -34,7 +34,7 @@ interface RootLayoutProps {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="en" className={`${inter.variable} ${notoSans.variable}`}>
       <HtmlHead>
         {generateStructuredDataScript(organizationStructuredData)}
       </HtmlHead>

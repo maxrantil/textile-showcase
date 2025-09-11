@@ -30,7 +30,7 @@
   padding-left: 0;
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 1024px) {
   .desktop-carousel-container {
     padding-left: 0;
     flex-direction: column;
@@ -122,7 +122,7 @@
 }
 
 /* Responsive adjustments for thumbnails */
-@media (max-width: 1200px) {
+@media (max-width: 1024px) {
   .desktop-carousel-thumbnails {
     position: static;
     transform: none;
@@ -155,8 +155,9 @@
   width: 120px;
   height: 50px;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
+  justify-content: center;
   gap: 12px;
 }
 
@@ -169,7 +170,8 @@
   color: #888;
   text-transform: none;
   margin: 0;
-  order: 1;
+  flex-shrink: 0;
+  order: 2;
 }
 
 .paginate {
@@ -182,7 +184,6 @@
   border: 0;
   outline: 0;
   -webkit-appearance: none;
-  order: 2;
 }
 
 .paginate i {
@@ -194,6 +195,10 @@
   border-radius: 0;
   background: #555;
   transition: all 0.15s ease;
+}
+
+.paginate.left {
+  order: 1;
 }
 
 .paginate.left i {
@@ -214,6 +219,10 @@
 
 .paginate.left:hover i:last-child {
   transform: translate(0, 0.3px) rotate(-25deg);
+}
+
+.paginate.right {
+  order: 3;
 }
 
 .paginate.right i {
@@ -255,14 +264,6 @@
 
 .paginate[data-state='disabled'].right i:last-child {
   transform: translate(1px, 0) rotate(0deg);
-}
-
-/* Arrow container */
-.elegant-navigation .paginate-container {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  order: 2;
 }
 
 /* Hide old navigation elements */
