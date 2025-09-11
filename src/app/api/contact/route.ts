@@ -5,7 +5,6 @@ import { loadSecureEnvironment } from '@/lib/security/environment-loader'
 
 // Initialize secure credential system
 let resend: Resend | null = null
-let initializationPromise: Promise<void> | null = null
 
 async function initializeResend(): Promise<void> {
   if (resend) return // Already initialized
@@ -16,39 +15,46 @@ async function initializeResend(): Promise<void> {
       await loadSecureEnvironment({
         useCache: true,
         validateCredentials: true,
-        throwOnFailure: false // Allow fallback to env vars
+        throwOnFailure: false, // Allow fallback to env vars
       })
     }
 
     // Validate API key is properly configured
-    if (!process.env.RESEND_API_KEY || process.env.RESEND_API_KEY === 'dummy_key_for_build') {
+    if (
+      !process.env.RESEND_API_KEY ||
+      process.env.RESEND_API_KEY === 'dummy_key_for_build'
+    ) {
       throw new Error(
         'RESEND_API_KEY environment variable is missing or using dummy value. ' +
-        'Please run "npm run setup-credentials" to configure GPG-based credential management, ' +
-        'or set a valid Resend API key in your environment.'
+          'Please run "npm run setup-credentials" to configure GPG-based credential management, ' +
+          'or set a valid Resend API key in your environment.'
       )
     }
 
     resend = new Resend(process.env.RESEND_API_KEY)
-    
   } catch (error) {
-    console.error('Failed to initialize Resend with secure credentials:', error)
-    throw new Error(
-      'Contact form is temporarily unavailable due to credential configuration issues. ' +
-      'Please contact support if this persists.'
-    )
+    console.warn('Failed to initialize Resend with secure credentials:', error instanceof Error ? error.message : error)
+    throw error
   }
 }
 
-// Initialize on module load, but don't block startup
-initializationPromise = initializeResend().catch(console.error)
-
 export async function POST(request: NextRequest) {
-  // Ensure Resend is initialized before processing request
-  await initializationPromise
+  // Initialize Resend lazily when route is called
+  try {
+    await initializeResend()
+  } catch (error) {
+    return NextResponse.json(
+      {
+        error: 'Contact form is temporarily unavailable due to configuration issues. Please try again later.',
+        timestamp: new Date().toISOString(),
+      },
+      { status: 503 }
+    )
+  }
+
   if (!resend) {
     return NextResponse.json(
-      { 
+      {
         error: 'Contact form service is currently unavailable. Please try again later.',
         timestamp: new Date().toISOString(),
       },
