@@ -25,7 +25,12 @@
     "test:e2e:report": "playwright show-report",
     "test:e2e:smoke": "playwright test tests/e2e/workflows/smoke-test.spec.ts",
     "build:analyze": "ANALYZE=true npm run build",
-    "build:test": "npm run build && npm run test:performance"
+    "build:test": "npm run build && npm run test:performance",
+    "setup-credentials": "ts-node scripts/setup-credentials.ts",
+    "validate-credentials": "ts-node scripts/validate-credentials.ts",
+    "rotate-credentials": "./scripts/emergency-credential-rotation.sh",
+    "credentials:test": "ts-node -e \"import('./src/lib/security/environment-loader').then(m => m.testCredentialSystem())\"",
+    "credentials:status": "ts-node -e \"import('./src/lib/security/environment-loader').then(m => m.getCredentialStatus().then(console.log))\""
   },
   "dependencies": {
     "@sanity/cli": "^3.90.0",

@@ -1,10 +1,61 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import DOMPurify from 'isomorphic-dompurify'
+import { loadSecureEnvironment } from '@/lib/security/environment-loader'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+// Initialize secure credential system
+let resend: Resend | null = null
+let initializationPromise: Promise<void> | null = null
+
+async function initializeResend(): Promise<void> {
+  if (resend) return // Already initialized
+
+  try {
+    // Load credentials using GPG system if configured
+    if (process.env.GPG_KEY_ID) {
+      await loadSecureEnvironment({
+        useCache: true,
+        validateCredentials: true,
+        throwOnFailure: false // Allow fallback to env vars
+      })
+    }
+
+    // Validate API key is properly configured
+    if (!process.env.RESEND_API_KEY || process.env.RESEND_API_KEY === 'dummy_key_for_build') {
+      throw new Error(
+        'RESEND_API_KEY environment variable is missing or using dummy value. ' +
+        'Please run "npm run setup-credentials" to configure GPG-based credential management, ' +
+        'or set a valid Resend API key in your environment.'
+      )
+    }
+
+    resend = new Resend(process.env.RESEND_API_KEY)
+    
+  } catch (error) {
+    console.error('Failed to initialize Resend with secure credentials:', error)
+    throw new Error(
+      'Contact form is temporarily unavailable due to credential configuration issues. ' +
+      'Please contact support if this persists.'
+    )
+  }
+}
+
+// Initialize on module load, but don't block startup
+initializationPromise = initializeResend().catch(console.error)
 
 export async function POST(request: NextRequest) {
+  // Ensure Resend is initialized before processing request
+  await initializationPromise
+  if (!resend) {
+    return NextResponse.json(
+      { 
+        error: 'Contact form service is currently unavailable. Please try again later.',
+        timestamp: new Date().toISOString(),
+      },
+      { status: 503 }
+    )
+  }
+
   try {
     const body = await request.json()
     const { name, email, message } = body
