@@ -1,6 +1,4 @@
 import { MetadataRoute } from 'next'
-import { queries } from '@/sanity/queries'
-import { resilientFetch } from '@/sanity/dataFetcher'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://idaromme.dk'
@@ -29,6 +27,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Dynamic project pages
   try {
+    // Dynamic import to prevent Sanity from being bundled in main chunk
+    const [{ queries }, { resilientFetch }] = await Promise.all([
+      import('@/sanity/queries'),
+      import('@/sanity/dataFetcher'),
+    ])
+
     const projects = await resilientFetch<
       Array<{
         slug: { current: string }
