@@ -8,30 +8,36 @@
 ## **WEEK 1: IMMEDIATE SECURITY RESPONSE (16 hours)**
 
 ### **DAY 1: API Key Emergency Response (8 hours) - CRITICAL**
+
 - [ ] **STEP 1: Inventory Current API Keys** (1 hour)
+
   - [ ] Check `.env*` files for exposed keys
   - [ ] Audit git history: `git log --oneline --grep="key\|token\|secret"`
   - [ ] Document all services using current keys
 
 - [ ] **STEP 2: Revoke Exposed Keys** (2 hours)
+
   - [ ] **Sanity API Keys**:
+
     - [ ] Login to https://sanity.io/manage
     - [ ] Navigate to project settings → API
     - [ ] Revoke current tokens
     - [ ] Document token IDs for verification
-  
+
   - [ ] **Resend API Key**:
     - [ ] Login to https://resend.com/api-keys
     - [ ] Revoke current API key
     - [ ] Document key ID for verification
 
 - [ ] **STEP 3: Generate New Keys** (2 hours)
+
   - [ ] Create new Sanity API token with minimal required permissions
   - [ ] Create new Resend API key with domain restrictions
   - [ ] Store new keys in secure password manager
   - [ ] Update local `.env.local` (DO NOT COMMIT)
 
 - [ ] **STEP 4: Update Deployment Environment** (2 hours)
+
   - [ ] Update Vercel environment variables
   - [ ] Test deployment with new keys
   - [ ] Verify all services function correctly
@@ -44,13 +50,16 @@
   - [ ] Verify clean history: `git log --oneline | head -20`
 
 ### **DAY 2: Sanity Studio Protection (8 hours)**
+
 - [ ] **STEP 1: Create Emergency Middleware** (4 hours)
+
   - [ ] Create `middleware.ts` in project root
   - [ ] Implement IP-based protection for `/studio` paths
   - [ ] Add environment variable for allowed IPs
   - [ ] Test middleware functionality locally
 
 - [ ] **STEP 2: Rate Limiting Setup** (3 hours)
+
   - [ ] Install: `npm install @upstash/ratelimit @upstash/redis`
   - [ ] Create rate limiting utility function
   - [ ] Apply to contact API endpoint
@@ -64,7 +73,9 @@
 ## **WEEK 2: SECURITY INFRASTRUCTURE (16 hours)**
 
 ### **DAY 3-4: Comprehensive Security Middleware (8 hours)**
+
 - [ ] **STEP 1: Enhanced Authentication** (4 hours)
+
   - [ ] Implement session management for Studio access
   - [ ] Add login/logout functionality for Studio
   - [ ] Create secure session storage
@@ -77,13 +88,16 @@
   - [ ] Test form with malicious inputs
 
 ### **DAY 5: Security Monitoring & Testing (8 hours)**
+
 - [ ] **STEP 1: Security Event Logging** (4 hours)
+
   - [ ] Create security event logger
   - [ ] Log failed authentication attempts
   - [ ] Log rate limiting violations
   - [ ] Log suspicious access patterns
 
 - [ ] **STEP 2: Fix Failing Tests** (2 hours)
+
   - [ ] Run: `npm test`
   - [ ] Fix DOM API compatibility in useKeyboardNavigation test
   - [ ] Ensure all tests pass: `npm run test:ci`
@@ -96,6 +110,7 @@
 ## **EMERGENCY PROCEDURES - IMMEDIATE ACCESS**
 
 ### **If Security Breach Detected:**
+
 ```bash
 # 1. Immediate service shutdown (if needed)
 vercel env rm NEXT_PUBLIC_SANITY_PROJECT_ID production
@@ -111,6 +126,7 @@ BLOCKED_IPS="suspicious.ip.address"
 ```
 
 ### **If Deployment Fails:**
+
 ```bash
 # 1. Rollback to previous deployment
 vercel rollback
@@ -123,6 +139,7 @@ vercel env ls
 ```
 
 ## **SUCCESS CRITERIA FOR PHASE 1:**
+
 - [ ] **Zero Critical Vulnerabilities**: No CVSS 9.0+ issues remain
 - [ ] **API Key Security**: 100% exposed credentials revoked and rotated
 - [ ] **Studio Protection**: 100% unauthorized access blocked
@@ -131,6 +148,7 @@ vercel env ls
 - [ ] **Documentation**: Complete incident response procedures
 
 ## **BREAK CONTINUATION NOTES:**
+
 - **Current Status**: Branch created, documentation ready
 - **Next Action**: Begin Day 1 API key emergency response
 - **Critical**: API keys need immediate attention - high security risk
@@ -138,8 +156,9 @@ vercel env ls
 - **Testing**: All security measures must be validated before Phase 2
 
 ## **RESOURCES NEEDED:**
+
 - [ ] Sanity admin panel access
-- [ ] Resend admin panel access  
+- [ ] Resend admin panel access
 - [ ] Vercel deployment access
 - [ ] Password manager for secure key storage
 - [ ] Testing environment for validation
