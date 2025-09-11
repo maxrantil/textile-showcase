@@ -24,27 +24,13 @@ jest.mock('next/navigation', () => ({
   },
 }))
 
-// Mock Sanity client to avoid module loading issues
-jest.mock('@/sanity/client', () => ({
-  client: {
-    fetch: jest.fn(),
-  },
-}))
-
-// Mock Sanity image helpers
-jest.mock('@/sanity/imageHelpers', () => ({
-  getOptimizedImageUrl: jest.fn((src) => `optimized-${src}`),
-  getBlurDataUrl: jest.fn(() => 'blur-data-url'),
-}))
-
-// Mock Sanity config to avoid undefined errors
-jest.mock('@/sanity/config', () => ({
-  SANITY_CDN_CONFIG: {
-    referrerPolicy: 'strict-origin-when-cross-origin',
-    crossOrigin: 'anonymous',
-  },
-}))
+// Note: We avoid mocking actual business logic per CLAUDE.md guidance
+// Only mock essential browser APIs that JSDOM doesn't support
 
 // Essential browser API mocks
 Object.defineProperty(window, 'scrollBy', { value: jest.fn(), writable: true })
 Object.defineProperty(window, 'scrollTo', { value: jest.fn(), writable: true })
+
+// Mock scrollTo for DOM elements (JSDOM compatibility)
+Element.prototype.scrollTo = jest.fn()
+Element.prototype.scrollBy = jest.fn()
