@@ -13,7 +13,18 @@ export default {
         foreground: 'var(--foreground)',
       },
       fontFamily: {
-        sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
+        sans: [
+          'var(--font-inter)',
+          'Hiragino Sans', // macOS native
+          'Hiragino Kaku Gothic ProN', // macOS fallback
+          'var(--font-noto-sans)', // Web font fallback for other platforms
+          'system-ui',
+          '-apple-system',
+          'BlinkMacSystemFont',
+          'Segoe UI',
+          'Roboto',
+          'sans-serif',
+        ],
       },
     },
   },

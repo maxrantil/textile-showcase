@@ -2,9 +2,33 @@ import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import DOMPurify from 'isomorphic-dompurify'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+// Simple Resend initialization without GPG complexity
+function getResendInstance(): Resend {
+  const apiKey = process.env.RESEND_API_KEY
+
+  if (!apiKey || apiKey === 'dummy_key_for_build') {
+    throw new Error('RESEND_API_KEY is not configured properly')
+  }
+
+  return new Resend(apiKey)
+}
 
 export async function POST(request: NextRequest) {
+  // Initialize Resend instance
+  let resend: Resend
+  try {
+    resend = getResendInstance()
+  } catch {
+    return NextResponse.json(
+      {
+        error:
+          'Contact form is temporarily unavailable due to configuration issues. Please try again later.',
+        timestamp: new Date().toISOString(),
+      },
+      { status: 503 }
+    )
+  }
+
   try {
     const body = await request.json()
     const { name, email, message } = body
