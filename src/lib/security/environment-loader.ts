@@ -26,11 +26,11 @@ const CREDENTIAL_VALIDATORS: CredentialValidation[] = [
   {
     key: 'RESEND_API_KEY',
     validator: (value: string) => {
-      return (
+      return Boolean(
         value &&
-        value !== 'dummy_key_for_build' &&
-        value.startsWith('re_') &&
-        value.length > 20
+          value !== 'dummy_key_for_build' &&
+          value.startsWith('re_') &&
+          value.length > 20
       )
     },
     errorMessage:

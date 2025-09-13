@@ -103,6 +103,45 @@ The textile showcase application requires targeted UX/UI refinements to fix crit
 - Text remains readable at mobile scales
 - No horizontal scrolling required
 
+#### US-6: Internationalization Foundation
+
+**As a** user from different linguistic/cultural backgrounds
+**I want** forms that work in my language and cultural context
+**So that** I can interact naturally with the interface
+
+**Acceptance Criteria:**
+
+- Form layouts accommodate 30% text expansion/contraction
+- All user-facing strings are externalized for translation
+- RTL language support with proper CSS direction handling
+- Cultural validation patterns respected (e.g., name formatting)
+
+#### US-7: Assistive Technology Optimization
+
+**As a** user relying on assistive technologies
+**I want** optimized experiences for my specific AT
+**So that** I can use the forms as efficiently as any other user
+
+**Acceptance Criteria:**
+
+- Voice control compatibility with proper element labeling
+- Screen magnifier support with semantic markup
+- Switch navigation support with proper tab ordering
+- Screen reader optimization with descriptive announcements
+
+#### US-8: Cognitive Accessibility
+
+**As a** user with cognitive disabilities
+**I want** clear, simple error messages and recovery paths
+**So that** I can successfully complete forms without confusion
+
+**Acceptance Criteria:**
+
+- Plain language error messages without technical jargon
+- Clear recovery instructions for each error type
+- Consistent terminology throughout the interface
+- Visual cues that support text-based instructions
+
 ### Secondary Requirements
 
 #### Performance Considerations
