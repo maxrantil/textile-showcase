@@ -101,3 +101,99 @@
     transform: rotate(360deg);
   }
 }
+
+/* Enhanced hover states */
+@media (hover: hover) {
+  .btn-mobile-primary:hover:not(:disabled) {
+    background: #111;
+    border-color: #111;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+
+  .btn-mobile-secondary:hover:not(:disabled) {
+    background: rgba(51, 51, 51, 0.05);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(51, 51, 51, 0.1);
+  }
+
+  .btn-mobile-ghost:hover:not(:disabled) {
+    background: #f8f9fa;
+    border-color: #d1d5db;
+    transform: translateY(-1px);
+  }
+}
+
+/* Enhanced focus indicators for WCAG compliance */
+.btn-mobile:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.2);
+}
+
+/* Better disabled states */
+.btn-mobile:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.btn-mobile-primary:disabled {
+  background: #9ca3af;
+  border-color: #9ca3af;
+}
+
+.btn-mobile-secondary:disabled {
+  color: #9ca3af;
+  border-color: #e5e7eb;
+}
+
+.btn-mobile-ghost:disabled {
+  color: #9ca3af;
+  border-color: #f3f4f6;
+}
+
+/* Loading state improvements with ARIA */
+.btn-mobile[aria-busy='true'] {
+  color: transparent;
+  cursor: wait;
+}
+
+.btn-mobile[aria-busy='true'] .mobile-spinner-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .btn-mobile {
+    border-width: 2px;
+  }
+
+  .btn-mobile:focus-visible {
+    outline-width: 3px;
+    outline-offset: 3px;
+  }
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .btn-mobile {
+    transition: none;
+  }
+
+  .btn-mobile:hover {
+    transform: none;
+  }
+
+  .btn-mobile:active {
+    transform: none;
+  }
+
+  .mobile-spinner {
+    animation: none;
+  }
+}

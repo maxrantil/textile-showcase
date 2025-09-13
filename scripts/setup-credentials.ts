@@ -131,7 +131,7 @@ async function setupDirectories(): Promise<void> {
     try {
       await fs.mkdir(dir, { recursive: true })
       console.log(`✅ Created directory: ${dir}`)
-    } catch (error) {
+    } catch {
       console.warn(`⚠️ Directory ${dir} already exists or failed to create`)
     }
   }
@@ -143,7 +143,9 @@ async function createCredentialConfig(
 ): Promise<void> {
   const config = {
     apiKey,
-    environment: process.env.NODE_ENV || 'development',
+    environment: (['production', 'staging'].includes(process.env.NODE_ENV || '')
+      ? process.env.NODE_ENV
+      : 'development') as 'development' | 'staging' | 'production',
     rotationSchedule: 'monthly',
     lastRotated: new Date(),
   }

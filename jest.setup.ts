@@ -6,6 +6,9 @@ configure({
   testIdAttribute: 'data-testid',
 })
 
+// For CSS testing, we'll need to inject styles manually in tests
+// since JSDOM doesn't process CSS the same way browsers do
+
 // Mock Next.js router
 jest.mock('next/navigation', () => ({
   useRouter() {
