@@ -3,8 +3,8 @@ import { render, screen } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import { LoadingSpinner, GalleryLoadingSkeleton } from '../LoadingSpinner'
 
-describe('LoadingSpinner Accessibility Enhancements (TDD - RED Phase)', () => {
-  // These tests SHOULD FAIL initially because enhanced accessibility features don't exist yet
+describe('LoadingSpinner Accessibility Enhancements (TDD - GREEN Phase)', () => {
+  // All tests now pass - accessibility features have been implemented
 
   describe('Enhanced ARIA Support', () => {
     it('should have proper default ARIA attributes', () => {
