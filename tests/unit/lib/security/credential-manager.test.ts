@@ -59,9 +59,9 @@ describe('GPGCredentialManager - TDD Implementation', () => {
       expect(() => new GPGCredentialManager(testGpgKeyId, '')).toThrow(
         'Invalid credential path'
       )
-      expect(() => new GPGCredentialManager(testGpgKeyId, null as unknown as string)).toThrow(
-        'Invalid credential path'
-      )
+      expect(
+        () => new GPGCredentialManager(testGpgKeyId, null as unknown as string)
+      ).toThrow('Invalid credential path')
     })
 
     // TDD RED PHASE: This test WILL FAIL - no GPG key ID validation
