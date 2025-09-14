@@ -3,26 +3,51 @@ import { MetadataRoute } from 'next'
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://idaromme.dk'
 
-  // Static pages
+  // Static pages with enhanced SEO prioritization
   const staticPages: MetadataRoute.Sitemap = [
     {
       url: baseUrl,
       lastModified: new Date(),
       changeFrequency: 'weekly',
-      priority: 1,
+      priority: 1.0, // Highest priority for homepage
     },
     {
       url: `${baseUrl}/about`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
-      priority: 0.8,
+      priority: 0.9, // High priority for artist statement
     },
     {
       url: `${baseUrl}/contact`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
-      priority: 0.6,
+      priority: 0.8, // Important for commissions
     },
+    // Future content pages (commented for now, uncomment when created)
+    // {
+    //   url: `${baseUrl}/process`,
+    //   lastModified: new Date(),
+    //   changeFrequency: 'monthly',
+    //   priority: 0.7,
+    // },
+    // {
+    //   url: `${baseUrl}/sustainability`,
+    //   lastModified: new Date(),
+    //   changeFrequency: 'monthly',
+    //   priority: 0.7,
+    // },
+    // {
+    //   url: `${baseUrl}/exhibitions`,
+    //   lastModified: new Date(),
+    //   changeFrequency: 'monthly',
+    //   priority: 0.6,
+    // },
+    // {
+    //   url: `${baseUrl}/collections`,
+    //   lastModified: new Date(),
+    //   changeFrequency: 'weekly',
+    //   priority: 0.8,
+    // },
   ]
 
   // Dynamic project pages

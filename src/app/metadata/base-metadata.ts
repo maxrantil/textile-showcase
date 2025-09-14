@@ -2,18 +2,27 @@ import type { Metadata, Viewport } from 'next'
 
 export const baseMetadata: Metadata = {
   title: {
-    default: 'Ida Romme - Contemporary Textile Design',
+    default:
+      'Ida Romme - Contemporary Nordic Textile Artist | Sustainable Hand Weaving & Color Exploration',
     template: '%s - Ida Romme',
   },
   description:
-    'Contemporary textile designs by Ida Romme, featuring sustainable hand-woven pieces that bridge traditional craftsmanship with modern aesthetics.',
+    'Explore contemporary textile designs by Nordic artist Ida Romme. Sustainable hand-woven pieces featuring innovative color exploration and traditional Scandinavian craftsmanship techniques.',
   keywords: [
-    'textile design',
-    'hand weaving',
-    'sustainable textiles',
+    'contemporary textile design',
+    'Nordic textile artist',
+    'sustainable hand weaving',
+    'color exploration textiles',
+    'Scandinavian design aesthetic',
+    'Stockholm textile designer',
+    'traditional weaving techniques',
+    'natural fiber textiles',
+    'sustainable textile practices',
+    'textile art commission',
     'contemporary craft',
-    'Stockholm',
-    'textile art',
+    'Nordic contemporary craft',
+    'sustainable weaving practices',
+    'methodical color combinations',
   ],
   authors: [{ name: 'Ida Romme' }],
   creator: 'Ida Romme',
