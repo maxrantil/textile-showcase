@@ -64,7 +64,28 @@ export function useKeyboardNavigation({
     const handleKeyDown = (e: KeyboardEvent) => {
       // Debug logging
       if (process.env.NODE_ENV === 'development') {
-        console.log('🎹 Key pressed:', e.key, 'Target:', e.target)
+        console.log(
+          '🎹 Key pressed:',
+          e.key,
+          'Target:',
+          e.target,
+          'Modifiers:',
+          {
+            ctrl: e.ctrlKey,
+            meta: e.metaKey,
+            alt: e.altKey,
+            shift: e.shiftKey,
+          }
+        )
+      }
+
+      // Allow browser shortcuts (Ctrl/Cmd combinations) to pass through
+      const hasModifier = e.ctrlKey || e.metaKey || e.altKey
+      if (hasModifier) {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🎹 Allowing browser shortcut to pass through:', e.key)
+        }
+        return
       }
 
       // Don't interfere with form inputs or when user is typing
