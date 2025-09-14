@@ -292,16 +292,20 @@ describe('AuditLogger - TDD Security Enhancement', () => {
 
       // Mock alert handler (will fail - no alerting system)
       await logger.configureAlertHandlers({
-        onCriticalThreat: (alert: unknown) =>
+        onCriticalThreat: (alert: unknown) => {
+          const alertObj = alert as Record<string, unknown>
           alertsTriggered.push({
             type: 'CRITICAL',
-            ...(alert as Record<string, unknown>),
-          }),
-        onSuspiciousActivity: (alert: unknown) =>
+            ...alertObj,
+          })
+        },
+        onSuspiciousActivity: (alert: unknown) => {
+          const alertObj = alert as Record<string, unknown>
           alertsTriggered.push({
             type: 'SUSPICIOUS',
-            ...(alert as Record<string, unknown>),
-          }),
+            ...alertObj,
+          })
+        },
       })
 
       // Trigger critical event
