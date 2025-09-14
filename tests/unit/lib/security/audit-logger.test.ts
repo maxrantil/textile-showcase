@@ -85,11 +85,29 @@ describe('AuditLogger - TDD Security Enhancement', () => {
 
     // TDD RED PHASE: This test WILL FAIL - no real-time security monitoring
     it('should provide real-time security event streaming', async () => {
-      const receivedEvents: unknown[] = []
+      interface TestAuditEvent {
+        timestamp: Date
+        action: string
+        keyId: string
+        success: boolean
+        error?: string
+        requestId: string
+        pid: number
+        environment: string
+        signature?: string
+        verified?: boolean
+        securityContext?: {
+          sessionId?: string
+          userAgent?: string
+          ipAddress?: string
+          geolocation?: string
+        }
+      }
+      const receivedEvents: TestAuditEvent[] = []
 
       // Subscribe to real-time events (will fail - not implemented)
       const unsubscribe = await logger.subscribeToSecurityEvents((event) => {
-        receivedEvents.push(event)
+        receivedEvents.push(event as TestAuditEvent)
       })
 
       // Trigger security events
@@ -136,8 +154,10 @@ describe('AuditLogger - TDD Security Enhancement', () => {
       const latestEvent = events[0]
 
       expect(latestEvent.securityContext).toBeDefined()
-      expect(latestEvent.securityContext.sessionId).toBe('test-session-123')
-      expect(latestEvent.securityContext.ipAddress).toBe('192.168.1.100')
+      if (latestEvent.securityContext) {
+        expect(latestEvent.securityContext.sessionId).toBe('test-session-123')
+        expect(latestEvent.securityContext.ipAddress).toBe('192.168.1.100')
+      }
     })
 
     // TDD RED PHASE: This test WILL FAIL - no advanced threat detection
@@ -264,14 +284,24 @@ describe('AuditLogger - TDD Security Enhancement', () => {
 
     // TDD RED PHASE: This test WILL FAIL - no automated alerting system
     it('should trigger automated alerts for critical security events', async () => {
-      const alertsTriggered: unknown[] = []
+      const alertsTriggered: {
+        type: string
+        event?: string
+        [key: string]: unknown
+      }[] = []
 
       // Mock alert handler (will fail - no alerting system)
       await logger.configureAlertHandlers({
-        onCriticalThreat: (alert) =>
-          alertsTriggered.push({ type: 'CRITICAL', ...alert }),
-        onSuspiciousActivity: (alert) =>
-          alertsTriggered.push({ type: 'SUSPICIOUS', ...alert }),
+        onCriticalThreat: (alert: unknown) =>
+          alertsTriggered.push({
+            type: 'CRITICAL',
+            ...(alert as Record<string, unknown>),
+          }),
+        onSuspiciousActivity: (alert: unknown) =>
+          alertsTriggered.push({
+            type: 'SUSPICIOUS',
+            ...(alert as Record<string, unknown>),
+          }),
       })
 
       // Trigger critical event
@@ -329,10 +359,12 @@ describe('AuditLogger - TDD Security Enhancement', () => {
       )
 
       expect(credentialErrorEvent).toBeDefined()
-      expect(credentialErrorEvent.action).toBe('CREDENTIAL_ERROR')
-      expect(credentialErrorEvent.success).toBe(false)
-      expect(credentialErrorEvent.error).toBe(testError)
-      expect(credentialErrorEvent.requestId).toBe(testRequestId)
+      if (credentialErrorEvent) {
+        expect(credentialErrorEvent.action).toBe('CREDENTIAL_ERROR')
+        expect(credentialErrorEvent.success).toBe(false)
+        expect(credentialErrorEvent.error).toBe(testError)
+        expect(credentialErrorEvent.requestId).toBe(testRequestId)
+      }
     })
 
     it('should provide logCredentialAccess method for tracking credential retrievals', async () => {
@@ -345,10 +377,12 @@ describe('AuditLogger - TDD Security Enhancement', () => {
       const accessEvent = events.find((e) => e.requestId === testRequestId)
 
       expect(accessEvent).toBeDefined()
-      expect(accessEvent.action).toBe('ACCESS_CREDENTIALS')
-      expect(accessEvent.success).toBe(true)
-      expect(accessEvent.keyId).toBe('RESEND_API_KEY,SMTP_PASSWORD')
-      expect(accessEvent.requestId).toBe(testRequestId)
+      if (accessEvent) {
+        expect(accessEvent.action).toBe('ACCESS_CREDENTIALS')
+        expect(accessEvent.success).toBe(true)
+        expect(accessEvent.keyId).toBe('RESEND_API_KEY,SMTP_PASSWORD')
+        expect(accessEvent.requestId).toBe(testRequestId)
+      }
     })
 
     it('should provide logCredentialStore method for tracking credential storage', async () => {
@@ -361,10 +395,12 @@ describe('AuditLogger - TDD Security Enhancement', () => {
       const storeEvent = events.find((e) => e.requestId === testRequestId)
 
       expect(storeEvent).toBeDefined()
-      expect(storeEvent.action).toBe('STORE_CREDENTIAL')
-      expect(storeEvent.success).toBe(true)
-      expect(storeEvent.keyId).toBe(testEnvironment)
-      expect(storeEvent.requestId).toBe(testRequestId)
+      if (storeEvent) {
+        expect(storeEvent.action).toBe('STORE_CREDENTIAL')
+        expect(storeEvent.success).toBe(true)
+        expect(storeEvent.keyId).toBe(testEnvironment)
+        expect(storeEvent.requestId).toBe(testRequestId)
+      }
     })
 
     it('should provide logCredentialTest method for encryption/decryption testing', async () => {
@@ -377,10 +413,12 @@ describe('AuditLogger - TDD Security Enhancement', () => {
       let testEvent = events.find((e) => e.requestId === testRequestId)
 
       expect(testEvent).toBeDefined()
-      expect(testEvent.action).toBe('TEST_CREDENTIAL_ENCRYPTION')
-      expect(testEvent.success).toBe(true)
-      expect(testEvent.keyId).toBe('test')
-      expect(testEvent.error).toBeUndefined()
+      if (testEvent) {
+        expect(testEvent.action).toBe('TEST_CREDENTIAL_ENCRYPTION')
+        expect(testEvent.success).toBe(true)
+        expect(testEvent.keyId).toBe('test')
+        expect(testEvent.error).toBeUndefined()
+      }
 
       // Test failure result
       const failureRequestId = 'test-33333-failure'
@@ -390,9 +428,11 @@ describe('AuditLogger - TDD Security Enhancement', () => {
       testEvent = events.find((e) => e.requestId === failureRequestId)
 
       expect(testEvent).toBeDefined()
-      expect(testEvent.action).toBe('TEST_CREDENTIAL_ENCRYPTION')
-      expect(testEvent.success).toBe(false)
-      expect(testEvent.error).toBe('Encryption/decryption test failed')
+      if (testEvent) {
+        expect(testEvent.action).toBe('TEST_CREDENTIAL_ENCRYPTION')
+        expect(testEvent.success).toBe(false)
+        expect(testEvent.error).toBe('Encryption/decryption test failed')
+      }
     })
 
     it('should handle credential keys truncation for long arrays', async () => {
@@ -408,8 +448,10 @@ describe('AuditLogger - TDD Security Enhancement', () => {
       const accessEvent = events.find((e) => e.requestId === testRequestId)
 
       expect(accessEvent).toBeDefined()
-      expect(accessEvent.keyId.length).toBeLessThanOrEqual(100) // Should be truncated
-      expect(accessEvent.keyId).toContain('CREDENTIAL_KEY_0')
+      if (accessEvent) {
+        expect(accessEvent.keyId.length).toBeLessThanOrEqual(100) // Should be truncated
+        expect(accessEvent.keyId).toContain('CREDENTIAL_KEY_0')
+      }
     })
   })
 
@@ -442,13 +484,14 @@ describe('AuditLogger - TDD Security Enhancement', () => {
       const originalWriteFile = fs.writeFile
       let writeAttempts = 0
 
-      // @ts-expect-error - mocking fs for test - Mock for testing
-      fs.writeFile = async (...args: unknown[]) => {
+      // Mock fs.writeFile for testing disk space exhaustion
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      fs.writeFile = async (file: any, data: any, options?: any) => {
         writeAttempts++
         if (writeAttempts <= 3) {
           throw new Error('ENOSPC: no space left on device')
         }
-        return originalWriteFile.apply(fs, args)
+        return originalWriteFile.call(fs, file, data, options)
       }
 
       try {
@@ -464,7 +507,7 @@ describe('AuditLogger - TDD Security Enhancement', () => {
         expect(events.some((e) => e.keyId === 'DISK_FULL_TEST')).toBe(true)
       } finally {
         // Restore original function
-        // @ts-expect-error - mocking fs for test
+        // Restore original fs.writeFile function
         fs.writeFile = originalWriteFile
       }
     })

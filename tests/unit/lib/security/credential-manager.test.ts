@@ -292,7 +292,7 @@ describe('GPGCredentialManager - TDD Implementation', () => {
         expect(loadedCredentials.RESEND_API_KEY).toBe(originalApiKey)
       } catch (error) {
         // Expected to fail in RED phase - no GPG key setup
-        expect(error.message).toMatch(/GPG|key|encryption/i)
+        expect((error as Error).message).toMatch(/GPG|key|encryption/i)
       }
     })
   })

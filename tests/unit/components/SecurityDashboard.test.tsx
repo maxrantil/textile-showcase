@@ -117,7 +117,7 @@ describe('SecurityDashboard - TDD Implementation', () => {
 
     // Mock AuditLogger constructor
     ;(AuditLogger as jest.MockedClass<typeof AuditLogger>).mockImplementation(
-      () => mockAuditLogger as unknown
+      () => mockAuditLogger as unknown as AuditLogger
     )
   })
 
@@ -428,13 +428,13 @@ describe('SecurityDashboard - TDD Implementation', () => {
 
     // TDD RED PHASE: This test WILL FAIL - no internationalization
     it('should support internationalization for global deployment', async () => {
-      // Mock i18n context
-      const _mockI18n = {
-        t: jest.fn((key) =>
-          key === 'security.dashboard.title' ? 'Tableau de Bord Sécurité' : key
-        ),
-        language: 'fr',
-      }
+      // Mock i18n context for future implementation
+      // const mockI18n = {
+      //   t: jest.fn((key) =>
+      //     key === 'security.dashboard.title' ? 'Tableau de Bord Sécurité' : key
+      //   ),
+      //   language: 'fr',
+      // }
 
       // This would need i18n provider in actual implementation
       render(<SecurityDashboard />)
