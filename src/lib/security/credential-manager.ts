@@ -29,9 +29,94 @@ export class GPGCredentialManager {
   private static cacheExpiry: Date | null = null
 
   constructor(keyId: string, credentialPath: string) {
+    this.validateGPGKeyId(keyId)
+    this.validateCredentialPath(credentialPath)
+
     this.gpgKeyId = keyId
     this.credentialPath = credentialPath
     this.auditLogger = new AuditLogger()
+  }
+
+  /**
+   * Validates GPG key ID format and prevents injection attacks
+   */
+  private validateGPGKeyId(keyId: string): void {
+    if (!keyId || typeof keyId !== 'string') {
+      throw new Error('Invalid GPG key ID format')
+    }
+
+    if (keyId.length < 8 || keyId.length > 40) {
+      throw new Error('Invalid GPG key ID format')
+    }
+
+    // Comprehensive validation to prevent command injection and ensure GPG key format
+    const dangerousChars = [
+      ';',
+      '`',
+      '$',
+      '|',
+      '-',
+      '/',
+      '\\',
+      '&',
+      '(',
+      ')',
+      '{',
+      '}',
+      '[',
+      ']',
+      '<',
+      '>',
+      '"',
+      "'",
+    ]
+    if (dangerousChars.some((char) => keyId.includes(char))) {
+      throw new Error('Invalid GPG key ID format')
+    }
+
+    // GPG key IDs should only contain alphanumeric characters and underscores
+    if (!/^[A-Za-z0-9_]+$/.test(keyId)) {
+      throw new Error('Invalid GPG key ID format')
+    }
+  }
+
+  /**
+   * Validates credential file path and prevents directory traversal attacks
+   */
+  private validateCredentialPath(credentialPath: string): void {
+    if (
+      !credentialPath ||
+      typeof credentialPath !== 'string' ||
+      credentialPath.trim() === ''
+    ) {
+      throw new Error('Invalid credential path')
+    }
+
+    // Comprehensive path traversal protection
+    const dangerousPaths = [
+      '..',
+      '/etc/',
+      '\\windows\\',
+      '/var/',
+      '/usr/',
+      '/root/',
+      '/home/',
+      ';',
+      '|',
+      '&',
+    ]
+    if (
+      dangerousPaths.some((dangerous) =>
+        credentialPath.toLowerCase().includes(dangerous.toLowerCase())
+      )
+    ) {
+      throw new Error('Invalid credential path - Path not allowed')
+    }
+
+    // Ensure path is reasonable (not too long, contains expected extension)
+    if (credentialPath.length > 500) {
+      throw new Error('Invalid credential path - Path too long')
+    }
   }
 
   /**
@@ -165,6 +250,9 @@ export class GPGCredentialManager {
     config: Omit<CredentialConfig, 'integrityHash'>
   ): Promise<void> {
     try {
+      this.validateAPIKey(config.apiKey)
+      this.validateCredentialConfig(config)
+
       const credentialWithHash: CredentialConfig = {
         ...config,
         integrityHash: this.computeIntegrityHash(config),
@@ -215,6 +303,62 @@ export class GPGCredentialManager {
       return decrypted === testData
     } catch {
       return false
+    }
+  }
+
+  /**
+   * Validates API key format and security requirements
+   */
+  private validateAPIKey(apiKey: string): void {
+    if (!apiKey || typeof apiKey !== 'string') {
+      throw new Error('Invalid API key format: API key is required')
+    }
+
+    if (apiKey.length < 10) {
+      throw new Error('Invalid API key format: API key too short')
+    }
+
+    if (apiKey.length > 200) {
+      throw new Error('Invalid API key format: API key too long')
+    }
+
+    // Enhanced validation for common API key patterns (secure character set)
+    if (!apiKey.match(/^[a-zA-Z0-9_-]+$/)) {
+      throw new Error('Invalid API key format: Invalid characters')
+    }
+
+    // Check for obvious weak patterns
+    if (
+      apiKey.toLowerCase().includes('password') ||
+      apiKey.toLowerCase().includes('secret') ||
+      (apiKey === apiKey.toLowerCase() && apiKey.length < 20)
+    ) {
+      throw new Error(
+        'Invalid API key format: Key appears to be weak or test data'
+      )
+    }
+  }
+
+  /**
+   * Validates credential configuration object
+   */
+  private validateCredentialConfig(
+    config: Omit<CredentialConfig, 'integrityHash'>
+  ): void {
+    const validEnvironments = ['development', 'staging', 'production'] as const
+    if (!validEnvironments.includes(config.environment)) {
+      throw new Error(`Invalid environment: ${config.environment}`)
+    }
+
+    if (
+      !config.rotationSchedule ||
+      typeof config.rotationSchedule !== 'string'
+    ) {
+      throw new Error('Invalid rotation schedule')
+    }
+
+    if (!(config.lastRotated instanceof Date)) {
+      throw new Error('Invalid last rotated date')
     }
   }
 

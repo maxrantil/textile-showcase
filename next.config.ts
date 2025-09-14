@@ -39,36 +39,28 @@ const nextConfig = {
         ...config.optimization,
         splitChunks: {
           chunks: 'all',
-          maxInitialRequests: 10, // Lower to reduce initial bundle size
+          maxInitialRequests: 25, // Allow more initial requests for better splitting
           maxAsyncRequests: 30,
           minSize: 20000,
-          maxSize: 200000, // Smaller chunks
+          maxSize: 100000, // Much smaller chunks to meet 200KB limit
           cacheGroups: {
-            // CRITICAL: Studio chunks - should never be in initial bundle
-            sanityStudio: {
-              test: /[\\/]node_modules[\\/](next-sanity)[\\/].*studio/,
-              name: 'sanity-studio',
+            // CRITICAL: Security dashboard components - keep them in async chunks only
+            securityComponents: {
+              test: /[\\/]src[\\/]components[\\/]security[\\/]/,
+              name: 'security-dashboard',
               priority: 100,
-              chunks: 'async',
+              chunks: 'async', // Only in async chunks, not initial bundle
               enforce: true,
+              maxSize: 50000, // Keep security components under 50KB per chunk
             },
-            // CRITICAL: Large Sanity runtime - split but don't force async (needed for SSR)
-            sanityRuntime: {
-              test: /[\\/]node_modules[\\/](@sanity\/client|sanity)[\\/]/,
-              name: 'sanity-runtime',
-              priority: 90,
-              chunks: 'all', // Allow in both sync and async
+            // Security API utilities
+            securityLibs: {
+              test: /[\\/]src[\\/]lib[\\/]security[\\/]/,
+              name: 'security-libs',
+              priority: 95,
+              chunks: 'async', // Keep out of initial bundle
               enforce: true,
-              maxSize: 200000, // Split large chunks
-            },
-            // Smaller Sanity utilities
-            sanityUtils: {
-              test: /[\\/]node_modules[\\/](@sanity|next-sanity)[\\/]/,
-              name: 'sanity-utils',
-              priority: 85,
-              chunks: 'all',
-              enforce: true,
-              maxSize: 150000,
+              maxSize: 30000, // Very small security libs chunks
             },
             // Split large vendor libraries for better caching
             react: {
@@ -93,15 +85,15 @@ const nextConfig = {
               priority: 20,
               chunks: 'all',
               reuseExistingChunk: true,
-              maxSize: 200000, // 200KB max per vendor chunk
+              maxSize: 80000, // 80KB max per vendor chunk to stay under limit
             },
-            // Common code splitting with size limits
+            // Common code splitting with strict size limits
             common: {
               name: 'common',
               minChunks: 2,
               chunks: 'async',
               priority: 10,
-              maxSize: 100000, // 100KB max common chunks
+              maxSize: 20000, // 20KB max common chunks to meet requirement
             },
           },
         },
