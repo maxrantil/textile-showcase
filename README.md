@@ -59,6 +59,7 @@ A high-performance, SEO-optimized Next.js 15 portfolio website showcasing contem
 - **Bundle Size Optimization**: Sanity Studio chunk detection and categorization
 
 **Security Routes:**
+
 - `/security` - Main security dashboard (requires auth in production)
 - `/api/security/dashboard-data` - Real-time security metrics
 - `/api/security/credentials` - GPG-encrypted credential management

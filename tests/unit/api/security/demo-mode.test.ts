@@ -54,7 +54,7 @@ describe('Demo Mode Toggle - TDD Implementation', () => {
       const request = mockNextRequest(
         'http://localhost:3000/api/security/dashboard-data'
       )
-      const response = await GET(request as NextRequest)
+      const response = await GET(request as unknown as NextRequest)
       const data = await response.json()
 
       expect(data.success).toBe(true)
@@ -74,7 +74,7 @@ describe('Demo Mode Toggle - TDD Implementation', () => {
       const request = mockNextRequest(
         'http://localhost:3000/api/security/dashboard-data'
       )
-      const response = await GET(request as NextRequest)
+      const response = await GET(request as unknown as NextRequest)
       const data = await response.json()
 
       expect(data.success).toBe(true)
@@ -93,7 +93,7 @@ describe('Demo Mode Toggle - TDD Implementation', () => {
       const request = mockNextRequest(
         'http://localhost:3000/api/security/dashboard-data'
       )
-      const response = await GET(request as NextRequest)
+      const response = await GET(request as unknown as NextRequest)
       const data = await response.json()
 
       expect(data.success).toBe(true)
@@ -116,7 +116,7 @@ describe('Demo Mode Toggle - TDD Implementation', () => {
       const request = mockNextRequest(
         'http://localhost:3000/api/security/dashboard-data'
       )
-      const response = await GET(request as NextRequest)
+      const response = await GET(request as unknown as NextRequest)
       const data = await response.json()
 
       expect(data.demoMode).toBe(true)
@@ -144,7 +144,7 @@ describe('Demo Mode Toggle - TDD Implementation', () => {
       const request = mockNextRequest(
         'http://localhost:3000/api/security/dashboard-data'
       )
-      const response = await GET(request as NextRequest)
+      const response = await GET(request as unknown as NextRequest)
       const data = await response.json()
 
       expect(data.demoMode).toBe(true)
@@ -180,7 +180,7 @@ describe('Demo Mode Toggle - TDD Implementation', () => {
       const request = mockNextRequest(
         'http://localhost:3000/api/security/dashboard-data'
       )
-      const response = await GET(request as NextRequest)
+      const response = await GET(request as unknown as NextRequest)
       const data = await response.json()
 
       expect(data.demoMode).toBe(true)
@@ -214,7 +214,7 @@ describe('Demo Mode Toggle - TDD Implementation', () => {
       const request = mockNextRequest(
         'http://localhost:3000/api/security/dashboard-data'
       )
-      const response = await GET(request as NextRequest)
+      const response = await GET(request as unknown as NextRequest)
       const data = await response.json()
 
       expect(data.demoMode).toBe(true)
@@ -243,7 +243,7 @@ describe('Demo Mode Toggle - TDD Implementation', () => {
       const request = mockNextRequest(
         'http://localhost:3000/api/security/dashboard-data'
       )
-      const response = await GET(request as NextRequest)
+      const response = await GET(request as unknown as NextRequest)
       const data = await response.json()
 
       expect(data.demoMode).toBe(true)
@@ -284,7 +284,7 @@ describe('Demo Mode Toggle - TDD Implementation', () => {
       const request = mockNextRequest(
         'http://localhost:3000/api/security/dashboard-data'
       )
-      const response = await GET(request as NextRequest)
+      const response = await GET(request as unknown as NextRequest)
       const data = await response.json()
 
       expect(data.demoMode).toBe(true)

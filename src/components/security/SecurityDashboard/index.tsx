@@ -105,9 +105,9 @@ export const SecurityDashboard: React.FC<SecurityDashboardProps> = ({
       const data = result.data
       setMetrics(data.metrics)
       setRecentEvents(
-        data.recentAlerts.map((event: unknown) => ({
+        data.recentAlerts.map((event: any) => ({
           ...event,
-          timestamp: new Date(event.timestamp),
+          timestamp: new Date((event as { timestamp: string }).timestamp),
         }))
       )
       setThreats(data.threatAnalysis)
