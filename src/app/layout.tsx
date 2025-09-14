@@ -10,6 +10,8 @@ import {
 } from './metadata/base-metadata'
 import {
   organizationStructuredData,
+  artistStructuredData,
+  websiteStructuredData,
   generateStructuredDataScript,
 } from './metadata/structured-data'
 import { HtmlHead } from './components/html-head'
@@ -37,6 +39,8 @@ export default function RootLayout({ children }: RootLayoutProps) {
     <html lang="en" className={`${inter.variable} ${notoSans.variable}`}>
       <HtmlHead>
         {generateStructuredDataScript(organizationStructuredData)}
+        {generateStructuredDataScript(artistStructuredData)}
+        {generateStructuredDataScript(websiteStructuredData)}
       </HtmlHead>
 
       <body className="bg-white font-sans antialiased">
