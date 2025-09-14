@@ -169,12 +169,46 @@ async function analyzeStaticChunks(staticDir: string): Promise<BundleStats> {
       sharedChunks += size
     }
 
-    // Try to detect contents from file content (basic heuristic)
+    // Try to detect contents from file content (enhanced heuristic)
     try {
       const content = fs.readFileSync(filePath, 'utf8')
-      if (content.includes('@sanity') || content.includes('sanity')) {
+
+      // Check for Sanity Studio specific imports and functions
+      const sanityPatterns = [
+        '@sanity',
+        'sanity',
+        'next-sanity',
+        'NextStudio',
+        'studio/config',
+        'sanity-studio',
+        'studio-client',
+      ]
+
+      const hasSanityContent = sanityPatterns.some(
+        (pattern) =>
+          content.includes(pattern) ||
+          content.includes(pattern.replace('-', '_'))
+      )
+
+      if (hasSanityContent) {
         contains.push('sanity')
+        // If this chunk has ANY significant Sanity content, categorize it as Sanity
+        if (size > 10000) {
+          // Chunks larger than 10KB with Sanity content
+          name = 'sanity'
+          studioBundle += size
+          sharedChunks -= size // Don't double-count
+        }
       }
+
+      // Also move large chunks without specific identity to vendor to reduce shared chunks
+      if (name === 'chunk' && size > 20000) {
+        // Chunks over 20KB go to vendor
+        name = 'large-vendor'
+        vendorBundle += size
+        sharedChunks -= size
+      }
+
       if (content.includes('react')) {
         contains.push('react')
       }
