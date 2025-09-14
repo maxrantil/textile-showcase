@@ -398,6 +398,8 @@ export class AuditLogger {
   }): Promise<void> {
     // Stub implementation - retention not applied yet
     // This allows tests to pass while providing framework for future implementation
+    // Config will be used in future implementation
+    void _config
   }
 
   /**
@@ -410,6 +412,8 @@ export class AuditLogger {
     _timestamp?: Date
   ): Promise<void> {
     // Stub implementation - just logs with current timestamp for now
+    // Timestamp will be used in future implementation
+    void _timestamp
     await this.logSecurityEvent(event, severity, details)
   }
 
