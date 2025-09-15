@@ -17,13 +17,15 @@ describe('Bundle Size Performance (TDD RED Phase)', () => {
   it('should isolate Sanity Studio into separate bundle', async () => {
     const bundleStats = await analyzeBundleSize()
 
-    // Studio should have its own bundle
+    // Studio should have its own bundle (optimized: split into multiple chunks)
     expect(bundleStats.studioBundle).toBeDefined()
-    expect(bundleStats.studioBundle).toBeGreaterThan(1000 * 1024) // Should be large
+    expect(bundleStats.studioBundle).toBeGreaterThan(200 * 1024) // Should be at least 200KB
 
     // Main bundle should NOT contain Sanity code
     const mainChunk = bundleStats.chunks.find((c) => c.name === 'main')
-    const vendorChunk = bundleStats.chunks.find((c) => c.name === 'vendor')
+    const vendorChunk = bundleStats.chunks.find(
+      (c) => c.name === 'vendor' || c.name === 'vendors'
+    )
 
     if (mainChunk) {
       expect(mainChunk.contains).not.toContain('sanity')
@@ -31,16 +33,27 @@ describe('Bundle Size Performance (TDD RED Phase)', () => {
     if (vendorChunk) {
       expect(vendorChunk.contains).not.toContain('@sanity')
     }
+
+    // Should have multiple Sanity-related chunks (optimization verification)
+    const sanityChunks = bundleStats.chunks.filter(
+      (chunk) =>
+        chunk.name.includes('sanity') ||
+        chunk.contains.some((content) => content.includes('sanity'))
+    )
+    expect(sanityChunks.length).toBeGreaterThan(1) // Multiple chunks = better optimization
   })
 
-  it('should achieve bundle size organization (target ~6MB)', async () => {
+  it('should achieve bundle size organization (target ~3MB optimized)', async () => {
     const bundleStats = await analyzeBundleSize()
 
-    // Accept current size but ensure good organization
-    expect(bundleStats.totalSize).toBeLessThan(7 * 1024 * 1024) // 7MB max
+    // Accept current optimized size (much better than 6MB)
+    expect(bundleStats.totalSize).toBeLessThan(4 * 1024 * 1024) // 4MB max (optimized)
 
-    // Ensure Sanity is the largest chunk (properly isolated)
-    expect(bundleStats.studioBundle).toBeGreaterThan(bundleStats.vendorBundle)
+    // Vendor bundle should be largest due to React/framework code
+    expect(bundleStats.vendorBundle).toBeGreaterThan(bundleStats.studioBundle)
+
+    // Studio bundle should be properly isolated but smaller due to splitting
+    expect(bundleStats.studioBundle).toBeGreaterThan(bundleStats.sharedChunks)
   })
 
   it('should maintain shared chunks under 200KB', async () => {

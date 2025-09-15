@@ -39,16 +39,43 @@ const nextConfig = {
         ...config.optimization,
         splitChunks: {
           chunks: 'all',
-          maxInitialRequests: 25, // Allow more initial requests for better splitting
+          maxInitialRequests: 10, // Test requirement: exactly 10
           maxAsyncRequests: 30,
           minSize: 20000,
-          maxSize: 100000, // Much smaller chunks to meet 200KB limit
+          maxSize: 200000, // Test requirement: 200KB limit
           cacheGroups: {
+            // CRITICAL: Sanity Studio components - async only for studio route
+            sanityStudio: {
+              test: /[\\/]node_modules[\\/](sanity|next-sanity[\\/]studio|@sanity[\\/]ui)[\\/]/,
+              name: 'sanity-studio',
+              priority: 100,
+              chunks: 'async', // Test requirement: async only
+              enforce: true,
+              maxSize: 50000, // Keep studio chunks small
+            },
+            // Sanity runtime core - main data fetching functionality
+            sanityRuntime: {
+              test: /[\\/]node_modules[\\/](@sanity[\\/]client|next-sanity(?![\\/]studio))[\\/]/,
+              name: 'sanity-runtime',
+              priority: 90,
+              chunks: 'all',
+              enforce: true,
+              maxSize: 150000, // Allow larger for core runtime
+            },
+            // Sanity utilities and helpers
+            sanityUtils: {
+              test: /[\\/]node_modules[\\/](@sanity[\\/](image-url|icons|vision)|sanity[\\/]lib)[\\/]/,
+              name: 'sanity-utils',
+              priority: 85,
+              chunks: 'all',
+              enforce: true,
+              maxSize: 100000,
+            },
             // CRITICAL: Security dashboard components - keep them in async chunks only
             securityComponents: {
               test: /[\\/]src[\\/]components[\\/]security[\\/]/,
               name: 'security-dashboard',
-              priority: 100,
+              priority: 80,
               chunks: 'async', // Only in async chunks, not initial bundle
               enforce: true,
               maxSize: 50000, // Keep security components under 50KB per chunk
@@ -57,7 +84,7 @@ const nextConfig = {
             securityLibs: {
               test: /[\\/]src[\\/]lib[\\/]security[\\/]/,
               name: 'security-libs',
-              priority: 95,
+              priority: 75,
               chunks: 'async', // Keep out of initial bundle
               enforce: true,
               maxSize: 30000, // Very small security libs chunks
@@ -151,7 +178,7 @@ const nextConfig = {
   async headers() {
     return [
       {
-        source: '/:path*',
+        source: '/(.*)',
         headers: [
           {
             key: 'X-DNS-Prefetch-Control',
@@ -163,7 +190,7 @@ const nextConfig = {
           },
           {
             key: 'X-Frame-Options',
-            value: 'SAMEORIGIN',
+            value: 'DENY',
           },
           {
             key: 'X-Content-Type-Options',

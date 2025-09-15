@@ -69,7 +69,7 @@ describe('SecurityDashboard API Integration Fix - TDD Validation', () => {
       // Should display the loaded data
       await waitFor(() => {
         expect(screen.getByText('93')).toBeInTheDocument() // Total events
-        expect(screen.getByText('Security Dashboard')).toBeInTheDocument()
+        expect(screen.getByText('🔐 Security Dashboard')).toBeInTheDocument()
       })
     })
 
@@ -206,7 +206,7 @@ describe('SecurityDashboard API Integration Fix - TDD Validation', () => {
       // Should eventually show loaded data
       await waitFor(() => {
         expect(screen.queryByText(/loading.../i)).not.toBeInTheDocument()
-        expect(screen.getByText('Security Dashboard')).toBeInTheDocument()
+        expect(screen.getByText('🔐 Security Dashboard')).toBeInTheDocument()
       })
     })
   })
@@ -279,7 +279,7 @@ describe('SecurityDashboard API Integration Fix - TDD Validation', () => {
           name: /security metrics/i,
         })
         expect(metricsSection).toBeInTheDocument()
-        expect(screen.getByText('Security Dashboard')).toBeInTheDocument()
+        expect(screen.getByText('🔐 Security Dashboard')).toBeInTheDocument()
       })
     })
   })

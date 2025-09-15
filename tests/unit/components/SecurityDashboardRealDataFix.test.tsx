@@ -117,8 +117,11 @@ describe('SecurityDashboard Real Data Loading Fix - TDD', () => {
         { timeout: 5000 }
       )
 
-      // Should have called the API
-      expect(mockFetch).toHaveBeenCalledWith('/api/security/dashboard-data')
+      // Should have called the API (may include cache-busting parameters)
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringMatching(/^\/api\/security\/dashboard-data(\?.*)?$/),
+        expect.any(Object)
+      )
 
       // Should show the dashboard content
       expect(screen.getByText('🔐 Security Dashboard')).toBeInTheDocument()

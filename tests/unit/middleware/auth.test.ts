@@ -18,27 +18,58 @@ const mockNextRequest = (url: string, headers: Record<string, string> = {}) => {
   }
 }
 
+const mockRedirect = jest.fn()
+const mockNext = jest.fn()
+
 const mockNextResponse = {
-  redirect: jest.fn((url: string) => ({ redirected: true, url })),
-  next: jest.fn(() => ({
-    continued: true,
-    headers: {
-      set: jest.fn(),
-    },
-  })),
+  redirect: mockRedirect,
+  next: mockNext,
+}
+
+// Mock URL constructor for redirect tests
+global.URL = jest.fn().mockImplementation((url: string, base?: string) => {
+  if (base) {
+    return new (jest.requireActual('url').URL)(url, base)
+  }
+  return new (jest.requireActual('url').URL)(url)
+})
+
+// Create proper mocks for the static methods
+const MockedNextResponse = {
+  redirect: jest.fn((url: URL) => {
+    mockRedirect(url.toString())
+    return { redirected: true, url: url.toString() }
+  }),
+  next: jest.fn(() => {
+    mockNext()
+    return {
+      continued: true,
+      headers: {
+        set: jest.fn(),
+      },
+    }
+  }),
 }
 
 jest.mock('next/server', () => ({
   NextRequest: jest.fn(),
-  NextResponse: mockNextResponse,
+  NextResponse: MockedNextResponse,
 }))
 
 describe('Authentication Layer - TDD Implementation', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    mockRedirect.mockClear()
+    mockNext.mockClear()
+    MockedNextResponse.redirect.mockClear()
+    MockedNextResponse.next.mockClear()
+    // Clear module cache to ensure fresh imports with new env variables
+    jest.resetModules()
     // Reset environment
     delete process.env.SECURITY_ENABLED
     delete process.env.AUTH_SECRET
+    delete process.env.VALID_AUTH_TOKEN
+    delete process.env.USER_ROLES
   })
 
   describe('Demo Mode Authentication', () => {
@@ -50,11 +81,11 @@ describe('Authentication Layer - TDD Implementation', () => {
       const { middleware } = await import('../../../src/middleware')
 
       const request = mockNextRequest('http://localhost:3000/security')
-      const response = await middleware(request as any)
+      await middleware(request as unknown as NextRequest)
 
       // Should allow access without authentication in demo mode
-      expect(mockNextResponse.next).toHaveBeenCalled()
-      expect(mockNextResponse.redirect).not.toHaveBeenCalled()
+      expect(MockedNextResponse.next).toHaveBeenCalled()
+      expect(MockedNextResponse.redirect).not.toHaveBeenCalled()
     })
 
     // TDD RED PHASE: Test will fail - no middleware implementation yet
@@ -66,11 +97,11 @@ describe('Authentication Layer - TDD Implementation', () => {
       const request = mockNextRequest(
         'http://localhost:3000/security/dashboard'
       )
-      const response = await middleware(request as any)
+      await middleware(request as unknown as NextRequest)
 
       // Should allow access without authentication in demo mode
-      expect(mockNextResponse.next).toHaveBeenCalled()
-      expect(mockNextResponse.redirect).not.toHaveBeenCalled()
+      expect(MockedNextResponse.next).toHaveBeenCalled()
+      expect(MockedNextResponse.redirect).not.toHaveBeenCalled()
     })
   })
 
@@ -85,13 +116,15 @@ describe('Authentication Layer - TDD Implementation', () => {
       const { middleware } = await import('../../../src/middleware')
 
       const request = mockNextRequest('http://localhost:3000/security')
-      const response = await middleware(request as any)
+      await middleware(request as unknown as NextRequest)
 
       // Should redirect to login
-      expect(mockNextResponse.redirect).toHaveBeenCalledWith(
-        'http://localhost:3000/auth/login?redirect=%2Fsecurity'
+      expect(MockedNextResponse.redirect).toHaveBeenCalledWith(
+        expect.objectContaining({
+          href: 'http://localhost:3000/auth/login?redirect=%2Fsecurity',
+        })
       )
-      expect(mockNextResponse.next).not.toHaveBeenCalled()
+      expect(MockedNextResponse.next).not.toHaveBeenCalled()
     })
 
     // TDD RED PHASE: Test will fail - no auth implementation
@@ -106,12 +139,13 @@ describe('Authentication Layer - TDD Implementation', () => {
 
       // Mock token validation (would be implemented with real auth)
       process.env.VALID_AUTH_TOKEN = validToken
+      process.env.USER_ROLES = 'security_admin' // Give user security access
 
-      const response = await middleware(request as any)
+      await middleware(request as unknown as NextRequest)
 
       // Should allow access with valid token
-      expect(mockNextResponse.next).toHaveBeenCalled()
-      expect(mockNextResponse.redirect).not.toHaveBeenCalled()
+      expect(MockedNextResponse.next).toHaveBeenCalled()
+      expect(MockedNextResponse.redirect).not.toHaveBeenCalled()
     })
 
     // TDD RED PHASE: Test will fail - no auth implementation
@@ -124,13 +158,15 @@ describe('Authentication Layer - TDD Implementation', () => {
         Cookie: `auth-token=${invalidToken}`,
       })
 
-      const response = await middleware(request as any)
+      await middleware(request as unknown as NextRequest)
 
       // Should redirect to login with invalid token
-      expect(mockNextResponse.redirect).toHaveBeenCalledWith(
-        'http://localhost:3000/auth/login?redirect=%2Fsecurity'
+      expect(MockedNextResponse.redirect).toHaveBeenCalledWith(
+        expect.objectContaining({
+          href: 'http://localhost:3000/auth/login?redirect=%2Fsecurity',
+        })
       )
-      expect(mockNextResponse.next).not.toHaveBeenCalled()
+      expect(MockedNextResponse.next).not.toHaveBeenCalled()
     })
 
     // TDD RED PHASE: Test will fail - no role-based access
@@ -147,11 +183,11 @@ describe('Authentication Layer - TDD Implementation', () => {
       process.env.VALID_AUTH_TOKEN = userToken
       process.env.USER_ROLES = 'security_viewer'
 
-      const response = await middleware(request as any)
+      await middleware(request as unknown as NextRequest)
 
       // Should allow access with appropriate role
-      expect(mockNextResponse.next).toHaveBeenCalled()
-      expect(mockNextResponse.redirect).not.toHaveBeenCalled()
+      expect(MockedNextResponse.next).toHaveBeenCalled()
+      expect(MockedNextResponse.redirect).not.toHaveBeenCalled()
     })
 
     // TDD RED PHASE: Test will fail - no role-based access
@@ -168,13 +204,15 @@ describe('Authentication Layer - TDD Implementation', () => {
       process.env.VALID_AUTH_TOKEN = userToken
       process.env.USER_ROLES = 'regular_user'
 
-      const response = await middleware(request as any)
+      await middleware(request as unknown as NextRequest)
 
       // Should redirect to unauthorized page
-      expect(mockNextResponse.redirect).toHaveBeenCalledWith(
-        'http://localhost:3000/unauthorized'
+      expect(MockedNextResponse.redirect).toHaveBeenCalledWith(
+        expect.objectContaining({
+          href: 'http://localhost:3000/unauthorized',
+        })
       )
-      expect(mockNextResponse.next).not.toHaveBeenCalled()
+      expect(MockedNextResponse.next).not.toHaveBeenCalled()
     })
   })
 
@@ -190,8 +228,8 @@ describe('Authentication Layer - TDD Implementation', () => {
       const publicResponse = await middleware(publicRequest as any)
 
       // Should allow access to public routes
-      expect(mockNextResponse.next).toHaveBeenCalled()
-      expect(mockNextResponse.redirect).not.toHaveBeenCalled()
+      expect(MockedNextResponse.next).toHaveBeenCalled()
+      expect(MockedNextResponse.redirect).not.toHaveBeenCalled()
 
       jest.clearAllMocks()
 
@@ -200,8 +238,8 @@ describe('Authentication Layer - TDD Implementation', () => {
       const apiResponse = await middleware(apiRequest as any)
 
       // Should allow access to non-security API routes
-      expect(mockNextResponse.next).toHaveBeenCalled()
-      expect(mockNextResponse.redirect).not.toHaveBeenCalled()
+      expect(MockedNextResponse.next).toHaveBeenCalled()
+      expect(MockedNextResponse.redirect).not.toHaveBeenCalled()
     })
 
     // TDD RED PHASE: Test will fail - no route matching
@@ -224,13 +262,15 @@ describe('Authentication Layer - TDD Implementation', () => {
         jest.clearAllMocks()
 
         const request = mockNextRequest(`http://localhost:3000${route}`)
-        const response = await middleware(request as any)
+        await middleware(request as unknown as NextRequest)
 
         // All security routes should require auth in production
-        expect(mockNextResponse.redirect).toHaveBeenCalledWith(
-          expect.stringContaining('/auth/login?redirect=')
+        expect(MockedNextResponse.redirect).toHaveBeenCalledWith(
+          expect.objectContaining({
+            href: expect.stringContaining('/auth/login?redirect='),
+          })
         )
-        expect(mockNextResponse.next).not.toHaveBeenCalled()
+        expect(MockedNextResponse.next).not.toHaveBeenCalled()
       }
     })
   })
@@ -244,11 +284,13 @@ describe('Authentication Layer - TDD Implementation', () => {
 
       const originalUrl = '/security/dashboard?filter=critical'
       const request = mockNextRequest(`http://localhost:3000${originalUrl}`)
-      const response = await middleware(request as any)
+      await middleware(request as unknown as NextRequest)
 
       // Should redirect to login with return URL
-      expect(mockNextResponse.redirect).toHaveBeenCalledWith(
-        `http://localhost:3000/auth/login?redirect=${encodeURIComponent(originalUrl)}`
+      expect(MockedNextResponse.redirect).toHaveBeenCalledWith(
+        expect.objectContaining({
+          href: `http://localhost:3000/auth/login?redirect=${encodeURIComponent(originalUrl)}`,
+        })
       )
     })
 
@@ -263,11 +305,13 @@ describe('Authentication Layer - TDD Implementation', () => {
         Cookie: `auth-token=${expiredToken}; expires=Thu, 01 Jan 1970 00:00:00 GMT`,
       })
 
-      const response = await middleware(request as any)
+      await middleware(request as unknown as NextRequest)
 
       // Should redirect to login for expired session (without reason parameter for now)
-      expect(mockNextResponse.redirect).toHaveBeenCalledWith(
-        'http://localhost:3000/auth/login?redirect=%2Fsecurity'
+      expect(MockedNextResponse.redirect).toHaveBeenCalledWith(
+        expect.objectContaining({
+          href: 'http://localhost:3000/auth/login?redirect=%2Fsecurity',
+        })
       )
     })
   })
@@ -285,11 +329,12 @@ describe('Authentication Layer - TDD Implementation', () => {
       })
 
       process.env.VALID_AUTH_TOKEN = validToken
+      process.env.USER_ROLES = 'security_admin' // Give user security access
 
-      const response = await middleware(request as any)
+      await middleware(request as unknown as NextRequest)
 
       // Should add security headers (tested via response modification)
-      expect(mockNextResponse.next).toHaveBeenCalled()
+      expect(MockedNextResponse.next).toHaveBeenCalled()
       // Note: In real implementation, headers would be added to response
     })
   })
