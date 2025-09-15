@@ -3,6 +3,8 @@
  * Ensures secure access control while maintaining demo mode accessibility
  */
 
+import type { NextRequest } from 'next/server'
+
 // Mock Next.js middleware types
 const mockNextRequest = (url: string, headers: Record<string, string> = {}) => {
   const urlObj = new URL(url)
