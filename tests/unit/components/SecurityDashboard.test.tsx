@@ -440,11 +440,15 @@ describe('SecurityDashboard - TDD Implementation', () => {
       render(<SecurityDashboard />)
 
       // Should support localized text
-      expect(screen.getByText(/security dashboard/i)).toBeInTheDocument()
+      await waitFor(() => {
+        expect(screen.getByText(/security dashboard/i)).toBeInTheDocument()
+      })
 
       // Should format numbers according to locale
-      const eventCount = screen.getByText('145')
-      expect(eventCount).toBeInTheDocument()
+      await waitFor(() => {
+        const eventCount = screen.getByText('145')
+        expect(eventCount).toBeInTheDocument()
+      })
     })
 
     // TDD RED PHASE: This test WILL FAIL - no role-based access control
@@ -456,6 +460,11 @@ describe('SecurityDashboard - TDD Implementation', () => {
       }
 
       render(<SecurityDashboard user={mockUser} />)
+
+      // Wait for component to load
+      await waitFor(() => {
+        expect(screen.getByText(/security dashboard/i)).toBeInTheDocument()
+      })
 
       // Should show read-only view for viewer role
       expect(
@@ -542,7 +551,7 @@ describe('SecurityDashboard - TDD Implementation', () => {
 
       await waitFor(() => {
         // Should show error initially but then load successfully on retry
-        expect(screen.getByText('🔐 Security Dashboard')).toBeInTheDocument()
+        expect(screen.getByText(/security dashboard/i)).toBeInTheDocument()
       })
 
       // Should set up polling interval

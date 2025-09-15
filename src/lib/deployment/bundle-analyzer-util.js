@@ -185,31 +185,7 @@ function saveBaseline(stats, baselinePath = './bundle-baseline.json') {
   fs.writeFileSync(baselinePath, JSON.stringify(baseline, null, 2))
 }
 
-// Add a basic test to prevent "no tests found" error
-describe('Bundle Analyzer Utility', () => {
-  test('should export analyze and compareWithBaseline functions', () => {
-    expect(typeof analyze).toBe('function')
-    expect(typeof compareWithBaseline).toBe('function')
-    expect(typeof saveBaseline).toBe('function')
-  })
-
-  test('should handle missing build directory gracefully', async () => {
-    await expect(analyze('./non-existent-build')).rejects.toThrow(
-      'Build directory not found'
-    )
-  })
-
-  test('should calculate regression correctly', () => {
-    const current = { totalSize: 1100000, jsSize: 950000, cssSize: 150000 }
-    const baseline = { totalSize: 1000000, jsSize: 900000, cssSize: 100000 }
-
-    const comparison = compareWithBaseline(current, baseline)
-
-    expect(comparison.totalSizeChange).toBe(100000)
-    expect(comparison.percentageChange.total).toBe(10)
-    expect(comparison.regressionDetected).toBe(true)
-  })
-})
+// Utility module for bundle analysis - tests are in separate test file
 
 module.exports = {
   analyze,

@@ -80,7 +80,7 @@ export const SecurityDashboard: React.FC<SecurityDashboardProps> = ({
   const translations = useMemo(
     () => ({
       en: {
-        security_status: 'Security Status',
+        security_status: '🔐 Security Dashboard',
         recent_events: 'Recent Events',
         security_alerts: 'Security Alerts',
         keyboard_shortcuts: 'Keyboard Shortcuts',
@@ -88,6 +88,7 @@ export const SecurityDashboard: React.FC<SecurityDashboardProps> = ({
         total_events: 'Total Events',
         no_events: 'No security events to display.',
         clear_all_alerts: 'Clear All Alerts',
+        export_data: 'Export Data',
         critical_status: 'Critical Status Indicator',
         auth_required: 'Authentication required to access security dashboard.',
         session_expired: 'Your session has expired. Please log in again.',
@@ -97,7 +98,7 @@ export const SecurityDashboard: React.FC<SecurityDashboardProps> = ({
         event_error: 'Error processing security event notification',
       },
       es: {
-        security_status: 'Estado de Seguridad',
+        security_status: '🔐 Panel de Seguridad',
         recent_events: 'Eventos Recientes',
         security_alerts: 'Alertas de Seguridad',
         keyboard_shortcuts: 'Atajos de Teclado',
@@ -105,6 +106,7 @@ export const SecurityDashboard: React.FC<SecurityDashboardProps> = ({
         total_events: 'Total de Eventos',
         no_events: 'No hay eventos de seguridad para mostrar.',
         clear_all_alerts: 'Limpiar Todas las Alertas',
+        export_data: 'Exportar Datos',
         critical_status: 'Indicador de Estado Crítico',
         auth_required:
           'Se requiere autenticación para acceder al panel de seguridad.',
@@ -116,7 +118,7 @@ export const SecurityDashboard: React.FC<SecurityDashboardProps> = ({
         event_error: 'Error procesando notificación de evento de seguridad',
       },
       de: {
-        security_status: 'Sicherheitsstatus',
+        security_status: '🔐 Sicherheits-Dashboard',
         recent_events: 'Kürzliche Ereignisse',
         security_alerts: 'Sicherheitswarnungen',
         keyboard_shortcuts: 'Tastaturkürzel',
@@ -124,6 +126,7 @@ export const SecurityDashboard: React.FC<SecurityDashboardProps> = ({
         total_events: 'Gesamt Ereignisse',
         no_events: 'Keine Sicherheitsereignisse anzuzeigen.',
         clear_all_alerts: 'Alle Warnungen Löschen',
+        export_data: 'Daten Exportieren',
         critical_status: 'Kritischer Statusindikator',
         auth_required:
           'Authentifizierung erforderlich für Zugriff auf Sicherheits-Dashboard.',
@@ -136,7 +139,7 @@ export const SecurityDashboard: React.FC<SecurityDashboardProps> = ({
           'Fehler bei der Verarbeitung von Sicherheitsereignisbenachrichtigung',
       },
       fr: {
-        security_status: 'État de Sécurité',
+        security_status: '🔐 Tableau de Sécurité',
         recent_events: 'Événements Récents',
         security_alerts: 'Alertes de Sécurité',
         keyboard_shortcuts: 'Raccourcis Clavier',
@@ -144,6 +147,7 @@ export const SecurityDashboard: React.FC<SecurityDashboardProps> = ({
         total_events: 'Total des Événements',
         no_events: 'Aucun événement de sécurité à afficher.',
         clear_all_alerts: 'Effacer Toutes les Alertes',
+        export_data: 'Exporter les Données',
         critical_status: "Indicateur d'État Critique",
         auth_required:
           'Authentification requise pour accéder au tableau de bord sécurité.',
@@ -484,6 +488,19 @@ export const SecurityDashboard: React.FC<SecurityDashboardProps> = ({
           style={{ minWidth: '44px', minHeight: '44px', padding: '8px' }}
         >
           {t('clear_all_alerts')}
+        </button>
+
+        <button
+          data-testid="security-export-data-button"
+          aria-label={t('export_data')}
+          style={{
+            minWidth: '44px',
+            minHeight: '44px',
+            padding: '8px',
+            marginLeft: '8px',
+          }}
+        >
+          {t('export_data')}
         </button>
 
         <div

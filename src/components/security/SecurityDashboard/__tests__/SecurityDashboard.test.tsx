@@ -116,7 +116,7 @@ describe('SecurityDashboard - WCAG 2.1 AA Compliance Tests', () => {
 
     // Required heading structure for WCAG compliance
     expect(
-      screen.getByRole('heading', { level: 1, name: /security status/i })
+      screen.getByRole('heading', { level: 1, name: /security dashboard/i })
     ).toBeInTheDocument()
     expect(
       screen.getByRole('heading', { level: 2, name: /recent events/i })
@@ -659,7 +659,7 @@ describe('SecurityDashboard - Internationalization Tests', () => {
       </SecurityProvider>
     )
 
-    expect(screen.getByText(/estado de seguridad/i)).toBeInTheDocument() // "Security Status" in Spanish
+    expect(screen.getByText(/panel de seguridad/i)).toBeInTheDocument() // "Security Dashboard" in Spanish
     expect(screen.getByText(/eventos recientes/i)).toBeInTheDocument() // "Recent Events" in Spanish
   })
 

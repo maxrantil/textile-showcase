@@ -92,7 +92,7 @@ describe('Production Deployment Configuration - TDD RED PHASE', () => {
 
   describe('Bundle Size Validation', () => {
     test('should validate production bundle size limits', async () => {
-      const bundleAnalyzer = require('./bundle-analyzer')
+      const bundleAnalyzer = require('../../src/lib/deployment/bundle-analyzer-util')
 
       // This will fail - bundle analyzer doesn't exist yet
       const bundleStats = await bundleAnalyzer.analyze('./.next')
@@ -104,7 +104,7 @@ describe('Production Deployment Configuration - TDD RED PHASE', () => {
     })
 
     test('should detect bundle size regressions', async () => {
-      const bundleAnalyzer = require('./bundle-analyzer')
+      const bundleAnalyzer = require('../../src/lib/deployment/bundle-analyzer-util')
       const previousStats = require('./bundle-baseline.json')
 
       const currentStats = await bundleAnalyzer.analyze('./.next')
