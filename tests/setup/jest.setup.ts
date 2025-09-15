@@ -152,6 +152,8 @@ Object.defineProperty(process.env, 'NODE_ENV', {
 })
 process.env.NEXT_PUBLIC_SANITY_PROJECT_ID = 'test-project'
 process.env.NEXT_PUBLIC_SANITY_DATASET = 'test'
+process.env.AGENT_SECRET_KEY =
+  'test-secret-key-for-testing-environment-32-chars'
 
 // Phase 3: Test regression tracking
 let testStartTime: number

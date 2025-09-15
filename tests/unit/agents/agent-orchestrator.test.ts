@@ -8,6 +8,11 @@ import {
   OrchestrationRequest,
 } from '../../../src/lib/agents/agent-orchestrator'
 
+// Ensure test environment has proper secret key
+const originalEnv = process.env.AGENT_SECRET_KEY
+process.env.AGENT_SECRET_KEY =
+  'test-secret-key-for-testing-environment-32-chars'
+
 describe('AgentOrchestrator - TDD Integration Tests', () => {
   let orchestrator: AgentOrchestrator
 
@@ -498,4 +503,13 @@ describe('AgentOrchestrator - TDD Integration Tests', () => {
       expect(typeof result.approved).toBe('boolean')
     })
   })
+})
+
+// Restore original environment after tests
+afterAll(() => {
+  if (originalEnv) {
+    process.env.AGENT_SECRET_KEY = originalEnv
+  } else {
+    delete process.env.AGENT_SECRET_KEY
+  }
 })

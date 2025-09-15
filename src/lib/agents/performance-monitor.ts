@@ -1,6 +1,7 @@
 // ABOUTME: Performance SLA monitoring system with circuit breaker patterns
 // Enforces <2 minute validation cycles and resource usage limits
 
+import crypto from 'crypto'
 import {
   PerformanceMetrics,
   ValidationPipeline,
@@ -45,6 +46,8 @@ export class PerformanceMonitor {
   private performanceHistory: PerformanceMetrics[] = []
   private alerts: PerformanceAlert[] = []
   private resourceMonitoring: ResourceUsage[] = []
+  private static cachedSecretKey: string | null = null
+  private static secretKeyValidated: boolean = false
   private auditLog: AuditEntry[] = []
 
   constructor() {
@@ -419,15 +422,41 @@ export class PerformanceMonitor {
     }, 10000) // Monitor every 10 seconds
   }
 
+  private validateSecretKey(): string {
+    // Return cached key if already validated
+    if (
+      PerformanceMonitor.secretKeyValidated &&
+      PerformanceMonitor.cachedSecretKey
+    ) {
+      return PerformanceMonitor.cachedSecretKey
+    }
+
+    const secretKey = process.env.AGENT_SECRET_KEY
+
+    if (!secretKey || secretKey === 'default-key') {
+      throw new Error(
+        'Default secret key detected. Set AGENT_SECRET_KEY environment variable.'
+      )
+    }
+
+    if (secretKey.length < 16) {
+      throw new Error('Secret key must be at least 16 characters long.')
+    }
+
+    // Cache the validated key
+    PerformanceMonitor.cachedSecretKey = secretKey
+    PerformanceMonitor.secretKeyValidated = true
+
+    return secretKey
+  }
+
   private generateMetricsSignature(metrics: PerformanceMetrics): string {
-    import('crypto').then((crypto) => {
-      const hash = crypto.createHash('sha256')
-      const payload = JSON.stringify(metrics)
-      hash.update(payload + (process.env.AGENT_SECRET_KEY || 'default-key'))
-      return hash.digest('hex')
-    })
-    // Fallback for immediate return
-    return 'mock-signature-' + Date.now()
+    const secretKey = this.validateSecretKey()
+
+    const hash = crypto.createHash('sha256')
+    const payload = JSON.stringify(metrics)
+    hash.update(payload + secretKey)
+    return hash.digest('hex')
   }
 
   private logAuditEntry(entry: AuditEntry): void {

@@ -9,6 +9,11 @@ import {
   ContextScope,
 } from '../../../src/lib/agents/agent-coordination'
 
+// Ensure test environment has proper secret key
+const originalEnv = process.env.AGENT_SECRET_KEY
+process.env.AGENT_SECRET_KEY =
+  'test-secret-key-for-testing-environment-32-chars'
+
 describe('AgentIsolationFramework - TDD Implementation', () => {
   let framework: AgentIsolationFramework
   let mockAgent: AgentType
@@ -19,7 +24,7 @@ describe('AgentIsolationFramework - TDD Implementation', () => {
       name: 'test-agent',
       version: '1.0.0',
       capabilities: ['test-capability'],
-      trustLevel: 'HIGH',
+      trustLevel: 'MEDIUM', // MEDIUM trust level doesn't require certificate
     }
   })
 
@@ -299,4 +304,77 @@ describe('AgentIsolationFramework - TDD Implementation', () => {
       ).rejects.toThrow('failed cryptographic verification')
     })
   })
+
+  describe('Certificate-Based Authentication', () => {
+    test('should reject agents without valid certificates', () => {
+      const agentWithoutCert: AgentType = {
+        name: 'malicious-agent',
+        version: '1.0.0',
+        capabilities: ['vulnerability-assessment'],
+        trustLevel: 'CRITICAL',
+        // Missing certificate property
+      }
+
+      expect(() => {
+        framework.registerAgent(agentWithoutCert)
+      }).toThrow(
+        'Agent certificate validation failed. Certificate is required for registration.'
+      )
+    })
+
+    test('should reject agents with invalid certificates', () => {
+      const agentWithInvalidCert: AgentType = {
+        name: 'suspicious-agent',
+        version: '1.0.0',
+        capabilities: ['vulnerability-assessment'],
+        trustLevel: 'CRITICAL',
+        certificate: 'invalid-certificate-data',
+      }
+
+      expect(() => {
+        framework.registerAgent(agentWithInvalidCert)
+      }).toThrow(
+        'Agent certificate validation failed. Invalid certificate format.'
+      )
+    })
+
+    test('should accept agents with valid certificates', () => {
+      const agentWithValidCert: AgentType = {
+        name: 'trusted-agent',
+        version: '1.0.0',
+        capabilities: ['vulnerability-assessment'],
+        trustLevel: 'CRITICAL',
+        certificate: 'LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0t', // Mock valid cert
+      }
+
+      expect(() => {
+        framework.registerAgent(agentWithValidCert)
+      }).not.toThrow()
+    })
+
+    test('should verify certificate signatures during registration', () => {
+      const agentWithExpiredCert: AgentType = {
+        name: 'expired-agent',
+        version: '1.0.0',
+        capabilities: ['vulnerability-assessment'],
+        trustLevel: 'CRITICAL',
+        certificate: 'expired-cert-data',
+      }
+
+      expect(() => {
+        framework.registerAgent(agentWithExpiredCert)
+      }).toThrow(
+        'Agent certificate validation failed. Certificate has expired or is not yet valid.'
+      )
+    })
+  })
+})
+
+// Restore original environment after tests
+afterAll(() => {
+  if (originalEnv) {
+    process.env.AGENT_SECRET_KEY = originalEnv
+  } else {
+    delete process.env.AGENT_SECRET_KEY
+  }
 })

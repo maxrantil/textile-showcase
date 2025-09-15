@@ -4,7 +4,10 @@
  */
 
 import { ConsensusEngine } from '../../../src/lib/agents/consensus-engine'
-import { AgentType, AgentValidationResult } from '../../../src/lib/agents/agent-coordination'
+import {
+  AgentType,
+  AgentValidationResult,
+} from '../../../src/lib/agents/agent-coordination'
 
 describe('ConsensusEngine - TDD Implementation', () => {
   let consensusEngine: ConsensusEngine
@@ -411,4 +414,53 @@ describe('ConsensusEngine - TDD Implementation', () => {
       timestamp: new Date(),
     }
   }
+
+  describe('Security - Default Key Prevention', () => {
+    it('should reject default secret keys', async () => {
+      // Temporarily set environment to use default key
+      const originalKey = process.env.AGENT_SECRET_KEY
+      delete process.env.AGENT_SECRET_KEY
+
+      // This should throw an error when trying to validate with default key
+      const mockResult = createMockValidationResult(
+        mockSecurityAgent,
+        'APPROVED',
+        4.5
+      )
+
+      await expect(async () => {
+        await consensusEngine.validateConsensus([mockResult], 'security')
+      }).rejects.toThrow(
+        'Default secret key detected. Set AGENT_SECRET_KEY environment variable.'
+      )
+
+      // Restore original environment
+      if (originalKey) {
+        process.env.AGENT_SECRET_KEY = originalKey
+      }
+    })
+
+    it('should accept valid environment secret key', async () => {
+      const originalKey = process.env.AGENT_SECRET_KEY
+      process.env.AGENT_SECRET_KEY = 'secure-test-key-123'
+
+      // This should work with a proper key
+      const mockResult = createMockValidationResult(
+        mockSecurityAgent,
+        'APPROVED',
+        4.5
+      )
+
+      await expect(async () => {
+        await consensusEngine.validateConsensus([mockResult], 'security')
+      }).not.toThrow()
+
+      // Restore original environment
+      if (originalKey) {
+        process.env.AGENT_SECRET_KEY = originalKey
+      } else {
+        delete process.env.AGENT_SECRET_KEY
+      }
+    })
+  })
 })

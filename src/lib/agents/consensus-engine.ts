@@ -1,6 +1,7 @@
 // ABOUTME: Consensus-based validation engine with security-first authority model
 // Implements multi-signature validation and immutable security decisions
 
+import crypto from 'crypto'
 import {
   AgentValidationResult,
   AgentConflict,
@@ -55,6 +56,8 @@ export class ConsensusEngine {
   private consensusRequirements: ConsensusRequirements
   private securityDecisions: Map<string, SecurityDecision> = new Map()
   private auditLog: AuditEntry[] = []
+  private static cachedSecretKey: string | null = null
+  private static secretKeyValidated: boolean = false
 
   constructor() {
     // Security-first consensus model as specified in PDR
@@ -458,21 +461,45 @@ export class ConsensusEngine {
     return 3.0 // Neutral score for conditional approval
   }
 
+  private validateSecretKey(): string {
+    // Return cached key if already validated
+    if (ConsensusEngine.secretKeyValidated && ConsensusEngine.cachedSecretKey) {
+      return ConsensusEngine.cachedSecretKey
+    }
+
+    const secretKey = process.env.AGENT_SECRET_KEY
+
+    if (!secretKey || secretKey === 'default-key') {
+      throw new Error(
+        'Default secret key detected. Set AGENT_SECRET_KEY environment variable.'
+      )
+    }
+
+    if (secretKey.length < 16) {
+      throw new Error('Secret key must be at least 16 characters long.')
+    }
+
+    // Cache the validated key
+    ConsensusEngine.cachedSecretKey = secretKey
+    ConsensusEngine.secretKeyValidated = true
+
+    return secretKey
+  }
+
   private generateConsensusSignature(result: ConsensusResult): string {
+    // Validate secret key before generating signature
+    const secretKey = this.validateSecretKey()
+
     // Generate cryptographic signature for consensus result
-    import('crypto').then((crypto) => {
-      const hash = crypto.createHash('sha256')
-      const payload = JSON.stringify({
-        approved: result.approved,
-        consensusAchieved: result.consensusAchieved,
-        finalScore: result.finalScore,
-        timestamp: Date.now(),
-      })
-      hash.update(payload + (process.env.AGENT_SECRET_KEY || 'default-key'))
-      return hash.digest('hex')
+    const hash = crypto.createHash('sha256')
+    const payload = JSON.stringify({
+      approved: result.approved,
+      consensusAchieved: result.consensusAchieved,
+      finalScore: result.finalScore,
+      timestamp: Date.now(),
     })
-    // Fallback for immediate return
-    return 'mock-signature-' + Date.now()
+    hash.update(payload + secretKey)
+    return hash.digest('hex')
   }
 
   private logAuditEntry(entry: AuditEntry): void {

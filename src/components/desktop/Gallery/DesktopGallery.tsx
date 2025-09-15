@@ -154,7 +154,7 @@ export function DesktopGallery({ designs }: DesktopGalleryProps) {
       try {
         setIsRestoring(true)
 
-        const savedIndex = await scrollManager.restore(pathname)
+        const savedIndex = await scrollManager.restore(pathname ?? undefined)
 
         if (
           savedIndex !== null &&
@@ -197,7 +197,7 @@ export function DesktopGallery({ designs }: DesktopGalleryProps) {
     }
 
     const timeoutId = setTimeout(() => {
-      scrollManager.save(currentIndex, pathname)
+      scrollManager.save(currentIndex, pathname ?? undefined)
       lastSavedIndexRef.current = currentIndex
     }, 1000)
 
@@ -214,7 +214,7 @@ export function DesktopGallery({ designs }: DesktopGalleryProps) {
       }
 
       // Save current position before navigating
-      scrollManager.saveImmediate(currentIndex, pathname)
+      scrollManager.saveImmediate(currentIndex, pathname ?? undefined)
       lastSavedIndexRef.current = currentIndex
 
       // Track analytics
@@ -302,7 +302,7 @@ export function DesktopGallery({ designs }: DesktopGalleryProps) {
               isActive={index === currentIndex}
               onNavigate={() => {
                 // Save current position immediately before navigating
-                scrollManager.saveImmediate(currentIndex, pathname)
+                scrollManager.saveImmediate(currentIndex, pathname ?? undefined)
                 lastSavedIndexRef.current = currentIndex
               }}
             />

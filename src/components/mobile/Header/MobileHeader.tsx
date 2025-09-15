@@ -25,7 +25,7 @@ export function MobileHeader() {
       <MobileMenu
         isOpen={isMenuOpen}
         onClose={() => setIsMenuOpen(false)}
-        pathname={pathname}
+        pathname={pathname ?? '/'}
       />
     </>
   )

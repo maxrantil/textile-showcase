@@ -207,6 +207,7 @@ export class AgentOrchestrator {
           'technical-approach',
         ],
         trustLevel: 'HIGH',
+        certificate: 'LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0t', // Mock valid cert for HIGH trust
       },
       {
         name: 'security-validator',
@@ -217,6 +218,7 @@ export class AgentOrchestrator {
           'threat-analysis',
         ],
         trustLevel: 'CRITICAL',
+        certificate: 'LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0t', // Mock valid cert for CRITICAL trust
       },
       {
         name: 'performance-optimizer',
@@ -227,12 +229,14 @@ export class AgentOrchestrator {
           'bottleneck-detection',
         ],
         trustLevel: 'HIGH',
+        certificate: 'LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0t', // Mock valid cert for HIGH trust
       },
       {
         name: 'code-quality-analyzer',
         version: '1.0.0',
         capabilities: ['code-review', 'testing-coverage', 'best-practices'],
         trustLevel: 'HIGH',
+        certificate: 'LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0t', // Mock valid cert for HIGH trust
       },
       {
         name: 'ux-accessibility-i18n-agent',

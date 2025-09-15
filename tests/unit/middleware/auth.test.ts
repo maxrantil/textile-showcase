@@ -23,18 +23,8 @@ const mockNextRequest = (url: string, headers: Record<string, string> = {}) => {
 const mockRedirect = jest.fn()
 const mockNext = jest.fn()
 
-const mockNextResponse = {
-  redirect: mockRedirect,
-  next: mockNext,
-}
-
 // Mock URL constructor for redirect tests
-global.URL = jest.fn().mockImplementation((url: string, base?: string) => {
-  if (base) {
-    return new (jest.requireActual('url').URL)(url, base)
-  }
-  return new (jest.requireActual('url').URL)(url)
-})
+global.URL = jest.requireActual('url').URL
 
 // Create proper mocks for the static methods
 const MockedNextResponse = {
@@ -227,7 +217,7 @@ describe('Authentication Layer - TDD Implementation', () => {
 
       // Test public route
       const publicRequest = mockNextRequest('http://localhost:3000/')
-      const publicResponse = await middleware(publicRequest as any)
+      await middleware(publicRequest as unknown as NextRequest)
 
       // Should allow access to public routes
       expect(MockedNextResponse.next).toHaveBeenCalled()
@@ -237,7 +227,7 @@ describe('Authentication Layer - TDD Implementation', () => {
 
       // Test API routes that aren't security
       const apiRequest = mockNextRequest('http://localhost:3000/api/health')
-      const apiResponse = await middleware(apiRequest as any)
+      await middleware(apiRequest as unknown as NextRequest)
 
       // Should allow access to non-security API routes
       expect(MockedNextResponse.next).toHaveBeenCalled()
