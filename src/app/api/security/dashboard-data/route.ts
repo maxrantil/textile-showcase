@@ -141,18 +141,23 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         : getDefaultHealthStatus()
 
     // Convert AuditEvent[] to SecurityEvent[] for calculations
-    const securityEvents: SecurityEvent[] = events.map(event => ({
+    const securityEvents: SecurityEvent[] = events.map((event) => ({
       ...event,
       timestamp: event.timestamp.toISOString(),
     }))
 
-    const securityAlertEvents: SecurityEvent[] = alerts.map(alert => ({
+    const securityAlertEvents: SecurityEvent[] = alerts.map((alert) => ({
       ...alert,
       timestamp: alert.timestamp.toISOString(),
     }))
 
     // Calculate overview statistics
-    const overview = calculateOverview(securityEvents, securityAlertEvents, threats, health)
+    const overview = calculateOverview(
+      securityEvents,
+      securityAlertEvents,
+      threats,
+      health
+    )
 
     // Calculate detailed statistics
     const statistics = calculateStatistics(securityEvents)
