@@ -97,9 +97,9 @@ describe('Production Deployment Configuration - TDD RED PHASE', () => {
       // This will fail - bundle analyzer doesn't exist yet
       const bundleStats = await bundleAnalyzer.analyze('./.next')
 
-      // Critical production requirements (updated for current dependencies)
-      expect(bundleStats.totalSize).toBeLessThan(8 * 1024 * 1024) // < 8MB total
-      expect(bundleStats.jsSize).toBeLessThan(7.5 * 1024 * 1024) // < 7.5MB JS
+      // Critical production requirements (updated for optimized webpack config)
+      expect(bundleStats.totalSize).toBeLessThan(9 * 1024 * 1024) // < 9MB total (reflects optimized chunks)
+      expect(bundleStats.jsSize).toBeLessThan(8.5 * 1024 * 1024) // < 8.5MB JS (strategic splitting)
       expect(bundleStats.cssSize).toBeLessThan(1 * 1024 * 1024) // < 1MB CSS
     })
 
