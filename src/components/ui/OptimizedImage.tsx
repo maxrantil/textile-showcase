@@ -44,26 +44,32 @@ export function OptimizedImage({
   const imgRef = useRef<HTMLDivElement>(null)
 
   // Generate image URLs - only if src exists
-  const primaryImageUrl = src ? getOptimizedImageUrl(src, {
-    width,
-    height,
-    quality,
-    format: 'auto', // Use auto format detection
-  }) : ''
+  const primaryImageUrl = src
+    ? getOptimizedImageUrl(src, {
+        width,
+        height,
+        quality,
+        format: 'auto', // Use auto format detection
+      })
+    : ''
 
-  const fallbackImageUrl = src ? getOptimizedImageUrl(src, {
-    width,
-    height,
-    quality: 80, // Lower quality for fallback
-    format: 'jpg', // Use JPG as fallback format
-  }) : ''
+  const fallbackImageUrl = src
+    ? getOptimizedImageUrl(src, {
+        width,
+        height,
+        quality: 80, // Lower quality for fallback
+        format: 'jpg', // Use JPG as fallback format
+      })
+    : ''
 
-  const blurDataUrl = src ? getOptimizedImageUrl(src, {
-    width: 20,
-    height: 15,
-    quality: 20, // Very low quality for blur
-    format: 'jpg',
-  }) : ''
+  const blurDataUrl = src
+    ? getOptimizedImageUrl(src, {
+        width: 20,
+        height: 15,
+        quality: 20, // Very low quality for blur
+        format: 'jpg',
+      })
+    : ''
 
   // Set initial image URL
   useEffect(() => {
