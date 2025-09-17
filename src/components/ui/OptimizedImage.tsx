@@ -2,16 +2,12 @@
 
 import { useState, useRef, useEffect } from 'react'
 import Image from 'next/image'
-import {
-  getOptimizedImageUrl,
-  getFallbackImageUrl,
-  getBlurDataUrl,
-} from '@/sanity/imageHelpers'
+import { getOptimizedImageUrl } from '@/utils/image-helpers'
 import { ImageLoadingPlaceholder } from './LoadingSpinner'
-import type { SanityImageSource } from '@sanity/image-url/lib/types/types'
+import type { ImageSource } from '@/types/textile'
 
 interface OptimizedImageProps {
-  src: SanityImageSource | null | undefined
+  src: ImageSource | null | undefined
   alt: string
   width?: number
   height?: number
@@ -47,21 +43,27 @@ export function OptimizedImage({
   const [usesFallback, setUsesFallback] = useState(false)
   const imgRef = useRef<HTMLDivElement>(null)
 
-  // Generate image URLs
-  const primaryImageUrl = getOptimizedImageUrl(src, {
+  // Generate image URLs - only if src exists
+  const primaryImageUrl = src ? getOptimizedImageUrl(src, {
     width,
     height,
     quality,
     format: 'auto', // Use auto format detection
-  })
+  }) : ''
 
-  const fallbackImageUrl = getFallbackImageUrl(src, {
+  const fallbackImageUrl = src ? getOptimizedImageUrl(src, {
     width,
     height,
-    quality,
-  })
+    quality: 80, // Lower quality for fallback
+    format: 'jpg', // Use JPG as fallback format
+  }) : ''
 
-  const blurDataUrl = getBlurDataUrl(src)
+  const blurDataUrl = src ? getOptimizedImageUrl(src, {
+    width: 20,
+    height: 15,
+    quality: 20, // Very low quality for blur
+    format: 'jpg',
+  }) : ''
 
   // Set initial image URL
   useEffect(() => {

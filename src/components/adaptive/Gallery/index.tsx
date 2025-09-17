@@ -1,9 +1,31 @@
 'use client'
 import { useDeviceType } from '@/hooks/shared/useDeviceType'
-import { MobileGallery } from '@/components/mobile/Gallery'
-import { DesktopGallery } from '@/components/desktop/Gallery'
 import { TextileDesign } from '@/sanity/types'
 import { useState, useEffect } from 'react'
+import dynamic from 'next/dynamic'
+
+// Dynamic imports for gallery components to reduce initial bundle size
+const MobileGallery = dynamic(
+  () =>
+    import('@/components/mobile/Gallery').then((mod) => ({
+      default: mod.MobileGallery,
+    })),
+  {
+    loading: () => <div className="gallery-loading">Loading gallery...</div>,
+    ssr: false,
+  }
+)
+
+const DesktopGallery = dynamic(
+  () =>
+    import('@/components/desktop/Gallery').then((mod) => ({
+      default: mod.DesktopGallery,
+    })),
+  {
+    loading: () => <div className="gallery-loading">Loading gallery...</div>,
+    ssr: false,
+  }
+)
 
 interface GalleryProps {
   designs: TextileDesign[]

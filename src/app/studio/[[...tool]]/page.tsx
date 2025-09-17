@@ -27,22 +27,41 @@ const NextStudio = dynamic(
   }
 )
 
-// PERFORMANCE: Lazy load studio config to reduce initial bundle
-async function loadStudioConfig() {
-  const configModule = await import('../../../../sanity.config')
-  return configModule.default
+// PERFORMANCE: Lazy load all studio dependencies to minimize bundle impact
+async function loadStudioDependencies() {
+  // Load studio configuration and client factory in parallel
+  const [configModule, { createStudioClient }, { getStudioUtilities }] =
+    await Promise.all([
+      import('../../../../sanity.config'),
+      import('../../../sanity/studio-client'),
+      import('../../../sanity/studio-client'),
+    ])
+
+  // Initialize client and get utilities
+  const [client, utilities] = await Promise.all([
+    createStudioClient(),
+    getStudioUtilities(),
+  ])
+
+  return {
+    config: configModule.default,
+    client,
+    utilities,
+  }
 }
 
 export default function StudioPage() {
-  const [config, setConfig] = useState<Config | null>(null)
+  const [dependencies, setDependencies] = useState<{ config: Config } | null>(
+    null
+  )
 
   useEffect(() => {
-    loadStudioConfig().then((loadedConfig) => {
-      setConfig(loadedConfig)
+    loadStudioDependencies().then((loaded) => {
+      setDependencies(loaded)
     })
   }, [])
 
-  if (!config) {
+  if (!dependencies) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
@@ -58,7 +77,7 @@ export default function StudioPage() {
         </div>
       }
     >
-      <NextStudio config={config} />
+      <NextStudio config={dependencies.config} />
     </Suspense>
   )
 }

@@ -48,18 +48,34 @@ const nextConfig = {
         splitChunks: {
           chunks: 'all',
           maxInitialRequests: isSafariBuild ? 6 : 10, // Reduce for Safari
-          maxAsyncRequests: isSafariBuild ? 15 : 30, // Reduce async chunks for Safari
-          minSize: isSafariBuild ? 40000 : 20000, // Larger chunks for Safari
-          maxSize: isSafariBuild ? 150000 : 200000, // Slightly smaller max for Safari
+          maxAsyncRequests: isSafariBuild ? 12 : 25, // Conservative chunk limits
+          minSize: isSafariBuild ? 50000 : 30000, // Larger minimum chunks
+          maxSize: isSafariBuild ? 200000 : 250000, // Allow bigger chunks
           cacheGroups: {
-            // CRITICAL: Sanity Studio components - async only for studio route
-            sanityStudio: {
-              test: /[\\/]node_modules[\\/](sanity|next-sanity[\\/]studio|@sanity[\\/]ui)[\\/]/,
-              name: 'sanity-studio',
-              priority: 100,
-              chunks: 'async', // Test requirement: async only
+            // CRITICAL: Balanced Sanity Studio chunking strategy
+            sanityStudioCore: {
+              test: /[\\/]node_modules[\\/](sanity[\\/](lib|desk|form)|@sanity[\\/]ui[\\/]core)[\\/]/,
+              name: 'sanity-studio-core',
+              priority: 105,
+              chunks: 'async',
               enforce: true,
-              maxSize: 50000, // Keep studio chunks small
+              maxSize: 80000, // Reasonable chunks for core studio
+            },
+            sanityStudioComponents: {
+              test: /[\\/]node_modules[\\/](@sanity[\\/]ui|next-sanity[\\/]studio)[\\/]/,
+              name: 'sanity-studio-components',
+              priority: 100,
+              chunks: 'async',
+              enforce: true,
+              maxSize: 100000, // Larger component chunks for efficiency
+            },
+            sanityStudioPlugins: {
+              test: /[\\/]node_modules[\\/](sanity[\\/]plugins|@sanity[\\/](vision|structure))[\\/]/,
+              name: 'sanity-studio-plugins',
+              priority: 95,
+              chunks: 'async',
+              enforce: true,
+              maxSize: 60000, // Medium plugin chunks
             },
             // Sanity runtime core - main data fetching functionality
             sanityRuntime: {
@@ -113,14 +129,31 @@ const nextConfig = {
               chunks: 'all',
               reuseExistingChunk: true,
             },
-            // Vendor chunk optimization - exclude large libraries
-            vendor: {
-              test: /[\\/]node_modules[\\/](?!(@sanity|sanity|next-sanity|react|react-dom|@radix-ui|framer-motion)).*[\\/]/,
-              name: 'vendors',
+            // CRITICAL: Aggressive vendor chunk consolidation to reduce HTTP requests
+            // Split into 3 strategic chunks instead of 13+ fragments
+            vendorCore: {
+              test: /[\\/]node_modules[\\/](next|react-is|scheduler)[\\/]/,
+              name: 'vendor-core',
+              priority: 25,
+              chunks: 'all',
+              enforce: true,
+              maxSize: 200000, // 200KB for core Next.js
+            },
+            vendorUtils: {
+              test: /[\\/]node_modules[\\/](?!(@sanity|sanity|next-sanity|react|react-dom|next|react-is|scheduler|styled-components)).*[\\/]/,
+              name: 'vendor-utils',
               priority: 20,
               chunks: 'all',
               reuseExistingChunk: true,
-              maxSize: 80000, // 80KB max per vendor chunk to stay under limit
+              maxSize: 300000, // 300KB consolidated chunk for utilities
+            },
+            vendorStyles: {
+              test: /[\\/]node_modules[\\/](styled-components|@emotion)[\\/]/,
+              name: 'vendor-styles',
+              priority: 22,
+              chunks: 'all',
+              reuseExistingChunk: true,
+              maxSize: 150000, // 150KB for styling libraries
             },
             // Common code splitting with strict size limits
             common: {
@@ -133,16 +166,22 @@ const nextConfig = {
           },
         },
         // ENHANCED: Aggressive tree shaking and module optimization
-        usedExports: true,
-        sideEffects: false,
+        usedExports: 'global', // Global scope tree shaking for better dead code elimination
+        sideEffects: false, // Critical for Sanity modules
         providedExports: true,
         concatenateModules: true, // Enable module concatenation
         // Minimize bundle overhead
         moduleIds: 'deterministic',
         chunkIds: 'deterministic',
-        // Remove unused code aggressively
+        // Remove unused code aggressively with Sanity focus
         innerGraph: true,
         mangleExports: 'deterministic',
+        removeAvailableModules: true, // Remove unreachable code in Sanity Studio
+        removeEmptyChunks: true,
+        mergeDuplicateChunks: true,
+        // CRITICAL: Advanced module federation for micro-frontend architecture
+        realContentHash: true,
+        portableRecords: true,
         // PERFORMANCE: Enhanced minification (let Next.js handle minimizer)
         minimize: true,
       }
@@ -159,7 +198,7 @@ const nextConfig = {
         },
       }
 
-      // CRITICAL: Minimize polyfills for modern browsers
+      // CRITICAL: Minimize polyfills for modern browsers (targeting ES2020+)
       if (config.resolve?.fallback) {
         config.resolve.fallback = {
           ...config.resolve.fallback,
@@ -167,8 +206,16 @@ const nextConfig = {
           os: false,
           path: false,
           crypto: false,
+          stream: false,
+          buffer: false,
+          util: false,
+          url: false,
+          querystring: false,
         }
       }
+
+      // PERFORMANCE: Target modern browsers to reduce polyfill overhead
+      // Note: target property is deprecated, using environment through other means
     }
 
     return config

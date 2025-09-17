@@ -36,15 +36,13 @@
     "rotate-credentials": "./scripts/emergency-credential-rotation.sh",
     "credentials:test": "ts-node -e \"import('./src/lib/security/environment-loader').then(m => m.testCredentialSystem())\"",
     "credentials:status": "ts-node -e \"import('./src/lib/security/environment-loader').then(m => m.getCredentialStatus().then(console.log))\"",
-    "deploy:production": "./scripts/deploy-production.sh"
+    "deploy:production": "./scripts/deploy-production.sh",
+    "studio:install": "npm install @sanity/cli @sanity/icons @sanity/vision sanity",
+    "studio:setup": "npm run studio:install && npm run dev"
   },
   "dependencies": {
-    "@next/font": "^14.2.15",
-    "@sanity/cli": "^3.90.0",
     "@sanity/client": "^7.3.0",
-    "@sanity/icons": "^3.7.0",
     "@sanity/image-url": "^1.1.0",
-    "@sanity/vision": "^4.9.0",
     "critters": "^0.0.23",
     "isomorphic-dompurify": "^2.26.0",
     "next": "^15.3.0",
@@ -53,9 +51,14 @@
     "react-dom": "^19.0.0",
     "react-is": "^19.1.0",
     "resend": "^4.5.2",
-    "sanity": "^4.9.0",
     "sharp": "^0.34.3",
     "styled-components": "^6.1.18"
+  },
+  "peerDependencies": {
+    "@sanity/cli": "^3.90.0",
+    "@sanity/icons": "^3.7.0",
+    "@sanity/vision": "^4.9.0",
+    "sanity": "^4.9.0"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.10.2",
