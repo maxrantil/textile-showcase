@@ -7,6 +7,8 @@
     "dev:mobile": "NEXT_PUBLIC_FORCE_MOBILE=true next dev",
     "dev:desktop": "NEXT_PUBLIC_FORCE_DESKTOP=true next dev",
     "build": "NODE_OPTIONS='--max-old-space-size=1536' next build",
+    "build:dev": "NODE_OPTIONS='--max-old-space-size=4096' next build",
+    "build:production": "NODE_OPTIONS='--max-old-space-size=768' next build",
     "start": "next start",
     "lint": "next lint",
     "test": "jest",
@@ -24,8 +26,8 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:report": "playwright show-report",
     "test:e2e:smoke": "playwright test tests/e2e/workflows/smoke-test.spec.ts",
-    "build:analyze": "ANALYZE=true npm run build",
-    "build:test": "npm run build && npm run test:performance",
+    "build:analyze": "ANALYZE=true npm run build:dev",
+    "build:test": "npm run build:dev && npm run test:performance",
     "bundle:analyze": "node __tests__/deployment/bundle-analyzer.js .next && echo 'Bundle analysis complete'",
     "type-check": "tsc --noEmit",
     "security:headers": "echo 'Security headers validation not implemented yet'",
@@ -33,7 +35,8 @@
     "validate-credentials": "ts-node scripts/validate-credentials.ts",
     "rotate-credentials": "./scripts/emergency-credential-rotation.sh",
     "credentials:test": "ts-node -e \"import('./src/lib/security/environment-loader').then(m => m.testCredentialSystem())\"",
-    "credentials:status": "ts-node -e \"import('./src/lib/security/environment-loader').then(m => m.getCredentialStatus().then(console.log))\""
+    "credentials:status": "ts-node -e \"import('./src/lib/security/environment-loader').then(m => m.getCredentialStatus().then(console.log))\"",
+    "deploy:production": "./scripts/deploy-production.sh"
   },
   "dependencies": {
     "@next/font": "^14.2.15",
