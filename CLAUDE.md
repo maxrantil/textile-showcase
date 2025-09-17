@@ -193,10 +193,31 @@ project-name/
 
 **After Phase Completion**: Update implementation plan AND ensure related GitHub issues are closed with reference to completed work.
 
-Format for completed phases:
+### **MANDATORY DOCUMENTATION REQUIREMENTS**
+
+**Every phase MUST have documentation created during implementation:**
+
+1. **Phase Documentation File**: `docs/implementation/PHASE-X-[name]-[YYYY-MM-DD].md`
+2. **Real-time Updates**: Document decisions, blockers, and progress as work happens
+3. **Session Continuity**: Enable easy pickup between sessions
+4. **Consolidation**: Merge into comprehensive docs when phase completes
+
+**Documentation Must Include:**
+
+- Implementation decisions and rationale
+- Agent recommendations and validations
+- Code changes and their impact
+- Test results and coverage
+- Blockers encountered and resolutions
+- Next steps and dependencies
+
+Format for active phases:
 
 ```markdown
-## **PHASE X: NAME**
+## **PHASE X: NAME** 🔄 IN PROGRESS
+
+_Started: Date_
+_Documentation: docs/implementation/PHASE-X-[name]-[YYYY-MM-DD].md_
 
 ### Agent Validation Status:
 
@@ -205,16 +226,30 @@ Format for completed phases:
 - [ ] Performance: Not started | In progress | ✅ Complete
 - [ ] Architecture: Not started | In progress | ✅ Complete
 
-**Complete when**: All agent validations pass ✅
+### Documentation Status:
 
+- [ ] Phase doc created
+- [ ] Implementation decisions documented
+- [ ] Agent validations recorded
+- [ ] Test results documented
+- [ ] Ready for consolidation
+
+**Complete when**: All agent validations pass ✅ AND documentation complete ✅
+```
+
+Format for completed phases:
+
+```markdown
 ## **PHASE X: NAME** ✅ COMPLETE
 
 _Completed: Date_
 _Status: Brief summary_
+_Documentation: Consolidated into [final-doc-name].md_
 
 ### X.1 Subsection ✅
 
 - [x] **Task description** ✅
+- [x] **Documentation** ✅
 - **Complete when**: Criteria ✅ ACHIEVED
 ```
 
