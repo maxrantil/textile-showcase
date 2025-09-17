@@ -81,6 +81,26 @@
   scrollbar-color: #ccc transparent;
 }
 
+/* MacBook 13-inch and similar small desktop displays fix */
+/* Apply fix for screens between tablet/desktop boundary and existing 1024px responsive rule */
+@media (min-width: 769px) and (max-width: 1023px) {
+  .desktop-carousel-container {
+    justify-content: flex-start; /* Align content to left to make room */
+  }
+
+  .desktop-carousel-thumbnails {
+    left: auto;
+    right: -80px; /* Position thumbnails on right side to avoid cutoff */
+  }
+}
+
+/* For slightly larger screens (above 1024px to 1280px) - reduce left offset but keep on left */
+@media (min-width: 1025px) and (max-width: 1280px) {
+  .desktop-carousel-thumbnails {
+    left: -80px; /* Reduced offset for smaller desktop screens like MacBook 13" */
+  }
+}
+
 .desktop-carousel-thumbnails::-webkit-scrollbar {
   width: 4px;
 }
