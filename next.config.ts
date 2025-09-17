@@ -155,34 +155,25 @@ const nextConfig = {
               reuseExistingChunk: true,
               maxSize: 150000, // 150KB for styling libraries
             },
-            // Common code splitting with strict size limits
+            // Common code splitting with proper size limits
             common: {
               name: 'common',
               minChunks: 2,
               chunks: 'async',
               priority: 10,
-              maxSize: 20000, // 20KB max common chunks to meet requirement
+              minSize: 10000, // 10KB minimum
+              maxSize: 50000, // 50KB max common chunks
             },
           },
         },
-        // ENHANCED: Aggressive tree shaking and module optimization
-        usedExports: 'global', // Global scope tree shaking for better dead code elimination
-        sideEffects: false, // Critical for Sanity modules
+        // Basic optimization settings to reduce memory usage
+        usedExports: true,
+        sideEffects: false,
         providedExports: true,
-        concatenateModules: true, // Enable module concatenation
-        // Minimize bundle overhead
         moduleIds: 'deterministic',
         chunkIds: 'deterministic',
-        // Remove unused code aggressively with Sanity focus
-        innerGraph: true,
-        mangleExports: 'deterministic',
-        removeAvailableModules: true, // Remove unreachable code in Sanity Studio
         removeEmptyChunks: true,
         mergeDuplicateChunks: true,
-        // CRITICAL: Advanced module federation for micro-frontend architecture
-        realContentHash: true,
-        portableRecords: true,
-        // PERFORMANCE: Enhanced minification (let Next.js handle minimizer)
         minimize: true,
       }
 
