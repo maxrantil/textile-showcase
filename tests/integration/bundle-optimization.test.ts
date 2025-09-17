@@ -61,9 +61,13 @@ describe('Bundle Optimization Integration', () => {
       expect(nextConfigContent).toContain('sanityRuntime')
       expect(nextConfigContent).toContain('sanityUtils')
 
-      // Should have proper chunk splitting settings
-      expect(nextConfigContent).toContain('maxInitialRequests: 10')
-      expect(nextConfigContent).toContain('maxSize: 200000')
+      // Should have proper chunk splitting settings (Safari-compatible)
+      expect(nextConfigContent).toContain(
+        'maxInitialRequests: isSafariBuild ? 6 : 10'
+      )
+      expect(nextConfigContent).toContain(
+        'maxSize: isSafariBuild ? 150000 : 200000'
+      )
     })
 
     it('should configure studio chunks as async only', async () => {

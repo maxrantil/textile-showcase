@@ -116,12 +116,14 @@ describe('ContactForm Component', () => {
       expect(screen.getByText(/message sent successfully/i)).toBeInTheDocument()
     })
 
-    // Verify API was called with correct data
+    // Verify API was called with correct data (Safari-compatible headers)
     expect(global.fetch).toHaveBeenCalledWith('/api/contact', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        Accept: 'application/json',
       },
+      credentials: 'same-origin',
       body: JSON.stringify({
         name: 'John Doe',
         email: 'john@example.com',
@@ -256,7 +258,9 @@ describe('ContactForm Component', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Accept: 'application/json',
         },
+        credentials: 'same-origin',
         body: JSON.stringify({
           name: '<script>alert("XSS")</script>John Doe',
           email: 'john@example.com',

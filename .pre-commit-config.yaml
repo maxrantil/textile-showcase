@@ -38,13 +38,23 @@ repos:
         args: [--noEmit]
         pass_filenames: false
 
-      # Run tests for changed files (excluding bundle tests that need build)
+      # Run all tests except those requiring production build
       - id: jest
         name: Jest Tests
         entry: npm test -- --testPathIgnorePatterns="bundle-size|production-config|bundle-debug"
         language: system
-        files: \.(test|spec)\.(js|jsx|ts|tsx)$
-        args: [--findRelatedTests, --passWithNoTests]
+        files: \.(js|jsx|ts|tsx)$
+        args: [--findRelatedTests, --passWithNoTests, --bail]
+        pass_filenames: true
+
+      # Run critical integration tests that might be affected by config changes
+      - id: jest-integration
+        name: Integration Tests
+        entry: npm test -- tests/integration/real-contact-form.test.tsx tests/integration/bundle-optimization.test.ts
+        language: system
+        files: (next\.config\.|middleware\.|\.env|package\.json|tsconfig\.json)
+        args: [--passWithNoTests]
+        pass_filenames: false
 
   # CSS/Tailwind specific
   - repo: https://github.com/pre-commit/mirrors-prettier
