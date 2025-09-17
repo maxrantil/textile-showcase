@@ -47,7 +47,9 @@ describe('Contact Form Real Integration Tests', () => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            Accept: 'application/json',
           },
+          credentials: 'same-origin',
           body: JSON.stringify({
             name: 'John Doe',
             email: 'john.doe@example.com',

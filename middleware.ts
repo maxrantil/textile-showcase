@@ -81,12 +81,20 @@ export function middleware(request: NextRequest) {
   // Add security headers to all responses
   const response = NextResponse.next()
 
-  // Basic Content Security Policy
+  // Safari-specific CSP handling
+  const userAgent = request.headers.get('user-agent') || ''
+  const isSafari = /Version\/[\d\.]+.*Safari/.test(userAgent)
+
+  // Safari 14+ restricts 'unsafe-eval' more aggressively than other browsers
+  const scriptSrc = isSafari
+    ? "'self' 'unsafe-inline' https://cdn.sanity.io https://umami.is" // Remove 'unsafe-eval' for Safari
+    : "'self' 'unsafe-inline' 'unsafe-eval' https://cdn.sanity.io https://umami.is"
+
   response.headers.set(
     'Content-Security-Policy',
     [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.sanity.io https://umami.is",
+      `script-src ${scriptSrc}`,
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "img-src 'self' https://cdn.sanity.io https://res.cloudinary.com data: blob:",
       "font-src 'self' https://fonts.gstatic.com",
@@ -101,7 +109,12 @@ export function middleware(request: NextRequest) {
   response.headers.set('X-Frame-Options', 'DENY')
   response.headers.set('X-Content-Type-Options', 'nosniff')
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
-  response.headers.set('X-XSS-Protection', '1; mode=block')
+
+  // Safari 13-14 has issues with X-XSS-Protection header, causing rendering problems
+  if (!isSafari) {
+    response.headers.set('X-XSS-Protection', '1; mode=block')
+  }
+
   response.headers.set(
     'Permissions-Policy',
     'camera=(), microphone=(), geolocation=()'

@@ -100,11 +100,20 @@ export default function ContactForm({
       // Track form submission attempt
       UmamiEvents.contactFormSubmit()
 
+      // Safari-compatible fetch with enhanced error handling
+      const isWebKit = /WebKit/.test(navigator.userAgent)
+
       try {
         const response = await fetch('/api/contact', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            // Safari sometimes needs explicit Accept header
+            Accept: 'application/json',
+          },
           body: JSON.stringify(formData),
+          // Safari credentials handling
+          credentials: 'same-origin',
         })
 
         const data = await response.json()
@@ -130,8 +139,23 @@ export default function ContactForm({
         }
       } catch (error) {
         console.error('Error submitting form:', error)
-        const errorMessage =
+
+        // Safari-specific error detection and handling
+        let errorMessage =
           'Network error. Please check your connection and try again.'
+
+        if (isWebKit && error instanceof Error) {
+          if (error.message.includes('AbortError')) {
+            errorMessage = 'Request was cancelled. Please try again.'
+          } else if (error.message.includes('NetworkError')) {
+            errorMessage =
+              'Network connection failed. Please check your internet connection.'
+          } else if (error.message.includes('TypeError')) {
+            errorMessage =
+              'Unable to connect to server. Please try again later.'
+          }
+        }
+
         setSubmitStatus('error')
         setSubmitError(errorMessage)
 

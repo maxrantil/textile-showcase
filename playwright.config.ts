@@ -50,31 +50,29 @@ export default defineConfig({
         viewport: { width: 1920, height: 1080 },
       },
     },
-    // Temporarily disabled due to Artix Linux WebKit compatibility issues
-    // {
-    //   name: 'Desktop Safari',
-    //   use: {
-    //     ...devices['Desktop Safari'],
-    //     viewport: { width: 1920, height: 1080 },
-    //   },
-    // },
+    {
+      name: 'Desktop Safari',
+      use: {
+        ...devices['Desktop Safari'],
+        viewport: { width: 1920, height: 1080 },
+      },
+    },
 
     // Mobile devices
     {
       name: 'Mobile Chrome',
       use: { ...devices['Pixel 5'] },
     },
-    // Temporarily disabled due to Artix Linux WebKit compatibility issues
-    // {
-    //   name: 'Mobile Safari',
-    //   use: { ...devices['iPhone 13'] },
-    // },
-    // {
-    //   name: 'Mobile Safari Landscape',
-    //   use: {
-    //     ...devices['iPhone 13 landscape'],
-    //   },
-    // },
+    {
+      name: 'Mobile Safari',
+      use: { ...devices['iPhone 13'] },
+    },
+    {
+      name: 'Mobile Safari Landscape',
+      use: {
+        ...devices['iPhone 13 landscape'],
+      },
+    },
 
     // Tablet devices
     {

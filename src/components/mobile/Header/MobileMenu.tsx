@@ -45,6 +45,58 @@ export function MobileMenu({ isOpen, onClose, pathname }: MobileMenuProps) {
     }
   }, [isOpen, onClose])
 
+  // Safari/VoiceOver focus management
+  useEffect(() => {
+    if (!isOpen) return
+
+    // Safari-specific focus handling - delay slightly for VoiceOver compatibility
+    const focusTimeout = setTimeout(() => {
+      const firstFocusableElement = document.querySelector(
+        '.mobile-menu-panel button, .mobile-menu-panel a'
+      ) as HTMLElement
+      if (firstFocusableElement) {
+        firstFocusableElement.focus()
+      }
+    }, 100) // Small delay helps VoiceOver detect the modal
+
+    // Focus trap for Safari/VoiceOver
+    const handleTabKeyPress = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return
+
+      const focusableElements = Array.from(
+        document.querySelectorAll(
+          '.mobile-menu-panel button, .mobile-menu-panel a'
+        )
+      ) as HTMLElement[]
+
+      if (focusableElements.length === 0) return
+
+      const firstElement = focusableElements[0]
+      const lastElement = focusableElements[focusableElements.length - 1]
+
+      // Handle shift+tab (backward navigation)
+      if (e.shiftKey) {
+        if (document.activeElement === firstElement) {
+          e.preventDefault()
+          lastElement.focus()
+        }
+      } else {
+        // Handle tab (forward navigation)
+        if (document.activeElement === lastElement) {
+          e.preventDefault()
+          firstElement.focus()
+        }
+      }
+    }
+
+    document.addEventListener('keydown', handleTabKeyPress)
+
+    return () => {
+      clearTimeout(focusTimeout)
+      document.removeEventListener('keydown', handleTabKeyPress)
+    }
+  }, [isOpen])
+
   const handleBackdropClick = () => {
     UmamiEvents.mobileMenuClose('backdrop')
     onClose()

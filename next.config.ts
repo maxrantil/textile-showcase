@@ -18,7 +18,7 @@ const nextConfig = {
         pathname: '/images/**',
       },
     ],
-    formats: ['image/webp', 'image/avif'],
+    formats: ['image/webp'], // Removed AVIF for Safari compatibility - AVIF only supported in Safari 16+
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     dangerouslyAllowSVG: true,
@@ -38,15 +38,19 @@ const nextConfig = {
     { dev, isServer }: { dev: boolean; isServer: boolean }
   ) => {
     if (!dev && !isServer) {
+      // Safari-optimized bundle splitting - Safari's older JavaScriptCore engine
+      // handles fewer, larger chunks better than many small chunks
+      const isSafariBuild = process.env.TARGET_BROWSER === 'safari'
+
       // CRITICAL: Advanced bundle splitting optimization
       config.optimization = {
         ...config.optimization,
         splitChunks: {
           chunks: 'all',
-          maxInitialRequests: 10, // Test requirement: exactly 10
-          maxAsyncRequests: 30,
-          minSize: 20000,
-          maxSize: 200000, // Test requirement: 200KB limit
+          maxInitialRequests: isSafariBuild ? 6 : 10, // Reduce for Safari
+          maxAsyncRequests: isSafariBuild ? 15 : 30, // Reduce async chunks for Safari
+          minSize: isSafariBuild ? 40000 : 20000, // Larger chunks for Safari
+          maxSize: isSafariBuild ? 150000 : 200000, // Slightly smaller max for Safari
           cacheGroups: {
             // CRITICAL: Sanity Studio components - async only for studio route
             sanityStudio: {
