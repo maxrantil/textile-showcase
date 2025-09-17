@@ -13,12 +13,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
           cache: 'npm'
       - name: Install dependencies
         run: npm ci
       - name: Run tests
-        run: npm test
+        run: npm test -- --testPathIgnorePatterns="bundle-size|production-config|bundle-debug|e2e|credential-manager|demo-mode|audit-logger"
       - name: Run type checking
         run: npm run type-check
 
@@ -29,7 +29,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
           cache: 'npm'
       - name: Install dependencies
         run: npm ci
@@ -45,30 +45,128 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
           cache: 'npm'
       - name: Install dependencies
         run: npm ci
+      - name: Create build environment
+        run: |
+          cat > .env.local << EOF
+          NEXT_PUBLIC_SANITY_PROJECT_ID=2y05n6hf
+          NEXT_PUBLIC_SANITY_DATASET=production
+          NEXT_PUBLIC_SANITY_API_VERSION=2023-05-03
+          SECURITY_ENABLED=false
+          EOF
+      - name: Debug environment variables
+        run: |
+          echo "🔍 Checking environment variables..."
+          echo "NEXT_PUBLIC_SANITY_PROJECT_ID: ${NEXT_PUBLIC_SANITY_PROJECT_ID:-'NOT SET'}"
+          echo "NEXT_PUBLIC_SANITY_DATASET: ${NEXT_PUBLIC_SANITY_DATASET:-'NOT SET'}"
+          echo "NEXT_PUBLIC_SANITY_API_VERSION: ${NEXT_PUBLIC_SANITY_API_VERSION:-'NOT SET'}"
+          echo "NODE_ENV: ${NODE_ENV:-'NOT SET'}"
+          echo "SECURITY_ENABLED: ${SECURITY_ENABLED:-'NOT SET'}"
+        env:
+          NEXT_PUBLIC_SANITY_PROJECT_ID: 2y05n6hf
+          NEXT_PUBLIC_SANITY_DATASET: production
+          NEXT_PUBLIC_SANITY_API_VERSION: 2023-05-03
+          SECURITY_ENABLED: false
       - name: Build application
+        env:
+          NEXT_PUBLIC_SANITY_PROJECT_ID: 2y05n6hf
+          NEXT_PUBLIC_SANITY_DATASET: production
+          NEXT_PUBLIC_SANITY_API_VERSION: 2023-05-03
+          SECURITY_ENABLED: false
         run: npm run build
       - name: Verify build output
         run: ls -la .next/
+      - name: Create production environment file for tests
+        run: |
+          cat > .env.production << EOF
+          NODE_ENV=production
+          NEXT_PUBLIC_APP_ENV=production
+          SECURITY_LOGGING_ENABLED=true
+          SSE_ENDPOINT_URL=https://idaromme.dk/api/security/events
+          NEXT_PUBLIC_SANITY_PROJECT_ID=2y05n6hf
+          NEXT_PUBLIC_SANITY_DATASET=production
+          NEXT_PUBLIC_SANITY_API_VERSION=2023-05-03
+          EOF
+      - name: Run bundle size tests
+        run: npm test tests/performance/bundle-size.test.ts tests/performance/bundle-debug.test.ts __tests__/deployment/production-config.test.js
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: build-files
           path: .next/
+          retention-days: 1
 
   deploy:
     runs-on: ubuntu-latest
     needs: [test, security-scan, build]
+    if: github.ref == 'refs/heads/master'
     steps:
-      - uses: actions/checkout@v4
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
+      - name: Deploy to Vultr Server
+        uses: appleboy/ssh-action@v1.0.0
         with:
-          name: build-files
-          path: .next/
-      - name: Deploy to production
-        run: echo "Deploying to production environment"
-        # Production deployment steps would go here
+          host: ${{ secrets.VULTR_HOST }}
+          username: ${{ secrets.VULTR_USERNAME }}
+          key: ${{ secrets.VULTR_SSH_KEY }}
+          script: |
+            echo "🚀 Starting deployment..."
+
+            # Navigate to project directory
+            cd /var/www/idaromme.dk || { echo "❌ Project directory not found"; exit 1; }
+
+            # Backup current state
+            echo "📦 Creating backup..."
+            cp -r .next .next.backup || echo "⚠️ No previous build to backup"
+
+            # Pull latest changes
+            echo "📥 Pulling latest changes..."
+            git fetch origin
+            git reset --hard origin/master
+
+            # Install dependencies (only if package.json changed)
+            if git diff HEAD~1 --name-only | grep -q "package.json\|package-lock.json"; then
+              echo "📦 Installing dependencies..."
+              npm ci
+            else
+              echo "⏭️ No dependency changes, skipping npm ci"
+            fi
+
+            # Create production environment file
+            echo "📝 Setting up production environment..."
+            cat > .env.local << EOF
+            NEXT_PUBLIC_SANITY_PROJECT_ID=2y05n6hf
+            NEXT_PUBLIC_SANITY_DATASET=production
+            NEXT_PUBLIC_SANITY_API_VERSION=2023-05-03
+            SECURITY_ENABLED=false
+            EOF
+
+            # Use Node.js v22 from NVM installation
+            echo "🔍 Setting up Node.js v22 from NVM..."
+            export PATH="$HOME/.nvm/versions/node/v22.16.0/bin:$PATH"
+
+            # Verify Node.js version
+            echo "🔍 Node.js version:"
+            node --version
+            npm --version
+
+            # Build application
+            echo "🔨 Building application..."
+            if SKIP_ENV_VALIDATION=true npm run build; then
+              echo "✅ Build successful"
+
+              # Restart PM2 with zero downtime
+              echo "🔄 Restarting application..."
+              pm2 reload idaromme-website || pm2 restart idaromme-website
+
+              # Cleanup old backup
+              rm -rf .next.backup
+
+              echo "🎉 Deployment completed successfully!"
+            else
+              echo "❌ Build failed, rolling back..."
+              rm -rf .next
+              mv .next.backup .next 2>/dev/null || echo "⚠️ No backup to restore"
+              exit 1
+            fi

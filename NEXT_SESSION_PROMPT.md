@@ -33,8 +33,6 @@
 #### 1. **Gallery Enhancements** 🖼️
 
 - **Image zoom functionality** for detailed textile views
-- **Filter by technique** (weaving, embroidery, etc.)
-- **Sort by year/material** for better organization
 - **Lightbox modal** for immersive viewing experience
 - **Image comparison** tool for before/after or variations
 
@@ -44,7 +42,6 @@
 - **Artist statement** and philosophy pages
 - **Exhibition history** and awards showcase
 - **Blog/news** section for updates and insights
-- **Technique guides** for educational content
 
 #### 3. **User Experience** 🎨
 

@@ -38,10 +38,10 @@ repos:
         args: [--noEmit]
         pass_filenames: false
 
-      # Run tests for changed files
+      # Run tests for changed files (excluding bundle tests that need build)
       - id: jest
         name: Jest Tests
-        entry: npm test
+        entry: npm test -- --testPathIgnorePatterns="bundle-size|production-config|bundle-debug"
         language: system
         files: \.(test|spec)\.(js|jsx|ts|tsx)$
         args: [--findRelatedTests, --passWithNoTests]

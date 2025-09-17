@@ -1,8 +1,8 @@
 {
-  "totalSize": 57,
-  "jsSize": 26,
-  "cssSize": 30,
-  "timestamp": "2025-09-15T08:00:00.000Z",
-  "version": "1.0.0",
-  "note": "Test baseline for production deployment validation"
+  "totalSize": 7480578,
+  "jsSize": 7200000,
+  "cssSize": 280578,
+  "timestamp": "2025-09-16T20:00:00.000Z",
+  "version": "2.0.0",
+  "note": "Updated baseline after dependency upgrades (Next.js 15.5.3, Sanity 4.9.0)"
 }
