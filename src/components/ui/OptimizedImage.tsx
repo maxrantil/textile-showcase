@@ -20,6 +20,7 @@ interface OptimizedImageProps {
   loading?: 'lazy' | 'eager'
   objectFit?: 'contain' | 'cover' | 'fill' | 'none' | 'scale-down'
   fill?: boolean
+  fetchPriority?: 'high' | 'low' | 'auto'
 }
 
 export function OptimizedImage({
@@ -35,6 +36,7 @@ export function OptimizedImage({
   onClick,
   objectFit = 'contain',
   fill = false,
+  fetchPriority = priority ? 'high' : 'auto',
 }: OptimizedImageProps) {
   const [isLoaded, setIsLoaded] = useState(false)
   const [isError, setIsError] = useState(false)
@@ -195,6 +197,8 @@ export function OptimizedImage({
                 transition: 'opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
               }}
               decoding="async"
+              // Resource hint for performance optimization
+              {...({ fetchpriority: fetchPriority } as Record<string, string>)}
             />
           ) : (
             <Image
@@ -216,6 +220,8 @@ export function OptimizedImage({
                 ...(style || {}),
               }}
               decoding="async"
+              // Resource hint for performance optimization
+              {...({ fetchpriority: fetchPriority } as Record<string, string>)}
             />
           )}
         </>
