@@ -17,6 +17,7 @@ import {
 import { HtmlHead } from './components/html-head'
 import { SkipNavigation } from './components/skip-navigation'
 import { AnalyticsProvider } from './components/analytics-provider'
+import { CriticalCSS } from './components/critical-css'
 import Header from '@/components/adaptive/Header'
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 
@@ -44,16 +45,18 @@ export default function RootLayout({ children }: RootLayoutProps) {
       </HtmlHead>
 
       <body className="bg-white font-sans antialiased">
-        <AnalyticsProvider>
-          <SkipNavigation />
+        <CriticalCSS>
+          <AnalyticsProvider>
+            <SkipNavigation />
 
-          <ErrorBoundary>
-            <Header />
-            <main id="main-content" role="main">
-              {children}
-            </main>
-          </ErrorBoundary>
-        </AnalyticsProvider>
+            <ErrorBoundary>
+              <Header />
+              <main id="main-content" role="main">
+                {children}
+              </main>
+            </ErrorBoundary>
+          </AnalyticsProvider>
+        </CriticalCSS>
       </body>
     </html>
   )
