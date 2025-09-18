@@ -18,6 +18,7 @@ import { HtmlHead } from './components/html-head'
 import { SkipNavigation } from './components/skip-navigation'
 import { AnalyticsProvider } from './components/analytics-provider'
 import { CriticalCSS } from './components/critical-css'
+import { FontPreloader } from '@/components/fonts/FontPreloader'
 import Header from '@/components/adaptive/Header'
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 
@@ -46,6 +47,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
 
       <body className="bg-white font-sans antialiased">
         <CriticalCSS>
+          <FontPreloader />
           <AnalyticsProvider>
             <SkipNavigation />
 

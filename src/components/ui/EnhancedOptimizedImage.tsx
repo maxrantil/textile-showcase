@@ -1,3 +1,5 @@
+// ABOUTME: Enhanced OptimizedImage component with priority detection and advanced lazy loading
+
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
@@ -12,7 +14,7 @@ import {
 } from '@/utils/image-optimization'
 import type { ImageSource } from '@/types/textile'
 
-interface OptimizedImageProps {
+interface EnhancedOptimizedImageProps {
   src: ImageSource | null | undefined
   alt: string
   width?: number
@@ -26,12 +28,11 @@ interface OptimizedImageProps {
   loading?: 'lazy' | 'eager'
   objectFit?: 'contain' | 'cover' | 'fill' | 'none' | 'scale-down'
   fill?: boolean
-  fetchPriority?: 'high' | 'low' | 'auto'
   imageType?: ImageType
   isAboveFold?: boolean
 }
 
-export function OptimizedImage({
+export function EnhancedOptimizedImage({
   src,
   alt,
   width = 800,
@@ -44,10 +45,9 @@ export function OptimizedImage({
   onClick,
   objectFit = 'contain',
   fill = false,
-  fetchPriority,
   imageType = 'gallery',
   isAboveFold = false,
-}: OptimizedImageProps) {
+}: EnhancedOptimizedImageProps) {
   const [isLoaded, setIsLoaded] = useState(false)
   const [isError, setIsError] = useState(false)
   const [isInView, setIsInView] = useState(priority) // Start true if priority
@@ -55,9 +55,8 @@ export function OptimizedImage({
   const [usesFallback, setUsesFallback] = useState(false)
   const imgRef = useRef<HTMLDivElement>(null)
 
-  // Enhanced optimization: determine priority and preload settings
-  const optimizedFetchPriority =
-    fetchPriority || getImagePriority(imageType, isAboveFold)
+  // Determine priority and preload settings
+  const fetchPriority = getImagePriority(imageType, isAboveFold)
   const shouldPreload = shouldPreloadImage(imageType, isAboveFold)
   const observerConfig = getOptimizedObserverConfig()
 
@@ -210,10 +209,7 @@ export function OptimizedImage({
               }}
               decoding="async"
               // Enhanced resource hint for performance optimization
-              {...({ fetchpriority: optimizedFetchPriority } as Record<
-                string,
-                string
-              >)}
+              {...({ fetchpriority: fetchPriority } as Record<string, string>)}
             />
           ) : (
             <Image
@@ -236,10 +232,7 @@ export function OptimizedImage({
               }}
               decoding="async"
               // Enhanced resource hint for performance optimization
-              {...({ fetchpriority: optimizedFetchPriority } as Record<
-                string,
-                string
-              >)}
+              {...({ fetchpriority: fetchPriority } as Record<string, string>)}
             />
           )}
         </>
@@ -308,9 +301,9 @@ export function OptimizedImage({
             top: '4px',
             right: '4px',
             background:
-              optimizedFetchPriority === 'high'
+              fetchPriority === 'high'
                 ? 'red'
-                : optimizedFetchPriority === 'low'
+                : fetchPriority === 'low'
                   ? 'blue'
                   : 'green',
             color: 'white',
@@ -320,7 +313,7 @@ export function OptimizedImage({
             zIndex: 10,
           }}
         >
-          {optimizedFetchPriority.toUpperCase()}
+          {fetchPriority.toUpperCase()}
         </div>
       )}
 
