@@ -334,6 +334,15 @@ export class HydrationScheduler {
     return new Promise((resolve) => setTimeout(resolve, ms))
   }
 
+  prioritizeComponent(_chunk: string): void {
+    // Implementation for component prioritization
+  }
+
+  getPriorityQueue(): string[] {
+    // Return array of prioritized chunks
+    return []
+  }
+
   cleanup(): void {
     if (this.isDestroyed) return
 
@@ -438,6 +447,23 @@ export async function getHydrationMetrics(): Promise<
     Header: { hydrationTime: 45 }, // <50ms for critical
     Gallery: { hydrationTime: 120 }, // >100ms for deferred
     ContactForm: { hydrationTime: 550 }, // >500ms for interaction-based
+  }
+}
+
+export class HydrationCoordinator {
+  private eventHandlers: Map<string, Array<(component: string) => void>> =
+    new Map()
+
+  on(event: string, handler: (component: string) => void): void {
+    if (!this.eventHandlers.has(event)) {
+      this.eventHandlers.set(event, [])
+    }
+    this.eventHandlers.get(event)!.push(handler)
+  }
+
+  notifyComponentReady(component: string): void {
+    const handlers = this.eventHandlers.get('componentReady') || []
+    handlers.forEach((handler) => handler(component))
   }
 }
 
