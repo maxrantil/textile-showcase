@@ -1,0 +1,97 @@
+/* Critical CSS - Above-fold styles for optimal FCP performance */
+/* Target: <5KB for inline embedding - Phase 2A Day 3-4 */
+
+/* CSS Custom Properties - Essential for consistency */
+:root {
+  --color-primary: #333;
+  --color-secondary: #666;
+  --color-background: #fafafa;
+  --color-surface: #ffffff;
+  --font-size-base: 16px;
+  --spacing-md: 16px;
+  --header-height: 60px;
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s ease;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --header-height: 80px;
+  }
+}
+
+/* Essential Reset - Critical for layout stability */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family:
+    var(--font-inter),
+    system-ui,
+    -apple-system,
+    sans-serif;
+  background-color: var(--color-surface);
+  color: var(--color-primary);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Critical Layout Containers - Above-fold rendering */
+.container-mobile {
+  width: 100%;
+  max-width: 100vw;
+  padding-left: clamp(16px, 4vw, 40px);
+  padding-right: clamp(16px, 4vw, 40px);
+  margin: 0 auto;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+.header-height {
+  height: calc(var(--header-height) + var(--safe-area-top));
+  padding-top: var(--safe-area-top);
+}
+
+/* Screen Reader Utilities - Accessibility Critical */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Focus Visibility - Critical for accessibility */
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Font Loading Optimization */
+@font-face {
+  font-family: 'Inter';
+  font-display: swap;
+  src: local('Inter');
+}

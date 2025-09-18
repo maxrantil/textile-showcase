@@ -1,0 +1,55 @@
+/* Deferred CSS - Below-fold and non-critical styles */
+/* Loaded asynchronously after critical path for optimal performance */
+
+/* Import non-critical style modules */
+@import '../base/typography.css';
+@import '../utilities/spacing.css';
+@import '../utilities/buttons.css';
+@import '../desktop/gallery.css';
+@import '../mobile/gallery.css';
+@import '../desktop/forms.css';
+@import '../mobile/forms.css';
+@import '../desktop/navigation.css';
+@import '../mobile/navigation.css';
+@import '../desktop/project.css';
+@import '../mobile/project.css';
+@import '../utilities/debug.css';
+@import '../themes/dark-mode.css';
+
+/* Additional deferred styles that don't need to be above-fold */
+.grid-mobile {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(16px, 4vw, 24px);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+  .grid-mobile {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+}
+
+/* Scrollbar styling - non-critical */
+::-webkit-scrollbar {
+  height: 14px;
+  width: 14px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 7px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 7px;
+  border: 2px solid #f1f1f1;
+  transition: background var(--transition-fast);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
