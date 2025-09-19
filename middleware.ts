@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { randomBytes } from 'crypto'
 
 /**
  * Emergency security middleware for protecting critical endpoints
@@ -81,14 +82,18 @@ export function middleware(request: NextRequest) {
   // Add security headers to all responses
   const response = NextResponse.next()
 
+  // Generate nonce for performance monitoring scripts
+  const nonce = randomBytes(16).toString('base64')
+  response.headers.set('X-Performance-Script-Nonce', nonce)
+
   // Safari-specific CSP handling
   const userAgent = request.headers.get('user-agent') || ''
   const isSafari = /Version\/[\d\.]+.*Safari/.test(userAgent)
 
-  // Safari 14+ restricts 'unsafe-eval' more aggressively than other browsers
+  // Enhanced script-src with nonce support for performance monitoring
   const scriptSrc = isSafari
-    ? "'self' 'unsafe-inline' https://cdn.sanity.io https://umami.is" // Remove 'unsafe-eval' for Safari
-    : "'self' 'unsafe-inline' 'unsafe-eval' https://cdn.sanity.io https://umami.is"
+    ? `'self' 'unsafe-inline' 'nonce-${nonce}' https://cdn.sanity.io https://umami.is` // Remove 'unsafe-eval' for Safari
+    : `'self' 'unsafe-inline' 'unsafe-eval' 'nonce-${nonce}' https://cdn.sanity.io https://umami.is`
 
   response.headers.set(
     'Content-Security-Policy',
@@ -98,10 +103,13 @@ export function middleware(request: NextRequest) {
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "img-src 'self' https://cdn.sanity.io https://res.cloudinary.com data: blob:",
       "font-src 'self' https://fonts.gstatic.com",
-      "connect-src 'self' https://api.resend.com https://cdn.sanity.io http://70.34.205.18:3000",
+      "connect-src 'self' https://api.resend.com https://cdn.sanity.io http://70.34.205.18:3000 /api/performance",
       "frame-ancestors 'none'",
       "base-uri 'self'",
       "form-action 'self'",
+      "object-src 'none'",
+      "worker-src 'self'",
+      "manifest-src 'self'",
     ].join('; ')
   )
 
@@ -219,5 +227,6 @@ export const config = {
   matcher: [
     '/studio/:path*', // Protect Sanity Studio
     '/api/:path*', // Rate limit API endpoints
+    '/((?!_next/static|_next/image|favicon.ico).*)', // Apply CSP to all pages except static files
   ],
 }

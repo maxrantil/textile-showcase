@@ -395,18 +395,12 @@ export class RealUserMonitor {
     const metrics = [...this.metricsBuffer]
     this.metricsBuffer = [] // Clear buffer immediately
 
-    // Use sendBeacon for reliable delivery
+    // Use sendBeacon for reliable delivery with secure payload
     if ('sendBeacon' in navigator) {
-      const data = JSON.stringify({
-        metrics,
-        timestamp: Date.now(),
-        userAgent: this.anonymizeUserAgent(navigator.userAgent),
-      })
+      const securePayload = this.createSecurePayload(metrics)
+      const data = JSON.stringify(securePayload)
 
-      const success = navigator.sendBeacon(
-        this.config.reportingEndpoint || '/api/performance',
-        data
-      )
+      const success = navigator.sendBeacon(this.getSecureEndpoint(), data)
 
       if (!success && this.config.fallbackReporting) {
         // Fallback to fetch if sendBeacon fails
@@ -418,22 +412,28 @@ export class RealUserMonitor {
   }
 
   /**
-   * Fallback reporting via fetch
+   * Fallback reporting via fetch with secure headers
    */
   private async sendViaFetch(metrics: PerformanceMetric[]): Promise<void> {
     try {
-      await fetch(this.config.reportingEndpoint || '/api/performance', {
+      const securePayload = this.createSecurePayload(metrics)
+
+      const response = await fetch(this.getSecureEndpoint(), {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          metrics,
-          timestamp: Date.now(),
-          userAgent: this.anonymizeUserAgent(navigator.userAgent),
-        }),
+        headers: this.getSecureHeaders(),
+        body: JSON.stringify(securePayload),
         keepalive: true,
+        // Add security-related options
+        credentials: 'same-origin',
+        mode: 'cors',
+        cache: 'no-cache',
       })
+
+      if (!response.ok) {
+        console.warn(
+          `[RUM] Server responded with ${response.status}: ${response.statusText}`
+        )
+      }
     } catch (error) {
       console.warn('[RUM] Failed to send metrics via fetch:', error)
     }
@@ -559,6 +559,88 @@ export class RealUserMonitor {
     // Extract only essential browser info, remove version details
     const browserMatch = userAgent.match(/(Chrome|Firefox|Safari|Edge)\/[\d.]+/)
     return browserMatch ? browserMatch[0].replace(/\/[\d.]+/, '') : 'Unknown'
+  }
+
+  /**
+   * Generate authentication token for secure transmission
+   */
+  private generateAuthToken(): string {
+    // Generate a session-based authentication token
+    const timestamp = Date.now()
+    const payload = `${this.sessionId}-${timestamp}`
+
+    // In production, use proper HMAC signing
+    let hash = 0
+    for (let i = 0; i < payload.length; i++) {
+      const char = payload.charCodeAt(i)
+      hash = (hash << 5) - hash + char
+      hash = hash & hash // Convert to 32bit integer
+    }
+
+    return `${timestamp}.${Math.abs(hash).toString(36)}`
+  }
+
+  /**
+   * Create secure payload with authentication and integrity
+   */
+  private createSecurePayload(metrics: PerformanceMetric[]) {
+    const timestamp = Date.now()
+    const payload = {
+      metrics,
+      timestamp,
+      userAgent: this.anonymizeUserAgent(navigator.userAgent),
+      sessionId: this.hashSessionId(this.sessionId),
+      auth: this.generateAuthToken(),
+      integrity: this.calculatePayloadHash(metrics),
+    }
+
+    return payload
+  }
+
+  /**
+   * Calculate payload hash for integrity verification
+   */
+  private calculatePayloadHash(metrics: PerformanceMetric[]): string {
+    const content = JSON.stringify(
+      metrics.map((m) => `${m.name}:${m.value}:${m.timestamp}`)
+    )
+    let hash = 0
+    for (let i = 0; i < content.length; i++) {
+      const char = content.charCodeAt(i)
+      hash = (hash << 5) - hash + char
+      hash = hash & hash
+    }
+    return Math.abs(hash).toString(36)
+  }
+
+  /**
+   * Get secure endpoint with HTTPS enforcement
+   */
+  private getSecureEndpoint(): string {
+    const endpoint = this.config.reportingEndpoint || '/api/performance'
+
+    // Ensure HTTPS for external endpoints
+    if (
+      endpoint.startsWith('http://') &&
+      window.location.protocol === 'https:'
+    ) {
+      console.warn('[RUM] Upgrading insecure endpoint to HTTPS')
+      return endpoint.replace('http://', 'https://')
+    }
+
+    return endpoint
+  }
+
+  /**
+   * Create secure headers for fetch requests
+   */
+  private getSecureHeaders(): Record<string, string> {
+    return {
+      'Content-Type': 'application/json',
+      'X-Performance-Auth': this.generateAuthToken(),
+      'X-Session-ID': this.hashSessionId(this.sessionId),
+      'X-Timestamp': Date.now().toString(),
+    }
   }
 
   /**

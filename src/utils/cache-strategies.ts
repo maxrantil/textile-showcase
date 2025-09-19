@@ -151,9 +151,10 @@ export class IntelligentCacheManager {
     }
   }
 
-  async addStrategy(_strategy: CacheStrategy): Promise<void> {
+  async addStrategy(strategy: CacheStrategy): Promise<void> {
     // Strategy registration would be implemented here
-    // _strategy parameter reserved for future implementation
+    // strategy parameter reserved for future implementation
+    console.log('Strategy registration placeholder:', strategy.name)
   }
 
   async precacheAssets(urls: string[]): Promise<void> {
