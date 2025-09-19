@@ -22,7 +22,7 @@
 ```
 💡 Feature Request/Idea
     ↓
-📋 PRD Creation → 🤖 **general-purpose-agent** → 👥 Stakeholders → ✅ Doctor Hubert Approval
+📋 PRD Creation → 🤖 **general-purpose-agent** → ✅ Doctor Hubert Approval
     ↓
 🏗️ PDR Creation → 🤖 **4 Core Agents:**
                     • architecture-designer
@@ -116,7 +116,6 @@ All relevant agents must validate final implementation
 
 ### Time Management
 
-- **Initial analysis**: Max 15 minutes
 - **Agent disagreements**: Escalate to Doctor Hubert if >3 agents conflict
 - **Quality thresholds**: Security ≥4.0, Performance ≥3.5, Code Quality ≥4.0
 
