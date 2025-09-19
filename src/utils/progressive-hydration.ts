@@ -64,6 +64,7 @@ export class HydrationScheduler {
   }
   private device: 'mobile' | 'desktop'
   private isDestroyed: boolean = false
+  private priorityQueue: string[] = []
 
   constructor(options?: { device?: 'mobile' | 'desktop' }) {
     this.device = options?.device || this.detectDevice()
@@ -334,13 +335,15 @@ export class HydrationScheduler {
     return new Promise((resolve) => setTimeout(resolve, ms))
   }
 
-  prioritizeComponent(_chunk: string): void {
-    // Implementation for component prioritization
+  prioritizeComponent(chunk: string): void {
+    // Add chunk to priority queue if not already present
+    if (!this.priorityQueue.includes(chunk)) {
+      this.priorityQueue.unshift(chunk) // Add to front for prioritization
+    }
   }
 
   getPriorityQueue(): string[] {
-    // Return array of prioritized chunks
-    return []
+    return [...this.priorityQueue]
   }
 
   cleanup(): void {

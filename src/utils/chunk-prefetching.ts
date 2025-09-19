@@ -20,9 +20,9 @@ export class IntelligentPrefetcher {
 
   constructor(config?: PrefetchConfig) {
     this.config = config || {
-      criticalChunks: [],
-      highPriorityChunks: [],
-      lowPriorityChunks: [],
+      criticalChunks: ['vendor-core.js', 'react.js'],
+      highPriorityChunks: ['gallery-chunk.js', 'ui-libs.js'],
+      lowPriorityChunks: ['contact-chunk.js', 'project-chunk.js'],
     }
   }
 

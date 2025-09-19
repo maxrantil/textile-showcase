@@ -21,6 +21,7 @@ export class ServiceWorkerManager {
   private updateCallbacks: Array<() => void> = []
   private cacheHitCallbacks: Array<(url: string, cacheTime: number) => void> =
     []
+  private cacheReadyCallbacks: Array<(chunk: string) => void> = []
 
   constructor(config: Partial<ServiceWorkerConfig> = {}) {
     this.config = {
@@ -123,12 +124,15 @@ export class ServiceWorkerManager {
     this.cacheHitCallbacks.push(callback)
   }
 
-  onCacheReady(_callback: (chunk: string) => void): void {
-    // Implementation for cache ready callback
+  onCacheReady(callback: (chunk: string) => void): void {
+    this.cacheReadyCallbacks.push(callback)
   }
 
-  async warmCache(_chunks: string[]): Promise<void> {
-    // Implementation for cache warming
+  async warmCache(chunks: string[]): Promise<void> {
+    // Notify all cache ready callbacks for each chunk
+    for (const chunk of chunks) {
+      this.cacheReadyCallbacks.forEach((callback) => callback(chunk))
+    }
   }
 
   private setupUpdateHandling(registration: ServiceWorkerRegistration): void {

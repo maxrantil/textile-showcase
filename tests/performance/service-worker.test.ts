@@ -208,6 +208,7 @@ describe('Phase 2B Day 5: Service Worker Implementation', () => {
       ;(global.navigator.serviceWorker.register as any).mockResolvedValue({
         scope: location.origin + '/malicious/',
         update: jest.fn(),
+        unregister: jest.fn().mockResolvedValue(true),
       })
 
       await expect(manager.register()).rejects.toThrow(
@@ -521,7 +522,17 @@ describe('Phase 2B Day 5: Service Worker Implementation', () => {
 
       // Mock offline scenario
       ;(global.fetch as any).mockRejectedValue(new Error('Network error'))
-      mockCache.match.mockResolvedValue(null)
+      mockCache.match.mockImplementation((request: any) => {
+        if (request.url?.includes('/offline.html')) {
+          return Promise.resolve(
+            new Response('<html>Offline</html>', {
+              status: 200,
+              headers: { 'content-type': 'text/html' },
+            })
+          )
+        }
+        return Promise.resolve(null)
+      })
 
       const request = new Request('/non-cached-route')
       const response = await offlineManager.handleOfflineRequest(request)
