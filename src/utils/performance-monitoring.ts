@@ -246,7 +246,9 @@ export class RealUserMonitor {
         value: m.value,
         timestamp: Date.now(),
         sessionId: this.sessionId,
-        rating: m.rating || 'unknown',
+        rating:
+          (m.rating as 'good' | 'needs-improvement' | 'poor' | undefined) ||
+          'unknown',
         delta: m.delta || 0,
         id: m.id,
         navigationType: this.getNavigationType(),

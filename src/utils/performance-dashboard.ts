@@ -718,7 +718,10 @@ export class PerformanceDashboard {
     if (bundleSize && bundleSize.current > 1500000) {
       bottlenecks.push({
         type: 'Bundle Size',
-        severity: bundleSize.current > 2000000 ? 'critical' : 'medium',
+        severity:
+          bundleSize.current > 2000000
+            ? ('critical' as const)
+            : ('medium' as const),
         description: `Bundle size is ${Math.round(bundleSize.current / 1024)}KB (target: <1.5MB)`,
         impact: Math.round(((bundleSize.current - 1500000) / 1500000) * 100),
         recommendation:

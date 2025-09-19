@@ -429,7 +429,10 @@ export class CoreWebVitalsOptimizer {
             entry.entryType === 'layout-shift' &&
             !(entry as { hadRecentInput?: boolean }).hadRecentInput
           ) {
-            const layoutShift = entry as unknown as { value: number; sources: unknown[] }
+            const layoutShift = entry as unknown as {
+              value: number
+              sources: unknown[]
+            }
             if (layoutShift.value > 0.1) {
               console.warn('[CWV] Significant layout shift detected:', {
                 value: layoutShift.value,
@@ -653,7 +656,11 @@ export class CoreWebVitalsOptimizer {
    */
   private optimizeMainThread(): void {
     // Use scheduler.postTask if available for better task scheduling
-    if ('scheduler' in window && 'postTask' in (window as { scheduler?: { postTask?: unknown } }).scheduler) {
+    if (
+      'scheduler' in window &&
+      'postTask' in
+        ((window as { scheduler?: { postTask?: unknown } }).scheduler ?? {})
+    ) {
       console.log(
         '[CWV] Using scheduler.postTask for optimized task scheduling'
       )
@@ -763,7 +770,7 @@ export class CoreWebVitalsOptimizer {
   /**
    * Rate metric value according to thresholds
    */
-  private rateMetric(name: string, value: number): string {
+  public rateMetric(name: string, value: number): string {
     const thresholds = this.thresholds[name as keyof CoreWebVitalsThresholds]
     if (!thresholds) return 'unknown'
 
