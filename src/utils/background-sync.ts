@@ -20,7 +20,7 @@ export class BackgroundSyncManager {
       pendingRequests.map(async (request) => {
         try {
           await fetch(request)
-        } catch (error) {
+        } catch {
           // Re-queue failed requests
           this.queue.push(request)
         }

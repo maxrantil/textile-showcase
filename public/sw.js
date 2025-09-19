@@ -119,7 +119,7 @@ async function handleStaticAsset(request) {
       await cache.put(request, response.clone())
     }
     return response
-  } catch (error) {
+  } catch {
     return cached || new Response('Asset not available', { status: 503 })
   }
 }
@@ -152,7 +152,7 @@ async function handleChunk(request) {
       await cache.put(request, response.clone())
     }
     return response
-  } catch (error) {
+  } catch {
     return new Response('Chunk not available', { status: 503 })
   }
 }
@@ -176,7 +176,7 @@ async function handleSanityImage(request) {
       }
     }
     return response
-  } catch (error) {
+  } catch {
     return cached || new Response('Image not available', { status: 503 })
   }
 }
@@ -191,7 +191,7 @@ async function handleRoute(request) {
       await cache.put(request, response.clone())
     }
     return response
-  } catch (error) {
+  } catch {
     const cached = await cache.match(request)
     if (cached) {
       return cached

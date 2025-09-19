@@ -49,7 +49,11 @@ export class IntelligentPrefetcher {
   }
 
   async getNetworkStrategy(): Promise<NetworkStrategy> {
-    const connection = (navigator as any).connection
+    const connection = (
+      navigator as Navigator & {
+        connection?: { effectiveType?: string; saveData?: boolean }
+      }
+    ).connection
 
     if (!connection) {
       return {
@@ -110,8 +114,12 @@ export class IntelligentPrefetcher {
   }
 
   private isDataSaverMode(): boolean {
-    const connection = (navigator as any).connection
-    return connection && connection.saveData === true
+    const connection = (
+      navigator as Navigator & {
+        connection?: { effectiveType?: string; saveData?: boolean }
+      }
+    ).connection
+    return !!(connection && connection.saveData === true)
   }
 
   private getChunkForComponent(component: string): string | null {

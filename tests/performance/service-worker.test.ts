@@ -193,7 +193,7 @@ describe('Phase 2B Day 5: Service Worker Implementation', () => {
         }
       )
       expect(registration).toBeDefined()
-      expect(registration.scope).toBe(location.origin + '/')
+      expect(registration?.scope).toBe(location.origin + '/')
     })
 
     it('should validate service worker scope and prevent hijacking', async () => {

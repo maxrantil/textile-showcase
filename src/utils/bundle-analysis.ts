@@ -10,7 +10,7 @@ export interface BundleMetrics {
 
 export class BundleAnalyzer {
   async analyze(
-    options: {
+    _options: {
       includeServiceWorker?: boolean
       cacheOverhead?: boolean
     } = {}

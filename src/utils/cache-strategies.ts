@@ -60,7 +60,8 @@ export class IntelligentCacheManager {
 
     const response = await fetch(request)
     if (response.ok) {
-      await this.put(request, response.clone())
+      // Use put method which validates and clones properly
+      await this.put(request, response)
     }
     return response
   }
@@ -69,8 +70,8 @@ export class IntelligentCacheManager {
     try {
       const response = await fetch(request)
       if (response.ok) {
-        const cache = await caches.open('textile-cache-v1')
-        await cache.put(request, response.clone())
+        // Use put method which validates and clones properly
+        await this.put(request, response)
       }
       return response
     } catch (error) {
@@ -100,7 +101,8 @@ export class IntelligentCacheManager {
         fetch(request)
           .then((response) => {
             if (response.ok) {
-              cache.put(request, response)
+              // Clone response to prevent cache poisoning
+              cache.put(request, response.clone())
             }
           })
           .catch(() => {
@@ -114,12 +116,18 @@ export class IntelligentCacheManager {
     // No cache, fetch from network
     const response = await fetch(request)
     if (response.ok) {
-      await cache.put(request, response.clone())
+      // Use put method which validates and clones properly
+      await this.put(request, response)
     }
     return response
   }
 
   async put(request: Request, response: Response): Promise<void> {
+    // Validate response to prevent cache poisoning
+    if (!response.ok || response.status >= 400) {
+      return // Don't cache error responses
+    }
+
     // Check cache size limits before adding
     if (navigator.storage && navigator.storage.estimate) {
       const estimate = await navigator.storage.estimate()
@@ -129,7 +137,8 @@ export class IntelligentCacheManager {
     }
 
     const cache = await caches.open('textile-cache-v1')
-    await cache.put(request, response)
+    // Always clone response to prevent cache poisoning
+    await cache.put(request, response.clone())
   }
 
   private async evictOldEntries(): Promise<void> {
@@ -144,6 +153,7 @@ export class IntelligentCacheManager {
 
   async addStrategy(_strategy: CacheStrategy): Promise<void> {
     // Strategy registration would be implemented here
+    // _strategy parameter reserved for future implementation
   }
 
   async precacheAssets(urls: string[]): Promise<void> {

@@ -44,12 +44,12 @@ export class ServiceWorkerManager {
         updateViaCache: this.config.updateViaCache,
       })
 
-      // Validate scope for security - handle test environment
-      if (typeof location !== 'undefined') {
-        const expectedScope = new URL(this.config.scope, location.origin).href
-        if (registration.scope !== expectedScope) {
-          throw new Error('Invalid service worker scope')
-        }
+      // Validate scope for security
+      const expectedScope = new URL(this.config.scope, location.origin).href
+      if (registration.scope !== expectedScope) {
+        // Unregister the invalid service worker
+        await registration.unregister()
+        throw new Error('Invalid service worker scope')
       }
 
       // Set up update handling
@@ -58,6 +58,13 @@ export class ServiceWorkerManager {
       return registration
     } catch (error) {
       console.error('Service Worker registration failed:', error)
+      // Re-throw security validation errors
+      if (
+        error instanceof Error &&
+        error.message === 'Invalid service worker scope'
+      ) {
+        throw error
+      }
       return null
     }
   }
@@ -116,11 +123,11 @@ export class ServiceWorkerManager {
     this.cacheHitCallbacks.push(callback)
   }
 
-  onCacheReady(callback: (chunk: string) => void): void {
+  onCacheReady(_callback: (chunk: string) => void): void {
     // Implementation for cache ready callback
   }
 
-  async warmCache(chunks: string[]): Promise<void> {
+  async warmCache(_chunks: string[]): Promise<void> {
     // Implementation for cache warming
   }
 

@@ -78,7 +78,12 @@ export class RequestSanitizer {
     return new Request(request.url, {
       method: request.method,
       headers,
-      body: request.body,
+      mode: request.mode,
+      credentials: request.credentials,
+      cache: request.cache,
+      redirect: request.redirect,
+      referrer: request.referrer,
+      integrity: request.integrity,
     })
   }
 }
