@@ -2,6 +2,7 @@
 // Enhanced implementation for Phase 2B Day 3-4 advanced code splitting
 
 import React, { useState, useEffect, useRef, useCallback } from 'react'
+import Image from 'next/image'
 import { intelligentPrefetcher } from '@/utils/advanced-code-splitting'
 
 interface LazyGalleryProps {
@@ -96,17 +97,19 @@ export default function LazyGallery({
           {items.map((item) => (
             <div
               key={item.id}
-              className="aspect-square bg-gray-200 rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
+              className="relative aspect-square bg-gray-200 rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
               onClick={() => handleItemClick(item)}
             >
-              <img
+              <Image
                 src={item.src}
                 alt={item.alt}
-                className="w-full h-full object-cover"
+                fill
+                className="object-cover"
                 loading="lazy"
+                sizes="(max-width: 768px) 50vw, 25vw"
                 onError={(e) => {
                   // Fallback for missing images
-                  ;(e.target as HTMLImageElement).src =
+                  ;(e.currentTarget as HTMLImageElement).src =
                     '/images/placeholder.jpg'
                 }}
               />

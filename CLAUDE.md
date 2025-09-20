@@ -1,16 +1,5 @@
 # Development Guidelines
 
-## 🔄 **CURRENT SESSION STATUS**
-
-**Active Work**: Performance Optimization Phase 2C
-**Branch**: `feat/issue-30-performance-optimization-phase2`
-**Status**: Phase 2C Day 2 COMPLETE ✅
-**Next**: Day 3 - Advanced Core Web Vitals Optimization
-
-**📋 Session Handoff**: See `docs/implementation/SESSION-HANDOFF-PHASE2C-2025-09-19.md` for complete continuation context.
-
----
-
 ## 🚨 QUICK START CHECKLIST
 
 **Before ANY work:**
@@ -33,13 +22,15 @@
 ```
 💡 Feature Request/Idea
     ↓
-📋 PRD Creation → 🤖 **general-purpose-agent** → ✅ Doctor Hubert Approval
+📋 PRD Creation → 🤖 **general-purpose-agent** → 👥 Stakeholders → ✅ Doctor Hubert Approval
     ↓
-🏗️ PDR Creation → 🤖 **4 Core Agents:**
+🏗️ PDR Creation → 🤖 **6 Core Agents:**
                     • architecture-designer
                     • security-validator
                     • performance-optimizer
+                    • test-automation-qa
                     • code-quality-analyzer
+                    • documentation-knowledge-manager
                  → 👨‍💻 Tech Review → ✅ Doctor Hubert Approval
     ↓
 ⚡ GitHub Issue Creation → Branch Creation → Implementation →
@@ -48,11 +39,13 @@
     ↓
 Draft PR →
     🤖 **Agent Review Checklist (MANDATORY):**
+    • test-automation-agent (test strategy & coverage)
     • code-quality-analyzer
     • security-validator
     • performance-optimizer
-    • ux-accessibility-i18n-agent (final check)
     • architecture-designer (if structural)
+    • ux-accessibility-i18n-agent (final check)
+    • documentation-knowledge-manager (docs current & complete)
     • devops-deployment-agent (pre-deployment readiness)
     ↓
 Testing → PR Ready for Review → Merge → Deployment
@@ -108,19 +101,16 @@ Testing → PR Ready for Review → Merge → Deployment
 
 ## 2. AGENT INTEGRATION
 
-### Auto-Trigger Rules
-
-**ALWAYS RUN FIRST (Pre-Analysis):**
-
-- `architecture-designer` - Multi-file/system changes
-- `security-validator` - Credentials, processes, network, files
-- `code-quality-analyzer` - All code modifications
-
 **CONTEXT TRIGGERS:**
 
+- Multi-file/system changes → `architecture-designer`
+- Credentials, processes, network, files → `security-validator`
+- All code modifications → `code-quality-analyzer`
 - User interface mentions → `ux-accessibility-i18n-agent`
 - Performance keywords (slow, optimize, timeout) → `performance-optimizer`
 - Deploy/infrastructure mentions → `devops-deployment-agent`
+- Test mentions, TDD workflow, coverage → `test-automation-qa`
+- Documentation changes, README updates, phase docs → `documentation-knowledge-manager`
 
 **VALIDATION (Post-Implementation):**
 All relevant agents must validate final implementation
@@ -128,7 +118,7 @@ All relevant agents must validate final implementation
 ### Time Management
 
 - **Agent disagreements**: Escalate to Doctor Hubert if >3 agents conflict
-- **Quality thresholds**: Security ≥4.0, Performance ≥3.5, Code Quality ≥4.0
+  **Quality thresholds**: Documentation ≥4.5, Security ≥4.0, Performance ≥3.5, Code Quality ≥4.0
 
 ### Decision Authority
 
@@ -211,6 +201,7 @@ project-name/
 2. **Real-time Updates**: Document decisions, blockers, and progress as work happens
 3. **Session Continuity**: Enable easy pickup between sessions
 4. **Consolidation**: Merge into comprehensive docs when phase completes
+5. **Documentation-Knowledge-Manager Integration**: The `documentation-knowledge-manager` must validate all phase documentation before completion and ensure README.md updates occur within 24 hours of major changes. This agent works continuously with all other agents to maintain documentation accuracy and completeness.
 
 **Documentation Must Include:**
 
@@ -231,10 +222,12 @@ _Documentation: docs/implementation/PHASE-X-[name]-[YYYY-MM-DD].md_
 
 ### Agent Validation Status:
 
-- [ ] Code Quality: Not started | In progress | ✅ Complete
-- [ ] Security: Not started | In progress | ✅ Complete
-- [ ] Performance: Not started | In progress | ✅ Complete
-- [ ] Architecture: Not started | In progress | ✅ Complete
+- [ ] Architecture: Not started | In progress | ✅ Complete (structural foundation)
+- [ ] Test Coverage: Not started | In progress | ✅ Complete (TDD emphasis)
+- [ ] Code Quality: Not started | In progress | ✅ Complete (ongoing concern)
+- [ ] Security: Not started | In progress | ✅ Complete (critical validation)
+- [ ] Performance: Not started | In progress | ✅ Complete (optimization)
+- [ ] Documentation: Not started | In progress | ✅ Complete (final state)
 
 ### Documentation Status:
 
