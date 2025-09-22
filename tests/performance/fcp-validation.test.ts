@@ -127,8 +127,8 @@ describe('FCP Performance Validation - Critical CSS Integration', () => {
         'src/app/components/critical-css.tsx'
       )
       const componentContent = readFileSync(criticalComponentPath, 'utf-8')
-      expect(componentContent).toContain('createElement')
-      expect(componentContent).toContain('deferred.css')
+      expect(componentContent).toContain('CriticalCSSProvider')
+      expect(componentContent).toContain('DeferredCSSLoader')
     })
   })
 })

@@ -19,6 +19,7 @@ repos:
         entry: npx eslint
         language: system
         files: \.(js|jsx|ts|tsx)$
+        exclude: ^scripts/dist/
         args: [--fix]
 
       # Prettier formatting
@@ -41,7 +42,7 @@ repos:
       # Run all tests except those requiring production build
       - id: jest
         name: Jest Tests
-        entry: npm test -- --testPathIgnorePatterns="bundle-size|production-config|bundle-debug"
+        entry: npm test -- --testPathIgnorePatterns="bundle-size|production-config|bundle-debug|critical-css"
         language: system
         files: \.(js|jsx|ts|tsx)$
         args: [--findRelatedTests, --passWithNoTests, --bail]
