@@ -1,0 +1,11 @@
+{
+  "criticalCSSEnabled": true,
+  "expectedFCPImprovement": 350,
+  "phase": "2A-Day3-4",
+  "target": "Critical CSS extraction and inlining",
+  "metrics": {
+    "criticalCSSSize": 5000,
+    "deferredCSSSize": 74640,
+    "expectedFCPReduction": 350
+  }
+}

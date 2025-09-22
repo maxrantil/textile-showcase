@@ -4,6 +4,12 @@ import { useState, useRef, useEffect } from 'react'
 import Image from 'next/image'
 import { getOptimizedImageUrl } from '@/utils/image-helpers'
 import { ImageLoadingPlaceholder } from './LoadingSpinner'
+import {
+  getImagePriority,
+  shouldPreloadImage,
+  getOptimizedObserverConfig,
+  type ImageType,
+} from '@/utils/image-optimization'
 import type { ImageSource } from '@/types/textile'
 
 interface OptimizedImageProps {
@@ -20,6 +26,9 @@ interface OptimizedImageProps {
   loading?: 'lazy' | 'eager'
   objectFit?: 'contain' | 'cover' | 'fill' | 'none' | 'scale-down'
   fill?: boolean
+  fetchPriority?: 'high' | 'low' | 'auto'
+  imageType?: ImageType
+  isAboveFold?: boolean
 }
 
 export function OptimizedImage({
@@ -35,6 +44,9 @@ export function OptimizedImage({
   onClick,
   objectFit = 'contain',
   fill = false,
+  fetchPriority,
+  imageType = 'gallery',
+  isAboveFold = false,
 }: OptimizedImageProps) {
   const [isLoaded, setIsLoaded] = useState(false)
   const [isError, setIsError] = useState(false)
@@ -42,6 +54,12 @@ export function OptimizedImage({
   const [currentImageUrl, setCurrentImageUrl] = useState<string>('')
   const [usesFallback, setUsesFallback] = useState(false)
   const imgRef = useRef<HTMLDivElement>(null)
+
+  // Enhanced optimization: determine priority and preload settings
+  const optimizedFetchPriority =
+    fetchPriority || getImagePriority(imageType, isAboveFold)
+  const shouldPreload = shouldPreloadImage(imageType, isAboveFold)
+  const observerConfig = getOptimizedObserverConfig()
 
   // Generate image URLs - only if src exists
   const primaryImageUrl = src
@@ -76,7 +94,7 @@ export function OptimizedImage({
     setCurrentImageUrl(primaryImageUrl)
   }, [primaryImageUrl])
 
-  // Intersection Observer for lazy loading - with fallback for lockdown mode
+  // Enhanced Intersection Observer with optimized configuration
   useEffect(() => {
     if (priority || isInView) {
       return
@@ -88,18 +106,12 @@ export function OptimizedImage({
       return
     }
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsInView(true)
-          observer.disconnect()
-        }
-      },
-      {
-        threshold: 0.1,
-        rootMargin: '50px',
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        setIsInView(true)
+        observer.disconnect()
       }
-    )
+    }, observerConfig)
 
     if (imgRef.current) {
       observer.observe(imgRef.current)
@@ -115,7 +127,7 @@ export function OptimizedImage({
       observer.disconnect()
       clearTimeout(fallbackTimeout)
     }
-  }, [priority, isInView])
+  }, [priority, isInView, observerConfig])
 
   // Handle image load error - try fallback format
   const handleImageError = () => {
@@ -168,6 +180,8 @@ export function OptimizedImage({
       tabIndex={onClick ? 0 : undefined}
       role={onClick ? 'button' : undefined}
       aria-label={onClick ? `View ${alt}` : alt}
+      data-image-type={imageType}
+      data-size={width > 600 ? 'large' : 'small'}
     >
       {/* Loading placeholder */}
       {!isLoaded && !isError && (
@@ -182,8 +196,8 @@ export function OptimizedImage({
               src={currentImageUrl}
               alt={alt}
               fill
-              loading={priority ? 'eager' : 'lazy'}
-              priority={priority}
+              loading={priority || shouldPreload ? 'eager' : 'lazy'}
+              priority={priority || shouldPreload}
               sizes={sizes}
               placeholder={blurDataUrl ? 'blur' : 'empty'}
               blurDataURL={blurDataUrl}
@@ -195,6 +209,11 @@ export function OptimizedImage({
                 transition: 'opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
               }}
               decoding="async"
+              // Enhanced resource hint for performance optimization
+              {...({ fetchpriority: optimizedFetchPriority } as Record<
+                string,
+                string
+              >)}
             />
           ) : (
             <Image
@@ -202,8 +221,8 @@ export function OptimizedImage({
               alt={alt}
               width={width}
               height={height}
-              loading={priority ? 'eager' : 'lazy'}
-              priority={priority}
+              loading={priority || shouldPreload ? 'eager' : 'lazy'}
+              priority={priority || shouldPreload}
               sizes={sizes}
               placeholder={blurDataUrl ? 'blur' : 'empty'}
               blurDataURL={blurDataUrl}
@@ -216,6 +235,11 @@ export function OptimizedImage({
                 ...(style || {}),
               }}
               decoding="async"
+              // Enhanced resource hint for performance optimization
+              {...({ fetchpriority: optimizedFetchPriority } as Record<
+                string,
+                string
+              >)}
             />
           )}
         </>
@@ -277,6 +301,29 @@ export function OptimizedImage({
       )}
 
       {/* Debug info in development */}
+      {process.env.NODE_ENV === 'development' && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '4px',
+            right: '4px',
+            background:
+              optimizedFetchPriority === 'high'
+                ? 'red'
+                : optimizedFetchPriority === 'low'
+                  ? 'blue'
+                  : 'green',
+            color: 'white',
+            fontSize: '8px',
+            padding: '1px 3px',
+            borderRadius: '2px',
+            zIndex: 10,
+          }}
+        >
+          {optimizedFetchPriority.toUpperCase()}
+        </div>
+      )}
+
       {process.env.NODE_ENV === 'development' && usesFallback && (
         <div
           style={{

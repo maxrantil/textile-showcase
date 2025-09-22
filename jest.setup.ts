@@ -82,3 +82,31 @@ Element.prototype.getBoundingClientRect = jest.fn(() => ({
   y: 0,
   toJSON: jest.fn(),
 }))
+
+// Mock Web APIs for security tests (Next.js middleware needs these)
+global.Request =
+  global.Request ||
+  class MockRequest {
+    constructor(
+      public url: string,
+      public init?: RequestInit
+    ) {}
+    headers = new Headers()
+    method = 'GET'
+    json = jest.fn()
+    text = jest.fn()
+  }
+
+global.Response =
+  global.Response ||
+  class MockResponse {
+    constructor(
+      public body?: BodyInit,
+      public init?: ResponseInit
+    ) {}
+    headers = new Headers()
+    status = 200
+    ok = true
+    json = jest.fn()
+    text = jest.fn()
+  }

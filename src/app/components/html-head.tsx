@@ -2,13 +2,29 @@ interface HtmlHeadProps {
   children?: React.ReactNode
 }
 
+/**
+ * HtmlHead component with performance-optimized resource hints
+ * Implements Phase 2A resource prioritization per PDR specifications
+ * - DNS prefetch control for faster DNS lookups
+ * - Preconnect hints for critical domains (Sanity CDN, Google Fonts)
+ * - Preload hints for critical resources (CSS, fonts)
+ * Target: 200-300ms FCP improvement
+ */
 export function HtmlHead({ children }: HtmlHeadProps) {
   return (
     <head>
+      {/* DNS prefetch control for performance optimization */}
+      <meta name="dns-prefetch-control" content="on" />
+
       {/* Critical resource hints for Core Web Vitals optimization */}
       <link
         rel="preconnect"
         href="https://cdn.sanity.io"
+        crossOrigin="anonymous"
+      />
+      <link
+        rel="preconnect"
+        href="https://fonts.googleapis.com"
         crossOrigin="anonymous"
       />
       <link
@@ -22,17 +38,23 @@ export function HtmlHead({ children }: HtmlHeadProps) {
       {/* Preload critical resources */}
       <link
         rel="preload"
+        href="/_next/static/css/app.css"
+        as="style"
+        type="text/css"
+      />
+      <link
+        rel="preload"
         href="/fonts/inter-var.woff2"
         as="font"
         type="font/woff2"
-        crossOrigin="anonymous"
+        crossOrigin=""
       />
       <link
         rel="preload"
         href="/fonts/noto-sans-var.woff2"
         as="font"
         type="font/woff2"
-        crossOrigin="anonymous"
+        crossOrigin=""
       />
 
       {/* Performance and mobile optimization */}

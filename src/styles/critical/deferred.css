@@ -1,0 +1,282 @@
+/* Deferred CSS - Below-fold and non-critical styles */
+/* Loaded asynchronously after critical path for optimal performance */
+
+/* Typography System - Non-critical */
+:root {
+  --font-size-display: clamp(32px, 6vw, 64px);
+  --font-size-h1: clamp(24px, 4.5vw, 48px);
+  --font-size-h2: clamp(20px, 3.5vw, 32px);
+  --font-size-h3: clamp(18px, 3vw, 24px);
+  --font-size-body-large: clamp(16px, 2.5vw, 20px);
+  --font-size-body: clamp(15px, 2.2vw, 18px);
+  --color-text-primary: #222;
+  --color-text-secondary: #333;
+  --color-text-tertiary: #444;
+  --color-text-muted: #555;
+  --letter-spacing-tight: -0.02em;
+  --letter-spacing-normal: 0;
+  --letter-spacing-wide: 0.02em;
+}
+
+/* Typography Styles */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 400;
+  letter-spacing: var(--letter-spacing-tight);
+  line-height: 1.2;
+  margin-bottom: clamp(16px, 4vw, 24px);
+}
+
+h1 {
+  font-size: var(--font-size-h1);
+}
+h2 {
+  font-size: var(--font-size-h2);
+}
+h3 {
+  font-size: var(--font-size-h3);
+}
+
+p {
+  font-size: var(--font-size-body);
+  line-height: 1.6;
+  margin-bottom: clamp(12px, 3vw, 20px);
+  color: var(--color-text-secondary);
+}
+
+/* Spacing System */
+.spacing-mobile-xs {
+  margin: clamp(8px, 2vw, 12px);
+}
+.spacing-mobile-sm {
+  margin: clamp(12px, 3vw, 16px);
+}
+.spacing-mobile-md {
+  margin: clamp(16px, 4vw, 24px);
+}
+.spacing-mobile-lg {
+  margin: clamp(24px, 5vw, 32px);
+}
+.spacing-mobile-xl {
+  margin: clamp(32px, 6vw, 48px);
+}
+
+.padding-mobile-xs {
+  padding: clamp(8px, 2vw, 12px);
+}
+.padding-mobile-sm {
+  padding: clamp(12px, 3vw, 16px);
+}
+.padding-mobile-md {
+  padding: clamp(16px, 4vw, 24px);
+}
+.padding-mobile-lg {
+  padding: clamp(24px, 5vw, 32px);
+}
+
+/* Button Styles */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(12px, 3vw, 16px) clamp(20px, 5vw, 32px);
+  border: 1px solid var(--color-border, #e5e5e5);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--color-text-primary);
+  text-decoration: none;
+  font-size: var(--font-size-body);
+  font-weight: 500;
+  transition: all var(--transition-normal, 0.3s ease);
+  cursor: pointer;
+}
+
+.btn:hover {
+  background: var(--color-text-primary);
+  color: var(--color-surface, #ffffff);
+  transform: translateY(-1px);
+}
+
+.btn-primary {
+  background: var(--color-text-primary);
+  color: var(--color-surface, #ffffff);
+  border-color: var(--color-text-primary);
+}
+
+.btn-secondary {
+  border-color: var(--color-text-secondary);
+  color: var(--color-text-secondary);
+}
+
+/* Gallery Styles */
+.gallery-container {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: clamp(20px, 4vw, 32px);
+  padding: clamp(20px, 4vw, 32px);
+}
+
+.gallery-item {
+  position: relative;
+  aspect-ratio: 4/3;
+  overflow: hidden;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform var(--transition-normal);
+}
+
+.gallery-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.gallery-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Navigation Styles */
+.nav-primary {
+  display: flex;
+  align-items: center;
+  gap: clamp(16px, 4vw, 32px);
+  padding: clamp(16px, 4vw, 24px) 0;
+}
+
+.nav-link {
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  font-size: var(--font-size-body);
+  font-weight: 500;
+  transition: color var(--transition-fast, 0.2s ease);
+}
+
+.nav-link:hover {
+  color: var(--color-text-primary);
+}
+
+.nav-link.active {
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+/* Form Styles */
+.form-group {
+  margin-bottom: clamp(16px, 4vw, 24px);
+}
+
+.form-label {
+  display: block;
+  margin-bottom: clamp(6px, 1.5vw, 10px);
+  font-size: var(--font-size-body);
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.form-input,
+.form-textarea {
+  width: 100%;
+  padding: clamp(12px, 3vw, 16px);
+  border: 1px solid var(--color-border, #e5e5e5);
+  border-radius: 6px;
+  font-size: var(--font-size-body);
+  font-family: inherit;
+  background: var(--color-surface, #ffffff);
+  transition: border-color var(--transition-fast);
+}
+
+.form-input:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--color-text-primary);
+  box-shadow: 0 0 0 2px rgba(34, 34, 34, 0.1);
+}
+
+.form-textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+/* Project Layout Styles */
+.project-header {
+  margin-bottom: clamp(32px, 6vw, 48px);
+  text-align: center;
+}
+
+.project-title {
+  font-size: var(--font-size-h1);
+  margin-bottom: clamp(16px, 3vw, 24px);
+}
+
+.project-description {
+  font-size: var(--font-size-body-large);
+  color: var(--color-text-secondary);
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.project-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(12px, 3vw, 20px);
+  margin-top: clamp(20px, 4vw, 32px);
+  justify-content: center;
+}
+
+.project-tag {
+  padding: clamp(6px, 1.5vw, 10px) clamp(12px, 3vw, 16px);
+  background: var(--color-background, #fafafa);
+  color: var(--color-text-secondary);
+  border-radius: 20px;
+  font-size: var(--font-size-caption, 14px);
+  font-weight: 500;
+}
+
+/* Additional deferred styles that don't need to be above-fold */
+.grid-mobile {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(16px, 4vw, 24px);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+  .grid-mobile {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+}
+
+/* Scrollbar styling - non-critical */
+::-webkit-scrollbar {
+  height: 14px;
+  width: 14px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 7px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 7px;
+  border: 2px solid #f1f1f1;
+  transition: background var(--transition-fast);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

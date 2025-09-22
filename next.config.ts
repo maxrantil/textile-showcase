@@ -18,7 +18,7 @@ const nextConfig = {
         pathname: '/images/**',
       },
     ],
-    formats: ['image/webp'], // Removed AVIF for Safari compatibility - AVIF only supported in Safari 16+
+    formats: ['image/avif', 'image/webp'], // AVIF first for better compression, WebP fallback
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     dangerouslyAllowSVG: true,
