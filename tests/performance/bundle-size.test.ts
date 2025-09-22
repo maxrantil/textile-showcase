@@ -1,5 +1,6 @@
 // ABOUTME: Bundle size regression testing with TDD approach
 // This test MUST fail initially - that's the point of TDD RED phase
+// Test comment to verify pre-commit Jest hook runs
 
 import { analyzeBundleSize } from '../utils/bundle-analyzer'
 
