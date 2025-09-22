@@ -73,26 +73,26 @@ describe('Critical CSS Extraction - Phase 2A Day 3-4', () => {
 
     it('should defer non-critical CSS with media strategy', () => {
       // Updated: Dynamic CSS loading for Next.js compliance
-      const layoutPath = join(
+      const deferredLoaderPath = join(
         process.cwd(),
-        'src/app/components/critical-css.tsx'
+        'src/app/components/deferred-css-loader.tsx'
       )
-      const layoutContent = readFileSync(layoutPath, 'utf-8')
+      const deferredLoaderContent = readFileSync(deferredLoaderPath, 'utf-8')
 
-      expect(layoutContent).toContain('createElement')
-      expect(layoutContent).toContain('deferred.css')
+      expect(deferredLoaderContent).toContain('createElement')
+      expect(deferredLoaderContent).toContain('deferred.css')
     })
 
     it('should have preload hint for deferred CSS', () => {
       // Updated: Dynamic preload implementation for Next.js compliance
-      const layoutPath = join(
+      const deferredLoaderPath = join(
         process.cwd(),
-        'src/app/components/critical-css.tsx'
+        'src/app/components/deferred-css-loader.tsx'
       )
-      const layoutContent = readFileSync(layoutPath, 'utf-8')
+      const deferredLoaderContent = readFileSync(deferredLoaderPath, 'utf-8')
 
-      expect(layoutContent).toContain('preload')
-      expect(layoutContent).toContain('preloadLink')
+      expect(deferredLoaderContent).toContain('preload')
+      expect(deferredLoaderContent).toContain('preloadLink')
     })
   })
 
@@ -130,16 +130,16 @@ describe('Critical CSS Extraction - Phase 2A Day 3-4', () => {
     })
 
     it('should have proper fallback for CSS loading failures', () => {
-      // RED: Will fail - error handling not implemented
-      const layoutPath = join(
+      // Updated: Error handling implemented in deferred CSS loader
+      const deferredLoaderPath = join(
         process.cwd(),
-        'src/app/components/critical-css.tsx'
+        'src/app/components/deferred-css-loader.tsx'
       )
 
-      if (existsSync(layoutPath)) {
-        const layoutContent = readFileSync(layoutPath, 'utf-8')
-        expect(layoutContent).toContain('onerror')
-        expect(layoutContent).toContain('fallback')
+      if (existsSync(deferredLoaderPath)) {
+        const deferredLoaderContent = readFileSync(deferredLoaderPath, 'utf-8')
+        expect(deferredLoaderContent).toContain('onerror')
+        expect(deferredLoaderContent).toContain('fallback')
       }
     })
   })
