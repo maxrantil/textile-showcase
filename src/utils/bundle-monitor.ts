@@ -73,10 +73,10 @@ export class BundleMonitor {
 
   /**
    * Analyze Next.js build output and extract bundle statistics
+   * Focuses on client-side First Load JS (rootMainFiles + polyfillFiles)
    */
   async analyzeBuild(buildDir: string = '.next'): Promise<BundleStats> {
     const buildManifest = path.join(buildDir, 'build-manifest.json')
-    const staticDir = path.join(buildDir, 'static')
 
     if (!fs.existsSync(buildManifest)) {
       throw new Error(`Build manifest not found: ${buildManifest}`)
@@ -87,70 +87,72 @@ export class BundleMonitor {
     const assets: BundleStats['assets'] = []
     let totalSize = 0
 
-    // Analyze JavaScript chunks
-    for (const [page, files] of Object.entries(manifest.pages)) {
+    // Analyze First Load JS (rootMainFiles + polyfillFiles) - the critical client-side bundle
+    const firstLoadFiles = [
+      ...(manifest.rootMainFiles || []),
+      ...(manifest.polyfillFiles || []),
+    ]
+
+    for (const file of firstLoadFiles) {
+      // Files in manifest already include "static/" prefix, so join with buildDir directly
+      const filePath = path.join(buildDir, file)
+
+      if (fs.existsSync(filePath)) {
+        const stats = fs.statSync(filePath)
+        const chunkName = path.basename(file)
+
+        const isJS = file.endsWith('.js')
+        const isCSS = file.endsWith('.css')
+
+        chunks.push({
+          name: chunkName,
+          size: stats.size,
+          type: 'initial', // First Load JS is always initial
+        })
+
+        assets.push({
+          name: file,
+          size: stats.size,
+          type: isJS ? 'js' : isCSS ? 'css' : 'other',
+        })
+
+        totalSize += stats.size
+      }
+    }
+
+    // Analyze page-specific chunks (async chunks)
+    for (const [page, files] of Object.entries(manifest.pages || {})) {
       const pageFiles = files as string[]
       for (const file of pageFiles) {
-        const filePath = path.join(staticDir, file)
+        // Skip files already counted in First Load JS
+        if (firstLoadFiles.includes(file)) {
+          continue
+        }
+
+        // Files in manifest already include "static/" prefix
+        const filePath = path.join(buildDir, file)
         if (fs.existsSync(filePath)) {
           const stats = fs.statSync(filePath)
           const chunkName = `${page}-${path.basename(file)}`
 
+          const isJS = file.endsWith('.js')
+          const isCSS = file.endsWith('.css')
+
           chunks.push({
             name: chunkName,
             size: stats.size,
-            type: page === '/_app' ? 'initial' : 'async',
+            type: 'async',
+          })
+
+          assets.push({
+            name: file,
+            size: stats.size,
+            type: isJS ? 'js' : isCSS ? 'css' : 'other',
           })
 
           totalSize += stats.size
         }
       }
-    }
-
-    // Analyze static assets
-    if (fs.existsSync(staticDir)) {
-      const scanDirectory = (dir: string, prefix: string = '') => {
-        const items = fs.readdirSync(dir)
-
-        for (const item of items) {
-          const itemPath = path.join(dir, item)
-          const stats = fs.statSync(itemPath)
-
-          if (stats.isDirectory()) {
-            scanDirectory(itemPath, `${prefix}${item}/`)
-          } else if (stats.isFile()) {
-            const ext = path.extname(item).toLowerCase()
-            let type: 'js' | 'css' | 'image' | 'font' | 'other' = 'other'
-
-            if (['.js', '.mjs'].includes(ext)) type = 'js'
-            else if (ext === '.css') type = 'css'
-            else if (
-              [
-                '.png',
-                '.jpg',
-                '.jpeg',
-                '.gif',
-                '.webp',
-                '.avif',
-                '.svg',
-              ].includes(ext)
-            )
-              type = 'image'
-            else if (['.woff', '.woff2', '.ttf', '.otf', '.eot'].includes(ext))
-              type = 'font'
-
-            assets.push({
-              name: `${prefix}${item}`,
-              size: stats.size,
-              type,
-            })
-
-            totalSize += stats.size
-          }
-        }
-      }
-
-      scanDirectory(staticDir)
     }
 
     // Calculate gzipped size estimation (rough approximation)

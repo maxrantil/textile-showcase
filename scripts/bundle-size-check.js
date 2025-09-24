@@ -48,6 +48,28 @@ async function validateBundleSize() {
     const stats = await monitor.analyzeBuild(CONFIG.buildDir)
 
     if (CONFIG.verbose) {
+      console.log('\nFirst Load Files Analysis:')
+      console.log(
+        'rootMainFiles:',
+        stats.chunks.filter((c) => c.type === 'initial').length
+      )
+      console.log('polyfillFiles: 1 (expected)')
+      console.log(
+        'Async chunks:',
+        stats.chunks.filter((c) => c.type === 'async').length
+      )
+      console.log('\nLargest chunks:')
+      const largestChunks = [...stats.chunks]
+        .sort((a, b) => b.size - a.size)
+        .slice(0, 5)
+      largestChunks.forEach((chunk) => {
+        console.log(
+          `  - ${chunk.name}: ${formatSize(chunk.size)} (${chunk.type})`
+        )
+      })
+    }
+
+    if (CONFIG.verbose) {
       console.log('Bundle Statistics:')
       console.log(`- Total Size: ${formatSize(stats.totalSize)}`)
       console.log(`- Gzipped Size: ${formatSize(stats.gzippedSize)}`)

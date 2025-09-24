@@ -117,17 +117,17 @@ describe('Performance Budget Enforcement', () => {
 
       // Create mock bundle stats exceeding budget
       const mockStats: BundleStats = {
-        totalSize: 1600000, // 1.6MB - exceeds 1.5MB budget
-        gzippedSize: 480000, // 480KB - exceeds 450KB budget
+        totalSize: 5500000, // 5.5MB - exceeds 5.2MB budget
+        gzippedSize: 1600000, // 1.6MB - exceeds 1.5MB budget
         chunks: [
-          { name: 'main', size: 350000, type: 'initial' }, // Exceeds 300KB limit
-          { name: 'async-1', size: 250000, type: 'async' }, // Exceeds 200KB limit
+          { name: 'main', size: 700000, type: 'initial' }, // Exceeds 600KB limit
+          { name: 'async-1', size: 350000, type: 'async' }, // Exceeds 300KB limit
         ],
         assets: [
-          { name: 'main.js', size: 900000, type: 'js' }, // Exceeds 800KB limit
-          { name: 'styles.css', size: 120000, type: 'css' }, // Exceeds 100KB limit
+          { name: 'main.js', size: 4800000, type: 'js' }, // Exceeds 4.5MB limit
+          { name: 'styles.css', size: 250000, type: 'css' }, // Exceeds 200KB limit
           { name: 'image.webp', size: 300000, type: 'image' },
-          { name: 'font.woff2', size: 140000, type: 'font' },
+          { name: 'font.woff2', size: 150000, type: 'font' },
         ],
         timestamp: new Date().toISOString(),
         gitCommit: 'def456',
@@ -148,8 +148,8 @@ describe('Performance Budget Enforcement', () => {
 
       // Create baseline history
       const baselineStats: BundleStats = {
-        totalSize: 1300000, // 1.3MB baseline
-        gzippedSize: 390000,
+        totalSize: 4000000, // 4.0MB baseline
+        gzippedSize: 1200000,
         chunks: [],
         assets: [],
         timestamp: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
@@ -160,8 +160,8 @@ describe('Performance Budget Enforcement', () => {
 
       // Create current stats with regression
       const currentStats: BundleStats = {
-        totalSize: 1430000, // 1.43MB - 10% increase (exceeds 5% threshold)
-        gzippedSize: 429000,
+        totalSize: 4420000, // 4.42MB - 10.5% increase (exceeds 10% threshold)
+        gzippedSize: 1326000,
         chunks: [],
         assets: [],
         timestamp: new Date().toISOString(),
@@ -171,7 +171,11 @@ describe('Performance Budget Enforcement', () => {
       const alerts = await monitor.validateBundle(currentStats)
 
       expect(alerts.some((alert) => alert.category === 'regression')).toBe(true)
-      expect(alerts.some((alert) => alert.type === 'error')).toBe(true)
+      expect(
+        alerts.some(
+          (alert) => alert.type === 'error' && alert.category === 'regression'
+        )
+      ).toBe(true)
     })
 
     it('should generate comprehensive bundle report', async () => {
