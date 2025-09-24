@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { randomBytes } from 'crypto'
 
 /**
  * Emergency security middleware for protecting critical endpoints
@@ -82,8 +81,10 @@ export function middleware(request: NextRequest) {
   // Add security headers to all responses
   const response = NextResponse.next()
 
-  // Generate nonce for performance monitoring scripts
-  const nonce = randomBytes(16).toString('base64')
+  // Generate nonce for performance monitoring scripts using Web Crypto API
+  const nonceBuffer = new Uint8Array(16)
+  crypto.getRandomValues(nonceBuffer)
+  const nonce = Buffer.from(nonceBuffer).toString('base64')
   response.headers.set('X-Performance-Script-Nonce', nonce)
 
   // Safari-specific CSP handling

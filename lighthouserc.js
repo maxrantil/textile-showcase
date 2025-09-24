@@ -9,7 +9,7 @@ module.exports = {
 
       // Start local server for testing
       startServerCommand: 'npm run build && npm start',
-      startServerReadyPattern: 'Ready on',
+      startServerReadyPattern: 'Ready in',
       startServerReadyTimeout: 30000,
 
       // URLs to audit

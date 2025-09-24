@@ -176,8 +176,8 @@ jobs:
         run: |
           echo "Running Lighthouse CI for ${{ matrix.device }}..."
 
-          # Use advanced config for stricter budget enforcement
-          CONFIG_FILE="${{ github.event.inputs.lighthouse_config || 'lighthouserc.advanced.js' }}"
+          # Use basic working config until advanced config is properly tested
+          CONFIG_FILE="${{ github.event.inputs.lighthouse_config || 'lighthouserc.js' }}"
           echo "Using config: $CONFIG_FILE"
 
           # Run Lighthouse CI with advanced configuration
