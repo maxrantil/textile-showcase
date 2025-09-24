@@ -10,6 +10,7 @@
     "build:dev": "NODE_OPTIONS='--max-old-space-size=4096' next build",
     "build:production": "NODE_OPTIONS='--max-old-space-size=1536' next build",
     "start": "next start",
+    "start:ci": "next start",
     "lint": "next lint",
     "test": "jest",
     "test:watch": "jest --watch",
