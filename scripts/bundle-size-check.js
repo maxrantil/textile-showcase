@@ -9,7 +9,7 @@
 const {
   BundleMonitor,
   DEFAULT_BUNDLE_BUDGET,
-} = require('../src/utils/bundle-monitor.ts')
+} = require('./compiled/bundle-monitor.js')
 const fs = require('fs')
 const path = require('path')
 
