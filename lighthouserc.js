@@ -44,10 +44,10 @@ module.exports = {
           uploadThroughputKbps: 750,
         },
 
-        // Form factor for testing
+        // Form factor for testing (can be overridden by CLI)
         formFactor: 'desktop',
 
-        // Screen emulation
+        // Screen emulation (responsive to form factor)
         screenEmulation: {
           mobile: false,
           width: 1350,
@@ -199,4 +199,17 @@ if (process.env.NODE_ENV === 'development') {
     'warn',
     { maxNumericValue: 1500 },
   ]
+}
+
+// Mobile-specific configuration override
+if (process.env.LIGHTHOUSE_MOBILE_ONLY === 'true') {
+  // Override form factor and screen emulation for mobile testing
+  module.exports.ci.collect.settings.formFactor = 'mobile'
+  module.exports.ci.collect.settings.screenEmulation = {
+    mobile: true,
+    width: 412,
+    height: 823,
+    deviceScaleFactor: 2.625,
+    disabled: false,
+  }
 }
