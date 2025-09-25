@@ -88,41 +88,59 @@ export default async function ProjectPage({ params }) {
 
 ## Current Branch State
 
-### Files Modified (Phase 2)
+### 🎯 IMPORTANT: Stashed Changes Available
 
-- **23 component files** updated with import isolation
-- **Type definitions** in `src/types/textile.ts` extended
-- **Build succeeds** but TypeScript hooks prevent commit
+**Phase 2 work is complete but STASHED** due to type compatibility issues:
 
-### Pre-commit Issues
+```bash
+# Apply Phase 2 changes:
+git stash pop
+
+# View stashed changes:
+git stash show -p
+```
+
+**Stashed content includes:**
+
+- **23 component files** with complete import isolation
+- **All @/sanity/imageHelpers → @/utils/image-helpers** replacements done
+- **All TextileDesign type imports** moved to @/types/textile
+- **Extended type definitions** in `src/types/textile.ts`
+
+### Pre-commit Issues (In Stash)
 
 - Type compatibility between old/new TextileDesign interfaces
 - Test files still using Sanity types
-- Optional field handling in components
+- Optional field handling in image functions
+- Interface mismatches requiring resolution
 
 ### Ready for Phase 3
 
-- **Foundation solid**: Component isolation complete
+- **Foundation solid**: Component isolation architecturally complete
 - **Path clear**: API routes strategy validated
 - **Studio intact**: No disruption to working functionality
+- **Type fixes needed**: Resolve compatibility before final commit
 
 ---
 
 ## Phase 3 Implementation Commands
 
 ```bash
+# FIRST: Apply Phase 2 stashed changes
+git stash pop
+
 # Verify current state
 git status
 npm run build:production
 
-# Create API routes
+# Create API routes (main Phase 3 work)
 mkdir -p src/app/api/projects/[slug]
 # Implement server-side API routes
 
 # Update public pages to fetch from APIs
-# Remove remaining Sanity imports from project pages
+# Convert SSG to runtime API fetching
 
-# Fix type compatibility issues
+# Fix type compatibility issues from Phase 2 stash
 # Run bundle analysis to verify 0KB Sanity in public
 
 # Test and validate
