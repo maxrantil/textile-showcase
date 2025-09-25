@@ -56,15 +56,13 @@ describe('Bundle Optimization Integration', () => {
         'utf-8'
       )
 
-      // Should have Sanity-specific cache groups
-      expect(nextConfigContent).toContain('sanityStudio')
-      expect(nextConfigContent).toContain('sanityRuntime')
-      expect(nextConfigContent).toContain('sanityUtils')
+      // Should have Sanity-specific cache groups (updated names)
+      expect(nextConfigContent).toContain('sanity:')
+      expect(nextConfigContent).toContain('framework:')
+      expect(nextConfigContent).toContain('styledSystem:')
 
-      // Should have proper chunk splitting settings (Safari-compatible)
-      expect(nextConfigContent).toContain(
-        'maxInitialRequests: isSafariBuild ? 6 : 10'
-      )
+      // Should have proper chunk splitting settings (Phase 1 configuration)
+      expect(nextConfigContent).toContain('maxInitialRequests: 4')
       // Check for any maxSize configuration (values are more granular in optimized config)
       expect(nextConfigContent).toContain('maxSize:')
     })
@@ -76,13 +74,11 @@ describe('Bundle Optimization Integration', () => {
         'utf-8'
       )
 
-      // Check for sanity studio configuration with async chunks
-      const hasSanityStudioConfig =
-        nextConfigContent.includes('sanityStudioCore') ||
-        nextConfigContent.includes('sanityStudioComponents')
+      // Check for sanity configuration with async chunks (Phase 1 names)
+      const hasSanityConfig = nextConfigContent.includes('sanity:')
       const hasAsyncChunks = nextConfigContent.includes("chunks: 'async'")
 
-      expect(hasSanityStudioConfig).toBe(true)
+      expect(hasSanityConfig).toBe(true)
       expect(hasAsyncChunks).toBe(true)
     })
   })
