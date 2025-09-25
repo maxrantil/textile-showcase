@@ -15,7 +15,7 @@ module.exports = {
       // URLs to audit
       url: [
         'http://localhost:3000',
-        'http://localhost:3000/project/sustainable-packaging-solutions',
+        'http://localhost:3000/project/what-if-the-future-is-made-of-salt',
         'http://localhost:3000/contact',
         'http://localhost:3000/about',
       ],
