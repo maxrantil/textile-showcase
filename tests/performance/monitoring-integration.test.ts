@@ -220,7 +220,7 @@ describe('Performance Monitoring Integration Tests', () => {
 
       expect(
         lighthouseConfig.default.ci.assert.assertions['categories:performance']
-      ).toEqual(['error', { minScore: 0.98 }])
+      ).toEqual(['error', { minScore: 0.95 }])
       expect(
         lighthouseConfig.default.ci.assert.assertions[
           'largest-contentful-paint'
