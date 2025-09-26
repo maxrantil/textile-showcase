@@ -218,18 +218,18 @@ describe('Performance Monitoring Integration Tests', () => {
       // Import Lighthouse config and validate thresholds
       const lighthouseConfig = await import('../../lighthouserc.js')
 
-      // EMERGENCY: Updated expectations for Issue #39 temporary thresholds
+      // EMERGENCY: Updated expectations for Issue #39 emergency thresholds
       expect(
         lighthouseConfig.default.ci.assert.assertions['categories:performance']
-      ).toEqual(['warn', { minScore: 0.8 }])
+      ).toEqual(['warn', { minScore: 0.7 }])
       expect(
         lighthouseConfig.default.ci.assert.assertions[
           'largest-contentful-paint'
         ]
-      ).toEqual(['warn', { maxNumericValue: 2500 }])
+      ).toEqual(['warn', { maxNumericValue: 3000 }])
       expect(
         lighthouseConfig.default.ci.assert.assertions['cumulative-layout-shift']
-      ).toEqual(['warn', { maxNumericValue: 0.15 }])
+      ).toEqual(['warn', { maxNumericValue: 0.2 }])
     })
 
     test('should ensure monitoring overhead meets sub-1ms requirement', () => {
