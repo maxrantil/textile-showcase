@@ -4,24 +4,20 @@
  * Base fragments for reusable query parts
  */
 const fragments = {
-  // Image with metadata
-  imageWithMetadata: `
-      asset-> {
-        _id,
-        metadata {
-          dimensions
-        }
+  // Image with asset reference
+  imageWithAssetRef: `
+      asset {
+        _ref,
+        _type
       }
     `,
 
   // Gallery image with caption
   galleryImage: `
       _key,
-      asset-> {
-        _id,
-        metadata {
-          dimensions
-        }
+      asset {
+        _ref,
+        _type
       },
       caption
     `,
@@ -47,7 +43,7 @@ export const homeQueries = {
       *[_type == "textileDesign"] {
         ${fragments.basicTextileDesign},
         image {
-          ${fragments.imageWithMetadata}
+          ${fragments.imageWithAssetRef}
         }
       } | order(
         order asc,      // First, sort by manual order field (ascending - 0, 1, 2, etc.)
@@ -61,7 +57,7 @@ export const homeQueries = {
       *[_type == "textileDesign" && featured == true] {
         ${fragments.basicTextileDesign},
         image {
-          ${fragments.imageWithMetadata}
+          ${fragments.imageWithAssetRef}
         }
       } | order(order asc, _createdAt desc)[0...10]
     `,
@@ -76,7 +72,7 @@ export const projectQueries = {
       *[_type == "textileDesign" && (slug.current == $slug || _id == $slug)][0] {
         ${fragments.basicTextileDesign},
         image {
-          ${fragments.imageWithMetadata}
+          ${fragments.imageWithAssetRef}
         },
         gallery[] {
           ${fragments.galleryImage}
@@ -139,7 +135,7 @@ export const seoQueries = {
         year,
         _updatedAt,
         image {
-          ${fragments.imageWithMetadata}
+          ${fragments.imageWithAssetRef}
         }
       } | order(order asc, _createdAt desc)
     `,
@@ -154,7 +150,7 @@ export const adminQueries = {
       *[_type == "textileDesign"] {
         ${fragments.basicTextileDesign},
         image {
-          ${fragments.imageWithMetadata}
+          ${fragments.imageWithAssetRef}
         },
         description,
         detailedDescription,

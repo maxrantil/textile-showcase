@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { MobileGalleryItem } from './MobileGalleryItem'
 import { ScrollToTopButton } from '../UI/ScrollToTopButton'
-import { TextileDesign } from '@/sanity/types'
+import { TextileDesign } from '@/types/textile'
 import { UmamiEvents } from '@/utils/analytics'
 import { scrollManager } from '@/lib/scrollManager'
 

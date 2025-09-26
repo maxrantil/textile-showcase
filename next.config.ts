@@ -26,150 +26,105 @@ const nextConfig = {
   },
   experimental: {
     optimizeCss: true,
+    // Enhanced build optimization per PDR Phase 1
+    optimizePackageImports: [
+      '@sanity/client',
+      'styled-components',
+      'next-sanity',
+    ],
   },
   bundlePagesRouterDependencies: true, // Reduce bundle duplication
 
-  // PERFORMANCE: Enhanced webpack bundle optimization for bundle size testing
+  // PERFORMANCE: Phase 1 Bundle Consolidation - Strategic 4-chunk approach
   webpack: (
     config: {
       optimization?: Record<string, unknown>
       resolve?: Record<string, unknown>
+      externals?: Record<string, unknown>
     },
     { dev, isServer }: { dev: boolean; isServer: boolean }
   ) => {
     if (!dev && !isServer) {
-      // Safari-optimized bundle splitting - Safari's older JavaScriptCore engine
-      // handles fewer, larger chunks better than many small chunks
-      const isSafariBuild = process.env.TARGET_BROWSER === 'safari'
+      // PHASE 4: Exclude Sanity dependencies from client-side bundles
+      config.externals = {
+        ...config.externals,
+        // Externalize all Sanity packages for client-side builds
+        '@sanity/client': 'null',
+        '@sanity/image-url': 'null',
+        '@sanity/vision': 'null',
+        'next-sanity': 'null',
+        sanity: 'null',
+        '@sanity/icons': 'null',
+        '@sanity/ui': 'null',
+        '@sanity/desk': 'null',
+        '@sanity/types': 'null',
+        '@sanity/mutator': 'null',
+        '@sanity/diff': 'null',
+        '@sanity/util': 'null',
+      }
 
-      // CRITICAL: Advanced bundle splitting optimization
+      // CRITICAL: Strategic bundle consolidation from PDR Phase 1 - Aggressive approach
       config.optimization = {
         ...config.optimization,
         splitChunks: {
           chunks: 'all',
-          maxInitialRequests: isSafariBuild ? 6 : 10, // Reduce for Safari
-          maxAsyncRequests: isSafariBuild ? 12 : 25, // Conservative chunk limits
-          minSize: isSafariBuild ? 50000 : 30000, // Larger minimum chunks
-          maxSize: isSafariBuild ? 200000 : 250000, // Allow bigger chunks
+          maxInitialRequests: 4, // Strict 4-chunk limit per PDR
+          maxAsyncRequests: 6, // Very conservative async limit
+          minSize: 50000, // Larger minimum to force consolidation
+          maxSize: 500000, // Larger max to allow strategic grouping
+          enforceSizeThreshold: 400000, // Force consolidation below this size
+
           cacheGroups: {
-            // CRITICAL: Balanced Sanity Studio chunking strategy
-            sanityStudioCore: {
-              test: /[\\/]node_modules[\\/](sanity[\\/](lib|desk|form)|@sanity[\\/]ui[\\/]core)[\\/]/,
-              name: 'sanity-studio-core',
-              priority: 105,
-              chunks: 'async',
-              enforce: true,
-              maxSize: 80000, // Reasonable chunks for core studio
-            },
-            sanityStudioComponents: {
-              test: /[\\/]node_modules[\\/](@sanity[\\/]ui|next-sanity[\\/]studio)[\\/]/,
-              name: 'sanity-studio-components',
-              priority: 100,
-              chunks: 'async',
-              enforce: true,
-              maxSize: 100000, // Larger component chunks for efficiency
-            },
-            sanityStudioPlugins: {
-              test: /[\\/]node_modules[\\/](sanity[\\/]plugins|@sanity[\\/](vision|structure))[\\/]/,
-              name: 'sanity-studio-plugins',
-              priority: 95,
-              chunks: 'async',
-              enforce: true,
-              maxSize: 60000, // Medium plugin chunks
-            },
-            // Sanity runtime core - main data fetching functionality
-            sanityRuntime: {
-              test: /[\\/]node_modules[\\/](@sanity[\\/]client|next-sanity(?![\\/]studio))[\\/]/,
-              name: 'sanity-runtime',
-              priority: 90,
+            // Disable default cache groups to prevent fragmentation
+            default: false,
+            defaultVendors: false,
+
+            // CRITICAL: Framework chunk (highest priority) - Allow larger size for consolidation
+            framework: {
+              test: /[\\/]node_modules[\\/](react|react-dom|next|scheduler|react-is)[\\/]/,
+              name: 'framework',
+              priority: 50,
               chunks: 'all',
               enforce: true,
-              maxSize: 150000, // Allow larger for core runtime
+              minSize: 0,
+              maxSize: 400000, // Increased to allow consolidation
             },
-            // Sanity utilities and helpers
-            sanityUtils: {
-              test: /[\\/]node_modules[\\/](@sanity[\\/](image-url|icons|vision)|sanity[\\/]lib)[\\/]/,
-              name: 'sanity-utils',
-              priority: 85,
+
+            // PHASE 4: Sanity cache group removed - externalized instead
+
+            // Styled Components + UI Libraries - Consolidated
+            styledSystem: {
+              test: /[\\/]node_modules[\\/](styled-components|@emotion|@radix-ui|framer-motion)[\\/]/,
+              name: 'styled-system',
+              priority: 35,
               chunks: 'all',
               enforce: true,
-              maxSize: 100000,
+              minSize: 0,
+              maxSize: 300000,
             },
-            // CRITICAL: Security dashboard components - keep them in async chunks only
-            securityComponents: {
-              test: /[\\/]src[\\/]components[\\/]security[\\/]/,
-              name: 'security-dashboard',
-              priority: 80,
-              chunks: 'async', // Only in async chunks, not initial bundle
-              enforce: true,
-              maxSize: 50000, // Keep security components under 50KB per chunk
-            },
-            // Security API utilities
-            securityLibs: {
-              test: /[\\/]src[\\/]lib[\\/]security[\\/]/,
-              name: 'security-libs',
-              priority: 75,
-              chunks: 'async', // Keep out of initial bundle
-              enforce: true,
-              maxSize: 30000, // Very small security libs chunks
-            },
-            // Split large vendor libraries for better caching
-            react: {
-              test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
-              name: 'react',
-              priority: 40,
-              chunks: 'all',
-              reuseExistingChunk: true,
-            },
-            // UI libraries chunk
-            ui: {
-              test: /[\\/]node_modules[\\/](@radix-ui|framer-motion|@headlessui)[\\/]/,
-              name: 'ui-libs',
-              priority: 30,
-              chunks: 'all',
-              reuseExistingChunk: true,
-            },
-            // CRITICAL: Aggressive vendor chunk consolidation to reduce HTTP requests
-            // Split into 3 strategic chunks instead of 13+ fragments
-            vendorCore: {
-              test: /[\\/]node_modules[\\/](next|react-is|scheduler)[\\/]/,
-              name: 'vendor-core',
-              priority: 25,
-              chunks: 'all',
-              enforce: true,
-              maxSize: 200000, // 200KB for core Next.js
-            },
-            vendorUtils: {
-              test: /[\\/]node_modules[\\/](?!(@sanity|sanity|next-sanity|react|react-dom|next|react-is|scheduler|styled-components)).*[\\/]/,
-              name: 'vendor-utils',
-              priority: 20,
-              chunks: 'all',
-              reuseExistingChunk: true,
-              maxSize: 300000, // 300KB consolidated chunk for utilities
-            },
-            vendorStyles: {
-              test: /[\\/]node_modules[\\/](styled-components|@emotion)[\\/]/,
-              name: 'vendor-styles',
-              priority: 22,
-              chunks: 'all',
-              reuseExistingChunk: true,
-              maxSize: 150000, // 150KB for styling libraries
-            },
-            // Common code splitting with proper size limits
-            common: {
-              name: 'common',
-              minChunks: 2,
-              chunks: 'async',
+
+            // ALL OTHER vendor libraries (massive consolidation)
+            vendor: {
+              test: /[\\/]node_modules[\\/]/,
+              name: 'vendor',
               priority: 10,
-              minSize: 10000, // 10KB minimum
-              maxSize: 50000, // 50KB max common chunks
+              chunks: 'all',
+              enforce: true,
+              minSize: 0,
+              maxSize: 600000, // Large consolidation chunk
+              minChunks: 1,
             },
           },
         },
-        // Basic optimization settings to reduce memory usage
+
+        // Enhanced tree shaking per PDR
         usedExports: true,
+        innerGraph: true, // Advanced tree shaking per PDR
         sideEffects: false,
         providedExports: true,
+
+        // Module concatenation for better performance per PDR
+        concatenateModules: true,
         moduleIds: 'deterministic',
         chunkIds: 'deterministic',
         removeEmptyChunks: true,

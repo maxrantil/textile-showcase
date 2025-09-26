@@ -1,18 +1,15 @@
 'use client'
 import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
-import {
-  getOptimizedImageUrl,
-  getImageDimensionsFromSource,
-} from '@/sanity/imageHelpers'
+import { getOptimizedImageUrl } from '@/utils/image-helpers'
 import { LockdownImage } from '@/components/ui/LockdownImage'
 import { UmamiEvents } from '@/utils/analytics'
-import type { SanityImageSource } from '@sanity/image-url/lib/types/types'
+import type { ImageSource } from '@/types/textile'
 
 interface ImageBlockProps {
   image: {
     _key: string
-    asset: SanityImageSource
+    asset: ImageSource
     caption?: string
     isMainImage: boolean
   }
@@ -56,9 +53,8 @@ export const ImageBlock = React.memo(function ImageBlock({
     return null
   }
 
-  // Get image dimensions for proper aspect ratio
-  const dimensions = getImageDimensionsFromSource(image.asset)
-  const aspectRatio = dimensions ? dimensions.aspectRatio : 4 / 3
+  // Use default aspect ratio for performance optimization
+  const aspectRatio = 4 / 3
 
   const handleImageLoad = () => {
     setImageLoaded(true)

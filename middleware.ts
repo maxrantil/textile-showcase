@@ -91,10 +91,10 @@ export function middleware(request: NextRequest) {
   const userAgent = request.headers.get('user-agent') || ''
   const isSafari = /Version\/[\d\.]+.*Safari/.test(userAgent)
 
-  // Enhanced script-src with nonce support for performance monitoring
+  // Enhanced script-src with Next.js compatibility
   const scriptSrc = isSafari
-    ? `'self' 'unsafe-inline' 'nonce-${nonce}' https://cdn.sanity.io https://umami.is` // Remove 'unsafe-eval' for Safari
-    : `'self' 'unsafe-inline' 'unsafe-eval' 'nonce-${nonce}' https://cdn.sanity.io https://umami.is`
+    ? `'self' 'unsafe-inline' https://cdn.sanity.io https://umami.is http://70.34.205.18:3000` // Remove 'unsafe-eval' for Safari
+    : `'self' 'unsafe-inline' 'unsafe-eval' https://cdn.sanity.io https://umami.is http://70.34.205.18:3000`
 
   response.headers.set(
     'Content-Security-Policy',
@@ -104,7 +104,7 @@ export function middleware(request: NextRequest) {
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "img-src 'self' https://cdn.sanity.io https://res.cloudinary.com data: blob:",
       "font-src 'self' https://fonts.gstatic.com",
-      "connect-src 'self' https://api.resend.com https://cdn.sanity.io http://70.34.205.18:3000 /api/performance",
+      "connect-src 'self' https://api.resend.com https://cdn.sanity.io http://70.34.205.18:3000",
       "frame-ancestors 'none'",
       "base-uri 'self'",
       "form-action 'self'",

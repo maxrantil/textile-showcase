@@ -1,6 +1,6 @@
 'use client'
 
-import { TextileDesign } from '@/sanity/types'
+import { TextileDesign } from '@/types/textile'
 
 interface MobileProjectDetailsProps {
   project: TextileDesign
@@ -28,7 +28,11 @@ export function MobileProjectDetails({ project }: MobileProjectDetailsProps) {
             {project.materials && (
               <div className="mobile-detail-item">
                 <h3>Materials</h3>
-                <p>{project.materials}</p>
+                <p>
+                  {Array.isArray(project.materials)
+                    ? project.materials.join(', ')
+                    : project.materials}
+                </p>
               </div>
             )}
             {project.technique && (
@@ -40,7 +44,11 @@ export function MobileProjectDetails({ project }: MobileProjectDetailsProps) {
             {project.dimensions && (
               <div className="mobile-detail-item">
                 <h3>Dimensions</h3>
-                <p>{project.dimensions}</p>
+                <p>
+                  {typeof project.dimensions === 'string'
+                    ? project.dimensions
+                    : `${project.dimensions.width}${project.dimensions.unit || ''} × ${project.dimensions.height}${project.dimensions.unit || ''}`}
+                </p>
               </div>
             )}
           </div>

@@ -2,7 +2,7 @@
 import { MobileImageStack } from './MobileImageStack'
 import { MobileProjectDetails } from './MobileProjectDetails'
 import { MobileProjectNavigation } from './MobileProjectNavigation'
-import { TextileDesign } from '@/sanity/types'
+import { TextileDesign } from '@/types/textile'
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { UmamiEvents } from '@/utils/analytics'
@@ -70,11 +70,13 @@ export function MobileProjectView({
     <div className="mobile-project">
       <div className="mobile-project-content">
         <MobileProjectDetails project={project} />
-        <MobileImageStack
-          mainImage={project.image}
-          images={galleryImages}
-          projectTitle={project.title}
-        />
+        {project.image && (
+          <MobileImageStack
+            mainImage={project.image}
+            images={galleryImages}
+            projectTitle={project.title}
+          />
+        )}
         <MobileProjectNavigation
           nextProject={nextProject}
           previousProject={previousProject}

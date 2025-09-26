@@ -1,5 +1,5 @@
-import { getOptimizedImageUrl } from '@/sanity/imageHelpers'
-import { TextileDesign } from '@/sanity/types'
+import { getOptimizedImageUrl } from '@/utils/image-helpers'
+import { TextileDesign } from '@/types/textile'
 
 export function generateProjectStructuredData(
   project: TextileDesign,
@@ -37,14 +37,15 @@ export function createProjectImageUrl(
   project: TextileDesign,
   options = { width: 1200, height: 630, quality: 90 }
 ) {
-  return getOptimizedImageUrl(project.image, options)
+  return project.image ? getOptimizedImageUrl(project.image, options) : ''
 }
 
 export function createProjectDescription(project: TextileDesign): string {
+  const materials = project.materials?.join(', ') || 'sustainable materials'
   return (
     project.description ||
     project.detailedDescription ||
-    `Contemporary textile design by Ida Romme featuring ${project.materials || 'sustainable materials'}.`
+    `Contemporary textile design by Ida Romme featuring ${materials}.`
   )
 }
 
@@ -52,7 +53,8 @@ export function createProjectKeywords(project: TextileDesign): string[] {
   return [
     project.title,
     'textile design',
-    project.materials,
+    ...(project.materials || []),
+    ...(project.techniques || []),
     project.technique,
     'contemporary textiles',
     'Ida Romme',

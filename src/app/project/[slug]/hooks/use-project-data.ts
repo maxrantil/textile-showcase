@@ -1,25 +1,29 @@
-import { TextileDesign } from '@/sanity/types'
+import { TextileDesign } from '@/types/textile'
 
 export async function getProject(slug: string): Promise<TextileDesign | null> {
   try {
-    console.log(`🔍 Fetching project: ${slug}`)
+    console.log(`🔍 Fetching project from API: ${slug}`)
 
-    // Dynamic import to prevent Sanity from being bundled in main chunk
-    const [{ queries }, { resilientFetch }] = await Promise.all([
-      import('@/sanity/queries'),
-      import('@/sanity/dataFetcher'),
-    ])
+    // Fetch from our API route instead of direct Sanity queries
+    const baseUrl = process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'
+    const response = await fetch(`${baseUrl}/api/projects/${slug}`, {
+      // Enable ISR caching
+      next: { revalidate: 3600 }, // 1 hour
+    })
 
-    const project = await resilientFetch<TextileDesign>(
-      queries.getProjectBySlug,
-      { slug },
-      {
-        retries: 3,
-        timeout: 15000,
-        cache: true,
-        cacheTTL: 600000,
+    if (!response.ok) {
+      if (response.status === 404) {
+        console.warn(`⚠️ Project not found: ${slug}`)
+        return null
       }
-    )
+      console.warn(
+        `⚠️ API responded with status: ${response.status} for ${slug}`
+      )
+      return null
+    }
+
+    const data = await response.json()
+    const project = data.project
 
     if (project) {
       console.log(`✅ Project found: ${project.title}`)
@@ -29,16 +33,16 @@ export async function getProject(slug: string): Promise<TextileDesign | null> {
 
     return project
   } catch (error) {
-    console.error(`❌ Failed to fetch project ${slug}:`, error)
+    console.error(`❌ Failed to fetch project ${slug} from API:`, error)
     return null
   }
 }
 
 export async function getAllProjectSlugs() {
   try {
-    console.log('🏗️ Generating static params...')
+    console.log('🏗️ Generating static params (build-time Sanity import)...')
 
-    // Dynamic import to prevent Sanity from being bundled in main chunk
+    // Build-time only: Direct Sanity import for generateStaticParams
     const [{ queries }, { resilientFetch }] = await Promise.all([
       import('@/sanity/queries'),
       import('@/sanity/dataFetcher'),
@@ -81,70 +85,47 @@ export async function getProjectWithNavigation(slug: string): Promise<{
   previousProject?: { slug: string; title: string }
 }> {
   try {
-    console.log(`🔍 Fetching project with navigation: ${slug}`)
+    console.log(`🔍 Fetching project with navigation from API: ${slug}`)
 
-    // Dynamic import to prevent Sanity from being bundled in main chunk
-    const [{ queries }, { resilientFetch }] = await Promise.all([
-      import('@/sanity/queries'),
-      import('@/sanity/dataFetcher'),
-    ])
+    // Fetch from our API route instead of direct Sanity queries
+    const baseUrl = process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'
+    const response = await fetch(`${baseUrl}/api/projects/${slug}`, {
+      // Enable ISR caching
+      next: { revalidate: 3600 }, // 1 hour
+    })
 
-    // Fetch current project and navigation data
-    const [project, navigation] = await Promise.all([
-      getProject(slug),
-      resilientFetch<{
-        current: {
-          _id: string
-          title: string
-          slug: { current: string }
-          order: number
-        } | null
-        previous: {
-          _id: string
-          title: string
-          slug: { current: string }
-        } | null
-        next: { _id: string; title: string; slug: { current: string } } | null
-      }>(
-        queries.getProjectNavigation,
-        { slug },
-        {
-          retries: 2,
-          timeout: 10000,
-          cache: true,
-          cacheTTL: 300000,
-        }
-      ),
-    ])
+    if (!response.ok) {
+      if (response.status === 404) {
+        console.warn(`⚠️ Project not found: ${slug}`)
+        return { project: null }
+      }
+      console.warn(
+        `⚠️ API responded with status: ${response.status} for ${slug}`
+      )
+      return { project: null }
+    }
 
-    if (!project) {
+    const data = await response.json()
+
+    if (!data.project) {
       console.warn(`⚠️ Project not found: ${slug}`)
       return { project: null }
     }
 
-    // Extract navigation data
-    const nextProject = navigation?.next
-      ? { slug: navigation.next.slug.current, title: navigation.next.title }
-      : undefined
-
-    const previousProject = navigation?.previous
-      ? {
-          slug: navigation.previous.slug.current,
-          title: navigation.previous.title,
-        }
-      : undefined
-
     console.log(
-      `✅ Navigation data: previous=${previousProject?.title}, next=${nextProject?.title}`
+      `✅ Navigation data from API: previous=${data.previousProject?.title}, next=${data.nextProject?.title}`
     )
 
     return {
-      project,
-      nextProject,
-      previousProject,
+      project: data.project,
+      nextProject: data.nextProject,
+      previousProject: data.previousProject,
     }
   } catch (error) {
-    console.error(`❌ Failed to fetch project with navigation ${slug}:`, error)
+    console.error(
+      `❌ Failed to fetch project with navigation ${slug} from API:`,
+      error
+    )
     return { project: null }
   }
 }

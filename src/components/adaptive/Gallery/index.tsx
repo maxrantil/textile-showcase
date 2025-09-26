@@ -1,6 +1,6 @@
 'use client'
 import { useDeviceType } from '@/hooks/shared/useDeviceType'
-import { TextileDesign } from '@/sanity/types'
+import { TextileDesign } from '@/types/textile'
 import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 

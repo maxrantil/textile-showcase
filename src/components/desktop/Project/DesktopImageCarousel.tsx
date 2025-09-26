@@ -4,16 +4,16 @@ import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { useKeyboardNavigation } from '@/hooks/desktop/useKeyboardNavigation'
-import { getOptimizedImageUrl } from '@/sanity/imageHelpers'
+import { getOptimizedImageUrl } from '@/utils/image-helpers'
 import { LockdownImage } from '@/components/ui/LockdownImage'
 import { UmamiEvents } from '@/utils/analytics'
 import { perf } from '@/utils/performance'
 import { scrollManager } from '@/lib/scrollManager'
-import type { SanityImageSource } from '@sanity/image-url/lib/types/types'
+import type { ImageSource } from '@/types/textile'
 
 interface GalleryImage {
   _key: string
-  asset: SanityImageSource
+  asset: ImageSource
   caption?: string
 }
 
@@ -23,7 +23,7 @@ interface ExtendedGalleryImage extends GalleryImage {
 
 interface DesktopImageCarouselProps {
   images?: GalleryImage[]
-  mainImage: SanityImageSource
+  mainImage: ImageSource
   projectTitle: string
   currentIndex?: number
   onIndexChange?: (index: number) => void
