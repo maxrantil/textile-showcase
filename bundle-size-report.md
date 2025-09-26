@@ -1,28 +1,36 @@
 # Bundle Size Report
 
-Generated: 2025-09-26T08:07:33.747Z
+Generated: 2025-09-26T10:40:23.878Z
 
 ## Summary
 
-- Total Size: 4.04 MB
-- Gzipped Size: 1.21 MB
-- Chunks: 80
-- Assets: 80
+- Total Size: 1.57 MB
+- Gzipped Size: 481.36 KB
+- Chunks: 46
+- Assets: 46
+
+## Alerts
+
+📊 **INFO**: Bundle size optimization detected
+
+- Current: 1.57 MB
+- Threshold: 4.04 MB
+- Change: -61.19%
 
 ## Largest Chunks
 
-- vendor-201f5965-63263f32398f120b.js: 498.83 KB (initial)
-- vendor-f28962ab-80c7f5f2405fca73.js: 268.97 KB (initial)
-- vendor-3f88d8a8-bc982779efb193b2.js: 242.07 KB (initial)
-- vendor-22116c04-e8db249532dd6bd0.js: 201.37 KB (initial)
-- vendor-bc050c32-fa83091d374f279b.js: 200.04 KB (initial)
-- vendor-c5c6856a-6d88aad9ac551c92.js: 194.05 KB (initial)
-- vendor-1181114e-fea900c69571a1a0.js: 188.25 KB (initial)
-- vendor-a07e3dcf-37ee5514ff652b93.js: 182.76 KB (initial)
-- framework-ff30e0d3-421b51cb8bd1ca76.js: 164.47 KB (initial)
+- vendor-b65b8063-80d53243842b8c37.js: 314.93 KB (initial)
+- framework-ff30e0d3-9f064d1f382bd4c6.js: 164.47 KB (initial)
 - framework-36598b9c-5f82ad0cd887f418.js: 163.78 KB (initial)
+- polyfills-42372ed130431b0a.js: 109.96 KB (initial)
+- framework-2898f16f-f82da981bd39c765.js: 104.58 KB (initial)
+- vendor-fa70753b-a1fada9074ffcd22.js: 76.32 KB (initial)
+- vendor-bc050c32-13a3d9faadc06996.js: 72.18 KB (initial)
+- vendor-eb2fbf4c-45dc46d129eec7a9.js: 67.47 KB (initial)
+- framework-4c7823de-741c445a5ed19f74.js: 65.05 KB (initial)
+- vendor-7291a857-301f0d91185ea7c1.js: 44.64 KB (initial)
 
 ## Asset Breakdown
 
-- JS: 4.02 MB
+- JS: 1.55 MB
 - CSS: 13.39 KB

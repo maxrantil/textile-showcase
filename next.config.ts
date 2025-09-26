@@ -40,10 +40,29 @@ const nextConfig = {
     config: {
       optimization?: Record<string, unknown>
       resolve?: Record<string, unknown>
+      externals?: Record<string, unknown>
     },
     { dev, isServer }: { dev: boolean; isServer: boolean }
   ) => {
     if (!dev && !isServer) {
+      // PHASE 4: Exclude Sanity dependencies from client-side bundles
+      config.externals = {
+        ...config.externals,
+        // Externalize all Sanity packages for client-side builds
+        '@sanity/client': 'null',
+        '@sanity/image-url': 'null',
+        '@sanity/vision': 'null',
+        'next-sanity': 'null',
+        sanity: 'null',
+        '@sanity/icons': 'null',
+        '@sanity/ui': 'null',
+        '@sanity/desk': 'null',
+        '@sanity/types': 'null',
+        '@sanity/mutator': 'null',
+        '@sanity/diff': 'null',
+        '@sanity/util': 'null',
+      }
+
       // CRITICAL: Strategic bundle consolidation from PDR Phase 1 - Aggressive approach
       config.optimization = {
         ...config.optimization,
@@ -71,16 +90,7 @@ const nextConfig = {
               maxSize: 400000, // Increased to allow consolidation
             },
 
-            // Sanity CMS isolation (route-specific loading) - Consolidated
-            sanity: {
-              test: /[\\/]node_modules[\\/](sanity|@sanity|next-sanity)[\\/]/,
-              name: 'sanity',
-              priority: 40,
-              chunks: 'async', // Only load when needed per PDR
-              enforce: true,
-              minSize: 0,
-              maxSize: 500000, // Allow larger consolidation
-            },
+            // PHASE 4: Sanity cache group removed - externalized instead
 
             // Styled Components + UI Libraries - Consolidated
             styledSystem: {
