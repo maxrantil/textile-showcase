@@ -4,6 +4,9 @@
    Main Styles Import - Replace mobile-utilities.css with this
    ========================================================================== */
 
+/* Fonts - load first for proper fallback */
+@import './fonts/optimized-fonts.css';
+
 /* Base styles - foundational styles that everything depends on */
 @import './base/reset.css';
 @import './base/typography.css';

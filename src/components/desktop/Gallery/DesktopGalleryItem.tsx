@@ -40,6 +40,9 @@ export const DesktopGalleryItem = memo(function DesktopGalleryItem({
       })
     : ''
 
+  // Fallback for missing images
+  const displayImageUrl = imageUrl || '/images/placeholder.jpg'
+
   return (
     <div
       className={`desktop-gallery-item ${isActive ? 'active' : ''}`}
@@ -56,7 +59,7 @@ export const DesktopGalleryItem = memo(function DesktopGalleryItem({
     >
       <div className="desktop-gallery-image">
         <Image
-          src={imageUrl}
+          src={displayImageUrl}
           alt={design.title}
           height={600} // Approximate 60vh in pixels
           width={800} // Reasonable fallback width

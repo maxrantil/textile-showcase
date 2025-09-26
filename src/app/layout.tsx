@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 
-import { inter, notoSans } from './fonts'
+// Fonts are loaded via optimized-fonts.css and FontPreloader instead
 import {
   baseMetadata,
   openGraphMetadata,
@@ -38,7 +38,7 @@ interface RootLayoutProps {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="en" className={`${inter.variable} ${notoSans.variable}`}>
+    <html lang="en">
       <HtmlHead>
         {generateStructuredDataScript(organizationStructuredData)}
         {generateStructuredDataScript(artistStructuredData)}

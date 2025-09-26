@@ -22,36 +22,19 @@ export function HtmlHead({ children }: HtmlHeadProps) {
         href="https://cdn.sanity.io"
         crossOrigin="anonymous"
       />
-      <link
-        rel="preconnect"
-        href="https://fonts.googleapis.com"
-        crossOrigin="anonymous"
-      />
-      <link
-        rel="preconnect"
-        href="https://fonts.gstatic.com"
-        crossOrigin="anonymous"
-      />
       <link rel="dns-prefetch" href="https://cdn.sanity.io" />
-      <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
 
-      {/* Preload critical resources */}
+      {/* Preload critical self-hosted fonts */}
       <link
         rel="preload"
-        href="/_next/static/css/app.css"
-        as="style"
-        type="text/css"
-      />
-      <link
-        rel="preload"
-        href="/fonts/inter-var.woff2"
+        href="/fonts/inter-400.woff2"
         as="font"
         type="font/woff2"
         crossOrigin=""
       />
       <link
         rel="preload"
-        href="/fonts/noto-sans-var.woff2"
+        href="/fonts/inter-500.woff2"
         as="font"
         type="font/woff2"
         crossOrigin=""
