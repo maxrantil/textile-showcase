@@ -302,7 +302,7 @@ export function DesktopImageCarousel({
     currentImage?.asset || (images && images[0]?.asset),
     {
       height: 800,
-      quality: 90,
+      quality: 80, // Reduced from 90 to 80 for performance
       format: 'auto', // Use auto format for lockdown detection
     }
   )

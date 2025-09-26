@@ -35,7 +35,7 @@ export function validateProjectSlug(slug: string): boolean {
 
 export function createProjectImageUrl(
   project: TextileDesign,
-  options = { width: 1200, height: 630, quality: 90 }
+  options = { width: 1200, height: 630, quality: 80 } // Reduced from 90 to 80 for performance
 ) {
   return project.image ? getOptimizedImageUrl(project.image, options) : ''
 }

@@ -33,8 +33,8 @@ export const DesktopGalleryItem = memo(function DesktopGalleryItem({
   const imageSource = design.image || design.images?.[0]?.asset
   const imageUrl = imageSource
     ? getOptimizedImageUrl(imageSource, {
-        height: 1200, // 2x of ~600px (60vh on typical screen)
-        quality: 95,
+        height: 800, // Optimized for 60vh typical screen (~400px * 2 for retina)
+        quality: 80, // Reduced from 95 to 80 for performance
         format: 'webp',
         fit: 'crop',
       })
@@ -63,6 +63,7 @@ export const DesktopGalleryItem = memo(function DesktopGalleryItem({
           alt={design.title}
           height={600} // Approximate 60vh in pixels
           width={800} // Reasonable fallback width
+          sizes="(max-width: 1024px) 90vw, (max-width: 1440px) 800px, 900px"
           style={{
             width: 'auto', // Let CSS control the actual width
             height: '60vh', // Match your desired CSS height
