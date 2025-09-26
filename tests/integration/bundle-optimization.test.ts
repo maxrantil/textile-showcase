@@ -12,12 +12,11 @@ describe('Bundle Optimization Integration', () => {
         'utf-8'
       )
 
-      // Should NOT contain any Sanity imports (externalized in webpack)
-      expect(homePageContent).not.toContain('@/sanity/')
-      expect(homePageContent).not.toContain('sanity')
+      // EMERGENCY: Server-side data fetching now allowed for Issue #39 TTI fix
+      // Sanity imports are now permitted in server components for direct SSR
 
-      // Should use ClientGallery component for API-based data fetching
-      expect(homePageContent).toContain('ClientGallery')
+      // Should use Gallery component (now with direct server-side data fetching)
+      expect(homePageContent).toContain('Gallery')
     })
 
     it('should use ClientProjectContent component for API-based project data', async () => {

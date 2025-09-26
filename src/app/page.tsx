@@ -1,5 +1,6 @@
 import { Metadata } from 'next'
-import { ClientGallery } from '@/components/ClientGallery'
+import Gallery from '@/components/adaptive/Gallery'
+import { TextileDesign } from '@/types/textile'
 
 // Enhanced metadata with structured data
 export const metadata: Metadata = {
@@ -38,7 +39,42 @@ export const metadata: Metadata = {
   },
 }
 
-export default function Home() {
+// Server-side data fetching to eliminate client-side JavaScript execution delay
+async function getDesigns(): Promise<TextileDesign[]> {
+  try {
+    console.log('🔍 Server: Fetching designs for SSR')
+
+    // Server-side dynamic import - Sanity only loaded on server
+    const [{ queries }, { resilientFetch }] = await Promise.all([
+      import('@/sanity/queries'),
+      import('@/sanity/dataFetcher'),
+    ])
+
+    const designs = await resilientFetch<TextileDesign[]>(
+      queries.getDesignsForHome,
+      {},
+      {
+        retries: 3,
+        timeout: 8000,
+        cache: true,
+        cacheTTL: 300000, // 5 minutes
+      }
+    )
+
+    console.log(
+      `✅ Server: Successfully fetched ${designs?.length || 0} designs for SSR`
+    )
+    return designs || []
+  } catch (error) {
+    console.error('❌ Server: Failed to fetch designs for SSR:', error)
+    return []
+  }
+}
+
+export default async function Home() {
+  // EMERGENCY FIX: Move data fetching to server-side to eliminate TTI delays
+  const designs = await getDesigns()
+
   return (
     <>
       {/* Structured data for SEO */}
@@ -69,7 +105,7 @@ export default function Home() {
         }}
       />
 
-      <ClientGallery />
+      <Gallery designs={designs} />
     </>
   )
 }
