@@ -2,7 +2,7 @@
 
 import { renderHook, act } from '@testing-library/react'
 import { useGalleryNavigation } from '../gallery/useGalleryNavigation'
-import { TextileDesign } from '@/sanity/types'
+import { TextileDesign } from '@/types/textile'
 
 // Real test data
 const realDesigns: TextileDesign[] = [

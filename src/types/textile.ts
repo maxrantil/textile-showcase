@@ -6,21 +6,35 @@ export interface TextileDesign {
   _id: string
   title: string
   description?: string
-  slug: {
+  detailedDescription?: string
+  slug?: {
     current: string
   }
-  images: TextileImage[]
+  images?: TextileImage[]
+  image?: ImageSource // Main image for backwards compatibility
+  gallery?: Array<{
+    _key: string
+    asset: ImageSource
+    caption?: string
+  }>
   category?: string
   materials?: string[]
   techniques?: string[]
+  technique?: string // Singular for backwards compatibility
   year?: number
-  dimensions?: {
-    width?: number
-    height?: number
-    unit?: string
-  }
+  dimensions?:
+    | {
+        width?: number
+        height?: number
+        unit?: string
+      }
+    | string
   featured?: boolean
   order?: number
+  exhibitions?: string
+  credits?: string
+  availability?: string
+  careInstructions?: string
 }
 
 // Lightweight image interface
@@ -55,6 +69,19 @@ export interface ImageSource {
     _type: 'reference'
   }
   url?: string
+  alt?: string
+  hotspot?: {
+    x: number
+    y: number
+    height: number
+    width: number
+  }
+  crop?: {
+    top: number
+    bottom: number
+    left: number
+    right: number
+  }
 }
 
 // Gallery navigation types

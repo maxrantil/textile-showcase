@@ -4,7 +4,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { DesktopGallery } from '@/components/desktop/Gallery/DesktopGallery'
 import { MobileGallery } from '@/components/mobile/Gallery/MobileGallery'
-import { TextileDesign } from '@/sanity/types'
+import { TextileDesign } from '@/types/textile'
 
 // Real test data - actual data structures with working image URLs for testing
 const realTestDesigns: TextileDesign[] = [
@@ -49,8 +49,8 @@ const realTestDesigns: TextileDesign[] = [
   },
 ]
 
-// Mock Sanity image helper to return predictable URLs for testing
-jest.mock('@/sanity/imageHelpers', () => ({
+// Mock image helper to return predictable URLs for testing
+jest.mock('@/utils/image-helpers', () => ({
   getOptimizedImageUrl: jest.fn().mockImplementation((source) => {
     if (!source) return ''
     // Return a predictable URL for testing

@@ -3,11 +3,8 @@
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { TextileDesign } from '@/sanity/types'
-import {
-  getOptimizedImageUrl,
-  getImageDimensionsFromSource,
-} from '@/sanity/imageHelpers'
+import { TextileDesign } from '@/types/textile'
+import { getOptimizedImageUrl } from '@/utils/image-helpers'
 import { LockdownImage } from '@/components/ui/LockdownImage'
 import { scrollManager } from '@/lib/scrollManager'
 import { UmamiEvents } from '@/utils/analytics'
@@ -69,8 +66,8 @@ export const MobileGalleryItem = React.memo(function MobileGalleryItem({
   }
 
   // Get image dimensions for proper aspect ratio
-  const dimensions = getImageDimensionsFromSource(design.image)
-  const aspectRatio = dimensions ? dimensions.aspectRatio : 4 / 3
+  // Use default aspect ratio for performance optimization
+  const aspectRatio = 4 / 3
 
   const handleImageLoad = () => {
     setImageLoaded(true)
@@ -105,28 +102,35 @@ export const MobileGalleryItem = React.memo(function MobileGalleryItem({
         {useLockdownMode ? (
           // Lockdown mode - use simple img tag
           <LockdownImage
-            src={design.image}
+            src={design.image || design.images?.[0]?.asset}
             alt={design.title}
             className="mobile-gallery-image loaded"
           />
         ) : (
           // Normal mode - use Next.js Image
           <>
-            <Image
-              src={getOptimizedImageUrl(design.image, {
-                width: 800,
-                quality: 85,
-                format: 'auto',
-              })}
-              alt={design.title}
-              fill
-              sizes="(max-width: 768px) 100vw, 800px"
-              className={`mobile-gallery-image ${imageLoaded ? 'loaded' : ''}`}
-              loading={isFirst ? 'eager' : 'lazy'}
-              priority={isFirst}
-              onLoad={handleImageLoad}
-              onError={handleImageError}
-            />
+            {(() => {
+              const imageSource = design.image || design.images?.[0]?.asset
+              return (
+                imageSource && (
+                  <Image
+                    src={getOptimizedImageUrl(imageSource, {
+                      width: 800,
+                      quality: 85,
+                      format: 'auto',
+                    })}
+                    alt={design.title}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 800px"
+                    className={`mobile-gallery-image ${imageLoaded ? 'loaded' : ''}`}
+                    loading={isFirst ? 'eager' : 'lazy'}
+                    priority={isFirst}
+                    onLoad={handleImageLoad}
+                    onError={handleImageError}
+                  />
+                )
+              )
+            })()}
 
             {!imageLoaded && !imageError && (
               <div className="mobile-gallery-loading">

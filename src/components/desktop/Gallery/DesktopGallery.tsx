@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useKeyboardNavigation } from '@/hooks/desktop/useKeyboardNavigation'
 import { DesktopGalleryItem } from './DesktopGalleryItem'
 import { NavigationArrows } from '@/components/ui/NavigationArrows'
-import { TextileDesign } from '@/sanity/types'
+import { TextileDesign } from '@/types/textile'
 import { UmamiEvents } from '@/utils/analytics'
 import { scrollManager } from '@/lib/scrollManager'
 

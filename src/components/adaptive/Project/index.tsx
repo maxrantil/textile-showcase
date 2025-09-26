@@ -4,7 +4,7 @@
 import { useDeviceType } from '@/hooks/shared/useDeviceType'
 import { MobileProjectView } from '@/components/mobile/Project'
 import { DesktopProjectView } from '@/components/desktop/Project'
-import { TextileDesign } from '@/sanity/types'
+import { TextileDesign } from '@/types/textile'
 
 interface ProjectProps {
   project: TextileDesign

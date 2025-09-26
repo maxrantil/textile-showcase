@@ -1,11 +1,11 @@
 // src/components/ui/LockdownImage.tsx
 'use client'
 
-import { getSimpleImageUrl } from '@/sanity/imageHelpers'
-import type { SanityImageSource } from '@sanity/image-url/lib/types/types'
+import { getSimpleImageUrl } from '@/utils/image-helpers'
+import type { ImageSource } from '@/types/textile'
 
 interface LockdownImageProps {
-  src: SanityImageSource | null | undefined
+  src: ImageSource | string | null | undefined
   alt: string
   className?: string
   style?: React.CSSProperties
@@ -21,7 +21,7 @@ export function LockdownImage({
 }: LockdownImageProps) {
   if (!src) return null
 
-  const imageUrl = getSimpleImageUrl(src, 800)
+  const imageUrl = getSimpleImageUrl(src)
 
   const handleClick = (e: React.MouseEvent) => {
     if (onClick) {

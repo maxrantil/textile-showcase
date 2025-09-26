@@ -1,12 +1,4 @@
-// Update src/app/project/[slug]/page.tsx
-
-import { notFound } from 'next/navigation'
-import {
-  getProjectWithNavigation,
-  getAllProjectSlugs,
-} from './hooks/use-project-data'
-import { generateProjectMetadata } from './components/project-metadata'
-import { ProjectContent } from './components/project-content'
+import { ClientProjectContent } from '@/components/ClientProjectContent'
 
 interface ProjectPageProps {
   params: Promise<{
@@ -14,44 +6,32 @@ interface ProjectPageProps {
   }>
 }
 
-// Enable ISR with 1 hour revalidation
-export const revalidate = 3600
+// Disable static generation - fully dynamic routing with client-side data fetching
+export const dynamic = 'force-dynamic'
 
-// Generate static params
-export async function generateStaticParams() {
-  return getAllProjectSlugs()
-}
-
-// Generate metadata
+// Generate static metadata (no dynamic data fetching)
 export async function generateMetadata({ params }: ProjectPageProps) {
   const { slug } = await params
-  return generateProjectMetadata({ slug })
+
+  return {
+    title: `${slug.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())} - Ida Romme`,
+    description:
+      'Contemporary textile design project by Ida Romme, featuring sustainable hand-woven pieces.',
+    openGraph: {
+      title: `${slug.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())} - Ida Romme`,
+      description: 'Contemporary textile design project by Ida Romme',
+      type: 'article',
+      url: `https://idaromme.dk/project/${slug}`,
+    },
+    alternates: {
+      canonical: `https://idaromme.dk/project/${slug}`,
+    },
+  }
 }
 
 // Main page component
 export default async function ProjectPage({ params }: ProjectPageProps) {
-  try {
-    const { slug } = await params
-    const { project, nextProject, previousProject } =
-      await getProjectWithNavigation(slug)
+  const { slug } = await params
 
-    if (!project) {
-      console.log(`🚫 Project not found, showing 404: ${slug}`)
-      notFound()
-    }
-
-    return (
-      <>
-        <ProjectContent
-          project={project}
-          slug={slug}
-          nextProject={nextProject}
-          previousProject={previousProject}
-        />
-      </>
-    )
-  } catch (error) {
-    console.error('❌ Error in ProjectPage:', error)
-    notFound()
-  }
+  return <ClientProjectContent slug={slug} />
 }

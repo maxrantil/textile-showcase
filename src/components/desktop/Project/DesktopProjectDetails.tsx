@@ -1,6 +1,6 @@
 'use client'
 
-import { TextileDesign } from '@/sanity/types'
+import { TextileDesign } from '@/types/textile'
 
 interface DesktopProjectDetailsProps {
   project: TextileDesign
@@ -42,7 +42,11 @@ export function DesktopProjectDetails({ project }: DesktopProjectDetailsProps) {
             {project.dimensions && (
               <div className="desktop-info-item">
                 <h3>Dimensions</h3>
-                <p>{project.dimensions}</p>
+                <p>
+                  {typeof project.dimensions === 'string'
+                    ? project.dimensions
+                    : `${project.dimensions.width}${project.dimensions.unit || ''} × ${project.dimensions.height}${project.dimensions.unit || ''}`}
+                </p>
               </div>
             )}
           </div>

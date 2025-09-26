@@ -3,8 +3,8 @@
 import { memo } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { TextileDesign } from '@/sanity/types'
-import { getOptimizedImageUrl } from '@/sanity/imageHelpers'
+import { TextileDesign } from '@/types/textile'
+import { getOptimizedImageUrl } from '@/utils/image-helpers'
 import { UmamiEvents } from '@/utils/analytics'
 
 interface DesktopGalleryItemProps {
@@ -30,12 +30,15 @@ export const DesktopGalleryItem = memo(function DesktopGalleryItem({
     router.push(`/project/${design.slug?.current || design._id}`)
   }
 
-  const imageUrl = getOptimizedImageUrl(design.image, {
-    height: 1200, // 2x of ~600px (60vh on typical screen)
-    quality: 95,
-    format: 'webp',
-    fit: 'max',
-  })
+  const imageSource = design.image || design.images?.[0]?.asset
+  const imageUrl = imageSource
+    ? getOptimizedImageUrl(imageSource, {
+        height: 1200, // 2x of ~600px (60vh on typical screen)
+        quality: 95,
+        format: 'webp',
+        fit: 'crop',
+      })
+    : ''
 
   return (
     <div

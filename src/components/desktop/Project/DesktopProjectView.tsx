@@ -5,7 +5,7 @@ import { useState } from 'react'
 import { DesktopImageCarousel } from './DesktopImageCarousel'
 import { DesktopProjectDetails } from './DesktopProjectDetails'
 import { DesktopProjectNavigation } from './DesktopProjectNavigation'
-import { TextileDesign } from '@/sanity/types'
+import { TextileDesign } from '@/types/textile'
 
 interface DesktopProjectViewProps {
   project: TextileDesign
@@ -31,13 +31,15 @@ export function DesktopProjectView({
   return (
     <div className="desktop-project">
       <div className="desktop-project-content">
-        <DesktopImageCarousel
-          images={galleryImages}
-          mainImage={project.image}
-          projectTitle={project.title}
-          currentIndex={currentIndex}
-          onIndexChange={setCurrentIndex}
-        />
+        {project.image && (
+          <DesktopImageCarousel
+            images={galleryImages}
+            mainImage={project.image}
+            projectTitle={project.title}
+            currentIndex={currentIndex}
+            onIndexChange={setCurrentIndex}
+          />
+        )}
         <DesktopProjectDetails project={project} />
 
         {/* Add navigation */}

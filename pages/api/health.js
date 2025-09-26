@@ -1,15 +1,7 @@
 // ABOUTME: Production health check endpoint for monitoring and deployment validation
 // Provides comprehensive system status including database, security services, and SSE connectivity
 
-import { createClient } from 'next-sanity'
-
-const client = createClient({
-  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || '2y05n6hf',
-  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || 'production',
-  apiVersion: process.env.NEXT_PUBLIC_SANITY_API_VERSION || '2023-05-03',
-  token: process.env.SANITY_API_TOKEN,
-  useCdn: false, // For health checks, always get fresh data
-})
+// Sanity client created dynamically to avoid bundling in main chunks
 
 /**
  * Health check endpoint for production monitoring
@@ -27,6 +19,17 @@ export default async function health(req, res) {
     // Check Sanity CMS connectivity
     let databaseStatus = 'unknown'
     try {
+      // Dynamic import to avoid bundling Sanity in main chunks
+      const { createClient } = await import('next-sanity')
+
+      const client = createClient({
+        projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || '2y05n6hf',
+        dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || 'production',
+        apiVersion: process.env.NEXT_PUBLIC_SANITY_API_VERSION || '2023-05-03',
+        token: process.env.SANITY_API_TOKEN,
+        useCdn: false, // For health checks, always get fresh data
+      })
+
       const query = '*[_type == "project"][0]{_id}'
       await client.fetch(query)
       databaseStatus = 'healthy'

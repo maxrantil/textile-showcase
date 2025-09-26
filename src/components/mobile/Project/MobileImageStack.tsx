@@ -2,11 +2,11 @@
 
 import { useMemo } from 'react'
 import { ImageBlock } from './ImageBlock'
-import type { SanityImageSource } from '@sanity/image-url/lib/types/types'
+import type { ImageSource } from '@/types/textile'
 
 interface GalleryImage {
   _key: string
-  asset: SanityImageSource
+  asset: ImageSource
   caption?: string
 }
 
@@ -16,7 +16,7 @@ interface ExtendedGalleryImage extends GalleryImage {
 
 interface MobileImageStackProps {
   images?: GalleryImage[]
-  mainImage: SanityImageSource
+  mainImage: ImageSource
   projectTitle: string
 }
 

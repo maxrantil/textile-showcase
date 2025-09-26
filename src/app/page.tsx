@@ -1,9 +1,5 @@
 import { Metadata } from 'next'
-import { TextileDesign } from '@/sanity/types'
-import Gallery from '@/components/adaptive/Gallery'
-import { GalleryLoadingSkeleton } from '@/components/ui/LoadingSpinner'
-import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
-import { Suspense } from 'react'
+import { ClientGallery } from '@/components/ClientGallery'
 
 // Enhanced metadata with structured data
 export const metadata: Metadata = {
@@ -42,65 +38,7 @@ export const metadata: Metadata = {
   },
 }
 
-// Enable ISR with 1 hour revalidation
-export const revalidate = 3600
-
-async function getDesigns(): Promise<TextileDesign[]> {
-  try {
-    // Dynamic import to prevent Sanity from being bundled in main chunk
-    const [{ queries }, { resilientFetch }] = await Promise.all([
-      import('@/sanity/queries'),
-      import('@/sanity/dataFetcher'),
-    ])
-
-    const designs = await resilientFetch<TextileDesign[]>(
-      queries.getDesignsForHome,
-      {},
-      {
-        retries: 3,
-        timeout: 8000,
-        cache: true,
-        cacheTTL: 300000, // 5 minutes
-      }
-    )
-
-    return designs || []
-  } catch (error) {
-    console.error('Failed to fetch designs for home page:', error)
-    return []
-  }
-}
-
-// Gallery component with error boundary
-function GalleryWithErrorBoundary({ designs }: { designs: TextileDesign[] }) {
-  if (!designs || designs.length === 0) {
-    return (
-      <div
-        className="full-height-mobile"
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <div className="nordic-container" style={{ textAlign: 'center' }}>
-          <h2 className="nordic-h2 nordic-spacing-sm">No designs available</h2>
-          <p className="nordic-body">Please check back later for new work.</p>
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <ErrorBoundary>
-      <Gallery designs={designs} />
-    </ErrorBoundary>
-  )
-}
-
-export default async function Home() {
-  const designs = await getDesigns()
-
+export default function Home() {
   return (
     <>
       {/* Structured data for SEO */}
@@ -131,9 +69,7 @@ export default async function Home() {
         }}
       />
 
-      <Suspense fallback={<GalleryLoadingSkeleton />}>
-        <GalleryWithErrorBoundary designs={designs} />
-      </Suspense>
+      <ClientGallery />
     </>
   )
 }
