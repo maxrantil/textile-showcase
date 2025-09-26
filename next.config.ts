@@ -181,6 +181,11 @@ const nextConfig = {
             key: 'X-DNS-Prefetch-Control',
             value: 'on',
           },
+          // EMERGENCY: Preconnect to critical resources (Issue #39)
+          {
+            key: 'Link',
+            value: '<https://cdn.sanity.io>; rel=preconnect; crossorigin',
+          },
           {
             key: 'X-XSS-Protection',
             value: '1; mode=block',
