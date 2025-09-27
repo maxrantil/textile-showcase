@@ -33,8 +33,8 @@ export const DesktopGalleryItem = memo(function DesktopGalleryItem({
   const imageSource = design.image || design.images?.[0]?.asset
   const imageUrl = imageSource
     ? getOptimizedImageUrl(imageSource, {
-        height: 800, // Optimized for 60vh typical screen (~400px * 2 for retina)
-        quality: 80, // Reduced from 95 to 80 for performance
+        height: 700, // Reduced from 800 to match actual display size
+        quality: 75, // Further reduced for offscreen images
         format: 'webp',
         fit: 'crop',
       })
@@ -69,7 +69,8 @@ export const DesktopGalleryItem = memo(function DesktopGalleryItem({
             height: '60vh', // Match your desired CSS height
             objectFit: 'contain',
           }}
-          priority={index < 3}
+          priority={index < 2} // Only first 2 images for faster LCP
+          loading={index < 2 ? 'eager' : 'lazy'} // Lazy load offscreen images
           className="desktop-gallery-img"
         />
       </div>
