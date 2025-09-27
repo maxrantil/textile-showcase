@@ -84,22 +84,27 @@ Element.prototype.getBoundingClientRect = jest.fn(() => ({
 }))
 
 // Mock Web APIs for security tests (Next.js middleware needs these)
-global.Request =
-  global.Request ||
-  class MockRequest {
+if (!global.Request) {
+  global.Request = class MockRequest {
     constructor(
-      public url: string,
+      public input: RequestInfo | URL,
       public init?: RequestInit
-    ) {}
+    ) {
+      // Make url a getter to avoid conflicts with NextRequest
+      Object.defineProperty(this, 'url', {
+        value: typeof input === 'string' ? input : input.toString(),
+        writable: false,
+      })
+    }
     headers = new Headers()
     method = 'GET'
     json = jest.fn()
     text = jest.fn()
-  }
+  } as unknown as typeof Request
+}
 
-global.Response =
-  global.Response ||
-  class MockResponse {
+if (!global.Response) {
+  global.Response = class MockResponse {
     constructor(
       public body?: BodyInit,
       public init?: ResponseInit
@@ -109,4 +114,11 @@ global.Response =
     ok = true
     json = jest.fn()
     text = jest.fn()
-  }
+
+    static json(data: unknown, init?: ResponseInit) {
+      const response = new MockResponse(JSON.stringify(data), init)
+      response.headers.set('content-type', 'application/json')
+      return response
+    }
+  } as unknown as typeof Response
+}

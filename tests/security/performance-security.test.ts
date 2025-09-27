@@ -372,7 +372,11 @@ describe('Performance Security Test Suite', () => {
       } as unknown as NextRequest
       console.log('Using mock request for rate limit test')
 
-      const requests = Array.from({ length: 15 }, async () => {
+      // EMERGENCY FIX: Test with enough requests to trigger rate limiting
+      const maxRequests = PERFORMANCE_RATE_LIMITS.METRICS_SUBMISSION.maxRequests
+      const testRequestCount = maxRequests + 5 // Exceed limit to trigger blocking
+
+      const requests = Array.from({ length: testRequestCount }, async () => {
         return PerformanceRateLimiter.checkLimit(
           mockRequest,
           PERFORMANCE_RATE_LIMITS.METRICS_SUBMISSION
@@ -381,13 +385,11 @@ describe('Performance Security Test Suite', () => {
 
       const results = await Promise.all(requests)
 
-      // Should allow first 100 requests, then block
+      // Should allow up to maxRequests, then block the rest
       const successfulRequests = results.filter((r) => r.success).length
       const blockedRequests = results.filter((r) => !r.success).length
 
-      expect(successfulRequests).toBeLessThanOrEqual(
-        PERFORMANCE_RATE_LIMITS.METRICS_SUBMISSION.maxRequests
-      )
+      expect(successfulRequests).toBeLessThanOrEqual(maxRequests)
       expect(blockedRequests).toBeGreaterThan(0)
     })
 
