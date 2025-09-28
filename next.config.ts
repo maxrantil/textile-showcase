@@ -30,13 +30,21 @@ const nextConfig = {
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
   experimental: {
+    // PHASE 2C: Critical CSS extraction and optimization
     optimizeCss: true,
-    // Enhanced build optimization per PDR Phase 1
+
+    // PHASE 2C: Advanced package optimization for TTI improvement
     optimizePackageImports: [
       '@sanity/client',
       'styled-components',
       'next-sanity',
     ],
+
+    // PHASE 2C: Critical server components for TTI optimization
+    serverComponentsExternalPackages: ['@sanity/client', '@sanity/image-url'],
+
+    // PHASE 2C: Enable concurrent features for better TTI
+    serverActions: true,
   },
   bundlePagesRouterDependencies: true, // Reduce bundle duplication
 
