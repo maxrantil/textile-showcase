@@ -34,19 +34,15 @@ const nextConfig = {
     optimizeCss: true,
 
     // PHASE 2C: Advanced package optimization for TTI improvement
-    optimizePackageImports: [
-      '@sanity/client',
-      'styled-components',
-      'next-sanity',
-    ],
-
-    // PHASE 2C: Critical server components for TTI optimization
-    serverComponentsExternalPackages: ['@sanity/client', '@sanity/image-url'],
+    optimizePackageImports: ['styled-components'],
 
     // PHASE 2C: Enable concurrent features for better TTI
-    serverActions: true,
+    serverActions: {},
   },
   bundlePagesRouterDependencies: true, // Reduce bundle duplication
+
+  // PHASE 2C: Critical server components for TTI optimization
+  serverExternalPackages: ['@sanity/client', '@sanity/image-url'],
 
   // PERFORMANCE: Phase 1 Bundle Consolidation - Strategic 4-chunk approach
   webpack: (
