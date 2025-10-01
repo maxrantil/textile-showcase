@@ -16159,5 +16159,414 @@
       }
     ],
     "timestamp": "2025-09-26T19:29:02.887Z"
+  },
+  {
+    "totalSize": 1625020,
+    "gzippedSize": 487506,
+    "chunks": [
+      {
+        "name": "webpack-b60a05328e899d02.js",
+        "size": 3941,
+        "type": "initial"
+      },
+      {
+        "name": "framework-27f02048-692e8dddbbe0fa67.js",
+        "size": 3769,
+        "type": "initial"
+      },
+      {
+        "name": "framework-45adea4d-7595ebbce7c87972.js",
+        "size": 1490,
+        "type": "initial"
+      },
+      {
+        "name": "framework-3d3a1b23-3e7b960895389b26.js",
+        "size": 8178,
+        "type": "initial"
+      },
+      {
+        "name": "framework-ce70e96a-b724cda49f47f677.js",
+        "size": 902,
+        "type": "initial"
+      },
+      {
+        "name": "framework-6dc1389f-358a2180472c486e.js",
+        "size": 611,
+        "type": "initial"
+      },
+      {
+        "name": "framework-fc2d4738-c7e8acdf808a405f.js",
+        "size": 43495,
+        "type": "initial"
+      },
+      {
+        "name": "framework-4c7823de-405024ba11032287.js",
+        "size": 66362,
+        "type": "initial"
+      },
+      {
+        "name": "framework-359a1f64-fdbcbcd8c75fa800.js",
+        "size": 1331,
+        "type": "initial"
+      },
+      {
+        "name": "framework-dfc31956-56c6ea20403a4199.js",
+        "size": 924,
+        "type": "initial"
+      },
+      {
+        "name": "framework-9c587c8a-caa254a5028d4ae4.js",
+        "size": 5455,
+        "type": "initial"
+      },
+      {
+        "name": "framework-1fe1241d-5af33806cc8968b3.js",
+        "size": 9004,
+        "type": "initial"
+      },
+      {
+        "name": "framework-d7c15829-b85c614b54f498ee.js",
+        "size": 30390,
+        "type": "initial"
+      },
+      {
+        "name": "framework-27161c75-9abd814fdd999484.js",
+        "size": 36043,
+        "type": "initial"
+      },
+      {
+        "name": "framework-ff30e0d3-9f064d1f382bd4c6.js",
+        "size": 168417,
+        "type": "initial"
+      },
+      {
+        "name": "framework-89d5c698-61d22f49307627c9.js",
+        "size": 108960,
+        "type": "initial"
+      },
+      {
+        "name": "framework-36598b9c-5f82ad0cd887f418.js",
+        "size": 167715,
+        "type": "initial"
+      },
+      {
+        "name": "framework-d6fe2052-de176ed908e4f506.js",
+        "size": 865,
+        "type": "initial"
+      },
+      {
+        "name": "framework-2cd93470-0b0e25c9458ab53d.js",
+        "size": 116,
+        "type": "initial"
+      },
+      {
+        "name": "framework-280fbac8-db499363c4285917.js",
+        "size": 7840,
+        "type": "initial"
+      },
+      {
+        "name": "framework-8cbd2506-f110bdd78e397ea7.js",
+        "size": 3652,
+        "type": "initial"
+      },
+      {
+        "name": "vendor-20e1a5b9-eb3520d12af97448.js",
+        "size": 2848,
+        "type": "initial"
+      },
+      {
+        "name": "vendor-5b3ef789-976bf70daf575a87.js",
+        "size": 26613,
+        "type": "initial"
+      },
+      {
+        "name": "vendor-5aeb617f-a56fdfb8fd2358cc.js",
+        "size": 31243,
+        "type": "initial"
+      },
+      {
+        "name": "vendor-bc050c32-13a3d9faadc06996.js",
+        "size": 73909,
+        "type": "initial"
+      },
+      {
+        "name": "vendor-2c1905b2-375903496e127032.js",
+        "size": 2833,
+        "type": "initial"
+      },
+      {
+        "name": "vendor-b9fa02b6-1a6c3c4fd44accc7.js",
+        "size": 40623,
+        "type": "initial"
+      },
+      {
+        "name": "vendor-7291a857-301f0d91185ea7c1.js",
+        "size": 45709,
+        "type": "initial"
+      },
+      {
+        "name": "vendor-89d5c698-39bcbedabb8e2fb7.js",
+        "size": 3785,
+        "type": "initial"
+      },
+      {
+        "name": "vendor-fa70753b-a1fada9074ffcd22.js",
+        "size": 78147,
+        "type": "initial"
+      },
+      {
+        "name": "vendor-995f39f7-bbfc056d3b87a527.js",
+        "size": 138368,
+        "type": "initial"
+      },
+      {
+        "name": "vendor-2a0c9309-bd8a670fe44036b3.js",
+        "size": 297400,
+        "type": "initial"
+      },
+      {
+        "name": "vendor-3510cdec-60c9a731d99371f6.js",
+        "size": 30313,
+        "type": "initial"
+      },
+      {
+        "name": "vendor-eb2fbf4c-45dc46d129eec7a9.js",
+        "size": 69088,
+        "type": "initial"
+      },
+      {
+        "name": "main-app-c025ec87b0fc9d4e.js",
+        "size": 683,
+        "type": "initial"
+      },
+      {
+        "name": "polyfills-42372ed130431b0a.js",
+        "size": 112594,
+        "type": "initial"
+      },
+      {
+        "name": "/_app-main-fb357d90046ff458.js",
+        "size": 308,
+        "type": "async"
+      },
+      {
+        "name": "/_app-_app-09dc3be8aa787a1d.js",
+        "size": 396,
+        "type": "async"
+      },
+      {
+        "name": "/_error-main-fb357d90046ff458.js",
+        "size": 308,
+        "type": "async"
+      },
+      {
+        "name": "/_error-_error-850ab5e83fcd4765.js",
+        "size": 392,
+        "type": "async"
+      }
+    ],
+    "assets": [
+      {
+        "name": "static/chunks/webpack-b60a05328e899d02.js",
+        "size": 3941,
+        "type": "js"
+      },
+      {
+        "name": "static/chunks/framework-27f02048-692e8dddbbe0fa67.js",
+        "size": 3769,
+        "type": "js"
+      },
+      {
+        "name": "static/chunks/framework-45adea4d-7595ebbce7c87972.js",
+        "size": 1490,
+        "type": "js"
+      },
+      {
+        "name": "static/chunks/framework-3d3a1b23-3e7b960895389b26.js",
+        "size": 8178,
+        "type": "js"
+      },
+      {
+        "name": "static/chunks/framework-ce70e96a-b724cda49f47f677.js",
+        "size": 902,
+        "type": "js"
+      },
+      {
+        "name": "static/chunks/framework-6dc1389f-358a2180472c486e.js",
+        "size": 611,
+        "type": "js"
+      },
+      {
+        "name": "static/chunks/framework-fc2d4738-c7e8acdf808a405f.js",
+        "size": 43495,
+        "type": "js"
+      },
+      {
+        "name": "static/chunks/framework-4c7823de-405024ba11032287.js",
+        "size": 66362,
+        "type": "js"
+      },
+      {
+        "name": "static/chunks/framework-359a1f64-fdbcbcd8c75fa800.js",
+        "size": 1331,
+        "type": "js"
+      },
+      {
+        "name": "static/chunks/framework-dfc31956-56c6ea20403a4199.js",
+        "size": 924,
+        "type": "js"
+      },
+      {
+        "name": "static/chunks/framework-9c587c8a-caa254a5028d4ae4.js",
+        "size": 5455,
+        "type": "js"
+      },
+      {
+        "name": "static/chunks/framework-1fe1241d-5af33806cc8968b3.js",
+        "size": 9004,
+        "type": "js"
+      },
+      {
+        "name": "static/chunks/framework-d7c15829-b85c614b54f498ee.js",
+        "size": 30390,
+        "type": "js"
+      },
+      {
+        "name": "static/chunks/framework-27161c75-9abd814fdd999484.js",
+        "size": 36043,
+        "type": "js"
+      },
+      {
+        "name": "static/chunks/framework-ff30e0d3-9f064d1f382bd4c6.js",
+        "size": 168417,
+        "type": "js"
+      },
+      {
+        "name": "static/chunks/framework-89d5c698-61d22f49307627c9.js",
+        "size": 108960,
+        "type": "js"
+      },
+      {
+        "name": "static/chunks/framework-36598b9c-5f82ad0cd887f418.js",
+        "size": 167715,
+        "type": "js"
+      },
+      {
+        "name": "static/chunks/framework-d6fe2052-de176ed908e4f506.js",
+        "size": 865,
+        "type": "js"
+      },
+      {
+        "name": "static/chunks/framework-2cd93470-0b0e25c9458ab53d.js",
+        "size": 116,
+        "type": "js"
+      },
+      {
+        "name": "static/chunks/framework-280fbac8-db499363c4285917.js",
+        "size": 7840,
+        "type": "js"
+      },
+      {
+        "name": "static/chunks/framework-8cbd2506-f110bdd78e397ea7.js",
+        "size": 3652,
+        "type": "js"
+      },
+      {
+        "name": "static/chunks/vendor-20e1a5b9-eb3520d12af97448.js",
+        "size": 2848,
+        "type": "js"
+      },
+      {
+        "name": "static/chunks/vendor-5b3ef789-976bf70daf575a87.js",
+        "size": 26613,
+        "type": "js"
+      },
+      {
+        "name": "static/chunks/vendor-5aeb617f-a56fdfb8fd2358cc.js",
+        "size": 31243,
+        "type": "js"
+      },
+      {
+        "name": "static/chunks/vendor-bc050c32-13a3d9faadc06996.js",
+        "size": 73909,
+        "type": "js"
+      },
+      {
+        "name": "static/chunks/vendor-2c1905b2-375903496e127032.js",
+        "size": 2833,
+        "type": "js"
+      },
+      {
+        "name": "static/chunks/vendor-b9fa02b6-1a6c3c4fd44accc7.js",
+        "size": 40623,
+        "type": "js"
+      },
+      {
+        "name": "static/chunks/vendor-7291a857-301f0d91185ea7c1.js",
+        "size": 45709,
+        "type": "js"
+      },
+      {
+        "name": "static/chunks/vendor-89d5c698-39bcbedabb8e2fb7.js",
+        "size": 3785,
+        "type": "js"
+      },
+      {
+        "name": "static/chunks/vendor-fa70753b-a1fada9074ffcd22.js",
+        "size": 78147,
+        "type": "js"
+      },
+      {
+        "name": "static/chunks/vendor-995f39f7-bbfc056d3b87a527.js",
+        "size": 138368,
+        "type": "js"
+      },
+      {
+        "name": "static/chunks/vendor-2a0c9309-bd8a670fe44036b3.js",
+        "size": 297400,
+        "type": "js"
+      },
+      {
+        "name": "static/chunks/vendor-3510cdec-60c9a731d99371f6.js",
+        "size": 30313,
+        "type": "js"
+      },
+      {
+        "name": "static/chunks/vendor-eb2fbf4c-45dc46d129eec7a9.js",
+        "size": 69088,
+        "type": "js"
+      },
+      {
+        "name": "static/chunks/main-app-c025ec87b0fc9d4e.js",
+        "size": 683,
+        "type": "js"
+      },
+      {
+        "name": "static/chunks/polyfills-42372ed130431b0a.js",
+        "size": 112594,
+        "type": "js"
+      },
+      {
+        "name": "static/chunks/main-fb357d90046ff458.js",
+        "size": 308,
+        "type": "js"
+      },
+      {
+        "name": "static/chunks/pages/_app-09dc3be8aa787a1d.js",
+        "size": 396,
+        "type": "js"
+      },
+      {
+        "name": "static/chunks/main-fb357d90046ff458.js",
+        "size": 308,
+        "type": "js"
+      },
+      {
+        "name": "static/chunks/pages/_error-850ab5e83fcd4765.js",
+        "size": 392,
+        "type": "js"
+      }
+    ],
+    "timestamp": "2025-10-01T17:44:10.456Z"
   }
 ]

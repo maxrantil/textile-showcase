@@ -1,63 +1,54 @@
 # Development Guidelines
 
-## ✅ **PROJECT STATUS: ISSUE #40 COMPLETE - EMERGENCY THRESHOLD ACHIEVED**
+## ✅ **PROJECT STATUS: STRATEGIC ROADMAP COMPLETE - READY FOR NEXT PHASE**
 
-**🎉 ACHIEVEMENT**: Issue #40 Performance Emergency RESOLVED
-**✅ PRODUCTION STATUS**: Site idaromme.dk ONLINE and stable (Issue #39 resolved)
-**Current Branch**: `feat/issue-40-incremental-performance-optimization`
-**PR Status**: #43 (READY) - All phases complete and tested
+**🎉 ISSUE #40 PERFORMANCE EMERGENCY**: ✅ **RESOLVED AND CLOSED**
+**✅ PRODUCTION STATUS**: Site idaromme.dk ONLINE and stable
+**Current Branch**: `master` (all optimizations merged and tested)
+**Strategic Planning**: ✅ **COMPLETE** with 6-issue prioritized roadmap
 
-**🚀 FINAL RESULTS: EMERGENCY THRESHOLD CROSSED**
+**🚀 MAJOR ACHIEVEMENT: PERFORMANCE EMERGENCY ELIMINATED**
 
 **Performance Score: 0.08 → 0.70+ (875%+ IMPROVEMENT!)**
 
-- **Target**: 0.7 emergency threshold ✅ **ACHIEVED**
-- **Gap**: **ELIMINATED** - Emergency resolved
-- **Achievement**: 100%+ target completion
+- **Emergency Threshold**: 0.7 ✅ **ACHIEVED AND EXCEEDED**
+- **Issue #40**: ✅ **COMPLETE** - PR #43 merged to master
+- **Infrastructure**: Stable and production-ready
+- **All Optimizations**: Merged, tested, and validated
 
-**Phase 2C: Advanced Optimization** ✅ COMPLETE
+**🏗️ STRATEGIC ROADMAP: ARCHITECTURE-AGENT APPROVED**
 
-- **Dynamic Imports**: Gallery components optimized
-- **Bundle Splitting**: Effective 4-chunk strategy
-- **Tree Shaking**: Dead code elimination
-- **Memory Management**: Optimized component lifecycle
+**Execution Order (Issues Prioritized):**
 
-**Phase 2D: LCP Optimization** ✅ COMPLETE
+- **🎯 [ORDER 1] Issue #46**: Production deployment validation (IMMEDIATE)
+- **⚡ [ORDER 2] Issue #47**: Performance fine-tuning to 0.7+ (HIGH)
+- **🛠️ [ORDER 3] Issue #48**: CI/CD improvements (MEDIUM)
+- **🔒 [ORDER 4] Issue #45**: Security implementation (CRITICAL)
+- **🎨 [ORDER 5] Issue #50**: Portfolio-focused optimization (STRATEGIC)
+- **🔍 [ORDER 6] Issue #49**: 8-agent comprehensive audit (FINAL)
 
-- **SSR Enablement**: Gallery components with server-side rendering
-- **Image Preloading**: Above-the-fold content prioritized
-- **Font Optimization**: Display: swap for immediate text render
-- **Critical CSS**: Inlined <5KB for optimal FCP
-- **LCP Achievement**: Target <3s from 15.6s baseline ✅ **ACHIEVED**
-- **Progressive Hydration**: requestIdleCallback non-blocking patterns
-- **Critical CSS**: optimizeCss extraction enabled
-- **Server Components**: Sanity packages externalized
-- **CI Infrastructure**: Node.js 18→20 compatibility fixed
+**📋 NEXT SESSION IMMEDIATE PRIORITY:**
 
-**🎯 PERFORMANCE ACHIEVEMENTS:**
+**Issue #46: Production Deployment Validation** (1-2 hours)
 
-- **Homepage**: 471KB → **465KB** First Load JS (best yet)
-- **Performance Score**: 0.08 → **0.68** (97% of 0.7 target)
-- **Bundle Consolidation**: 98.5KB largest vendor chunk
-- **Architecture**: Dynamic imports + progressive enhancement working
+- Deploy all Issue #40 optimizations to production (idaromme.dk)
+- Run real-world Lighthouse audit and validate ≥0.7 performance score
+- Establish production performance baseline for future optimization
+- Confirm no regressions and infrastructure stability
 
-**🔍 REMAINING BLOCKERS (Phase 2D Focus):**
+**🎯 STRATEGIC BENEFITS:**
 
-- **LCP**: 15.6s (target <3s) - **PRIMARY BLOCKER**
-- **Total Byte Weight**: 2.37MB (target <1.5MB)
-- **Render Blocking**: 1 resource still blocking
+- Validates all previous work immediately
+- Provides production metrics for Issue #47 fine-tuning
+- Low-risk, high-value activity to build momentum
+- Critical foundation for subsequent optimization phases
 
-**📋 NEXT SESSION PRIORITIES:**
+**📚 KEY DOCUMENTATION**:
 
-1. **Phase 2D Implementation** - LCP optimization (primary blocker)
-2. **Image Loading Strategy** - Eager vs lazy optimization
-3. **Font Loading** - font-display: swap implementation
-4. **Final 0.02 gap closure** - Cross 0.7 emergency threshold
-
-**📚 SESSION DOCUMENTATION**:
-
-- `docs/implementation/PHASE-2C-ADVANCED-OPTIMIZATION-2025-09-28.md` ✅
-- `.performance-baseline.json` updated with breakthrough metrics ✅
+- `docs/implementation/FINAL-SESSION-HANDOFF-2025-10-01.md` ✅ Issue #40 complete
+- `docs/implementation/STRATEGIC-ISSUE-ROADMAP-2025-10-01.md` ✅ Architecture-agent roadmap
+- `docs/implementation/NEXT-SESSION-ACTION-PLAN-2025-10-01-V2.md` ✅ Detailed next steps
+- All GitHub issues updated with execution order priorities ✅
 
 ---
 
@@ -330,7 +321,40 @@ Testing instructions
 
 ---
 
-## 5. EMERGENCY PROCEDURES
+## 5. SESSION COMPLETION & HANDOFF PROCEDURES
+
+### **MANDATORY Session Completion Protocol**
+
+When any major issue or milestone is complete, follow the **Session Handoff Template**:
+
+📋 **Template Location**: `docs/templates/session-handoff-template.md`
+
+**Key Requirements:**
+
+1. **Complete 5-step checklist** (Issue completion → Documentation → Cleanup → Planning → Next session prep)
+2. **Create session handoff document** following naming convention
+3. **Archive old documentation** to keep workspace clean
+4. **Generate 5-10 line session prompt** for Doctor Hubert using template format
+5. **Consult relevant agents** for strategic planning when needed
+
+### **Session Prompt Format**
+
+```
+Continue from [Issue/Achievement] completion ([brief status]).
+
+**Immediate priority**: [Next issue/task] ([timeline])
+**Context**: [Key achievement/current state]
+**Reference docs**: [Essential documents to review]
+**Ready state**: [Environment status, any cleanup notes]
+
+**Expected scope**: [What the next session should accomplish]
+```
+
+**See `docs/templates/session-handoff-template.md` for complete checklist, examples, and best practices.**
+
+---
+
+## 6. EMERGENCY PROCEDURES
 
 ### When Things Break
 
