@@ -158,7 +158,14 @@ jobs:
 
               # Restart PM2 with zero downtime
               echo "🔄 Restarting application..."
-              pm2 reload idaromme-website || pm2 restart idaromme-website
+              if pm2 list | grep -q "idaromme-website"; then
+                echo "📋 PM2 process exists, reloading..."
+                pm2 reload idaromme-website || pm2 restart idaromme-website
+              else
+                echo "🚀 PM2 process not found, starting new instance..."
+                PORT=3001 pm2 start npm --name "idaromme-website" -- start
+                pm2 save
+              fi
 
               # Cleanup old backup
               rm -rf .next.backup
