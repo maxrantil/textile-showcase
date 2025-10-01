@@ -8,14 +8,14 @@ import dynamic from 'next/dynamic'
 import { TextileDesign } from '@/types/textile'
 import { GalleryLoadingSkeleton } from '@/components/ui/LoadingSpinner'
 
-// PHASE 2C: Dynamic imports with SSR disabled to reduce initial bundle
+// PHASE 2D: Enable SSR for above-the-fold content to improve LCP
 const DesktopGallery = dynamic(
   () =>
     import('@/components/desktop/Gallery/DesktopGallery').then((mod) => ({
       default: mod.DesktopGallery,
     })),
   {
-    ssr: false, // Critical: Avoid SSR for heavy interactive components
+    ssr: true, // Phase 2D: Enable SSR for LCP optimization
     loading: () => <GalleryLoadingSkeleton />,
   }
 )
@@ -26,7 +26,7 @@ const MobileGallery = dynamic(
       default: mod.MobileGallery,
     })),
   {
-    ssr: false, // Critical: Avoid SSR for heavy interactive components
+    ssr: true, // Phase 2D: Enable SSR for LCP optimization
     loading: () => <GalleryLoadingSkeleton />,
   }
 )
@@ -39,7 +39,7 @@ export default function Gallery({ designs }: GalleryProps) {
   const [isMobile, setIsMobile] = useState<boolean | null>(null)
   const [isHydrated, setIsHydrated] = useState(false)
 
-  // PHASE 2C: Progressive hydration - defer component selection until after render
+  // PHASE 2D: Immediate device detection for LCP optimization
   useEffect(() => {
     const checkMobile = () => {
       const userAgent = navigator.userAgent.toLowerCase()
@@ -51,30 +51,22 @@ export default function Gallery({ designs }: GalleryProps) {
       return isMobileDevice || isSmallScreen
     }
 
-    // Use requestIdleCallback for non-critical hydration
-    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-      window.requestIdleCallback(
-        () => {
-          setIsMobile(checkMobile())
-          setIsHydrated(true)
-        },
-        { timeout: 500 }
-      )
-    } else {
-      // Fallback for browsers without requestIdleCallback
-      setTimeout(() => {
-        setIsMobile(checkMobile())
-        setIsHydrated(true)
-      }, 100)
-    }
+    // Phase 2D: Immediate detection to reduce LCP delay
+    setIsMobile(checkMobile())
+    setIsHydrated(true)
   }, [])
 
-  // PHASE 2C: Show loading skeleton until progressive hydration completes
-  if (!isHydrated || isMobile === null) {
-    return <GalleryLoadingSkeleton />
+  // PHASE 2D: Render immediately with server-side content for better LCP
+  if (!isHydrated) {
+    // Default to desktop on server-side for SSR consistency
+    return (
+      <Suspense fallback={<GalleryLoadingSkeleton />}>
+        <DesktopGallery designs={designs} />
+      </Suspense>
+    )
   }
 
-  // PHASE 2C: Render appropriate gallery component based on device
+  // PHASE 2D: Client-side rendering with detected device type
   return (
     <Suspense fallback={<GalleryLoadingSkeleton />}>
       {isMobile ? (
