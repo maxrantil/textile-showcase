@@ -5,6 +5,11 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 })
 
 const nextConfig = {
+  // Modern JavaScript targeting for legacy JS elimination
+  compiler: {
+    // Remove console.log in production for smaller bundles
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
   typescript: {
     // Allow production builds to complete even with TypeScript errors
     ignoreBuildErrors: true,
@@ -25,15 +30,19 @@ const nextConfig = {
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
   experimental: {
+    // PHASE 2C: Critical CSS extraction and optimization
     optimizeCss: true,
-    // Enhanced build optimization per PDR Phase 1
-    optimizePackageImports: [
-      '@sanity/client',
-      'styled-components',
-      'next-sanity',
-    ],
+
+    // PHASE 2C: Advanced package optimization for TTI improvement
+    optimizePackageImports: ['styled-components'],
+
+    // PHASE 2C: Enable concurrent features for better TTI
+    serverActions: {},
   },
   bundlePagesRouterDependencies: true, // Reduce bundle duplication
+
+  // PHASE 2C: Critical server components for TTI optimization
+  serverExternalPackages: ['@sanity/client', '@sanity/image-url'],
 
   // PERFORMANCE: Phase 1 Bundle Consolidation - Strategic 4-chunk approach
   webpack: (
@@ -111,7 +120,7 @@ const nextConfig = {
               chunks: 'all',
               enforce: true,
               minSize: 0,
-              maxSize: 600000, // Large consolidation chunk
+              maxSize: 400000, // Reduced from 600KB to 400KB for better compression
               minChunks: 1,
             },
           },
@@ -122,6 +131,10 @@ const nextConfig = {
         innerGraph: true, // Advanced tree shaking per PDR
         sideEffects: false,
         providedExports: true,
+
+        // Aggressive dead code elimination for Phase 2B
+        mangleExports: true,
+        realContentHash: true,
 
         // Module concatenation for better performance per PDR
         concatenateModules: true,

@@ -17,18 +17,18 @@ export function FontPreloader({ fonts = [] }: FontPreloaderProps) {
     // Only run on client side
     if (typeof window === 'undefined') return
 
-    // Default critical fonts if none provided
+    // Default critical fonts if none provided - Phase 2D: use swap for LCP
     const defaultFonts: FontConfig[] = [
       {
         family: 'Inter',
         weight: 400,
-        display: 'block',
+        display: 'swap', // Phase 2D: Use swap for immediate text render
         url: '/fonts/inter-400.woff2',
       },
       {
         family: 'Inter',
         weight: 500,
-        display: 'block',
+        display: 'swap', // Phase 2D: Use swap for immediate text render
         url: '/fonts/inter-500.woff2',
       },
     ]
@@ -37,20 +37,19 @@ export function FontPreloader({ fonts = [] }: FontPreloaderProps) {
 
     // Add preload links for critical fonts
     fontsToPreload.forEach((font) => {
-      if (font.display === 'block') {
-        const existingLink = document.querySelector(
-          `link[rel="preload"][href="${font.url}"]`
-        )
+      // Phase 2D: Preload fonts regardless of display mode for LCP
+      const existingLink = document.querySelector(
+        `link[rel="preload"][href="${font.url}"]`
+      )
 
-        if (!existingLink) {
-          const link = document.createElement('link')
-          link.rel = 'preload'
-          link.href = font.url
-          link.as = 'font'
-          link.type = 'font/woff2'
-          link.crossOrigin = 'anonymous'
-          document.head.appendChild(link)
-        }
+      if (!existingLink) {
+        const link = document.createElement('link')
+        link.rel = 'preload'
+        link.href = font.url
+        link.as = 'font'
+        link.type = 'font/woff2'
+        link.crossOrigin = 'anonymous'
+        document.head.appendChild(link)
       }
     })
   }, [fonts])

@@ -25,6 +25,26 @@ export function DesktopGallery({ designs }: DesktopGalleryProps) {
   const lastSavedIndexRef = useRef<number>(-1)
   const [isRestoring, setIsRestoring] = useState(true)
 
+  // Deferred interactivity to improve TTI
+  const [interactionsEnabled, setInteractionsEnabled] = useState(false)
+
+  // Defer heavy interactions until after initial render for better TTI
+  useEffect(() => {
+    // Use requestIdleCallback for better TTI, fallback to setTimeout
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      window.requestIdleCallback(
+        () => {
+          setInteractionsEnabled(true)
+        },
+        { timeout: 1000 }
+      )
+    } else {
+      setTimeout(() => {
+        setInteractionsEnabled(true)
+      }, 100)
+    }
+  }, [])
+
   // Simple scroll to index function
   const scrollToIndex = useCallback(
     (index: number, instant = false) => {
@@ -123,8 +143,10 @@ export function DesktopGallery({ designs }: DesktopGalleryProps) {
     updateCurrentIndex()
   }, [updateCurrentIndex])
 
-  // Setup scroll listener
+  // Setup scroll listener - only when interactions are enabled
   useEffect(() => {
+    if (!interactionsEnabled) return
+
     const container = scrollContainerRef.current
     if (!container) return
 
@@ -144,11 +166,12 @@ export function DesktopGallery({ designs }: DesktopGalleryProps) {
     return () => {
       container.removeEventListener('scroll', handleScroll)
     }
-  }, [checkScrollBounds])
+  }, [checkScrollBounds, interactionsEnabled])
 
-  // Restore scroll position ONCE on mount
+  // Restore scroll position ONCE on mount - only when interactions are enabled
   useEffect(() => {
-    if (designs.length === 0 || hasRestoredRef.current) return
+    if (!interactionsEnabled || designs.length === 0 || hasRestoredRef.current)
+      return
 
     const restorePosition = async () => {
       try {
@@ -188,7 +211,13 @@ export function DesktopGallery({ designs }: DesktopGalleryProps) {
     }
 
     restorePosition()
-  }, [pathname, designs.length, scrollToIndex, checkScrollBounds])
+  }, [
+    pathname,
+    designs.length,
+    scrollToIndex,
+    checkScrollBounds,
+    interactionsEnabled,
+  ])
 
   // Save position when index changes (debounced)
   useEffect(() => {
@@ -232,9 +261,10 @@ export function DesktopGallery({ designs }: DesktopGalleryProps) {
     [currentIndex, pathname, router]
   )
 
-  // Keyboard navigation
+  // Keyboard navigation - only enabled when interactions are ready
   useKeyboardNavigation({
     onPrevious: () => {
+      if (!interactionsEnabled) return
       UmamiEvents.galleryNavigation(
         'keyboard-left',
         currentIndex,
@@ -243,6 +273,7 @@ export function DesktopGallery({ designs }: DesktopGalleryProps) {
       scrollToImage('left')
     },
     onNext: () => {
+      if (!interactionsEnabled) return
       UmamiEvents.galleryNavigation(
         'keyboard-right',
         currentIndex,
@@ -251,12 +282,13 @@ export function DesktopGallery({ designs }: DesktopGalleryProps) {
       scrollToImage('right')
     },
     onEnter: () => {
+      if (!interactionsEnabled) return
       const currentDesign = designs[currentIndex]
       if (currentDesign) {
         navigateToProject(currentDesign)
       }
     },
-    enabled: true,
+    enabled: interactionsEnabled,
   })
 
   return (
