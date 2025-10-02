@@ -115,13 +115,13 @@ export const MobileGalleryItem = React.memo(function MobileGalleryItem({
                 imageSource && (
                   <Image
                     src={getOptimizedImageUrl(imageSource, {
-                      width: 800,
-                      quality: 85,
+                      width: 450,
+                      quality: 80,
                       format: 'auto',
                     })}
                     alt={design.title}
                     fill
-                    sizes="(max-width: 768px) 100vw, 800px"
+                    sizes="(max-width: 768px) 100vw, 450px"
                     className={`mobile-gallery-image ${imageLoaded ? 'loaded' : ''}`}
                     loading={isFirst ? 'eager' : 'lazy'}
                     priority={isFirst}
