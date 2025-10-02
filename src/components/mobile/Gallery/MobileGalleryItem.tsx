@@ -125,6 +125,7 @@ export const MobileGalleryItem = React.memo(function MobileGalleryItem({
                     className={`mobile-gallery-image ${imageLoaded ? 'loaded' : ''}`}
                     loading={isFirst ? 'eager' : 'lazy'}
                     priority={isFirst}
+                    fetchPriority={isFirst ? 'high' : 'auto'}
                     onLoad={handleImageLoad}
                     onError={handleImageError}
                   />
