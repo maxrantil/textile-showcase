@@ -15,6 +15,17 @@ export function MobileGallery({ designs }: MobileGalleryProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [hasRestored, setHasRestored] = useState(false)
 
+  // Hide static first image after hydration (Issue #51 Phase 2)
+  useEffect(() => {
+    const staticFirstImage = document.querySelector(
+      '[data-first-image="true"]'
+    ) as HTMLElement
+    if (staticFirstImage) {
+      staticFirstImage.style.display = 'none'
+      console.log('🎯 Static first image hidden after hydration')
+    }
+  }, [])
+
   // Restore scroll position on mount
   useEffect(() => {
     if (designs.length === 0 || hasRestored) return
