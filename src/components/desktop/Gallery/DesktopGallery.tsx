@@ -28,6 +28,17 @@ export function DesktopGallery({ designs }: DesktopGalleryProps) {
   // Deferred interactivity to improve TTI
   const [interactionsEnabled, setInteractionsEnabled] = useState(false)
 
+  // Hide static first image after hydration (Issue #51 Phase 2)
+  useEffect(() => {
+    const staticFirstImage = document.querySelector(
+      '[data-first-image="true"]'
+    ) as HTMLElement
+    if (staticFirstImage) {
+      staticFirstImage.style.display = 'none'
+      console.log('🎯 Static first image hidden after hydration')
+    }
+  }, [])
+
   // Defer heavy interactions until after initial render for better TTI
   useEffect(() => {
     // Use requestIdleCallback for better TTI, fallback to setTimeout
