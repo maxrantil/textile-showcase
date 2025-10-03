@@ -3,6 +3,7 @@ import Gallery from '@/components/adaptive/Gallery'
 import { TextileDesign } from '@/types/textile'
 import { getOptimizedImageUrl } from '@/utils/image-helpers'
 import { HtmlHead } from './components/html-head'
+import { FirstImage } from '@/components/server/FirstImage'
 
 // Enhanced metadata with structured data
 export const metadata: Metadata = {
@@ -122,6 +123,11 @@ export default async function Home() {
           }),
         }}
       />
+
+      {/* Issue #51 Phase 2: Static HTML first image for LCP optimization
+          Renders in initial HTML so browser can discover and load immediately
+          Hidden after client hydration completes */}
+      {firstDesign && <FirstImage design={firstDesign} />}
 
       <Gallery designs={designs} />
     </>
