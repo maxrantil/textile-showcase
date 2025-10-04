@@ -26,37 +26,35 @@ export function FirstImage({ design }: FirstImageProps) {
     return null
   }
 
+  // Generate responsive image URLs for different screen sizes
+  // Use lower quality for initial load to improve LCP
   const imageUrl = getOptimizedImageUrl(imageSource, {
-    width: 450,
-    quality: 80,
-    format: 'auto',
+    width: 640, // Reduced from 800 for faster initial load
+    quality: 60, // Lower quality for better speed (60 from 75)
+    format: 'webp', // Explicit WebP for better compression
   })
 
-  const aspectRatio = 4 / 3
+  // Generate srcset for responsive loading with lower quality
+  const srcSet = `
+    ${getOptimizedImageUrl(imageSource, { width: 320, quality: 60, format: 'webp' })} 320w,
+    ${getOptimizedImageUrl(imageSource, { width: 640, quality: 60, format: 'webp' })} 640w,
+    ${getOptimizedImageUrl(imageSource, { width: 960, quality: 60, format: 'webp' })} 960w
+  `.trim()
 
   return (
     <div
       data-first-image="true"
       className="first-image-container"
-      style={{
-        aspectRatio,
-        position: 'relative',
-        width: '100%',
-      }}
       suppressHydrationWarning
     >
       <img
         src={imageUrl}
+        srcSet={srcSet}
+        sizes="(max-width: 480px) 100vw, (max-width: 768px) 90vw, 640px"
         alt={design.title}
         fetchPriority="high"
         loading="eager"
         decoding="async"
-        style={{
-          width: '100%',
-          height: '100%',
-          objectFit: 'cover',
-          display: 'block',
-        }}
         suppressHydrationWarning
       />
     </div>

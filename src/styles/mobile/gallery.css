@@ -308,3 +308,26 @@
 
 /* Remove dark mode support to prevent black background */
 /* Commented out the dark mode section that was causing the black background */
+
+/* FirstImage static LCP optimization - Issue #51 Phase 2 */
+.first-image-container {
+  width: 100%;
+  margin-bottom: 0;
+  z-index: 1;
+  pointer-events: none;
+  aspect-ratio: 4/3;
+  position: relative;
+  display: block;
+}
+
+.first-image-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Hide after hydration (controlled by JS) */
+.first-image-container[style*='display: none'] {
+  display: none !important;
+}
