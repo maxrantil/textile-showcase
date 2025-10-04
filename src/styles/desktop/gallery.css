@@ -84,24 +84,30 @@
 
 /* FirstImage static LCP optimization - Issue #51 Phase 2 */
 .first-image-container {
-  position: absolute;
+  position: fixed;
   top: 80px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 1;
   width: auto;
+  max-width: 90vw;
   height: 60vh;
   pointer-events: none;
+  aspect-ratio: 4/3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .first-image-container img {
   height: 100%;
   width: auto;
+  max-width: 100%;
   object-fit: contain;
+  display: block;
 }
 
 /* Hide after hydration (controlled by JS) */
 .first-image-container[style*='display: none'] {
-  opacity: 0;
-  transition: opacity 0.2s ease;
+  display: none !important;
 }
