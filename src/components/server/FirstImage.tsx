@@ -26,11 +26,20 @@ export function FirstImage({ design }: FirstImageProps) {
     return null
   }
 
+  // Generate responsive image URLs for different screen sizes
   const imageUrl = getOptimizedImageUrl(imageSource, {
-    width: 450,
-    quality: 80,
-    format: 'auto',
+    width: 800, // Higher base resolution for desktop
+    quality: 75, // Slightly lower quality for better speed
+    format: 'webp', // Explicit WebP for better compression
   })
+
+  // Generate srcset for responsive loading
+  const srcSet = `
+    ${getOptimizedImageUrl(imageSource, { width: 450, quality: 75, format: 'webp' })} 450w,
+    ${getOptimizedImageUrl(imageSource, { width: 640, quality: 75, format: 'webp' })} 640w,
+    ${getOptimizedImageUrl(imageSource, { width: 800, quality: 75, format: 'webp' })} 800w,
+    ${getOptimizedImageUrl(imageSource, { width: 1200, quality: 75, format: 'webp' })} 1200w
+  `.trim()
 
   const aspectRatio = 4 / 3
 
@@ -47,6 +56,8 @@ export function FirstImage({ design }: FirstImageProps) {
     >
       <img
         src={imageUrl}
+        srcSet={srcSet}
+        sizes="(max-width: 768px) 100vw, 800px"
         alt={design.title}
         fetchPriority="high"
         loading="eager"

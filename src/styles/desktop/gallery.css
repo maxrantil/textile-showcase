@@ -81,3 +81,27 @@
   font-size: 16px;
   color: #666;
 }
+
+/* FirstImage static LCP optimization - Issue #51 Phase 2 */
+.first-image-container {
+  position: absolute;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
+  width: auto;
+  height: 60vh;
+  pointer-events: none;
+}
+
+.first-image-container img {
+  height: 100%;
+  width: auto;
+  object-fit: contain;
+}
+
+/* Hide after hydration (controlled by JS) */
+.first-image-container[style*='display: none'] {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
