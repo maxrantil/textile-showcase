@@ -256,6 +256,11 @@ export default function Gallery({ designs }: GalleryProps) {
     restorePosition()
   }, [designs.length, pathname, scrollToIndex, checkScrollBounds])
 
+  // Save position before navigation
+  const handleNavigate = useCallback(() => {
+    scrollManager.saveImmediate(currentIndex, pathname ?? undefined)
+  }, [pathname, currentIndex])
+
   // Keyboard navigation (with vim keybindings)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -282,6 +287,8 @@ export default function Gallery({ designs }: GalleryProps) {
       // Enter or Space to open project
       else if ((e.key === 'Enter' || e.key === ' ') && designs[currentIndex]) {
         e.preventDefault()
+        // Save current scroll position before navigating
+        handleNavigate()
         const design = designs[currentIndex]
         router.push(`/project/${design.slug?.current || design._id}`)
       }
@@ -289,12 +296,7 @@ export default function Gallery({ designs }: GalleryProps) {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [currentIndex, designs, router, scrollToImage])
-
-  // Save position before navigation
-  const handleNavigate = useCallback(() => {
-    scrollManager.saveImmediate(currentIndex, pathname ?? undefined)
-  }, [pathname, currentIndex])
+  }, [currentIndex, designs, router, scrollToImage, handleNavigate])
 
   if (!designs || designs.length === 0) {
     return (

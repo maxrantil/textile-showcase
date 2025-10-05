@@ -31,19 +31,6 @@ export function useKeyboardNavigation({
 }: UseKeyboardNavigationProps) {
   const scrollIntervals = useRef<Map<string, NodeJS.Timeout>>(new Map())
 
-  // Debug: Log when the hook initializes
-  useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🎹 Keyboard navigation initialized with:', {
-        onEnter: !!onEnter,
-        onEscape: !!onEscape,
-        onPrevious: !!onPrevious,
-        onNext: !!onNext,
-        enabled,
-      })
-    }
-  }, [onEnter, onEscape, onPrevious, onNext, enabled])
-
   // Create throttled scroll functions
   const throttledScrollUp = useMemo(
     () => (onScrollUp ? throttle(onScrollUp, 100) : undefined),
@@ -62,23 +49,6 @@ export function useKeyboardNavigation({
     const currentIntervals = scrollIntervals.current
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Debug logging
-      if (process.env.NODE_ENV === 'development') {
-        console.log(
-          '🎹 Key pressed:',
-          e.key,
-          'Target:',
-          e.target,
-          'Modifiers:',
-          {
-            ctrl: e.ctrlKey,
-            meta: e.metaKey,
-            alt: e.altKey,
-            shift: e.shiftKey,
-          }
-        )
-      }
-
       // Allow browser shortcuts (Ctrl/Cmd combinations) to pass through
       const hasModifier = e.ctrlKey || e.metaKey || e.altKey
       if (hasModifier) {
