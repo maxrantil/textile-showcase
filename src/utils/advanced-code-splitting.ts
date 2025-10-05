@@ -192,8 +192,6 @@ export class ProductionChunkLoader {
     const chunkMap: Record<string, () => Promise<unknown>> = {
       'gallery-chunk': () => import('@/components/lazy/LazyGallery'),
       'contact-chunk': () => import('@/components/lazy/LazyContactForm'),
-      'security-chunk': () =>
-        import('@/components/security/LazySecurityDashboard'),
       'project-chunk': () => import('@/components/routes/ProjectRoute'),
     }
 
