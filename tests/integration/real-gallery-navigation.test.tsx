@@ -195,8 +195,9 @@ describe('Gallery Navigation Integration Tests', () => {
       render(<Gallery designs={[]} />)
 
       // Should not crash and show appropriate message
-      const gallery = screen.getByTestId('desktop-gallery')
-      expect(gallery).toBeInTheDocument()
+      expect(
+        screen.getByText('No designs available at the moment.')
+      ).toBeInTheDocument()
     })
 
     it('should handle designs with missing slugs', async () => {

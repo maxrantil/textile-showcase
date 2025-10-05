@@ -1,8 +1,6 @@
 import { Metadata } from 'next'
 import Gallery from '@/components/Gallery'
 import { TextileDesign } from '@/types/textile'
-import { getOptimizedImageUrl } from '@/utils/image-helpers'
-import { HtmlHead } from './components/html-head'
 import { FirstImage } from '@/components/server/FirstImage'
 
 // Enhanced metadata with structured data
@@ -78,24 +76,11 @@ export default async function Home() {
   // EMERGENCY FIX: Move data fetching to server-side to eliminate TTI delays
   const designs = await getDesigns()
 
-  // Issue #51 Phase 1: Generate LCP image URL for preload hint
+  // Issue #51 Phase 1: Get first design for FirstImage component
   const firstDesign = designs[0]
-  const lcpImageUrl = firstDesign
-    ? getOptimizedImageUrl(
-        firstDesign.image || firstDesign.images?.[0]?.asset || '',
-        {
-          width: 450,
-          quality: 80,
-          format: 'auto',
-        }
-      )
-    : undefined
 
   return (
     <>
-      {/* Issue #51 Phase 1: Preload LCP image for immediate discovery */}
-      <HtmlHead lcpImageUrl={lcpImageUrl} />
-
       {/* Structured data for SEO */}
       <script
         type="application/ld+json"

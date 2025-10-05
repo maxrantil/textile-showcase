@@ -1,7 +1,7 @@
 // Update src/app/project/[slug]/components/project-content.tsx
 
 import { TextileDesign } from '@/types/textile'
-import ProjectView from '@/components/ProjectView'
+import ProjectView from '@/components/adaptive/Project'
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 import { generateProjectStructuredData } from '../utils/project-helpers'
 
