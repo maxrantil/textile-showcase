@@ -270,16 +270,25 @@ describe('AuditLogger - TDD Security Enhancement', () => {
       // Get dashboard metrics (will fail - not implemented)
       const metrics = await metricsLogger.getSecurityMetrics()
 
-      expect(metrics).toEqual({
-        totalEvents: 4,
-        threatCount: 2, // MEDIUM and HIGH events
-        successRate: 0.25, // 1 success out of 4 events
-        topThreats: [
-          { type: 'UNAUTHORIZED_ACCESS', count: 1, severity: 'HIGH' },
-          { type: 'LOGIN_FAILURE', count: 1, severity: 'MEDIUM' },
-        ],
-        timeRange: '24h',
-      })
+      expect(metrics.totalEvents).toBe(4)
+      expect(metrics.threatCount).toBe(2) // MEDIUM and HIGH events
+      expect(metrics.successRate).toBe(0.25) // 1 success out of 4 events
+      expect(metrics.timeRange).toBe('24h')
+
+      // Check that both threats are present (order may vary since count is same)
+      expect(metrics.topThreats).toHaveLength(2)
+      const threatTypes = metrics.topThreats.map((t) => t.type).sort()
+      expect(threatTypes).toEqual(['LOGIN_FAILURE', 'UNAUTHORIZED_ACCESS'])
+
+      // Verify severities
+      const highThreat = metrics.topThreats.find(
+        (t) => t.type === 'UNAUTHORIZED_ACCESS'
+      )
+      const mediumThreat = metrics.topThreats.find(
+        (t) => t.type === 'LOGIN_FAILURE'
+      )
+      expect(highThreat).toMatchObject({ count: 1, severity: 'HIGH' })
+      expect(mediumThreat).toMatchObject({ count: 1, severity: 'MEDIUM' })
     })
 
     // TDD RED PHASE: This test WILL FAIL - no automated alerting system
