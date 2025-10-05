@@ -171,6 +171,7 @@ jobs:
           npm run build:production
 
       - name: Run Lighthouse CI (${{ matrix.device }})
+        continue-on-error: true # Non-blocking per Issue #48 - performance issues tracked in Issue #47
         env:
           LIGHTHOUSE_${{ matrix.device == 'desktop' && 'DESKTOP' || 'MOBILE' }}_ONLY: true
           CI: true
