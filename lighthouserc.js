@@ -98,8 +98,10 @@ module.exports = {
 
         // Network efficiency
         'uses-text-compression': ['error', { maxNumericValue: 0 }],
-        'uses-rel-preconnect': ['warn', { maxNumericValue: 500 }],
-        'uses-rel-preload': ['warn', { maxNumericValue: 500 }],
+        // Note: uses-rel-preconnect and uses-rel-preload return informational data,
+        // not numeric values, so they cannot use maxNumericValue assertions
+        // 'uses-rel-preconnect': ['warn', { minScore: 0.8 }], // Optional opportunity audit
+        // 'uses-rel-preload': ['warn', { minScore: 0.8 }], // Optional opportunity audit
 
         // JavaScript optimization
         'legacy-javascript': ['warn', { maxNumericValue: 30000 }],
