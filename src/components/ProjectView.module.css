@@ -1,0 +1,220 @@
+/* ProjectView responsive styles */
+
+.container {
+  min-height: 100vh;
+  padding: 2rem 1rem;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.year {
+  color: #666;
+  font-size: 1.1rem;
+}
+
+.gallery {
+  margin-bottom: 3rem;
+}
+
+.imageContainer {
+  position: relative;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.image {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+.navButton {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: background 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.navButton:hover {
+  background: rgba(255, 255, 255, 1);
+}
+
+.prevButton {
+  left: 1rem;
+}
+
+.nextButton {
+  right: 1rem;
+}
+
+.imageIndicators {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid #333;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.indicatorActive {
+  background: #333;
+}
+
+.details {
+  max-width: 800px;
+  margin: 0 auto 3rem;
+}
+
+.detailsContent {
+  display: grid;
+  gap: 2rem;
+}
+
+.sectionTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: #333;
+}
+
+.description {
+  line-height: 1.6;
+}
+
+.techniquesList,
+.materialsList {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.techniquesList li,
+.materialsList li {
+  background: #f5f5f5;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+}
+
+.dimensions p {
+  font-size: 1.1rem;
+  color: #666;
+}
+
+.navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 0;
+  border-top: 1px solid #e0e0e0;
+}
+
+.navLink,
+.homeLink {
+  color: #333;
+  text-decoration: none;
+  font-size: 1rem;
+  transition: opacity 0.3s;
+}
+
+.navLink:hover,
+.homeLink:hover {
+  opacity: 0.7;
+}
+
+.homeLink {
+  font-weight: 600;
+}
+
+/* Mobile responsive styles */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem 0.5rem;
+  }
+
+  .title {
+    font-size: 1.5rem;
+  }
+
+  .navButton {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+  }
+
+  .prevButton {
+    left: 0.5rem;
+  }
+
+  .nextButton {
+    right: 0.5rem;
+  }
+
+  .details {
+    padding: 0 1rem;
+  }
+
+  .navigation {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+
+  .navLink {
+    font-size: 0.9rem;
+  }
+}
+
+/* Desktop enhancements */
+@media (min-width: 1200px) {
+  .container {
+    padding: 3rem 2rem;
+  }
+
+  .detailsContent {
+    grid-template-columns: 2fr 1fr;
+    gap: 3rem;
+  }
+
+  .description {
+    grid-column: 1;
+    grid-row: 1 / span 3;
+  }
+
+  .techniques,
+  .materials,
+  .dimensions {
+    grid-column: 2;
+  }
+}

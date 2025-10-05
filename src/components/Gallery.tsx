@@ -1,19 +1,94 @@
+// ABOUTME: Horizontal scrolling carousel gallery for homepage
+// Restores original carousel functionality with scroll restoration and keyboard nav
+
 'use client'
 
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useEffect, useRef, useState, useCallback, memo } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
-import { useKeyboardNavigation } from '@/hooks/desktop/useKeyboardNavigation'
-import { DesktopGalleryItem } from './DesktopGalleryItem'
-import { NavigationArrows } from '@/components/ui/NavigationArrows'
+import Image from 'next/image'
 import { TextileDesign } from '@/types/textile'
+import { getOptimizedImageUrl } from '@/utils/image-helpers'
 import { UmamiEvents } from '@/utils/analytics'
 import { scrollManager } from '@/lib/scrollManager'
+import { NavigationArrows } from '@/components/ui/NavigationArrows'
 
-interface DesktopGalleryProps {
+interface GalleryProps {
   designs: TextileDesign[]
 }
 
-export function DesktopGallery({ designs }: DesktopGalleryProps) {
+// Gallery Item Component
+const GalleryItem = memo(function GalleryItem({
+  design,
+  index,
+  isActive,
+  onNavigate,
+}: {
+  design: TextileDesign
+  index: number
+  isActive: boolean
+  onNavigate?: () => void
+}) {
+  const router = useRouter()
+
+  const handleClick = () => {
+    onNavigate?.()
+    UmamiEvents.viewProject(design.title, design.year)
+    router.push(`/project/${design.slug?.current || design._id}`)
+  }
+
+  const imageSource = design.image || design.images?.[0]?.asset
+  const imageUrl = imageSource
+    ? getOptimizedImageUrl(imageSource, {
+        height: 700,
+        quality: 75,
+        format: 'webp',
+        fit: 'crop',
+      })
+    : ''
+
+  const displayImageUrl = imageUrl || '/images/placeholder.jpg'
+
+  return (
+    <div
+      className={`desktop-gallery-item ${isActive ? 'active' : ''}`}
+      onClick={handleClick}
+      role="button"
+      tabIndex={0}
+      data-testid={`gallery-item-${index}`}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          handleClick()
+        }
+      }}
+    >
+      <div className="desktop-gallery-image">
+        <Image
+          src={displayImageUrl}
+          alt={design.title}
+          height={600}
+          width={800}
+          sizes="(max-width: 1024px) 90vw, (max-width: 1440px) 800px, 900px"
+          style={{
+            width: 'auto',
+            height: '60vh',
+            objectFit: 'contain',
+          }}
+          priority={index < 2}
+          loading={index < 2 ? 'eager' : 'lazy'}
+          className="desktop-gallery-img"
+        />
+      </div>
+
+      <div className="desktop-gallery-info">
+        <h3>{design.title}</h3>
+      </div>
+    </div>
+  )
+})
+
+// Main Gallery Component
+export default function Gallery({ designs }: GalleryProps) {
   const pathname = usePathname()
   const router = useRouter()
   const scrollContainerRef = useRef<HTMLDivElement>(null)
@@ -22,21 +97,18 @@ export function DesktopGallery({ designs }: DesktopGalleryProps) {
   const [canScrollRight, setCanScrollRight] = useState(true)
   const isScrollingRef = useRef(false)
   const hasRestoredRef = useRef(false)
-  const lastSavedIndexRef = useRef<number>(-1)
-  const [isRestoring, setIsRestoring] = useState(true)
 
-  // Hide static first image after hydration (Issue #51 Phase 2)
+  // Hide static first image after hydration
   useEffect(() => {
     const staticFirstImage = document.querySelector(
       '[data-first-image="true"]'
     ) as HTMLElement
     if (staticFirstImage) {
       staticFirstImage.style.display = 'none'
-      console.log('🎯 Static first image hidden after hydration')
     }
   }, [])
 
-  // Simple scroll to index function
+  // Scroll to specific index
   const scrollToIndex = useCallback(
     (index: number, instant = false) => {
       const container = scrollContainerRef.current
@@ -61,7 +133,6 @@ export function DesktopGallery({ designs }: DesktopGalleryProps) {
             behavior: 'smooth',
           })
 
-          // Reset flag after animation
           setTimeout(() => {
             isScrollingRef.current = false
           }, 600)
@@ -116,8 +187,6 @@ export function DesktopGallery({ designs }: DesktopGalleryProps) {
 
     if (closestIndex !== currentIndex) {
       setCurrentIndex(closestIndex)
-
-      // Update container attribute for scroll manager
       container.setAttribute('data-current-index', closestIndex.toString())
     }
   }, [currentIndex, designs.length])
@@ -157,14 +226,12 @@ export function DesktopGallery({ designs }: DesktopGalleryProps) {
     }
   }, [checkScrollBounds])
 
-  // Restore scroll position ONCE on mount
+  // Restore scroll position
   useEffect(() => {
     if (designs.length === 0 || hasRestoredRef.current) return
 
     const restorePosition = async () => {
       try {
-        setIsRestoring(true)
-
         const savedIndex = await scrollManager.restore(pathname ?? undefined)
 
         if (
@@ -172,150 +239,99 @@ export function DesktopGallery({ designs }: DesktopGalleryProps) {
           savedIndex >= 0 &&
           savedIndex < designs.length
         ) {
-          // Restore to saved position
           setTimeout(() => {
             scrollToIndex(savedIndex, true)
             hasRestoredRef.current = true
-            lastSavedIndexRef.current = savedIndex
-            setIsRestoring(false)
-
-            if (process.env.NODE_ENV === 'development') {
-              console.log(`🔄 Desktop Gallery restored to index ${savedIndex}`)
-            }
           }, 150)
         } else {
-          // No saved position, start at beginning
           hasRestoredRef.current = true
-          lastSavedIndexRef.current = 0
-          setIsRestoring(false)
           setTimeout(checkScrollBounds, 100)
         }
-      } catch (error) {
-        console.warn('Failed to restore desktop gallery position:', error)
+      } catch {
         hasRestoredRef.current = true
-        setIsRestoring(false)
         setTimeout(checkScrollBounds, 100)
       }
     }
 
     restorePosition()
-  }, [pathname, designs.length, scrollToIndex, checkScrollBounds])
+  }, [designs.length, pathname, scrollToIndex, checkScrollBounds])
 
-  // Save position when index changes (debounced)
+  // Save position before navigation
+  const handleNavigate = useCallback(() => {
+    scrollManager.saveImmediate(currentIndex, pathname ?? undefined)
+  }, [pathname, currentIndex])
+
+  // Keyboard navigation (with vim keybindings)
   useEffect(() => {
-    if (!hasRestoredRef.current || currentIndex === lastSavedIndexRef.current) {
-      return
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't interfere with form inputs or when user is typing
+      const target = e.target as HTMLElement
+      const isTypingContext =
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        target instanceof HTMLSelectElement ||
+        target?.contentEditable === 'true'
+
+      if (isTypingContext) return
+
+      // Left navigation: ArrowLeft or h (vim)
+      if (e.key === 'ArrowLeft' || e.key === 'h') {
+        e.preventDefault()
+        scrollToImage('left')
+      }
+      // Right navigation: ArrowRight or l (vim)
+      else if (e.key === 'ArrowRight' || e.key === 'l') {
+        e.preventDefault()
+        scrollToImage('right')
+      }
+      // Enter or Space to open project
+      else if ((e.key === 'Enter' || e.key === ' ') && designs[currentIndex]) {
+        e.preventDefault()
+        // Save current scroll position before navigating
+        handleNavigate()
+        const design = designs[currentIndex]
+        router.push(`/project/${design.slug?.current || design._id}`)
+      }
     }
 
-    const timeoutId = setTimeout(() => {
-      scrollManager.save(currentIndex, pathname ?? undefined)
-      lastSavedIndexRef.current = currentIndex
-    }, 1000)
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [currentIndex, designs, router, scrollToImage, handleNavigate])
 
-    return () => clearTimeout(timeoutId)
-  }, [currentIndex, pathname])
-
-  // Enhanced navigation function that opens projects
-  const navigateToProject = useCallback(
-    (design: TextileDesign) => {
-      if (process.env.NODE_ENV === 'development') {
-        console.log(
-          `🎹 Opening project: ${design.title} at index ${currentIndex}`
-        )
-      }
-
-      // Save current position before navigating
-      scrollManager.saveImmediate(currentIndex, pathname ?? undefined)
-      lastSavedIndexRef.current = currentIndex
-
-      // Track analytics
-      UmamiEvents.viewProject(design.title, design.year)
-      UmamiEvents.galleryNavigation(
-        'keyboard-enter',
-        currentIndex,
-        currentIndex
-      )
-
-      // Navigate to project
-      scrollManager.triggerNavigationStart()
-      router.push(`/project/${design.slug?.current || design._id}`)
-    },
-    [currentIndex, pathname, router]
-  )
-
-  // Keyboard navigation - only enabled when interactions are ready
-  useKeyboardNavigation({
-    onPrevious: () => {
-      UmamiEvents.galleryNavigation(
-        'keyboard-left',
-        currentIndex,
-        Math.max(currentIndex - 1, 0)
-      )
-      scrollToImage('left')
-    },
-    onNext: () => {
-      UmamiEvents.galleryNavigation(
-        'keyboard-right',
-        currentIndex,
-        Math.min(designs.length - 1, currentIndex + 1)
-      )
-      scrollToImage('right')
-    },
-    onEnter: () => {
-      const currentDesign = designs[currentIndex]
-      if (currentDesign) {
-        navigateToProject(currentDesign)
-      }
-    },
-    enabled: true,
-  })
+  if (!designs || designs.length === 0) {
+    return (
+      <div className="gallery-loading">
+        <p>No designs available at the moment.</p>
+      </div>
+    )
+  }
 
   return (
     <>
       <NavigationArrows
         canScrollLeft={canScrollLeft && currentIndex > 0}
         canScrollRight={canScrollRight && currentIndex < designs.length - 1}
-        onScrollLeft={() => {
-          UmamiEvents.galleryNavigation(
-            'arrow-left',
-            currentIndex,
-            Math.max(0, currentIndex - 1)
-          )
-          scrollToImage('left')
-        }}
-        onScrollRight={() => {
-          UmamiEvents.galleryNavigation(
-            'arrow-right',
-            currentIndex,
-            Math.min(designs.length - 1, currentIndex + 1)
-          )
-          scrollToImage('right')
-        }}
+        onScrollLeft={() => scrollToImage('left')}
+        onScrollRight={() => scrollToImage('right')}
+        variant="gallery"
+        position="fixed"
         showOnMobile={false}
       />
 
       <div className="desktop-gallery" data-testid="desktop-gallery">
         <div
-          ref={scrollContainerRef}
           className="desktop-gallery-track"
+          ref={scrollContainerRef}
           data-scroll-container="true"
           data-current-index={currentIndex.toString()}
-          style={{
-            opacity: isRestoring ? 0 : 1,
-            transition: isRestoring ? 'none' : 'opacity 0.4s ease',
-          }}
         >
           {designs.map((design, index) => (
-            <DesktopGalleryItem
+            <GalleryItem
               key={design._id}
               design={design}
               index={index}
               isActive={index === currentIndex}
-              onNavigate={() => {
-                // Save current position immediately before navigating
-                scrollManager.saveImmediate(currentIndex, pathname ?? undefined)
-                lastSavedIndexRef.current = currentIndex
-              }}
+              onNavigate={handleNavigate}
             />
           ))}
         </div>

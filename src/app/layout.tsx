@@ -14,12 +14,11 @@ import {
   websiteStructuredData,
   generateStructuredDataScript,
 } from './metadata/structured-data'
-import { HtmlHead } from './components/html-head'
 import { SkipNavigation } from './components/skip-navigation'
 import { AnalyticsProvider } from './components/analytics-provider'
 import { CriticalCSS } from './components/critical-css'
 import { FontPreloader } from '@/components/fonts/FontPreloader'
-import Header from '@/components/adaptive/Header'
+import { Header } from '@/components/Header'
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 
 // Combine metadata
@@ -39,11 +38,72 @@ interface RootLayoutProps {
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en">
-      <HtmlHead>
+      <head>
+        {/* DNS prefetch control for performance optimization */}
+        <meta name="dns-prefetch-control" content="on" />
+
+        {/* Critical resource hints for Core Web Vitals optimization */}
+        <link
+          rel="preconnect"
+          href="https://cdn.sanity.io"
+          crossOrigin="anonymous"
+        />
+        <link rel="dns-prefetch" href="https://cdn.sanity.io" />
+
+        {/* Preload critical self-hosted fonts */}
+        <link
+          rel="preload"
+          href="/fonts/inter-400.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin=""
+        />
+        <link
+          rel="preload"
+          href="/fonts/inter-500.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin=""
+        />
+
+        {/* Performance and mobile optimization */}
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta
+          name="apple-mobile-web-app-title"
+          content="Ida Romme - Nordic Textile Design"
+        />
+
+        {/* Enhanced SEO and performance meta tags */}
+        <meta name="referrer" content="strict-origin-when-cross-origin" />
+        <meta
+          name="theme-color"
+          content="#ffffff"
+          media="(prefers-color-scheme: light)"
+        />
+        <meta
+          name="theme-color"
+          content="#1a1a1a"
+          media="(prefers-color-scheme: dark)"
+        />
+
+        {/* Core Web Vitals optimization hints */}
+        <meta name="color-scheme" content="light dark" />
+
+        {/* Resource hints for external services */}
+        <link rel="preconnect" href="https://www.google-analytics.com" />
+        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+
+        {/* Security headers */}
+        <meta httpEquiv="X-Content-Type-Options" content="nosniff" />
+
+        {/* Structured data */}
         {generateStructuredDataScript(organizationStructuredData)}
         {generateStructuredDataScript(artistStructuredData)}
         {generateStructuredDataScript(websiteStructuredData)}
-      </HtmlHead>
+      </head>
 
       <body className="bg-white font-sans antialiased">
         <CriticalCSS>

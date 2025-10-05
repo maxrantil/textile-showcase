@@ -335,11 +335,7 @@ export async function validateDynamicImports(): Promise<{
     loadTimes: {} as { [key: string]: number },
   }
 
-  const imports = [
-    '@/components/desktop/Gallery/DesktopGallery',
-    '@/components/mobile/Gallery/MobileGallery',
-    '@/components/ui/LoadingSpinner',
-  ]
+  const imports = ['@/components/Gallery', '@/components/ui/LoadingSpinner']
 
   for (const importPath of imports) {
     try {

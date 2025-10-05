@@ -377,27 +377,59 @@ export function DesktopImageCarousel({
             ) : (
               // Normal mode - use Next.js Image
               currentImageUrl && (
-                <Image
-                  src={currentImageUrl}
-                  alt={
-                    currentImage?.caption || `Gallery image ${currentIndex + 1}`
-                  }
-                  width={800}
-                  height={600}
-                  className="desktop-project-img"
-                  loading={currentIndex === 0 ? 'eager' : 'lazy'}
-                  priority={currentIndex === 0}
-                  sizes="(max-width: 768px) 100vw, 800px"
-                  onError={() => {
-                    // If image fails and we're on iOS, try lockdown mode
-                    if (/iPad|iPhone|iPod/.test(window.navigator.userAgent)) {
-                      console.log(
-                        '🔒 Image failed on iOS device, switching to lockdown mode'
-                      )
-                      setUseLockdownMode(true)
+                <>
+                  <Image
+                    src={currentImageUrl}
+                    alt={
+                      currentImage?.caption ||
+                      `Gallery image ${currentIndex + 1}`
                     }
-                  }}
-                />
+                    width={800}
+                    height={600}
+                    className="desktop-project-img"
+                    loading="eager"
+                    priority={true}
+                    sizes="(max-width: 768px) 100vw, 800px"
+                    onError={() => {
+                      // If image fails and we're on iOS, try lockdown mode
+                      if (/iPad|iPhone|iPod/.test(window.navigator.userAgent)) {
+                        console.log(
+                          '🔒 Image failed on iOS device, switching to lockdown mode'
+                        )
+                        setUseLockdownMode(true)
+                      }
+                    }}
+                  />
+                  {/* Preload next and previous images for instant navigation */}
+                  {allImages[currentIndex + 1] && (
+                    <link
+                      rel="preload"
+                      as="image"
+                      href={getOptimizedImageUrl(
+                        allImages[currentIndex + 1].asset,
+                        {
+                          height: 800,
+                          quality: 80,
+                          format: 'auto',
+                        }
+                      )}
+                    />
+                  )}
+                  {allImages[currentIndex - 1] && (
+                    <link
+                      rel="preload"
+                      as="image"
+                      href={getOptimizedImageUrl(
+                        allImages[currentIndex - 1].asset,
+                        {
+                          height: 800,
+                          quality: 80,
+                          format: 'auto',
+                        }
+                      )}
+                    />
+                  )}
+                </>
               )
             )}
           </div>

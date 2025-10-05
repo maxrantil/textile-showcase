@@ -134,8 +134,9 @@ class ScrollManager {
     return this.lastSavedIndex || 0
   }
 
-  private normalizePath(path: string): string {
-    return !path || path === '/' ? '/' : path.replace(/\/$/, '')
+  private normalizePath(path: string | null | undefined): string {
+    if (!path || path === '/') return '/'
+    return path.replace(/\/$/, '')
   }
 
   private getAllPositions(): ScrollState {
