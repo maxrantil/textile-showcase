@@ -190,9 +190,9 @@ export class ProductionChunkLoader {
   private getChunkImport(chunkName: string): Promise<unknown> {
     // Map chunk names to actual dynamic imports
     const chunkMap: Record<string, () => Promise<unknown>> = {
-      'gallery-chunk': () => import('@/components/lazy/LazyGallery'),
+      'gallery-chunk': () => import('@/components/Gallery'),
       'contact-chunk': () => import('@/components/lazy/LazyContactForm'),
-      'project-chunk': () => import('@/components/routes/ProjectRoute'),
+      'project-chunk': () => import('@/components/ProjectView'),
     }
 
     const importFunction = chunkMap[chunkName]
