@@ -2,8 +2,7 @@
 
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { DesktopGallery } from '@/components/desktop/Gallery/DesktopGallery'
-import { MobileGallery } from '@/components/mobile/Gallery/MobileGallery'
+import Gallery from '@/components/Gallery'
 import { TextileDesign } from '@/types/textile'
 
 // Real test data - actual data structures with working image URLs for testing
@@ -103,11 +102,11 @@ describe('Gallery Navigation Integration Tests', () => {
     mockRouterPush.mockClear()
   })
 
-  describe('Desktop Gallery Real Integration', () => {
+  describe('Unified Gallery Real Integration', () => {
     it('should navigate to project when design is clicked', async () => {
       const user = userEvent.setup()
 
-      render(<DesktopGallery designs={realTestDesigns} />)
+      render(<Gallery designs={realTestDesigns} />)
 
       // Find and click the first design
       const firstDesign = screen.getByText('Sustainable Cotton Weave')
@@ -122,19 +121,19 @@ describe('Gallery Navigation Integration Tests', () => {
     })
 
     it('should display all designs with real content', () => {
-      render(<DesktopGallery designs={realTestDesigns} />)
+      render(<Gallery designs={realTestDesigns} />)
 
       // Check that all real design titles are rendered
       expect(screen.getByText('Sustainable Cotton Weave')).toBeInTheDocument()
       expect(screen.getByText('Organic Hemp Fiber')).toBeInTheDocument()
       expect(screen.getByText('Recycled Wool Blend')).toBeInTheDocument()
 
-      // Desktop gallery doesn't render descriptions, only titles
+      // Unified gallery shows titles and descriptions on hover
       // This is the actual behavior of the component
     })
 
     it.skip('should handle keyboard navigation (skipped - TTI optimization conflicts with test)', async () => {
-      render(<DesktopGallery designs={realTestDesigns} />)
+      render(<Gallery designs={realTestDesigns} />)
 
       // Test Enter key navigation on current item (index 0)
       fireEvent.keyDown(document, { key: 'Enter' })
@@ -163,11 +162,11 @@ describe('Gallery Navigation Integration Tests', () => {
     })
   })
 
-  describe('Mobile Gallery Real Integration', () => {
+  describe('Gallery Touch Integration', () => {
     it('should handle touch interactions for navigation', async () => {
       const user = userEvent.setup()
 
-      render(<MobileGallery designs={realTestDesigns} />)
+      render(<Gallery designs={realTestDesigns} />)
 
       // Find and tap the second design
       const secondDesign = screen.getByText('Organic Hemp Fiber')
@@ -181,28 +180,19 @@ describe('Gallery Navigation Integration Tests', () => {
       })
     })
 
-    it('should render mobile-optimized layout', () => {
-      render(<MobileGallery designs={realTestDesigns} />)
+    it('should render responsive layout', () => {
+      render(<Gallery designs={realTestDesigns} />)
 
-      // Check for mobile gallery items using data-testid
-      const galleryItems = [
-        screen.getByTestId('mobile-gallery-item-0'),
-        screen.getByTestId('mobile-gallery-item-1'),
-        screen.getByTestId('mobile-gallery-item-2'),
-      ]
-      expect(galleryItems).toHaveLength(3)
-
-      // Each item should be clickable
-      galleryItems.forEach((item) => {
-        expect(item).toBeInTheDocument()
-        expect(item).toHaveAttribute('data-index')
-      })
+      // Check that all designs are rendered
+      expect(screen.getByText('Sustainable Cotton Weave')).toBeInTheDocument()
+      expect(screen.getByText('Organic Hemp Fiber')).toBeInTheDocument()
+      expect(screen.getByText('Recycled Wool Blend')).toBeInTheDocument()
     })
   })
 
   describe('Cross-Device Functionality', () => {
     it('should handle empty designs array gracefully', () => {
-      render(<DesktopGallery designs={[]} />)
+      render(<Gallery designs={[]} />)
 
       // Should not crash and show appropriate message
       const gallery = screen.getByTestId('desktop-gallery')
@@ -218,7 +208,7 @@ describe('Gallery Navigation Integration Tests', () => {
         },
       ]
 
-      render(<DesktopGallery designs={designsWithoutSlug} />)
+      render(<Gallery designs={designsWithoutSlug} />)
 
       const design = screen.getByText('Sustainable Cotton Weave')
       await user.click(design)
@@ -232,7 +222,7 @@ describe('Gallery Navigation Integration Tests', () => {
 
   describe('Real Data Validation', () => {
     it('should render images with proper alt text', () => {
-      render(<DesktopGallery designs={realTestDesigns} />)
+      render(<Gallery designs={realTestDesigns} />)
 
       const images = screen.getAllByRole('img')
       // Images use the design title as alt text, not the image.alt field
@@ -242,7 +232,7 @@ describe('Gallery Navigation Integration Tests', () => {
     })
 
     it('should handle real Sanity image URLs', () => {
-      render(<DesktopGallery designs={realTestDesigns} />)
+      render(<Gallery designs={realTestDesigns} />)
 
       const images = screen.getAllByRole('img')
       images.forEach((img) => {
