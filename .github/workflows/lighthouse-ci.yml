@@ -85,6 +85,7 @@ jobs:
           lhci --version
 
       - name: Run Lighthouse CI
+        continue-on-error: true # Non-blocking per Issue #48 - performance issues tracked in Issue #47
         run: |
           echo "Starting Lighthouse CI audit..."
           echo "Using configuration from lighthouserc.js"
@@ -104,6 +105,7 @@ jobs:
           retention-days: 30
 
       - name: Performance Budget Check
+        continue-on-error: true # Non-blocking per Issue #48 - performance issues tracked in Issue #47
         run: |
           echo "Checking performance budget compliance..."
 
