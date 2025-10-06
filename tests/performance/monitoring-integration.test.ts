@@ -219,17 +219,25 @@ describe('Performance Monitoring Integration Tests', () => {
       const lighthouseConfig = await import('../../lighthouserc.js')
 
       // Issue #47: Adjusted CI thresholds for realistic expectations
+      // Issue #63: These values depend on CI environment variable
+      // In CI (GitHub Actions): CI=true triggers overrides (0.7, 3000ms)
+      // Locally: Uses base values (0.5, 5000ms)
+
+      const isCI = process.env.CI === 'true'
+      const expectedPerfScore = isCI ? 0.7 : 0.5
+      const expectedLCP = isCI ? 3000 : 5000
+
       expect(
         lighthouseConfig.default.ci.assert.assertions['categories:performance']
-      ).toEqual(['warn', { minScore: 0.5 }]) // Adjusted for CI environment
+      ).toEqual(['warn', { minScore: expectedPerfScore }])
       expect(
         lighthouseConfig.default.ci.assert.assertions[
           'largest-contentful-paint'
         ]
-      ).toEqual(['warn', { maxNumericValue: 5000 }]) // Adjusted for CI throttling
+      ).toEqual(['warn', { maxNumericValue: expectedLCP }])
       expect(
         lighthouseConfig.default.ci.assert.assertions['cumulative-layout-shift']
-      ).toEqual(['warn', { maxNumericValue: 0.25 }]) // Slightly relaxed for CI
+      ).toEqual(['warn', { maxNumericValue: 0.25 }]) // Same in both environments
     })
 
     test('should ensure monitoring overhead meets sub-1ms requirement', () => {
