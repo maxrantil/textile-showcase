@@ -181,20 +181,50 @@ jobs:
         run: |
           echo "Running Lighthouse CI for ${{ matrix.device }}..."
 
-          # Use basic working config until advanced config is properly tested
-          CONFIG_FILE="${{ github.event.inputs.lighthouse_config || 'lighthouserc.js' }}"
-          echo "Using config: $CONFIG_FILE"
+          # Start Next.js server in background
+          echo "Starting Next.js server..."
+          npm start &
+          SERVER_PID=$!
+          echo "Server started with PID: $SERVER_PID"
 
-          # Run Lighthouse CI with advanced configuration
-          lhci autorun --config="$CONFIG_FILE" --collect.settings.formFactor="${{ matrix.device }}"
+          # Wait for server to be ready
+          echo "Waiting for server to be ready..."
+          timeout 60s bash -c 'until curl -s http://localhost:3000 > /dev/null; do sleep 2; done' || {
+            echo "❌ Server failed to start within 60 seconds"
+            kill $SERVER_PID 2>/dev/null || true
+            exit 1
+          }
+          echo "✅ Server is ready"
+
+          # Run Lighthouse CI collect only (server already running, simplified config)
+          echo "Collecting Lighthouse data for ${{ matrix.device }}..."
+          lhci collect \
+            --config=lighthouserc.ci.js \
+            --url=http://localhost:3000 \
+            --settings.formFactor="${{ matrix.device }}" \
+            --settings.throttling.rttMs=150 \
+            --settings.throttling.throughputKbps=1600 \
+            --settings.throttling.cpuSlowdownMultiplier=4 \
+            --settings.screenEmulation.mobile=${{ matrix.device == 'mobile' && 'true' || 'false' }} \
+            --settings.screenEmulation.width=${{ matrix.device == 'mobile' && '412' || '1350' }} \
+            --settings.screenEmulation.height=${{ matrix.device == 'mobile' && '823' || '940' }} \
+            --settings.screenEmulation.deviceScaleFactor=${{ matrix.device == 'mobile' && '2.625' || '1' }} || {
+            echo "❌ Lighthouse collect failed"
+            kill $SERVER_PID 2>/dev/null || true
+            exit 1
+          }
+
+          # Stop server
+          echo "Stopping server..."
+          kill $SERVER_PID 2>/dev/null || true
+          echo "✅ Lighthouse data collection complete"
 
       - name: Upload Lighthouse results
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: lighthouse-results-${{ matrix.device }}
-          path: |
-            lighthouse-results/
-            .lighthouseci/
+          path: .lighthouseci/
           retention-days: 30
 
       - name: Parse Lighthouse results
@@ -202,10 +232,23 @@ jobs:
         run: |
           echo "Parsing Lighthouse results for ${{ matrix.device }}..."
 
-          # Extract key metrics from results
+          # Find the latest JSON result file (lhci collect outputs lhr-*.json files)
           if [ -d ".lighthouseci" ]; then
-            # Find the latest results file
-            RESULTS_FILE=$(find .lighthouseci -name "*.json" -type f | head -1)
+            # Get the median/representative run (middle file by timestamp)
+            RESULTS_FILES=$(ls -1t .lighthouseci/lhr-*.json 2>/dev/null || true)
+            FILE_COUNT=$(echo "$RESULTS_FILES" | wc -l)
+
+            if [ -z "$RESULTS_FILES" ] || [ "$FILE_COUNT" -eq 0 ]; then
+              echo "❌ No Lighthouse JSON results found in .lighthouseci"
+              ls -la .lighthouseci/
+              exit 1
+            fi
+
+            # Get middle result (median run) - most representative
+            MEDIAN_INDEX=$(( ($FILE_COUNT + 1) / 2 ))
+            RESULTS_FILE=$(echo "$RESULTS_FILES" | sed -n "${MEDIAN_INDEX}p")
+
+            echo "Found $FILE_COUNT Lighthouse runs, using median run (#$MEDIAN_INDEX): $RESULTS_FILE"
 
             if [ -f "$RESULTS_FILE" ]; then
               # Extract performance score and core metrics
@@ -225,11 +268,11 @@ jobs:
               echo "  CLS: $CLS"
               echo "  TBT: ${TBT}ms"
             else
-              echo "No Lighthouse results found"
+              echo "❌ Results file not found: $RESULTS_FILE"
               exit 1
             fi
           else
-            echo "Lighthouse CI directory not found"
+            echo "❌ .lighthouseci directory not found"
             exit 1
           fi
 
