@@ -42,3 +42,10 @@ next-env.d.ts
 
 # sanity
 .sanity
+
+# Development workflow files (keep local)
+CLAUDE.md
+AGENT_FEEDBACK.md
+AGENT_REVIEW.md
+SESSION_HANDOVER.md
+docs/implementation/
