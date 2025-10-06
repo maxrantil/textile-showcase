@@ -181,12 +181,44 @@ jobs:
         run: |
           echo "Running Lighthouse CI for ${{ matrix.device }}..."
 
-          # Use basic working config until advanced config is properly tested
-          CONFIG_FILE="${{ github.event.inputs.lighthouse_config || 'lighthouserc.js' }}"
-          echo "Using config: $CONFIG_FILE"
+          # Start Next.js server in background
+          echo "Starting Next.js server..."
+          npm start &
+          SERVER_PID=$!
+          echo "Server started with PID: $SERVER_PID"
 
-          # Run Lighthouse CI with advanced configuration
-          lhci autorun --config="$CONFIG_FILE" --collect.settings.formFactor="${{ matrix.device }}"
+          # Wait for server to be ready
+          echo "Waiting for server to be ready..."
+          timeout 60s bash -c 'until curl -s http://localhost:3000 > /dev/null; do sleep 2; done' || {
+            echo "❌ Server failed to start within 60 seconds"
+            kill $SERVER_PID 2>/dev/null || true
+            exit 1
+          }
+          echo "✅ Server is ready"
+
+          # Run Lighthouse CI collect only (server already running, no autorun)
+          echo "Collecting Lighthouse data for ${{ matrix.device }}..."
+          lhci collect \
+            --numberOfRuns=3 \
+            --url=http://localhost:3000 \
+            --settings.formFactor="${{ matrix.device }}" \
+            --settings.preset="${{ matrix.device }}" \
+            --settings.throttling.rttMs=150 \
+            --settings.throttling.throughputKbps=1600 \
+            --settings.throttling.cpuSlowdownMultiplier=4 \
+            --settings.screenEmulation.mobile=${{ matrix.device == 'mobile' && 'true' || 'false' }} \
+            --settings.screenEmulation.width=${{ matrix.device == 'mobile' && '412' || '1350' }} \
+            --settings.screenEmulation.height=${{ matrix.device == 'mobile' && '823' || '940' }} \
+            --settings.screenEmulation.deviceScaleFactor=${{ matrix.device == 'mobile' && '2.625' || '1' }} || {
+            echo "❌ Lighthouse collect failed"
+            kill $SERVER_PID 2>/dev/null || true
+            exit 1
+          }
+
+          # Stop server
+          echo "Stopping server..."
+          kill $SERVER_PID 2>/dev/null || true
+          echo "✅ Lighthouse data collection complete"
 
       - name: Upload Lighthouse results
         uses: actions/upload-artifact@v4
