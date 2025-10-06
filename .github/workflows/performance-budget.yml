@@ -232,22 +232,25 @@ jobs:
         run: |
           echo "Parsing Lighthouse results for ${{ matrix.device }}..."
 
-          # Extract key metrics from results using manifest.json
-          if [ -f ".lighthouseci/manifest.json" ]; then
-            echo "Found manifest.json, extracting representative run..."
+          # Find the latest JSON result file (lhci collect outputs lhr-*.json files)
+          if [ -d ".lighthouseci" ]; then
+            # Get the median/representative run (middle file by timestamp)
+            RESULTS_FILES=$(ls -1t .lighthouseci/lhr-*.json 2>/dev/null || true)
+            FILE_COUNT=$(echo "$RESULTS_FILES" | wc -l)
 
-            # Get the representative run's JSON path from manifest
-            RESULTS_FILE=$(jq -r '[.[] | select(.isRepresentativeRun == true)][0].jsonPath' .lighthouseci/manifest.json 2>/dev/null)
-
-            # Fallback to first result if no representative run marked
-            if [ -z "$RESULTS_FILE" ] || [ "$RESULTS_FILE" == "null" ]; then
-              echo "No representative run found, using first result..."
-              RESULTS_FILE=$(jq -r '.[0].jsonPath' .lighthouseci/manifest.json 2>/dev/null)
+            if [ -z "$RESULTS_FILES" ] || [ "$FILE_COUNT" -eq 0 ]; then
+              echo "❌ No Lighthouse JSON results found in .lighthouseci"
+              ls -la .lighthouseci/
+              exit 1
             fi
 
-            if [ -f "$RESULTS_FILE" ]; then
-              echo "Processing results from: $RESULTS_FILE"
+            # Get middle result (median run) - most representative
+            MEDIAN_INDEX=$(( ($FILE_COUNT + 1) / 2 ))
+            RESULTS_FILE=$(echo "$RESULTS_FILES" | sed -n "${MEDIAN_INDEX}p")
 
+            echo "Found $FILE_COUNT Lighthouse runs, using median run (#$MEDIAN_INDEX): $RESULTS_FILE"
+
+            if [ -f "$RESULTS_FILE" ]; then
               # Extract performance score and core metrics
               PERF_SCORE=$(jq '.categories.performance.score * 100' "$RESULTS_FILE" 2>/dev/null || echo "0")
               LCP=$(jq '.audits["largest-contentful-paint"].numericValue' "$RESULTS_FILE" 2>/dev/null || echo "0")
@@ -269,9 +272,7 @@ jobs:
               exit 1
             fi
           else
-            echo "❌ manifest.json not found in .lighthouseci directory"
-            echo "Checking directory contents:"
-            ls -la .lighthouseci/ || echo "Directory does not exist"
+            echo "❌ .lighthouseci directory not found"
             exit 1
           fi
 

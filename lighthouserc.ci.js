@@ -33,10 +33,6 @@ module.exports = {
       },
     },
 
-    upload: {
-      // Store results locally for artifact upload
-      target: 'filesystem',
-      outputDir: './.lighthouseci',
-    },
+    // No upload configuration - results stay in .lighthouseci directory
   },
 }
