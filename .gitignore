@@ -49,3 +49,15 @@ AGENT_FEEDBACK.md
 AGENT_REVIEW.md
 SESSION_HANDOVER.md
 docs/implementation/
+
+# Build outputs and temporary files
+dist/
+__pycache__/
+
+# Logs and reports
+logs/
+playwright-report/
+test-results/
+
+# Credentials (keep local only)
+credentials/
