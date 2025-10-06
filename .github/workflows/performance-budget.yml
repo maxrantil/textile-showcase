@@ -196,10 +196,10 @@ jobs:
           }
           echo "✅ Server is ready"
 
-          # Run Lighthouse CI collect only (server already running, no autorun)
+          # Run Lighthouse CI collect only (server already running, simplified config)
           echo "Collecting Lighthouse data for ${{ matrix.device }}..."
           lhci collect \
-            --numberOfRuns=3 \
+            --config=lighthouserc.ci.js \
             --url=http://localhost:3000 \
             --settings.formFactor="${{ matrix.device }}" \
             --settings.preset="${{ matrix.device }}" \
@@ -222,11 +222,10 @@ jobs:
 
       - name: Upload Lighthouse results
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: lighthouse-results-${{ matrix.device }}
-          path: |
-            lighthouse-results/
-            .lighthouseci/
+          path: .lighthouseci/
           retention-days: 30
 
       - name: Parse Lighthouse results
