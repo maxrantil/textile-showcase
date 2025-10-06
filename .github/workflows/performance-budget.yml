@@ -202,7 +202,6 @@ jobs:
             --config=lighthouserc.ci.js \
             --url=http://localhost:3000 \
             --settings.formFactor="${{ matrix.device }}" \
-            --settings.preset="${{ matrix.device }}" \
             --settings.throttling.rttMs=150 \
             --settings.throttling.throughputKbps=1600 \
             --settings.throttling.cpuSlowdownMultiplier=4 \
