@@ -202,12 +202,22 @@ jobs:
         run: |
           echo "Parsing Lighthouse results for ${{ matrix.device }}..."
 
-          # Extract key metrics from results
-          if [ -d ".lighthouseci" ]; then
-            # Find the latest results file
-            RESULTS_FILE=$(find .lighthouseci -name "*.json" -type f | head -1)
+          # Extract key metrics from results using manifest.json
+          if [ -f ".lighthouseci/manifest.json" ]; then
+            echo "Found manifest.json, extracting representative run..."
+
+            # Get the representative run's JSON path from manifest
+            RESULTS_FILE=$(jq -r '[.[] | select(.isRepresentativeRun == true)][0].jsonPath' .lighthouseci/manifest.json 2>/dev/null)
+
+            # Fallback to first result if no representative run marked
+            if [ -z "$RESULTS_FILE" ] || [ "$RESULTS_FILE" == "null" ]; then
+              echo "No representative run found, using first result..."
+              RESULTS_FILE=$(jq -r '.[0].jsonPath' .lighthouseci/manifest.json 2>/dev/null)
+            fi
 
             if [ -f "$RESULTS_FILE" ]; then
+              echo "Processing results from: $RESULTS_FILE"
+
               # Extract performance score and core metrics
               PERF_SCORE=$(jq '.categories.performance.score * 100' "$RESULTS_FILE" 2>/dev/null || echo "0")
               LCP=$(jq '.audits["largest-contentful-paint"].numericValue' "$RESULTS_FILE" 2>/dev/null || echo "0")
@@ -225,11 +235,13 @@ jobs:
               echo "  CLS: $CLS"
               echo "  TBT: ${TBT}ms"
             else
-              echo "No Lighthouse results found"
+              echo "❌ Results file not found: $RESULTS_FILE"
               exit 1
             fi
           else
-            echo "Lighthouse CI directory not found"
+            echo "❌ manifest.json not found in .lighthouseci directory"
+            echo "Checking directory contents:"
+            ls -la .lighthouseci/ || echo "Directory does not exist"
             exit 1
           fi
 
