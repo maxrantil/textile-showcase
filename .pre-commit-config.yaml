@@ -36,6 +36,7 @@ repos:
         entry: npx tsc
         language: system
         files: \.(ts|tsx)$
+        exclude: ^\.next/
         args: [--noEmit]
         pass_filenames: false
 

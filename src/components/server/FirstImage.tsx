@@ -46,6 +46,14 @@ export function FirstImage({ design }: FirstImageProps) {
       data-first-image="true"
       className="first-image-container"
       suppressHydrationWarning
+      style={{
+        position: 'absolute',
+        width: '100%',
+        height: '60vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
     >
       <img
         src={imageUrl}
@@ -56,6 +64,11 @@ export function FirstImage({ design }: FirstImageProps) {
         loading="eager"
         decoding="async"
         suppressHydrationWarning
+        style={{
+          width: 'auto',
+          height: '60vh',
+          objectFit: 'contain',
+        }}
       />
     </div>
   )

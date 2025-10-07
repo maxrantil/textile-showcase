@@ -98,13 +98,14 @@ export default function Gallery({ designs }: GalleryProps) {
   const isScrollingRef = useRef(false)
   const hasRestoredRef = useRef(false)
 
-  // Hide static first image after hydration
+  // Hide static first image after hydration (visibility:hidden preserves layout)
   useEffect(() => {
     const staticFirstImage = document.querySelector(
       '[data-first-image="true"]'
     ) as HTMLElement
     if (staticFirstImage) {
-      staticFirstImage.style.display = 'none'
+      staticFirstImage.style.visibility = 'hidden'
+      staticFirstImage.style.pointerEvents = 'none'
     }
   }, [])
 
