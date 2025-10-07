@@ -113,9 +113,9 @@ jobs:
           # Get commits in this PR
           git log origin/master..HEAD --oneline
 
-          # Check for --no-verify bypasses in commit messages
-          if git log origin/master..HEAD --grep="--no-verify" --grep="skip.*hook" -i; then
-            echo "❌ ERROR: Commits indicate hooks were bypassed!"
+          # Check for --no-verify bypasses (literal string only, no wildcards)
+          if git log origin/master..HEAD --grep="--no-verify" -i; then
+            echo "❌ ERROR: Commits indicate hooks were bypassed with --no-verify!"
             echo "Never use --no-verify. All commits must pass pre-commit hooks."
             exit 1
           fi
