@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - master
+  pull_request:
+    branches:
+      - master
 
 jobs:
   block-direct-push:
@@ -26,3 +29,37 @@ jobs:
           echo "  git push origin feat/your-feature-name"
           echo "  gh pr create"
           exit 1
+
+  check-commits:
+    name: Check Commit Quality
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate commits
+        run: |
+          echo "Checking commits for quality..."
+
+          # Get commits in this PR
+          git log origin/master..HEAD --oneline
+
+          # Check for --no-verify bypasses
+          # Use -e to treat pattern as string, not option
+          if git log origin/master..HEAD | grep -i -e "--no-verify"; then
+            echo "❌ ERROR: Commits indicate hooks were bypassed with --no-verify!"
+            echo "Never use --no-verify. All commits must pass pre-commit hooks."
+            exit 1
+          fi
+
+          # Check for co-author or generated-with markers (per CLAUDE.md)
+          if git log origin/master..HEAD | grep -i -e "Co-authored-by:" -e "Generated with"; then
+            echo "❌ ERROR: Commits contain attribution markers!"
+            echo "Per CLAUDE.md: NEVER include co-author or tool attribution in commits"
+            exit 1
+          fi
+
+          echo "✅ Commits look good"
