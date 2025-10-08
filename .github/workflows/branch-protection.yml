@@ -21,7 +21,11 @@ jobs:
           # Squash commits: "commit message (#123)"
           COMMIT_MSG="${{ github.event.head_commit.message }}"
 
-          if [[ "$COMMIT_MSG" =~ \(#[0-9]+\)\$ ]] || [[ "$COMMIT_MSG" =~ ^Merge\ pull\ request ]]; then
+          # Define regex patterns as variables (required for bash [[ =~ ]])
+          PR_NUMBER_PATTERN='\(#[0-9]+\)$'
+          MERGE_PATTERN='^Merge pull request'
+
+          if [[ "$COMMIT_MSG" =~ $PR_NUMBER_PATTERN ]] || [[ "$COMMIT_MSG" =~ $MERGE_PATTERN ]]; then
             echo "✅ PR merge detected - allowing"
             exit 0
           fi
