@@ -16,8 +16,12 @@ jobs:
     steps:
       - name: Check if push is from PR merge
         run: |
-          # Allow GitHub's automatic PR merge commits
-          if [[ "${{ github.event.head_commit.message }}" =~ ^Merge\ pull\ request ]]; then
+          # Allow GitHub's PR merge commits (both merge and squash)
+          # Merge commits: "Merge pull request #123..."
+          # Squash commits: "commit message (#123)"
+          COMMIT_MSG="${{ github.event.head_commit.message }}"
+
+          if [[ "$COMMIT_MSG" =~ \(#[0-9]+\)$ ]] || [[ "$COMMIT_MSG" =~ ^Merge\ pull\ request ]]; then
             echo "✅ PR merge detected - allowing"
             exit 0
           fi
