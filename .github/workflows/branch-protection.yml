@@ -21,7 +21,7 @@ jobs:
           # Squash commits: "commit message (#123)"
           COMMIT_MSG="${{ github.event.head_commit.message }}"
 
-          if [[ "$COMMIT_MSG" =~ \(#[0-9]+\)$ ]] || [[ "$COMMIT_MSG" =~ ^Merge\ pull\ request ]]; then
+          if [[ "$COMMIT_MSG" =~ \(#[0-9]+\)\$ ]] || [[ "$COMMIT_MSG" =~ ^Merge\ pull\ request ]]; then
             echo "✅ PR merge detected - allowing"
             exit 0
           fi
