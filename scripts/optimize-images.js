@@ -91,57 +91,9 @@ async function optimizeImages() {
   console.log('📁 WebP versions created for better browser support')
 }
 
-// Optimize SVG by cleaning up the large icon.svg
-async function optimizeSvg() {
-  const svgPath = path.join(publicDir, 'icon.svg')
-
-  if (!fs.existsSync(svgPath)) {
-    console.log('⚠️ icon.svg not found')
-    return
-  }
-
-  const originalSize = fs.statSync(svgPath).size
-  console.log(
-    `\n🔧 Processing icon.svg (${(originalSize / 1024 / 1024).toFixed(2)}MB)...`
-  )
-
-  try {
-    const svgContent = fs.readFileSync(svgPath, 'utf8')
-
-    // Basic SVG optimization - remove comments and unnecessary whitespace
-    const optimizedSvg = svgContent
-      .replace(/<!--[\s\S]*?-->/g, '') // Remove comments
-      .replace(/\s+/g, ' ') // Collapse whitespace
-      .replace(/>\s+</g, '><') // Remove whitespace between tags
-      .trim()
-
-    const optimizedPath = path.join(publicDir, 'icon-optimized.svg')
-    fs.writeFileSync(optimizedPath, optimizedSvg)
-
-    const optimizedSize = fs.statSync(optimizedPath).size
-    const savings = originalSize - optimizedSize
-
-    console.log(`✅ SVG optimization:`)
-    console.log(`   Original: ${(originalSize / 1024 / 1024).toFixed(2)}MB`)
-    console.log(`   Optimized: ${(optimizedSize / 1024 / 1024).toFixed(2)}MB`)
-    console.log(`   Savings: ${(savings / 1024 / 1024).toFixed(2)}MB`)
-
-    if (optimizedSize < originalSize) {
-      fs.renameSync(optimizedPath, svgPath)
-      console.log(`   ✅ Replaced original with optimized SVG`)
-    } else {
-      fs.unlinkSync(optimizedPath)
-      console.log(`   ℹ️ Original was already optimal`)
-    }
-  } catch (error) {
-    console.error(`❌ Error optimizing SVG:`, error.message)
-  }
-}
-
 async function main() {
   try {
     await optimizeImages()
-    await optimizeSvg()
 
     console.log('\n🚀 Image optimization complete!')
     console.log(
