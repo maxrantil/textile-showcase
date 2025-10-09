@@ -13,9 +13,16 @@ interface FirstImageProps {
  * Critical for performance - enables browser to discover and start loading
  * the LCP image immediately without waiting for React hydration (~6-10s delay)
  *
+ * Issue #78 Optimization:
+ * - Added <link rel="preload"> in page.tsx head for immediate discovery
+ * - Switched from WebP to AVIF (30-40% better compression)
+ * - Reduced quality from 60 to 50 (aggressive LCP optimization)
+ *
  * Expected impact:
- * - Load Delay: 7.5s → <1s (TTFB only)
- * - LCP: 14.3s → 2.5-3s (80% improvement)
+ * - Load Delay: 6.2s → <1s (preload eliminates discovery gap)
+ * - Load Time: 3.1s → 1.5-2s (AVIF compression)
+ * - Render Delay: 4.7s → 1-1.5s (faster download)
+ * - LCP: 14.9s → 2-2.5s (85% improvement)
  *
  * This component will be hidden after client hydration via CSS
  */
@@ -26,20 +33,29 @@ export function FirstImage({ design }: FirstImageProps) {
     return null
   }
 
-  // Generate responsive image URLs for different screen sizes
-  // Use lower quality for initial load to improve LCP
-  const imageUrl = getOptimizedImageUrl(imageSource, {
-    width: 640, // Reduced from 800 for faster initial load
-    quality: 60, // Lower quality for better speed (60 from 75)
-    format: 'webp', // Explicit WebP for better compression
+  // Issue #78: Generate AVIF srcset with aggressive quality for LCP optimization
+  // AVIF provides 30-40% better compression than WebP at same quality
+  const avifSrcSet = `
+    ${getOptimizedImageUrl(imageSource, { width: 320, quality: 50, format: 'avif' })} 320w,
+    ${getOptimizedImageUrl(imageSource, { width: 640, quality: 50, format: 'avif' })} 640w,
+    ${getOptimizedImageUrl(imageSource, { width: 960, quality: 50, format: 'avif' })} 960w
+  `.trim()
+
+  // WebP fallback srcset for Safari 15 and older (7% of users)
+  const webpSrcSet = `
+    ${getOptimizedImageUrl(imageSource, { width: 320, quality: 50, format: 'webp' })} 320w,
+    ${getOptimizedImageUrl(imageSource, { width: 640, quality: 50, format: 'webp' })} 640w,
+    ${getOptimizedImageUrl(imageSource, { width: 960, quality: 50, format: 'webp' })} 960w
+  `.trim()
+
+  // JPEG fallback URL for ancient browsers (img src attribute)
+  const jpegUrl = getOptimizedImageUrl(imageSource, {
+    width: 640,
+    quality: 50,
+    format: 'jpg',
   })
 
-  // Generate srcset for responsive loading with lower quality
-  const srcSet = `
-    ${getOptimizedImageUrl(imageSource, { width: 320, quality: 60, format: 'webp' })} 320w,
-    ${getOptimizedImageUrl(imageSource, { width: 640, quality: 60, format: 'webp' })} 640w,
-    ${getOptimizedImageUrl(imageSource, { width: 960, quality: 60, format: 'webp' })} 960w
-  `.trim()
+  const sizes = '(max-width: 480px) 100vw, (max-width: 768px) 90vw, 640px'
 
   return (
     <div
@@ -55,21 +71,28 @@ export function FirstImage({ design }: FirstImageProps) {
         justifyContent: 'center',
       }}
     >
-      <img
-        src={imageUrl}
-        srcSet={srcSet}
-        sizes="(max-width: 480px) 100vw, (max-width: 768px) 90vw, 640px"
-        alt={design.title}
-        fetchPriority="high"
-        loading="eager"
-        decoding="async"
-        suppressHydrationWarning
-        style={{
-          width: 'auto',
-          height: '60vh',
-          objectFit: 'contain',
-        }}
-      />
+      <picture>
+        {/* AVIF for modern browsers (30-40% better compression than WebP) */}
+        <source type="image/avif" srcSet={avifSrcSet} sizes={sizes} />
+
+        {/* WebP fallback for Safari 15 and older browsers */}
+        <source type="image/webp" srcSet={webpSrcSet} sizes={sizes} />
+
+        {/* JPEG fallback for ancient browsers (final fallback) */}
+        <img
+          src={jpegUrl}
+          alt={design.title}
+          fetchPriority="high"
+          loading="eager"
+          decoding="async"
+          suppressHydrationWarning
+          style={{
+            width: 'auto',
+            height: '60vh',
+            objectFit: 'contain',
+          }}
+        />
+      </picture>
     </div>
   )
 }
