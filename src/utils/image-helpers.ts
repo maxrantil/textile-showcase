@@ -18,7 +18,7 @@ export function getOptimizedImageUrl(
     width?: number
     height?: number
     quality?: number
-    format?: 'webp' | 'jpg' | 'png' | 'auto'
+    format?: 'webp' | 'avif' | 'jpg' | 'png' | 'auto'
     fit?: 'crop' | 'fillmax' | 'fill' | 'clip' | 'scale'
   } = {}
 ): string {

@@ -2,6 +2,7 @@ import { Metadata } from 'next'
 import Gallery from '@/components/Gallery'
 import { TextileDesign } from '@/types/textile'
 import { FirstImage } from '@/components/server/FirstImage'
+import { getOptimizedImageUrl } from '@/utils/image-helpers'
 
 // Enhanced metadata with structured data
 export const metadata: Metadata = {
@@ -79,8 +80,41 @@ export default async function Home() {
   // Issue #51 Phase 1: Get first design for FirstImage component
   const firstDesign = designs[0]
 
+  // Issue #78: Generate preload URLs for LCP image using helper
+  const imageSource = firstDesign?.image || firstDesign?.images?.[0]?.asset
+  const preloadUrl = imageSource
+    ? getOptimizedImageUrl(imageSource, {
+        width: 640,
+        quality: 50,
+        format: 'avif',
+      })
+    : null
+
+  const preloadSrcSet = imageSource
+    ? [
+        `${getOptimizedImageUrl(imageSource, { width: 320, quality: 50, format: 'avif' })} 320w`,
+        `${getOptimizedImageUrl(imageSource, { width: 640, quality: 50, format: 'avif' })} 640w`,
+        `${getOptimizedImageUrl(imageSource, { width: 960, quality: 50, format: 'avif' })} 960w`,
+      ].join(', ')
+    : null
+
   return (
     <>
+      {/* Issue #78: Preload LCP image for immediate browser discovery
+          Critical for Core Web Vitals - reduces Load Delay from 6.2s to <1s
+          IMPORTANT: imageSizes MUST match FirstImage.tsx exactly to avoid double download */}
+      {preloadUrl && (
+        <link
+          rel="preload"
+          as="image"
+          href={preloadUrl}
+          imageSrcSet={preloadSrcSet || undefined}
+          imageSizes="(max-width: 480px) 100vw, (max-width: 768px) 90vw, 640px"
+          type="image/avif"
+          fetchPriority="high"
+        />
+      )}
+
       {/* Structured data for SEO */}
       <script
         type="application/ld+json"
