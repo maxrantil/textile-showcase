@@ -70,7 +70,7 @@ jobs:
 
       - name: Setup Environment Variables
         run: |
-          echo "NEXT_PUBLIC_SANITY_PROJECT_ID=2y05n6hf" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_SANITY_PROJECT_ID=${{ secrets.NEXT_PUBLIC_SANITY_PROJECT_ID }}" >> $GITHUB_ENV
           echo "NEXT_PUBLIC_SANITY_DATASET=production" >> $GITHUB_ENV
           echo "NEXT_PUBLIC_SANITY_API_VERSION=2023-05-03" >> $GITHUB_ENV
           echo "NODE_ENV=production" >> $GITHUB_ENV
