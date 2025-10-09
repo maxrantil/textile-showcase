@@ -64,7 +64,7 @@ jobs:
       - name: Create build environment
         run: |
           cat > .env.local << EOF
-          NEXT_PUBLIC_SANITY_PROJECT_ID=2y05n6hf
+          NEXT_PUBLIC_SANITY_PROJECT_ID=${{ secrets.NEXT_PUBLIC_SANITY_PROJECT_ID }}
           NEXT_PUBLIC_SANITY_DATASET=production
           NEXT_PUBLIC_SANITY_API_VERSION=2023-05-03
           SECURITY_ENABLED=false
@@ -78,13 +78,13 @@ jobs:
           echo "NODE_ENV: ${NODE_ENV:-'NOT SET'}"
           echo "SECURITY_ENABLED: ${SECURITY_ENABLED:-'NOT SET'}"
         env:
-          NEXT_PUBLIC_SANITY_PROJECT_ID: 2y05n6hf
+          NEXT_PUBLIC_SANITY_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_SANITY_PROJECT_ID }}
           NEXT_PUBLIC_SANITY_DATASET: production
           NEXT_PUBLIC_SANITY_API_VERSION: 2023-05-03
           SECURITY_ENABLED: false
       - name: Build application
         env:
-          NEXT_PUBLIC_SANITY_PROJECT_ID: 2y05n6hf
+          NEXT_PUBLIC_SANITY_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_SANITY_PROJECT_ID }}
           NEXT_PUBLIC_SANITY_DATASET: production
           NEXT_PUBLIC_SANITY_API_VERSION: 2023-05-03
           SECURITY_ENABLED: false
@@ -98,7 +98,7 @@ jobs:
           NEXT_PUBLIC_APP_ENV=production
           SECURITY_LOGGING_ENABLED=true
           SSE_ENDPOINT_URL=https://idaromme.dk/api/security/events
-          NEXT_PUBLIC_SANITY_PROJECT_ID=2y05n6hf
+          NEXT_PUBLIC_SANITY_PROJECT_ID=${{ secrets.NEXT_PUBLIC_SANITY_PROJECT_ID }}
           NEXT_PUBLIC_SANITY_DATASET=production
           NEXT_PUBLIC_SANITY_API_VERSION=2023-05-03
           EOF
@@ -148,7 +148,7 @@ jobs:
             # Create production environment file
             echo "📝 Setting up production environment..."
             cat > .env.local << EOF
-            NEXT_PUBLIC_SANITY_PROJECT_ID=2y05n6hf
+            NEXT_PUBLIC_SANITY_PROJECT_ID=${{ secrets.NEXT_PUBLIC_SANITY_PROJECT_ID }}
             NEXT_PUBLIC_SANITY_DATASET=production
             NEXT_PUBLIC_SANITY_API_VERSION=2023-05-03
             SECURITY_ENABLED=false
