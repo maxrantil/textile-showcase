@@ -1,3 +1,5 @@
+// ABOUTME: Optimized image component with lazy loading, error handling, blur placeholder, and priority detection
+
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
@@ -11,6 +13,22 @@ import {
   type ImageType,
 } from '@/utils/image-optimization'
 import type { ImageSource } from '@/types/textile'
+import {
+  FALLBACK_TIMEOUT_MS,
+  FALLBACK_IMAGE_QUALITY,
+  BLUR_PLACEHOLDER_QUALITY,
+  BLUR_WIDTH,
+  BLUR_HEIGHT,
+  ERROR_CONTAINER_STYLE,
+  ERROR_ICON_STYLE,
+  ERROR_TEXT_STYLE,
+  RETRY_BUTTON_STYLE,
+  DEBUG_PRIORITY_BASE_STYLE,
+  DEBUG_FALLBACK_STYLE,
+  DEBUG_PRIORITY_COLORS,
+  getFadeInStyle,
+  LARGE_IMAGE_THRESHOLD,
+} from './OptimizedImage.constants'
 
 interface OptimizedImageProps {
   src: ImageSource | null | undefined
@@ -75,16 +93,16 @@ export function OptimizedImage({
     ? getOptimizedImageUrl(src, {
         width,
         height,
-        quality: 80, // Lower quality for fallback
+        quality: FALLBACK_IMAGE_QUALITY,
         format: 'jpg', // Use JPG as fallback format
       })
     : ''
 
   const blurDataUrl = src
     ? getOptimizedImageUrl(src, {
-        width: 20,
-        height: 15,
-        quality: 20, // Very low quality for blur
+        width: BLUR_WIDTH,
+        height: BLUR_HEIGHT,
+        quality: BLUR_PLACEHOLDER_QUALITY,
         format: 'jpg',
       })
     : ''
@@ -117,11 +135,11 @@ export function OptimizedImage({
       observer.observe(imgRef.current)
     }
 
-    // Fallback timeout - if observer doesn't trigger within 3 seconds, load anyway
+    // Fallback timeout - if observer doesn't trigger, load anyway
     const fallbackTimeout = setTimeout(() => {
       setIsInView(true)
       observer.disconnect()
-    }, 3000)
+    }, FALLBACK_TIMEOUT_MS)
 
     return () => {
       observer.disconnect()
@@ -181,7 +199,7 @@ export function OptimizedImage({
       role={onClick ? 'button' : undefined}
       aria-label={onClick ? `View ${alt}` : alt}
       data-image-type={imageType}
-      data-size={width > 600 ? 'large' : 'small'}
+      data-size={width > LARGE_IMAGE_THRESHOLD ? 'large' : 'small'}
     >
       {/* Loading placeholder */}
       {!isLoaded && !isError && (
@@ -205,8 +223,7 @@ export function OptimizedImage({
               onError={handleImageError}
               style={{
                 objectFit: objectFit,
-                opacity: isLoaded ? 1 : 0,
-                transition: 'opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
+                ...getFadeInStyle(isLoaded),
               }}
               decoding="async"
               // Enhanced resource hint for performance optimization
@@ -230,8 +247,7 @@ export function OptimizedImage({
               onError={handleImageError}
               style={{
                 objectFit: objectFit,
-                opacity: isLoaded ? 1 : 0,
-                transition: 'opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
+                ...getFadeInStyle(isLoaded),
                 ...(style || {}),
               }}
               decoding="async"
@@ -247,20 +263,7 @@ export function OptimizedImage({
 
       {/* Error state with retry option */}
       {isError && (
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            backgroundColor: '#f5f5f5',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexDirection: 'column',
-            color: '#666',
-            padding: '16px',
-            textAlign: 'center',
-          }}
-        >
+        <div style={ERROR_CONTAINER_STYLE}>
           <svg
             width="48"
             height="48"
@@ -268,15 +271,13 @@ export function OptimizedImage({
             fill="none"
             stroke="currentColor"
             strokeWidth="1"
-            style={{ marginBottom: '8px', opacity: 0.5 }}
+            style={ERROR_ICON_STYLE}
           >
             <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
             <circle cx="8.5" cy="8.5" r="1.5" />
             <polyline points="21,15 16,10 5,21" />
           </svg>
-          <span style={{ fontSize: '12px', marginBottom: '8px' }}>
-            Failed to load image
-          </span>
+          <span style={ERROR_TEXT_STYLE}>Failed to load image</span>
           <button
             onClick={(e) => {
               e.stopPropagation()
@@ -285,15 +286,7 @@ export function OptimizedImage({
               setUsesFallback(false)
               setCurrentImageUrl(primaryImageUrl)
             }}
-            style={{
-              padding: '4px 8px',
-              fontSize: '10px',
-              background: '#007bff',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-            }}
+            style={RETRY_BUTTON_STYLE}
           >
             Retry
           </button>
@@ -304,20 +297,8 @@ export function OptimizedImage({
       {process.env.NODE_ENV === 'development' && (
         <div
           style={{
-            position: 'absolute',
-            top: '4px',
-            right: '4px',
-            background:
-              optimizedFetchPriority === 'high'
-                ? 'red'
-                : optimizedFetchPriority === 'low'
-                  ? 'blue'
-                  : 'green',
-            color: 'white',
-            fontSize: '8px',
-            padding: '1px 3px',
-            borderRadius: '2px',
-            zIndex: 10,
+            ...DEBUG_PRIORITY_BASE_STYLE,
+            background: DEBUG_PRIORITY_COLORS[optimizedFetchPriority],
           }}
         >
           {optimizedFetchPriority.toUpperCase()}
@@ -325,21 +306,7 @@ export function OptimizedImage({
       )}
 
       {process.env.NODE_ENV === 'development' && usesFallback && (
-        <div
-          style={{
-            position: 'absolute',
-            top: '4px',
-            left: '4px',
-            background: 'orange',
-            color: 'white',
-            fontSize: '10px',
-            padding: '2px 4px',
-            borderRadius: '2px',
-            zIndex: 10,
-          }}
-        >
-          FALLBACK
-        </div>
+        <div style={DEBUG_FALLBACK_STYLE}>FALLBACK</div>
       )}
     </div>
   )
