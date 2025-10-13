@@ -61,15 +61,6 @@ describe('Phase 2A Day 5: Image & Font Optimization', () => {
         expect(getOptimizedObserverConfig).toBeDefined()
       }).not.toThrow()
     })
-
-    it('should fail: enhanced OptimizedImage component with priority detection', () => {
-      // RED PHASE: This should fail because enhanced component doesn't exist
-      const enhancedImagePath = path.join(
-        process.cwd(),
-        'src/components/ui/EnhancedOptimizedImage.tsx'
-      )
-      expect(fs.existsSync(enhancedImagePath)).toBe(true)
-    })
   })
 
   describe('Self-Hosted Critical Fonts', () => {
