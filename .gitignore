@@ -69,5 +69,9 @@ logs/
 playwright-report/
 test-results/
 
+# Lighthouse performance reports (temporary test artifacts)
+lighthouse*.json
+lighthouse*.html
+
 # Credentials (keep local only)
 credentials/
