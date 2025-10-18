@@ -359,15 +359,19 @@
 /* Remove dark mode support to prevent black background */
 /* Commented out the dark mode section that was causing the black background */
 
-/* FirstImage static LCP optimization - Issue #51 Phase 2 */
+/* FirstImage static LCP optimization - Issue #51 Phase 2
+   IMPORTANT: FirstImage is desktop-only optimization, hide on mobile
+   Mobile gallery handles its own image loading and LCP optimization */
 .first-image-container {
+  /* Hide FirstImage on mobile - it's designed for desktop horizontal gallery only
+     Mobile gallery Item 1 handles first image with proper mobile optimization */
+  display: none !important;
   width: 100%;
   margin-bottom: 0;
   z-index: 1;
   pointer-events: none;
   aspect-ratio: 4/3;
   position: relative;
-  display: block;
 }
 
 .first-image-container img {
