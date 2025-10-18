@@ -128,7 +128,7 @@ export default function MobileGalleryItem({
         {design.description && (
           <p className="mobile-gallery-description">{design.description}</p>
         )}
-        {design.year && <p className="mobile-gallery-year">{design.year}</p>}
+        {/* Year removed per Doctor Hubert's request - keep only title on homepage gallery */}
         {design.category && (
           <p className="mobile-gallery-category">{design.category}</p>
         )}

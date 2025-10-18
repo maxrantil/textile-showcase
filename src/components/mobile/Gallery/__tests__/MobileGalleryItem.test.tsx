@@ -239,13 +239,14 @@ describe('MobileGalleryItem', () => {
   })
 
   describe('Metadata Display', () => {
-    it('should display year when available', () => {
+    it('should not display year (removed per Doctor Hubert request)', () => {
       render(<MobileGalleryItem design={mockSingleDesign} />)
 
+      // Year should NOT be displayed on gallery page (only title shown)
       if (mockSingleDesign.year) {
         expect(
-          screen.getByText(mockSingleDesign.year.toString())
-        ).toBeInTheDocument()
+          screen.queryByText(mockSingleDesign.year.toString())
+        ).not.toBeInTheDocument()
       }
     })
 
