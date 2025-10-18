@@ -2,7 +2,7 @@
 
 import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import { OptimizedImage } from '@/components/ui/OptimizedImage'
-import Gallery from '@/components/Gallery'
+import Gallery from '@/components/desktop/Gallery/Gallery'
 import type { ImageSource, TextileDesign } from '@/types/textile'
 
 // Real test data with actual ImageSource structure
