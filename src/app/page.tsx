@@ -100,16 +100,21 @@ export default async function Home() {
 
   return (
     <>
+      {/* CRITICAL: Preconnect to Sanity CDN for faster image loading (Issue #94 Phase 2) */}
+      <link rel="preconnect" href="https://cdn.sanity.io" />
+      <link rel="dns-prefetch" href="https://cdn.sanity.io" />
+
       {/* Issue #78: Preload LCP image for immediate browser discovery
           Critical for Core Web Vitals - reduces Load Delay from 6.2s to <1s
-          IMPORTANT: imageSizes MUST match FirstImage.tsx exactly to avoid double download */}
+          IMPORTANT: imageSizes MUST match FirstImage.tsx exactly to avoid double download
+          Issue #94 Phase 2: Updated imageSizes for mobile optimization */}
       {preloadUrl && (
         <link
           rel="preload"
           as="image"
           href={preloadUrl}
           imageSrcSet={preloadSrcSet || undefined}
-          imageSizes="(max-width: 480px) 100vw, (max-width: 768px) 90vw, 640px"
+          imageSizes="(max-width: 480px) 100vw, 640px"
           type="image/avif"
           fetchPriority="high"
         />
