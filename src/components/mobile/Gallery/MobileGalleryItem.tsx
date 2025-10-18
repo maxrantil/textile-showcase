@@ -7,12 +7,29 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { getOptimizedImageUrl } from '@/utils/image-helpers'
 import { UmamiEvents } from '@/utils/analytics'
+import { LockdownImage } from '@/components/ui/LockdownImage'
+import { useState, useEffect } from 'react'
 
 interface MobileGalleryItemProps {
   design: TextileDesign
   index?: number
   isPriority?: boolean
   onNavigate?: () => void
+}
+
+// Simple lockdown mode detection
+const isLockdownMode = () => {
+  if (typeof window === 'undefined') return false
+
+  try {
+    const isIOS = /iPad|iPhone|iPod/.test(window.navigator.userAgent)
+    const hasIntersectionObserver = 'IntersectionObserver' in window
+    const hasWebGL = !!window.WebGLRenderingContext
+
+    return isIOS && (!hasIntersectionObserver || !hasWebGL)
+  } catch {
+    return false
+  }
 }
 
 export default function MobileGalleryItem({
@@ -22,6 +39,12 @@ export default function MobileGalleryItem({
   onNavigate,
 }: MobileGalleryItemProps) {
   const router = useRouter()
+  const [useLockdownMode, setUseLockdownMode] = useState(false)
+
+  // Check for lockdown mode on mount
+  useEffect(() => {
+    setUseLockdownMode(isLockdownMode())
+  }, [])
 
   const handleClick = () => {
     // Call optional navigation callback first
@@ -42,13 +65,21 @@ export default function MobileGalleryItem({
     }
   }
 
+  const handleImageError = () => {
+    // If error occurs and not already in lockdown mode, try switching
+    if (!useLockdownMode && isLockdownMode()) {
+      console.log('🔒 Image failed, switching to lockdown mode for gallery')
+      setUseLockdownMode(true)
+    }
+  }
+
   // Image source with fallback chain
   const imageSource = design.image || design.images?.[0]?.asset
   const imageUrl = imageSource
     ? getOptimizedImageUrl(imageSource, {
         width: 800, // Mobile screen optimal
         quality: 80, // Balance quality/size
-        format: 'webp', // Modern format with fallback
+        format: 'auto', // Use auto format for lockdown detection
       })
     : '/images/placeholder.jpg' // Fallback
 
@@ -64,19 +95,31 @@ export default function MobileGalleryItem({
       aria-label={`View ${design.title} project${design.year ? ` from ${design.year}` : ''}`}
       data-testid={`mobile-gallery-item-${index}`}
     >
-      {imageUrl && (
+      {imageSource && (
         <div className="mobile-gallery-image-container">
-          <Image
-            src={imageUrl}
-            alt={alt}
-            width={800}
-            height={600}
-            sizes="100vw"
-            priority={isPriority}
-            loading={isPriority ? 'eager' : 'lazy'}
-            style={{ width: '100%', height: 'auto' }}
-            className="mobile-gallery-image"
-          />
+          {useLockdownMode ? (
+            // Lockdown mode - use simple image for maximum compatibility
+            <LockdownImage
+              src={imageSource}
+              alt={alt}
+              className="mobile-gallery-image"
+              style={{ width: '100%', height: 'auto' }}
+            />
+          ) : (
+            // Normal mode - use Next.js Image
+            <Image
+              src={imageUrl}
+              alt={alt}
+              width={800}
+              height={600}
+              sizes="100vw"
+              priority={isPriority}
+              loading={isPriority ? 'eager' : 'lazy'}
+              style={{ width: '100%', height: 'auto' }}
+              className="mobile-gallery-image"
+              onError={handleImageError}
+            />
+          )}
         </div>
       )}
 

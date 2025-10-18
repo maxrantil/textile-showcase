@@ -108,7 +108,7 @@ describe('MobileGalleryItem', () => {
       expect(imageHelpers.getOptimizedImageUrl).toHaveBeenCalledWith(
         expect.any(Object),
         expect.objectContaining({
-          format: 'webp',
+          format: 'auto', // Changed from 'webp' to 'auto' for lockdown mode compatibility
           quality: expect.any(Number),
         })
       )

@@ -207,7 +207,7 @@ describe('MobileGallery', () => {
               }),
             }),
             expect.objectContaining({
-              format: 'webp',
+              format: 'auto', // Changed from 'webp' to 'auto' for lockdown mode compatibility
             })
           )
         }
