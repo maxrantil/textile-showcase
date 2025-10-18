@@ -182,7 +182,7 @@
 
 .mobile-gallery-year {
   font-size: 14px;
-  color: #666;
+  color: #595959; /* WCAG AA contrast: 4.57:1 */
   margin: 0;
 }
 
@@ -322,6 +322,11 @@
   }
 
   .mobile-gallery-item:active {
+    transform: none;
+  }
+
+  /* Disable hover animations for motion-sensitive users */
+  .mobile-gallery-item:hover .mobile-gallery-image {
     transform: none;
   }
 

@@ -72,12 +72,18 @@ describe('MobileGallery', () => {
       expect(section).toHaveAttribute('aria-label', 'Mobile textile gallery')
     })
 
-    it('should render empty state when no designs provided', () => {
+    it('should render accessible empty state when no designs provided', () => {
       const { container } = render(<MobileGallery designs={mockEmptyDesigns} />)
 
       const section = container.querySelector('section')
       expect(section).toBeInTheDocument()
-      expect(section?.children.length).toBe(0)
+
+      // Verify accessible empty state
+      const emptyState = container.querySelector('[role="status"]')
+      expect(emptyState).toBeInTheDocument()
+      expect(emptyState).toHaveAttribute('aria-live', 'polite')
+      expect(emptyState).toHaveClass('mobile-gallery-empty')
+      expect(emptyState?.textContent).toBe('No designs available to display')
     })
 
     it('should apply correct CSS classes for mobile layout', () => {

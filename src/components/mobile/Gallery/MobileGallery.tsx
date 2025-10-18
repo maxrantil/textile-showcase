@@ -16,7 +16,11 @@ export default function MobileGallery({ designs }: MobileGalleryProps) {
         className="mobile-gallery"
         aria-label="Mobile textile gallery"
         data-testid="mobile-gallery"
-      />
+      >
+        <div className="mobile-gallery-empty" role="status" aria-live="polite">
+          No designs available to display
+        </div>
+      </section>
     )
   }
 
