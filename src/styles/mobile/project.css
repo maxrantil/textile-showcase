@@ -201,6 +201,14 @@
   font-weight: 500;
 }
 
+/* Previous button - align left to keep < symbol inline with text */
+.mobile-nav-previous {
+  text-align: left;
+  justify-content: flex-start;
+}
+
+/* Next button alignment handled in navigation.css */
+
 .mobile-nav-spacer {
   height: 48px;
 }
