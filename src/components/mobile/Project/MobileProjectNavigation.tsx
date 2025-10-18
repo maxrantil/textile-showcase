@@ -61,7 +61,7 @@ export function MobileProjectNavigation({
             variant="secondary"
             className="mobile-nav-previous"
           >
-            &lt; Previous
+            &lt; Prev
           </MobileButton>
         ) : (
           <div className="mobile-nav-spacer" />
