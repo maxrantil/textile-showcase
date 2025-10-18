@@ -11,7 +11,7 @@ describe('Dynamic Import Integration Tests', () => {
 
     it('should_load_gallery_component_dynamically', async () => {
       // Test actual dynamic import behavior
-      const dynamicImport = () => import('@/components/Gallery')
+      const dynamicImport = () => import('@/components/adaptive/Gallery')
 
       const startTime = performance.now()
       const moduleResult = await dynamicImport()
@@ -35,8 +35,8 @@ describe('Dynamic Import Integration Tests', () => {
 
     it('should_support_concurrent_dynamic_imports', async () => {
       const imports = [
-        import('@/components/Gallery'),
-        import('@/components/Gallery'),
+        import('@/components/adaptive/Gallery'),
+        import('@/components/adaptive/Gallery'),
         import('@/components/ui/LoadingSpinner'),
       ]
 
@@ -58,8 +58,8 @@ describe('Dynamic Import Integration Tests', () => {
     it('should_create_separate_chunks_for_gallery_components', () => {
       // This test would be enhanced with actual bundle analysis
       // For now, we verify the dynamic import pattern works
-      const desktopImport = () => import('@/components/Gallery')
-      const mobileImport = () => import('@/components/Gallery')
+      const desktopImport = () => import('@/components/adaptive/Gallery')
+      const mobileImport = () => import('@/components/adaptive/Gallery')
 
       // These should be separate dynamic imports
       expect(desktopImport).not.toBe(mobileImport)
@@ -73,7 +73,7 @@ describe('Dynamic Import Integration Tests', () => {
       const isMobile = true
 
       if (isMobile) {
-        const mobileModule = await import('@/components/Gallery')
+        const mobileModule = await import('@/components/adaptive/Gallery')
         expect(mobileModule.default).toBeDefined()
 
         // Desktop component should not be loaded in mobile scenario
@@ -102,7 +102,7 @@ describe('Dynamic Import Integration Tests', () => {
       timings['device-detection'] = performance.now()
 
       // Step 3: Component loading (dynamic import)
-      const componentModule = await import('@/components/Gallery')
+      const componentModule = await import('@/components/adaptive/Gallery')
       timings['component-loading'] = performance.now()
 
       // Validate component loaded successfully
@@ -188,7 +188,7 @@ describe('Dynamic Import Integration Tests', () => {
       const maxRetries = 3
 
       const retryableImport = async (): Promise<
-        typeof import('@/components/Gallery')
+        typeof import('@/components/adaptive/Gallery')
       > => {
         attemptCount++
 
@@ -196,7 +196,7 @@ describe('Dynamic Import Integration Tests', () => {
           throw new Error(`Import failed, attempt ${attemptCount}`)
         }
 
-        return import('@/components/Gallery')
+        return import('@/components/adaptive/Gallery')
       }
 
       // Should eventually succeed after retries
@@ -209,7 +209,7 @@ describe('Dynamic Import Integration Tests', () => {
   describe('Memory Management', () => {
     it('should_cleanup_unused_dynamic_imports', async () => {
       // Load a component dynamically
-      const moduleResult = await import('@/components/Gallery')
+      const moduleResult = await import('@/components/adaptive/Gallery')
       expect(moduleResult).toBeDefined()
 
       // In a real scenario, we would verify that unused modules can be garbage collected
@@ -222,7 +222,7 @@ describe('Dynamic Import Integration Tests', () => {
       }
 
       // Memory should not continuously increase with repeated imports
-      const module2 = await import('@/components/Gallery')
+      const module2 = await import('@/components/adaptive/Gallery')
       expect(module2).toBeDefined() // Verify cached import still works
       const finalMemory = getMemoryUsage()
 

@@ -1,5 +1,5 @@
 import { Metadata } from 'next'
-import Gallery from '@/components/Gallery'
+import Gallery from '@/components/adaptive/Gallery'
 import { TextileDesign } from '@/types/textile'
 import { FirstImage } from '@/components/server/FirstImage'
 import { getOptimizedImageUrl } from '@/utils/image-helpers'

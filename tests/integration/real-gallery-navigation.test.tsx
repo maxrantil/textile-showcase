@@ -2,7 +2,7 @@
 
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import Gallery from '@/components/Gallery'
+import Gallery from '@/components/desktop/Gallery/Gallery'
 import { TextileDesign } from '@/types/textile'
 
 // Real test data - actual data structures with working image URLs for testing

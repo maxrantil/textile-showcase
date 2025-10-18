@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 
-type DeviceType = 'mobile' | 'desktop'
+type DeviceType = 'mobile' | 'desktop' | 'tablet'
 
 export function useDeviceType(): DeviceType {
   const [deviceType, setDeviceType] = useState<DeviceType>('desktop') // Default to desktop for SSR
