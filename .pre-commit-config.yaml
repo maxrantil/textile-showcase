@@ -9,7 +9,7 @@ repos:
   # GENERAL FILE QUALITY & SECURITY CHECKS
   # =============================================================================
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       # Security
       - id: detect-private-key
@@ -66,7 +66,7 @@ repos:
   # SHELL SCRIPT LINTING (if repo has shell scripts)
   # =============================================================================
   - repo: https://github.com/shellcheck-py/shellcheck-py
-    rev: v0.10.0
+    rev: v0.11.0.1
     hooks:
       - id: shellcheck
         name: ShellCheck bash scripts
@@ -80,7 +80,7 @@ repos:
   # MARKDOWN LINTING (if repo has documentation)
   # =============================================================================
   - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.42.0
+    rev: v0.45.0
     hooks:
       - id: markdownlint
         name: Markdown linting
@@ -125,6 +125,57 @@ repos:
               echo ""
               exit 1
             fi
+
+      # -------------------------------------------------------------------------
+      # AI/AGENT ATTRIBUTION BLOCKING IN COMMIT MESSAGES
+      # -------------------------------------------------------------------------
+      - id: no-ai-attribution-commit-msg
+        name: Block AI Attribution in Commit Messages
+        description: Prevent AI/agent attribution in commit message body
+        entry: bash
+        language: system
+        stages: [commit-msg]
+        args:
+          - -c
+          - |
+            python3 - "$1" << 'PYEOF'
+            import sys, re
+
+            if len(sys.argv) < 2:
+                print("ERROR: No commit message file provided")
+                sys.exit(1)
+
+            with open(sys.argv[1]) as f:
+                msg = f.read()
+
+            # Check for AI attribution patterns
+            patterns = [
+                r'Co-authored-by:.*(?:Claude|GPT|ChatGPT|Copilot|Gemini|Bard|AI)',
+                r'Generated with.*(?:Claude|AI|GPT|ChatGPT|Copilot)',
+                r'claude\.com/claude-code',
+                r'(?:reviewed by|validated by|approved by|checked by).*(?:agent|architecture-designer|security-validator|performance-optimizer|test-automation-qa|code-quality-analyzer|documentation-knowledge-manager|ux-accessibility-i18n-agent|devops-deployment-agent|general-purpose-agent)',
+                r'agent (?:review|validation|approval|check)',
+                r'🤖.*(?:Claude|AI|GPT)'
+            ]
+
+            for pattern in patterns:
+                if re.search(pattern, msg, re.IGNORECASE):
+                    print('')
+                    print('❌ ERROR: AI/agent attribution detected in commit message')
+                    print('')
+                    print('Policy: Remove AI tool attributions from commits (per CLAUDE.md)')
+                    print('  ❌ Co-authored-by: Claude/GPT/AI')
+                    print('  ❌ Generated with [AI tool]')
+                    print('  ❌ Agent validation mentions')
+                    print('  ❌ 🤖 emoji with AI references')
+                    print('')
+                    print('✅ Document agent validations in:')
+                    print('  • Session handoff files (SESSION_HANDOFF.md)')
+                    print('  • Implementation documentation (docs/)')
+                    print('  • PRD/PDR documents')
+                    print('')
+                    sys.exit(1)
+            PYEOF
 
       # -------------------------------------------------------------------------
       # CONVENTIONAL COMMIT FORMAT VALIDATION
@@ -185,6 +236,48 @@ repos:
               exit 1
             fi
 
+      # -------------------------------------------------------------------------
+      # PROJECT-SPECIFIC VALIDATION HOOKS (JavaScript/TypeScript)
+      # -------------------------------------------------------------------------
+      - id: eslint
+        name: ESLint
+        entry: npx eslint
+        language: system
+        files: \.(js|jsx|ts|tsx)$
+        exclude: ^scripts/dist/
+        args: [--fix]
+
+      - id: prettier
+        name: Prettier
+        entry: npx prettier
+        language: system
+        files: \.(js|jsx|ts|tsx|json|css|md|yaml|yml)$
+        args: [--write]
+
+      - id: tsc
+        name: TypeScript Check
+        entry: npx tsc
+        language: system
+        files: \.(ts|tsx)$
+        exclude: ^\.next/
+        args: [--noEmit]
+        pass_filenames: false
+
+      - id: jest
+        name: Jest Tests
+        entry: npm test -- --testPathIgnorePatterns="bundle-debug|\.spec\.ts$|e2e/"
+        language: system
+        files: \.(js|jsx|ts|tsx)$
+        args: [--findRelatedTests, --passWithNoTests, --bail]
+        pass_filenames: true
+
+      - id: jest-integration
+        name: Integration Tests
+        entry: npm test -- tests/integration/real-contact-form.test.tsx tests/integration/bundle-optimization.test.ts
+        language: system
+        files: (next\.config\.|middleware\.|\.env|package\.json|tsconfig\.json)
+        args: [--passWithNoTests]
+        pass_filenames: false
 # =============================================================================
 # LANGUAGE-SPECIFIC HOOKS (Uncomment sections for your project type)
 # =============================================================================
@@ -212,51 +305,6 @@ repos:
 #     - id: mypy
 #       name: MyPy type checking
 #       additional_dependencies: [types-all]
-
-# =============================================================================
-# JAVASCRIPT/TYPESCRIPT (textile-showcase specific)
-# =============================================================================
-- repo: local
-  hooks:
-    - id: eslint
-      name: ESLint
-      entry: npx eslint
-      language: system
-      files: \.(js|jsx|ts|tsx)$
-      exclude: ^scripts/dist/
-      args: [--fix]
-
-    - id: prettier
-      name: Prettier
-      entry: npx prettier
-      language: system
-      files: \.(js|jsx|ts|tsx|json|css|md|yaml|yml)$
-      args: [--write]
-
-    - id: tsc
-      name: TypeScript Check
-      entry: npx tsc
-      language: system
-      files: \.(ts|tsx)$
-      exclude: ^\.next/
-      args: [--noEmit]
-      pass_filenames: false
-
-    - id: jest
-      name: Jest Tests
-      entry: npm test -- --testPathIgnorePatterns="bundle-debug|\.spec\.ts$|e2e/"
-      language: system
-      files: \.(js|jsx|ts|tsx)$
-      args: [--findRelatedTests, --passWithNoTests, --bail]
-      pass_filenames: true
-
-    - id: jest-integration
-      name: Integration Tests
-      entry: npm test -- tests/integration/real-contact-form.test.tsx tests/integration/bundle-optimization.test.ts
-      language: system
-      files: (next\.config\.|middleware\.|\.env|package\.json|tsconfig\.json)
-      args: [--passWithNoTests]
-      pass_filenames: false
 
 # -----------------------------------------------------------------------------
 # TERRAFORM/INFRASTRUCTURE PROJECTS

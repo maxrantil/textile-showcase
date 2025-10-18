@@ -48,15 +48,6 @@ CLAUDE.md
 AGENT_FEEDBACK.md
 AGENT_REVIEW.md
 
-# Session handoff files (all variations)
-SESSION_HANDOVER.md
-SESSION-HANDOVER.md
-SESSION_HANDOFF.md
-SESSION-HANDOFF.md
-*HANDOFF*.md
-*HANDOVER*.md
-*SESSION*.md
-
 # Implementation documentation (already tracked, ignore future changes)
 docs/implementation/
 
