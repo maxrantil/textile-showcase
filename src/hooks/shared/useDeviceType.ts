@@ -70,33 +70,26 @@ export function useDeviceType(): DeviceType {
 
       const detectedType = mobileScore >= 3 ? 'mobile' : 'desktop'
 
-      console.log('🔍 Device detection (balanced):', {
-        viewportWidth,
-        viewportHeight,
-        isLandscape,
-        mobileUA,
-        hasTouch,
-        mobileScore,
-        detectedType,
-        isHydrated: true,
-      })
-
       setDeviceType(detectedType)
     }
 
     // Initial detection after hydration
     checkDevice()
 
+    // Timeout IDs for cleanup
+    let resizeTimeoutId: NodeJS.Timeout | undefined
+    let orientationTimeoutId: NodeJS.Timeout | undefined
+
     // Handle orientation changes with a small delay
     const handleOrientationChange = () => {
-      setTimeout(checkDevice, 100)
+      clearTimeout(orientationTimeoutId)
+      orientationTimeoutId = setTimeout(checkDevice, 100)
     }
 
     // Debounced resize handler
-    let timeoutId: NodeJS.Timeout
     const handleResize = () => {
-      clearTimeout(timeoutId)
-      timeoutId = setTimeout(checkDevice, 150) // Balanced debounce
+      clearTimeout(resizeTimeoutId)
+      resizeTimeoutId = setTimeout(checkDevice, 150) // Balanced debounce
     }
 
     window.addEventListener('resize', handleResize)
@@ -105,7 +98,8 @@ export function useDeviceType(): DeviceType {
     return () => {
       window.removeEventListener('resize', handleResize)
       window.removeEventListener('orientationchange', handleOrientationChange)
-      clearTimeout(timeoutId)
+      clearTimeout(resizeTimeoutId)
+      clearTimeout(orientationTimeoutId)
     }
   }, []) // Empty dependency array is correct here
 
