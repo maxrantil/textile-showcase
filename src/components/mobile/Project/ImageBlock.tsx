@@ -24,7 +24,8 @@ const isLockdownMode = () => {
 
   try {
     const isIOS = /iPad|iPhone|iPod/.test(window.navigator.userAgent)
-    const hasIntersectionObserver = 'IntersectionObserver' in window
+    const hasIntersectionObserver =
+      typeof window.IntersectionObserver !== 'undefined'
     const hasWebGL = !!window.WebGLRenderingContext
 
     return isIOS && (!hasIntersectionObserver || !hasWebGL)
