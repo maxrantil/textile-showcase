@@ -7,7 +7,17 @@ import type { ImageSource } from '@/types/textile'
 
 // Mock ImageBlock component
 jest.mock('../ImageBlock', () => ({
-  ImageBlock: ({ image, index, isFirst, projectTitle }: any) => (
+  ImageBlock: ({
+    image,
+    index,
+    isFirst,
+    projectTitle,
+  }: {
+    image: { isMainImage?: boolean; _key?: string; caption?: string }
+    index: number
+    isFirst: boolean
+    projectTitle: string
+  }) => (
     <div
       data-testid="image-block"
       data-index={index}
@@ -24,10 +34,10 @@ jest.mock('../ImageBlock', () => ({
 
 describe('MobileImageStack', () => {
   const mockMainImage: ImageSource = {
-    _type: 'image',
+    _type: 'image' as const,
     asset: {
       _ref: 'image-main-ref',
-      _type: 'reference',
+      _type: 'reference' as const,
     },
   }
 
@@ -35,10 +45,10 @@ describe('MobileImageStack', () => {
     {
       _key: 'gallery-1',
       asset: {
-        _type: 'image',
+        _type: 'image' as const,
         asset: {
           _ref: 'image-gallery-1-ref',
-          _type: 'reference',
+          _type: 'reference' as const,
         },
       },
       caption: 'Gallery Image 1',
@@ -46,10 +56,10 @@ describe('MobileImageStack', () => {
     {
       _key: 'gallery-2',
       asset: {
-        _type: 'image',
+        _type: 'image' as const,
         asset: {
           _ref: 'image-gallery-2-ref',
-          _type: 'reference',
+          _type: 'reference' as const,
         },
       },
       caption: 'Gallery Image 2',
@@ -299,10 +309,10 @@ describe('MobileImageStack', () => {
 
       // Rerender with different main image
       const newMainImage: ImageSource = {
-        _type: 'image',
+        _type: 'image' as const,
         asset: {
           _ref: 'image-new-main-ref',
-          _type: 'reference',
+          _type: 'reference' as const,
         },
       }
 

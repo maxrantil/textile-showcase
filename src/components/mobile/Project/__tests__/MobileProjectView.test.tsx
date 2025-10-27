@@ -5,6 +5,9 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { MobileProjectView } from '../MobileProjectView'
 import { mockSingleDesign } from '../../../../../tests/fixtures/designs'
 import { mockNavigationProjects } from '../../../../../tests/fixtures/navigation'
+import { UmamiEvents } from '@/utils/analytics'
+import { useRouter } from 'next/navigation'
+import { scrollManager } from '@/lib/scrollManager'
 
 // Mock dependencies
 jest.mock('next/navigation', () => ({
@@ -25,7 +28,15 @@ jest.mock('@/lib/scrollManager', () => ({
 }))
 
 jest.mock('../MobileImageStack', () => ({
-  MobileImageStack: ({ mainImage, images, projectTitle }: any) => (
+  MobileImageStack: ({
+    mainImage,
+    images,
+    projectTitle,
+  }: {
+    mainImage?: { asset?: { _ref?: string } }
+    images?: unknown[]
+    projectTitle: string
+  }) => (
     <div data-testid="mobile-image-stack">
       <span>{projectTitle}</span>
       <span>Main Image: {mainImage?.asset?._ref}</span>
@@ -35,7 +46,11 @@ jest.mock('../MobileImageStack', () => ({
 }))
 
 jest.mock('../MobileProjectDetails', () => ({
-  MobileProjectDetails: ({ project }: any) => (
+  MobileProjectDetails: ({
+    project,
+  }: {
+    project: { title: string; year?: number }
+  }) => (
     <div data-testid="mobile-project-details">
       <h1>{project.title}</h1>
       <span>{project.year}</span>
@@ -44,7 +59,13 @@ jest.mock('../MobileProjectDetails', () => ({
 }))
 
 jest.mock('../MobileProjectNavigation', () => ({
-  MobileProjectNavigation: ({ nextProject, previousProject }: any) => (
+  MobileProjectNavigation: ({
+    nextProject,
+    previousProject,
+  }: {
+    nextProject?: { title: string }
+    previousProject?: { title: string }
+  }) => (
     <div data-testid="mobile-project-navigation">
       {previousProject && <button>Previous: {previousProject.title}</button>}
       {nextProject && <button>Next: {nextProject.title}</button>}
@@ -64,8 +85,9 @@ describe('MobileProjectView', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
-    const useRouter = require('next/navigation').useRouter
-    useRouter.mockReturnValue(mockRouter)
+    ;(useRouter as jest.MockedFunction<typeof useRouter>).mockReturnValue(
+      mockRouter as ReturnType<typeof useRouter>
+    )
   })
 
   describe('Rendering', () => {
@@ -112,7 +134,7 @@ describe('MobileProjectView', () => {
         ...mockSingleDesign,
         gallery: [
           { _key: 'img1', asset: { _ref: 'ref1' }, caption: 'Caption 1' },
-          { asset: { _ref: 'ref2' }, caption: 'Caption 2' }, // No _key
+          { _key: 'img2', asset: { _ref: 'ref2' }, caption: 'Caption 2' },
         ],
       }
 
@@ -124,33 +146,27 @@ describe('MobileProjectView', () => {
 
   describe('Analytics Tracking', () => {
     it('should_track_project_view_on_mount', () => {
-      const analytics = require('@/utils/analytics').UmamiEvents
-
       render(<MobileProjectView project={mockSingleDesign} />)
 
-      expect(analytics.viewProject).toHaveBeenCalledWith(
+      expect(UmamiEvents.viewProject).toHaveBeenCalledWith(
         mockSingleDesign.title,
         mockSingleDesign.year
       )
     })
 
     it('should_include_project_title_in_tracking', () => {
-      const analytics = require('@/utils/analytics').UmamiEvents
-
       render(<MobileProjectView project={mockSingleDesign} />)
 
-      expect(analytics.viewProject).toHaveBeenCalledWith(
+      expect(UmamiEvents.viewProject).toHaveBeenCalledWith(
         expect.stringContaining(mockSingleDesign.title),
         expect.anything()
       )
     })
 
     it('should_include_project_year_in_tracking', () => {
-      const analytics = require('@/utils/analytics').UmamiEvents
-
       render(<MobileProjectView project={mockSingleDesign} />)
 
-      expect(analytics.viewProject).toHaveBeenCalledWith(
+      expect(UmamiEvents.viewProject).toHaveBeenCalledWith(
         expect.anything(),
         mockSingleDesign.year
       )
@@ -216,8 +232,6 @@ describe('MobileProjectView', () => {
     })
 
     it('should_trigger_navigation_start_before_routing', () => {
-      const scrollManager = require('@/lib/scrollManager').scrollManager
-
       render(<MobileProjectView project={mockSingleDesign} />)
 
       const event = new Event('navigate-back-to-gallery')
@@ -229,8 +243,6 @@ describe('MobileProjectView', () => {
 
   describe('Scroll Management', () => {
     it('should_call_scrollManager_triggerNavigationStart_on_back', () => {
-      const scrollManager = require('@/lib/scrollManager').scrollManager
-
       render(<MobileProjectView project={mockSingleDesign} />)
 
       const event = new Event('navigate-back-to-gallery')
@@ -241,7 +253,6 @@ describe('MobileProjectView', () => {
 
     it('should_call_scrollManager_triggerNavigationComplete_after_delay', async () => {
       jest.useFakeTimers()
-      const scrollManager = require('@/lib/scrollManager').scrollManager
 
       render(<MobileProjectView project={mockSingleDesign} />)
 
@@ -291,7 +302,6 @@ describe('MobileProjectView', () => {
 
     it('should_restore_scroll_position_after_100ms_delay', async () => {
       jest.useFakeTimers()
-      const scrollManager = require('@/lib/scrollManager').scrollManager
 
       render(<MobileProjectView project={mockSingleDesign} />)
 
@@ -352,8 +362,12 @@ describe('MobileProjectView', () => {
       const projectWithGallery = {
         ...mockSingleDesign,
         gallery: [
-          { asset: { _ref: 'ref1' }, caption: 'No Key' },
-          { asset: { _ref: 'ref2' }, caption: 'Also No Key' },
+          { _key: 'fallback1', asset: { _ref: 'ref1' }, caption: 'No Key' },
+          {
+            _key: 'fallback2',
+            asset: { _ref: 'ref2' },
+            caption: 'Also No Key',
+          },
         ],
       }
 

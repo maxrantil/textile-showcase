@@ -6,13 +6,13 @@ export const mockNavigationProjects = {
   current: mockSingleDesign,
   next: {
     _id: 'next-project-id',
-    slug: { current: 'next-project-slug' },
+    slug: 'next-project-slug',
     title: 'Next Project Title',
     year: 2024,
   },
   previous: {
     _id: 'previous-project-id',
-    slug: { current: 'previous-project-slug' },
+    slug: 'previous-project-slug',
     title: 'Previous Project Title',
     year: 2023,
   },

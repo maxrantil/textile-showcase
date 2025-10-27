@@ -4,22 +4,18 @@ import React from 'react'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MobileContactForm } from '../MobileContactForm'
+import { mockValidFormData } from '../../../../../tests/fixtures/forms'
 import {
-  mockValidFormData,
-  mockInvalidFormData,
-  mockFormValidationErrors,
-} from '../../../../../tests/fixtures/forms'
-import {
-  fillFormField,
   submitForm,
-  expectValidationError,
-  expectNoValidationErrors,
   mockSuccessfulSubmission,
   mockFailedSubmission,
   mockNetworkError,
 } from '../../../../../tests/utils/form-helpers'
+import { UmamiEvents } from '@/utils/analytics'
+import { useVirtualKeyboard } from '@/hooks/mobile/useVirtualKeyboard'
 
 // Mock dependencies
+jest.mock('@/utils/validation/formValidator')
 jest.mock('@/hooks/mobile/useVirtualKeyboard', () => ({
   useVirtualKeyboard: jest.fn(() => ({ isKeyboardOpen: false })),
 }))
@@ -32,7 +28,6 @@ jest.mock('@/utils/analytics', () => ({
   },
 }))
 
-jest.mock('@/utils/validation/formValidator')
 jest.mock('@/utils/validation/validators', () => ({
   commonValidationRules: {
     name: jest.fn(),
@@ -50,7 +45,15 @@ jest.mock('../MobileFormField', () => ({
     required,
     placeholder,
     type,
-  }: any) => (
+  }: {
+    label: string
+    value: string
+    onChange: (value: string) => void
+    error?: string
+    required?: boolean
+    placeholder?: string
+    type?: string
+  }) => (
     <div className="mobile-form-field">
       <label htmlFor={`field-${label.toLowerCase()}`}>
         {label}
@@ -78,37 +81,58 @@ jest.mock('../MobileFormField', () => ({
 }))
 
 jest.mock('../../UI/MobileButton', () => ({
-  MobileButton: ({ children, disabled, loading, onClick, type }: any) => (
+  MobileButton: ({
+    children,
+    disabled,
+    loading,
+    onClick,
+    type,
+  }: {
+    children: React.ReactNode
+    disabled?: boolean
+    loading?: boolean
+    onClick?: () => void
+    type?: 'button' | 'submit' | 'reset'
+  }) => (
     <button type={type} disabled={disabled || loading} onClick={onClick}>
       {loading ? 'Sending...' : children}
     </button>
   ),
 }))
 
-describe('MobileContactForm', () => {
-  let analytics: any
-  let useVirtualKeyboard: any
-  let FormValidator: any
+// Helper function to setup validator that always returns valid
+const setupValidFormValidator = () => {
+  const { FormValidator } = jest.requireMock('@/utils/validation/formValidator')
+  FormValidator.mockImplementation(() => ({
+    rules: {},
+    errors: {},
+    isValid: true,
+    validateField: jest.fn(() => ({ error: undefined })),
+    validateForm: jest.fn(() => ({ isValid: true, errors: {} })),
+    isFormValid: jest.fn(() => true),
+    getErrors: jest.fn(() => ({})),
+    clearErrors: jest.fn(),
+  }))
+}
 
-  beforeEach(() => {
-    jest.clearAllMocks()
-
-    analytics = require('@/utils/analytics').UmamiEvents
-    useVirtualKeyboard =
-      require('@/hooks/mobile/useVirtualKeyboard').useVirtualKeyboard
-
-    FormValidator = require('@/utils/validation/formValidator').FormValidator
-    FormValidator.mockImplementation(() => ({
-      validateField: jest.fn((field: string, value: string) => {
-        if (!value) return { error: `${field} is required` }
-        if (field === 'email' && !value.includes('@'))
-          return { error: 'Please enter a valid email address' }
-        if (field === 'message' && value.length < 10)
-          return { error: 'Message must be at least 10 characters' }
-        return { error: undefined }
-      }),
-      validateForm: jest.fn((data: any) => {
-        const errors: any = {}
+// Helper function to setup default validator with validation logic
+const setupDefaultFormValidator = () => {
+  const { FormValidator } = jest.requireMock('@/utils/validation/formValidator')
+  FormValidator.mockImplementation(() => ({
+    rules: {},
+    errors: {},
+    isValid: true,
+    validateField: jest.fn((field: string, value: string) => {
+      if (!value) return { error: `${field} is required` }
+      if (field === 'email' && !value.includes('@'))
+        return { error: 'Please enter a valid email address' }
+      if (field === 'message' && value.length < 10)
+        return { error: 'Message must be at least 10 characters' }
+      return { error: undefined }
+    }),
+    validateForm: jest.fn(
+      (data: { name?: string; email?: string; message?: string }) => {
+        const errors: Record<string, string> = {}
         if (!data.name) errors.name = 'Name is required'
         if (!data.email) errors.email = 'Email is required'
         if (!data.message) errors.message = 'Message is required'
@@ -117,15 +141,47 @@ describe('MobileContactForm', () => {
         if (data.message && data.message.length < 10)
           errors.message = 'Message must be at least 10 characters'
         return { isValid: Object.keys(errors).length === 0, errors }
-      }),
-      isFormValid: jest.fn(() => true),
-    }))
+      }
+    ),
+    isFormValid: jest.fn(() => true),
+    getErrors: jest.fn(() => ({})),
+    clearErrors: jest.fn(),
+  }))
+}
 
+describe('MobileContactForm', () => {
+  // Suppress act() warnings for async state updates - these are expected in async form tests
+  const originalError = console.error
+  beforeAll(() => {
+    console.error = (...args: unknown[]) => {
+      if (
+        typeof args[0] === 'string' &&
+        args[0].includes(
+          'Warning: An update to MobileContactForm inside a test was not wrapped in act'
+        )
+      ) {
+        return
+      }
+      originalError.call(console, ...args)
+    }
+  })
+
+  afterAll(() => {
+    console.error = originalError
+  })
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+    setupDefaultFormValidator()
     global.fetch = jest.fn()
   })
 
   afterEach(() => {
     jest.restoreAllMocks()
+    // Ensure real timers are restored after each test (in case fake timers were used)
+    jest.useRealTimers()
+    // Clean up any pending timers from setTimeout in component
+    jest.clearAllTimers()
   })
 
   describe('Rendering', () => {
@@ -152,7 +208,9 @@ describe('MobileContactForm', () => {
     })
 
     it('should_apply_keyboard_open_class_when_virtual_keyboard_detected', () => {
-      useVirtualKeyboard.mockReturnValue({ isKeyboardOpen: true })
+      ;(useVirtualKeyboard as jest.Mock).mockReturnValue({
+        isKeyboardOpen: true,
+      })
 
       const { container } = render(<MobileContactForm />)
       const form = container.querySelector('form')
@@ -177,7 +235,8 @@ describe('MobileContactForm', () => {
       await userEvent.type(nameInput, 'John Doe')
 
       expect(
-        FormValidator.mock.results[0].value.validateField
+        jest.requireMock('@/utils/validation/formValidator').FormValidator.mock
+          .results[0].value.validateField
       ).toHaveBeenCalled()
     })
 
@@ -188,7 +247,8 @@ describe('MobileContactForm', () => {
       await userEvent.type(emailInput, 'test@example.com')
 
       expect(
-        FormValidator.mock.results[0].value.validateField
+        jest.requireMock('@/utils/validation/formValidator').FormValidator.mock
+          .results[0].value.validateField
       ).toHaveBeenCalled()
     })
 
@@ -199,7 +259,8 @@ describe('MobileContactForm', () => {
       await userEvent.type(messageInput, 'This is a test message')
 
       expect(
-        FormValidator.mock.results[0].value.validateField
+        jest.requireMock('@/utils/validation/formValidator').FormValidator.mock
+          .results[0].value.validateField
       ).toHaveBeenCalled()
     })
 
@@ -211,7 +272,7 @@ describe('MobileContactForm', () => {
       await userEvent.type(emailInput, 'test@example.com')
       await userEvent.type(messageInput, 'Valid message here')
 
-      submitForm()
+      await submitForm('Send Message')
 
       await waitFor(() => {
         expect(screen.getByText(/name is required/i)).toBeInTheDocument()
@@ -239,7 +300,7 @@ describe('MobileContactForm', () => {
       await userEvent.type(nameInput, 'John Doe')
       await userEvent.type(messageInput, 'Valid message')
 
-      submitForm()
+      await submitForm('Send Message')
 
       await waitFor(() => {
         expect(screen.getByText(/email is required/i)).toBeInTheDocument()
@@ -254,7 +315,7 @@ describe('MobileContactForm', () => {
       await userEvent.type(nameInput, 'John Doe')
       await userEvent.type(emailInput, 'test@example.com')
 
-      submitForm()
+      await submitForm('Send Message')
 
       await waitFor(() => {
         expect(screen.getByText(/message is required/i)).toBeInTheDocument()
@@ -302,7 +363,7 @@ describe('MobileContactForm', () => {
       mockSuccessfulSubmission()
       render(<MobileContactForm />)
 
-      submitForm()
+      await submitForm('Send Message')
 
       await waitFor(() => {
         expect(global.fetch).not.toHaveBeenCalled()
@@ -312,10 +373,11 @@ describe('MobileContactForm', () => {
     it('should_validate_all_fields_before_submission', async () => {
       render(<MobileContactForm />)
 
-      submitForm()
+      await submitForm('Send Message')
 
       expect(
-        FormValidator.mock.results[0].value.validateForm
+        jest.requireMock('@/utils/validation/formValidator').FormValidator.mock
+          .results[0].value.validateForm
       ).toHaveBeenCalled()
     })
   })
@@ -349,12 +411,8 @@ describe('MobileContactForm', () => {
     })
 
     it('should_clear_success_message_when_user_starts_typing_again', async () => {
+      setupValidFormValidator()
       mockSuccessfulSubmission()
-      FormValidator.mockImplementation(() => ({
-        validateField: jest.fn(() => ({ error: undefined })),
-        validateForm: jest.fn(() => ({ isValid: true, errors: {} })),
-        isFormValid: jest.fn(() => true),
-      }))
 
       render(<MobileContactForm />)
 
@@ -366,7 +424,7 @@ describe('MobileContactForm', () => {
       await userEvent.type(emailInput, 'john@example.com')
       await userEvent.type(messageInput, 'Test message here')
 
-      submitForm()
+      await submitForm('Send Message')
 
       await waitFor(() => {
         expect(
@@ -385,12 +443,8 @@ describe('MobileContactForm', () => {
     })
 
     it('should_disable_submit_button_during_submission', async () => {
+      setupValidFormValidator()
       mockSuccessfulSubmission()
-      FormValidator.mockImplementation(() => ({
-        validateField: jest.fn(() => ({ error: undefined })),
-        validateForm: jest.fn(() => ({ isValid: true, errors: {} })),
-        isFormValid: jest.fn(() => true),
-      }))
 
       render(<MobileContactForm />)
 
@@ -409,12 +463,25 @@ describe('MobileContactForm', () => {
     })
 
     it('should_show_loading_state_during_submission', async () => {
-      mockSuccessfulSubmission()
-      FormValidator.mockImplementation(() => ({
-        validateField: jest.fn(() => ({ error: undefined })),
-        validateForm: jest.fn(() => ({ isValid: true, errors: {} })),
-        isFormValid: jest.fn(() => true),
-      }))
+      // Create a promise we can control to keep fetch pending
+      let resolveFetch: () => void
+      const fetchPromise = new Promise<Response>((resolve) => {
+        resolveFetch = () =>
+          resolve({
+            ok: true,
+            status: 200,
+            json: async () => ({ success: true }),
+          } as Response)
+      })
+      global.fetch = jest.fn().mockReturnValue(fetchPromise)
+
+      jest
+        .requireMock('@/utils/validation/formValidator')
+        .FormValidator.mockImplementation(() => ({
+          validateField: jest.fn(() => ({ error: undefined })),
+          validateForm: jest.fn(() => ({ isValid: true, errors: {} })),
+          isFormValid: jest.fn(() => true),
+        }))
 
       render(<MobileContactForm />)
 
@@ -426,20 +493,34 @@ describe('MobileContactForm', () => {
       await userEvent.type(emailInput, mockValidFormData.email)
       await userEvent.type(messageInput, mockValidFormData.message)
 
-      submitForm()
+      // Submit but don't await - we want to check loading state during submission
+      const submitButton = screen.getByRole('button', { name: /send message/i })
+      const user = userEvent.setup()
+      user.click(submitButton)
 
-      expect(screen.getByText(/sending/i)).toBeInTheDocument()
+      // Check for loading state
+      await waitFor(() => {
+        expect(screen.getByText(/sending/i)).toBeInTheDocument()
+      })
+
+      // Clean up by resolving the fetch
+      resolveFetch!()
+      await waitFor(() => {
+        expect(screen.queryByText(/sending/i)).not.toBeInTheDocument()
+      })
     })
   })
 
   describe('API Integration', () => {
     it('should_send_POST_request_to_api_contact_on_submit', async () => {
       mockSuccessfulSubmission()
-      FormValidator.mockImplementation(() => ({
-        validateField: jest.fn(() => ({ error: undefined })),
-        validateForm: jest.fn(() => ({ isValid: true, errors: {} })),
-        isFormValid: jest.fn(() => true),
-      }))
+      jest
+        .requireMock('@/utils/validation/formValidator')
+        .FormValidator.mockImplementation(() => ({
+          validateField: jest.fn(() => ({ error: undefined })),
+          validateForm: jest.fn(() => ({ isValid: true, errors: {} })),
+          isFormValid: jest.fn(() => true),
+        }))
 
       render(<MobileContactForm />)
 
@@ -451,7 +532,7 @@ describe('MobileContactForm', () => {
       await userEvent.type(emailInput, mockValidFormData.email)
       await userEvent.type(messageInput, mockValidFormData.message)
 
-      submitForm()
+      await submitForm('Send Message')
 
       await waitFor(() => {
         expect(global.fetch).toHaveBeenCalledWith(
@@ -464,12 +545,8 @@ describe('MobileContactForm', () => {
     })
 
     it('should_include_form_data_in_request_body', async () => {
+      setupValidFormValidator()
       mockSuccessfulSubmission()
-      FormValidator.mockImplementation(() => ({
-        validateField: jest.fn(() => ({ error: undefined })),
-        validateForm: jest.fn(() => ({ isValid: true, errors: {} })),
-        isFormValid: jest.fn(() => true),
-      }))
 
       render(<MobileContactForm />)
 
@@ -481,7 +558,7 @@ describe('MobileContactForm', () => {
       await userEvent.type(emailInput, mockValidFormData.email)
       await userEvent.type(messageInput, mockValidFormData.message)
 
-      submitForm()
+      await submitForm('Send Message')
 
       await waitFor(() => {
         expect(global.fetch).toHaveBeenCalledWith(
@@ -494,12 +571,8 @@ describe('MobileContactForm', () => {
     })
 
     it('should_set_correct_content_type_header', async () => {
+      setupValidFormValidator()
       mockSuccessfulSubmission()
-      FormValidator.mockImplementation(() => ({
-        validateField: jest.fn(() => ({ error: undefined })),
-        validateForm: jest.fn(() => ({ isValid: true, errors: {} })),
-        isFormValid: jest.fn(() => true),
-      }))
 
       render(<MobileContactForm />)
 
@@ -511,7 +584,7 @@ describe('MobileContactForm', () => {
       await userEvent.type(emailInput, mockValidFormData.email)
       await userEvent.type(messageInput, mockValidFormData.message)
 
-      submitForm()
+      await submitForm('Send Message')
 
       await waitFor(() => {
         expect(global.fetch).toHaveBeenCalledWith(
@@ -525,11 +598,13 @@ describe('MobileContactForm', () => {
 
     it('should_handle_successful_submission_200_response', async () => {
       mockSuccessfulSubmission()
-      FormValidator.mockImplementation(() => ({
-        validateField: jest.fn(() => ({ error: undefined })),
-        validateForm: jest.fn(() => ({ isValid: true, errors: {} })),
-        isFormValid: jest.fn(() => true),
-      }))
+      jest
+        .requireMock('@/utils/validation/formValidator')
+        .FormValidator.mockImplementation(() => ({
+          validateField: jest.fn(() => ({ error: undefined })),
+          validateForm: jest.fn(() => ({ isValid: true, errors: {} })),
+          isFormValid: jest.fn(() => true),
+        }))
 
       render(<MobileContactForm />)
 
@@ -541,7 +616,7 @@ describe('MobileContactForm', () => {
       await userEvent.type(emailInput, mockValidFormData.email)
       await userEvent.type(messageInput, mockValidFormData.message)
 
-      submitForm()
+      await submitForm('Send Message')
 
       await waitFor(() => {
         expect(
@@ -552,11 +627,13 @@ describe('MobileContactForm', () => {
 
     it('should_clear_form_fields_after_successful_submission', async () => {
       mockSuccessfulSubmission()
-      FormValidator.mockImplementation(() => ({
-        validateField: jest.fn(() => ({ error: undefined })),
-        validateForm: jest.fn(() => ({ isValid: true, errors: {} })),
-        isFormValid: jest.fn(() => true),
-      }))
+      jest
+        .requireMock('@/utils/validation/formValidator')
+        .FormValidator.mockImplementation(() => ({
+          validateField: jest.fn(() => ({ error: undefined })),
+          validateForm: jest.fn(() => ({ isValid: true, errors: {} })),
+          isFormValid: jest.fn(() => true),
+        }))
 
       render(<MobileContactForm />)
 
@@ -568,7 +645,7 @@ describe('MobileContactForm', () => {
       await userEvent.type(emailInput, mockValidFormData.email)
       await userEvent.type(messageInput, mockValidFormData.message)
 
-      submitForm()
+      await submitForm('Send Message')
 
       await waitFor(() => {
         expect(nameInput).toHaveValue('')
@@ -579,11 +656,13 @@ describe('MobileContactForm', () => {
 
     it('should_show_success_message_after_successful_submission', async () => {
       mockSuccessfulSubmission()
-      FormValidator.mockImplementation(() => ({
-        validateField: jest.fn(() => ({ error: undefined })),
-        validateForm: jest.fn(() => ({ isValid: true, errors: {} })),
-        isFormValid: jest.fn(() => true),
-      }))
+      jest
+        .requireMock('@/utils/validation/formValidator')
+        .FormValidator.mockImplementation(() => ({
+          validateField: jest.fn(() => ({ error: undefined })),
+          validateForm: jest.fn(() => ({ isValid: true, errors: {} })),
+          isFormValid: jest.fn(() => true),
+        }))
 
       render(<MobileContactForm />)
 
@@ -595,7 +674,7 @@ describe('MobileContactForm', () => {
       await userEvent.type(emailInput, mockValidFormData.email)
       await userEvent.type(messageInput, mockValidFormData.message)
 
-      submitForm()
+      await submitForm('Send Message')
 
       await waitFor(() => {
         expect(
@@ -605,13 +684,8 @@ describe('MobileContactForm', () => {
     })
 
     it('should_hide_success_message_after_5_seconds', async () => {
-      jest.useFakeTimers()
+      setupValidFormValidator()
       mockSuccessfulSubmission()
-      FormValidator.mockImplementation(() => ({
-        validateField: jest.fn(() => ({ error: undefined })),
-        validateForm: jest.fn(() => ({ isValid: true, errors: {} })),
-        isFormValid: jest.fn(() => true),
-      }))
 
       render(<MobileContactForm />)
 
@@ -623,33 +697,36 @@ describe('MobileContactForm', () => {
       await userEvent.type(emailInput, mockValidFormData.email)
       await userEvent.type(messageInput, mockValidFormData.message)
 
-      submitForm()
+      await submitForm('Send Message')
 
+      // Wait for success message to appear
       await waitFor(() => {
         expect(
           screen.getByText(/message sent successfully/i)
         ).toBeInTheDocument()
       })
 
-      jest.advanceTimersByTime(5000)
-
-      await waitFor(() => {
-        expect(
-          screen.queryByText(/message sent successfully/i)
-        ).not.toBeInTheDocument()
-      })
-
-      jest.useRealTimers()
-    })
+      // Wait for success message to disappear (5 second setTimeout in component)
+      await waitFor(
+        () => {
+          expect(
+            screen.queryByText(/message sent successfully/i)
+          ).not.toBeInTheDocument()
+        },
+        { timeout: 6000 } // Give it 6 seconds to account for the 5s setTimeout
+      )
+    }, 15000) // Test timeout: user typing (3s) + submission (1s) + setTimeout (5s) + buffer (6s)
 
     it('should_call_onSuccess_callback_when_provided', async () => {
       const onSuccess = jest.fn()
       mockSuccessfulSubmission()
-      FormValidator.mockImplementation(() => ({
-        validateField: jest.fn(() => ({ error: undefined })),
-        validateForm: jest.fn(() => ({ isValid: true, errors: {} })),
-        isFormValid: jest.fn(() => true),
-      }))
+      jest
+        .requireMock('@/utils/validation/formValidator')
+        .FormValidator.mockImplementation(() => ({
+          validateField: jest.fn(() => ({ error: undefined })),
+          validateForm: jest.fn(() => ({ isValid: true, errors: {} })),
+          isFormValid: jest.fn(() => true),
+        }))
 
       render(<MobileContactForm onSuccess={onSuccess} />)
 
@@ -661,7 +738,7 @@ describe('MobileContactForm', () => {
       await userEvent.type(emailInput, mockValidFormData.email)
       await userEvent.type(messageInput, mockValidFormData.message)
 
-      submitForm()
+      await submitForm('Send Message')
 
       await waitFor(() => {
         expect(onSuccess).toHaveBeenCalled()
@@ -673,11 +750,13 @@ describe('MobileContactForm', () => {
     it('should_call_onError_callback_with_error_message', async () => {
       const onError = jest.fn()
       mockFailedSubmission(500, 'Server error')
-      FormValidator.mockImplementation(() => ({
-        validateField: jest.fn(() => ({ error: undefined })),
-        validateForm: jest.fn(() => ({ isValid: true, errors: {} })),
-        isFormValid: jest.fn(() => true),
-      }))
+      jest
+        .requireMock('@/utils/validation/formValidator')
+        .FormValidator.mockImplementation(() => ({
+          validateField: jest.fn(() => ({ error: undefined })),
+          validateForm: jest.fn(() => ({ isValid: true, errors: {} })),
+          isFormValid: jest.fn(() => true),
+        }))
 
       render(<MobileContactForm onError={onError} />)
 
@@ -689,7 +768,7 @@ describe('MobileContactForm', () => {
       await userEvent.type(emailInput, mockValidFormData.email)
       await userEvent.type(messageInput, mockValidFormData.message)
 
-      submitForm()
+      await submitForm('Send Message')
 
       await waitFor(() => {
         expect(onError).toHaveBeenCalledWith('Failed to send message')
@@ -699,11 +778,13 @@ describe('MobileContactForm', () => {
     it('should_handle_network_errors_gracefully', async () => {
       const onError = jest.fn()
       mockNetworkError()
-      FormValidator.mockImplementation(() => ({
-        validateField: jest.fn(() => ({ error: undefined })),
-        validateForm: jest.fn(() => ({ isValid: true, errors: {} })),
-        isFormValid: jest.fn(() => true),
-      }))
+      jest
+        .requireMock('@/utils/validation/formValidator')
+        .FormValidator.mockImplementation(() => ({
+          validateField: jest.fn(() => ({ error: undefined })),
+          validateForm: jest.fn(() => ({ isValid: true, errors: {} })),
+          isFormValid: jest.fn(() => true),
+        }))
 
       render(<MobileContactForm onError={onError} />)
 
@@ -715,7 +796,7 @@ describe('MobileContactForm', () => {
       await userEvent.type(emailInput, mockValidFormData.email)
       await userEvent.type(messageInput, mockValidFormData.message)
 
-      submitForm()
+      await submitForm('Send Message')
 
       await waitFor(() => {
         expect(onError).toHaveBeenCalledWith('Network error')
@@ -725,11 +806,13 @@ describe('MobileContactForm', () => {
     it('should_handle_500_server_errors', async () => {
       const onError = jest.fn()
       mockFailedSubmission(500)
-      FormValidator.mockImplementation(() => ({
-        validateField: jest.fn(() => ({ error: undefined })),
-        validateForm: jest.fn(() => ({ isValid: true, errors: {} })),
-        isFormValid: jest.fn(() => true),
-      }))
+      jest
+        .requireMock('@/utils/validation/formValidator')
+        .FormValidator.mockImplementation(() => ({
+          validateField: jest.fn(() => ({ error: undefined })),
+          validateForm: jest.fn(() => ({ isValid: true, errors: {} })),
+          isFormValid: jest.fn(() => true),
+        }))
 
       render(<MobileContactForm onError={onError} />)
 
@@ -741,7 +824,7 @@ describe('MobileContactForm', () => {
       await userEvent.type(emailInput, mockValidFormData.email)
       await userEvent.type(messageInput, mockValidFormData.message)
 
-      submitForm()
+      await submitForm('Send Message')
 
       await waitFor(() => {
         expect(onError).toHaveBeenCalled()
@@ -750,12 +833,8 @@ describe('MobileContactForm', () => {
 
     it('should_handle_400_validation_errors', async () => {
       const onError = jest.fn()
+      setupValidFormValidator()
       mockFailedSubmission(400, 'Validation failed')
-      FormValidator.mockImplementation(() => ({
-        validateField: jest.fn(() => ({ error: undefined })),
-        validateForm: jest.fn(() => ({ isValid: true, errors: {} })),
-        isFormValid: jest.fn(() => true),
-      }))
 
       render(<MobileContactForm onError={onError} />)
 
@@ -767,20 +846,16 @@ describe('MobileContactForm', () => {
       await userEvent.type(emailInput, mockValidFormData.email)
       await userEvent.type(messageInput, mockValidFormData.message)
 
-      submitForm()
+      await submitForm('Send Message')
 
       await waitFor(() => {
         expect(onError).toHaveBeenCalled()
       })
-    })
+    }, 10000)
 
     it('should_re_enable_form_after_submission_error', async () => {
+      setupValidFormValidator()
       mockFailedSubmission(500)
-      FormValidator.mockImplementation(() => ({
-        validateField: jest.fn(() => ({ error: undefined })),
-        validateForm: jest.fn(() => ({ isValid: true, errors: {} })),
-        isFormValid: jest.fn(() => true),
-      }))
 
       render(<MobileContactForm />)
 
@@ -798,15 +873,11 @@ describe('MobileContactForm', () => {
       await waitFor(() => {
         expect(submitButton).not.toBeDisabled()
       })
-    })
+    }, 10000)
 
     it('should_maintain_form_data_after_submission_error', async () => {
+      setupValidFormValidator()
       mockFailedSubmission(500)
-      FormValidator.mockImplementation(() => ({
-        validateField: jest.fn(() => ({ error: undefined })),
-        validateForm: jest.fn(() => ({ isValid: true, errors: {} })),
-        isFormValid: jest.fn(() => true),
-      }))
 
       render(<MobileContactForm />)
 
@@ -818,24 +889,20 @@ describe('MobileContactForm', () => {
       await userEvent.type(emailInput, mockValidFormData.email)
       await userEvent.type(messageInput, mockValidFormData.message)
 
-      submitForm()
+      await submitForm('Send Message')
 
       await waitFor(() => {
         expect(nameInput).toHaveValue(mockValidFormData.name)
         expect(emailInput).toHaveValue(mockValidFormData.email)
         expect(messageInput).toHaveValue(mockValidFormData.message)
       })
-    })
+    }, 10000)
   })
 
   describe('Analytics Integration', () => {
     it('should_track_form_submit_event_on_submission', async () => {
+      setupValidFormValidator()
       mockSuccessfulSubmission()
-      FormValidator.mockImplementation(() => ({
-        validateField: jest.fn(() => ({ error: undefined })),
-        validateForm: jest.fn(() => ({ isValid: true, errors: {} })),
-        isFormValid: jest.fn(() => true),
-      }))
 
       render(<MobileContactForm />)
 
@@ -847,20 +914,16 @@ describe('MobileContactForm', () => {
       await userEvent.type(emailInput, mockValidFormData.email)
       await userEvent.type(messageInput, mockValidFormData.message)
 
-      submitForm()
+      await submitForm('Send Message')
 
       await waitFor(() => {
-        expect(analytics.contactFormSubmit).toHaveBeenCalled()
+        expect(UmamiEvents.contactFormSubmit).toHaveBeenCalled()
       })
-    })
+    }, 10000)
 
     it('should_track_form_success_event_on_successful_submission', async () => {
+      setupValidFormValidator()
       mockSuccessfulSubmission()
-      FormValidator.mockImplementation(() => ({
-        validateField: jest.fn(() => ({ error: undefined })),
-        validateForm: jest.fn(() => ({ isValid: true, errors: {} })),
-        isFormValid: jest.fn(() => true),
-      }))
 
       render(<MobileContactForm />)
 
@@ -872,20 +935,16 @@ describe('MobileContactForm', () => {
       await userEvent.type(emailInput, mockValidFormData.email)
       await userEvent.type(messageInput, mockValidFormData.message)
 
-      submitForm()
+      await submitForm('Send Message')
 
       await waitFor(() => {
-        expect(analytics.contactFormSuccess).toHaveBeenCalled()
+        expect(UmamiEvents.contactFormSuccess).toHaveBeenCalled()
       })
-    })
+    }, 10000)
 
     it('should_track_form_error_event_on_failed_submission', async () => {
+      setupValidFormValidator()
       mockFailedSubmission(500)
-      FormValidator.mockImplementation(() => ({
-        validateField: jest.fn(() => ({ error: undefined })),
-        validateForm: jest.fn(() => ({ isValid: true, errors: {} })),
-        isFormValid: jest.fn(() => true),
-      }))
 
       render(<MobileContactForm />)
 
@@ -897,17 +956,19 @@ describe('MobileContactForm', () => {
       await userEvent.type(emailInput, mockValidFormData.email)
       await userEvent.type(messageInput, mockValidFormData.message)
 
-      submitForm()
+      await submitForm('Send Message')
 
       await waitFor(() => {
-        expect(analytics.contactFormError).toHaveBeenCalled()
+        expect(UmamiEvents.contactFormError).toHaveBeenCalled()
       })
-    })
+    }, 10000)
   })
 
   describe('Virtual Keyboard Handling', () => {
     it('should_apply_keyboard_open_class_when_keyboard_detected', () => {
-      useVirtualKeyboard.mockReturnValue({ isKeyboardOpen: true })
+      ;(useVirtualKeyboard as jest.Mock).mockReturnValue({
+        isKeyboardOpen: true,
+      })
 
       const { container } = render(<MobileContactForm />)
       const form = container.querySelector('form')
@@ -916,9 +977,11 @@ describe('MobileContactForm', () => {
     })
 
     it('should_remove_keyboard_open_class_when_keyboard_closed', () => {
-      useVirtualKeyboard.mockReturnValue({ isKeyboardOpen: false })
+      ;(useVirtualKeyboard as jest.Mock).mockReturnValue({
+        isKeyboardOpen: false,
+      })
 
-      const { container, rerender } = render(<MobileContactForm />)
+      const { container } = render(<MobileContactForm />)
       const form = container.querySelector('form')
 
       expect(form).not.toHaveClass('keyboard-open')

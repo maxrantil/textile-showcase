@@ -8,10 +8,9 @@ import { TextileDesign } from '@/types/textile'
 describe('MobileProjectDetails', () => {
   const baseProject: TextileDesign = {
     _id: 'test-id',
-    _type: 'textileDesign',
     title: 'Test Textile Project',
-    slug: { _type: 'slug', current: 'test-project' },
-    mainImage: {
+    slug: { current: 'test-project' },
+    image: {
       _type: 'image',
       asset: { _ref: 'image-ref', _type: 'reference' },
     },
@@ -94,7 +93,7 @@ describe('MobileProjectDetails', () => {
     it('should_render_materials_when_available', () => {
       const projectWithMaterials = {
         ...baseProject,
-        materials: 'Wool, Linen',
+        materials: ['Wool', 'Linen'],
       }
 
       render(<MobileProjectDetails project={projectWithMaterials} />)
@@ -248,7 +247,7 @@ describe('MobileProjectDetails', () => {
       const fullProject = {
         ...baseProject,
         description: 'Test description',
-        materials: 'Wool',
+        materials: ['Wool'],
         detailedDescription: 'Detailed info',
         exhibitions: 'Test exhibition',
         careInstructions: 'Care info',
@@ -265,7 +264,7 @@ describe('MobileProjectDetails', () => {
     it('should_use_h2_for_section_titles', () => {
       const projectWithDetails = {
         ...baseProject,
-        materials: 'Wool',
+        materials: ['Wool'],
       }
 
       render(<MobileProjectDetails project={projectWithDetails} />)
@@ -277,7 +276,7 @@ describe('MobileProjectDetails', () => {
     it('should_use_h3_for_detail_item_headings', () => {
       const projectWithMaterials = {
         ...baseProject,
-        materials: 'Wool',
+        materials: ['Wool'],
       }
 
       render(<MobileProjectDetails project={projectWithMaterials} />)
@@ -289,7 +288,7 @@ describe('MobileProjectDetails', () => {
     it('should_use_proper_heading_hierarchy', () => {
       const fullProject = {
         ...baseProject,
-        materials: 'Wool',
+        materials: ['Wool'],
         technique: 'Weaving',
       }
 

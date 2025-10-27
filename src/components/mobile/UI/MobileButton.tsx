@@ -80,7 +80,12 @@ export const MobileButton = forwardRef<HTMLButtonElement, MobileButtonProps>(
 
     const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
       // Add haptic feedback if enabled and supported
-      if (hapticFeedback && 'vibrate' in navigator && !disabled && !loading) {
+      if (
+        hapticFeedback &&
+        typeof navigator.vibrate === 'function' &&
+        !disabled &&
+        !loading
+      ) {
         navigator.vibrate(50) // Light haptic feedback (50ms)
       }
       onClick?.(e)

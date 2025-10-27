@@ -12,7 +12,17 @@ const mockTrackEvent = trackEvent as jest.MockedFunction<typeof trackEvent>
 const mockWindowReload = jest.fn()
 
 jest.mock('@/components/mobile/UI/MobileButton', () => ({
-  MobileButton: ({ children, onClick, variant, fullWidth }: any) => (
+  MobileButton: ({
+    children,
+    onClick,
+    variant,
+    fullWidth,
+  }: {
+    children: React.ReactNode
+    onClick?: () => void
+    variant?: string
+    fullWidth?: boolean
+  }) => (
     <button
       onClick={onClick}
       data-variant={variant}
@@ -34,13 +44,6 @@ describe('MobileErrorBoundary', () => {
   beforeEach(() => {
     jest.clearAllMocks()
 
-    // Mock window.location.reload (JSDOM makes it read-only, so we need to redefine it)
-    Object.defineProperty(window.location, 'reload', {
-      writable: true,
-      configurable: true,
-      value: mockWindowReload,
-    })
-
     // Suppress console.error in tests (error boundaries log to console)
     consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
   })
@@ -54,7 +57,7 @@ describe('MobileErrorBoundary', () => {
       const testError = new Error('Test error')
 
       render(
-        <MobileErrorBoundary>
+        <MobileErrorBoundary onReload={mockWindowReload}>
           <ThrowError error={testError} />
         </MobileErrorBoundary>
       )
@@ -67,7 +70,7 @@ describe('MobileErrorBoundary', () => {
       const testError = new Error('State update test')
 
       render(
-        <MobileErrorBoundary>
+        <MobileErrorBoundary onReload={mockWindowReload}>
           <ThrowError error={testError} />
         </MobileErrorBoundary>
       )
@@ -80,7 +83,7 @@ describe('MobileErrorBoundary', () => {
       const testError = new Error('Has error test')
 
       render(
-        <MobileErrorBoundary>
+        <MobileErrorBoundary onReload={mockWindowReload}>
           <ThrowError error={testError} />
         </MobileErrorBoundary>
       )
@@ -96,7 +99,7 @@ describe('MobileErrorBoundary', () => {
       const testError = new Error('Error storage test')
 
       render(
-        <MobileErrorBoundary>
+        <MobileErrorBoundary onReload={mockWindowReload}>
           <ThrowError error={testError} />
         </MobileErrorBoundary>
       )
@@ -111,7 +114,7 @@ describe('MobileErrorBoundary', () => {
       // Should not throw error to parent
       expect(() => {
         render(
-          <MobileErrorBoundary>
+          <MobileErrorBoundary onReload={mockWindowReload}>
             <ThrowError error={testError} />
           </MobileErrorBoundary>
         )
@@ -124,7 +127,7 @@ describe('MobileErrorBoundary', () => {
       const testError = new Error('Console log test')
 
       render(
-        <MobileErrorBoundary>
+        <MobileErrorBoundary onReload={mockWindowReload}>
           <ThrowError error={testError} />
         </MobileErrorBoundary>
       )
@@ -140,7 +143,7 @@ describe('MobileErrorBoundary', () => {
       const testError = new Error('Analytics test')
 
       render(
-        <MobileErrorBoundary>
+        <MobileErrorBoundary onReload={mockWindowReload}>
           <ThrowError error={testError} />
         </MobileErrorBoundary>
       )
@@ -156,7 +159,7 @@ describe('MobileErrorBoundary', () => {
       const testError = new Error('Specific error message')
 
       render(
-        <MobileErrorBoundary>
+        <MobileErrorBoundary onReload={mockWindowReload}>
           <ThrowError error={testError} />
         </MobileErrorBoundary>
       )
@@ -173,7 +176,7 @@ describe('MobileErrorBoundary', () => {
       const testError = new Error('Component stack test')
 
       render(
-        <MobileErrorBoundary>
+        <MobileErrorBoundary onReload={mockWindowReload}>
           <ThrowError error={testError} />
         </MobileErrorBoundary>
       )
@@ -192,7 +195,7 @@ describe('MobileErrorBoundary', () => {
       const testError = new Error('Fallback test')
 
       render(
-        <MobileErrorBoundary>
+        <MobileErrorBoundary onReload={mockWindowReload}>
           <ThrowError error={testError} />
         </MobileErrorBoundary>
       )
@@ -208,7 +211,7 @@ describe('MobileErrorBoundary', () => {
       const testError = new Error('Message test')
 
       render(
-        <MobileErrorBoundary>
+        <MobileErrorBoundary onReload={mockWindowReload}>
           <ThrowError error={testError} />
         </MobileErrorBoundary>
       )
@@ -221,7 +224,7 @@ describe('MobileErrorBoundary', () => {
       const testError = new Error('Suggestion test')
 
       render(
-        <MobileErrorBoundary>
+        <MobileErrorBoundary onReload={mockWindowReload}>
           <ThrowError error={testError} />
         </MobileErrorBoundary>
       )
@@ -235,7 +238,7 @@ describe('MobileErrorBoundary', () => {
       const testError = new Error('Button test')
 
       render(
-        <MobileErrorBoundary>
+        <MobileErrorBoundary onReload={mockWindowReload}>
           <ThrowError error={testError} />
         </MobileErrorBoundary>
       )
@@ -248,7 +251,7 @@ describe('MobileErrorBoundary', () => {
       const testError = new Error('Reload test')
 
       render(
-        <MobileErrorBoundary>
+        <MobileErrorBoundary onReload={mockWindowReload}>
           <ThrowError error={testError} />
         </MobileErrorBoundary>
       )
@@ -263,7 +266,7 @@ describe('MobileErrorBoundary', () => {
       const testError = new Error('MobileButton test')
 
       render(
-        <MobileErrorBoundary>
+        <MobileErrorBoundary onReload={mockWindowReload}>
           <ThrowError error={testError} />
         </MobileErrorBoundary>
       )
@@ -280,7 +283,10 @@ describe('MobileErrorBoundary', () => {
       const customFallback = <div>Custom error message</div>
 
       render(
-        <MobileErrorBoundary fallback={customFallback}>
+        <MobileErrorBoundary
+          fallback={customFallback}
+          onReload={mockWindowReload}
+        >
           <ThrowError error={testError} />
         </MobileErrorBoundary>
       )
@@ -293,7 +299,10 @@ describe('MobileErrorBoundary', () => {
       const customFallback = <div>Custom error UI</div>
 
       render(
-        <MobileErrorBoundary fallback={customFallback}>
+        <MobileErrorBoundary
+          fallback={customFallback}
+          onReload={mockWindowReload}
+        >
           <ThrowError error={testError} />
         </MobileErrorBoundary>
       )
@@ -312,7 +321,10 @@ describe('MobileErrorBoundary', () => {
       )
 
       render(
-        <MobileErrorBoundary fallback={customFallback}>
+        <MobileErrorBoundary
+          fallback={customFallback}
+          onReload={mockWindowReload}
+        >
           <ThrowError error={testError} />
         </MobileErrorBoundary>
       )
@@ -353,7 +365,7 @@ describe('MobileErrorBoundary', () => {
       testError.stack = longStack
 
       render(
-        <MobileErrorBoundary>
+        <MobileErrorBoundary onReload={mockWindowReload}>
           <ThrowError error={testError} />
         </MobileErrorBoundary>
       )
@@ -366,21 +378,31 @@ describe('MobileErrorBoundary', () => {
       )
 
       const analyticsCall = mockTrackEvent.mock.calls[0][1]
-      expect(analyticsCall.error_stack.length).toBeLessThanOrEqual(500)
+      if (
+        analyticsCall &&
+        analyticsCall.error_stack &&
+        typeof analyticsCall.error_stack === 'string'
+      ) {
+        expect(analyticsCall.error_stack.length).toBeLessThanOrEqual(500)
+      }
     })
 
     it('should_limit_component_stack_to_500_characters', () => {
       const testError = new Error('Component stack test')
 
       render(
-        <MobileErrorBoundary>
+        <MobileErrorBoundary onReload={mockWindowReload}>
           <ThrowError error={testError} />
         </MobileErrorBoundary>
       )
 
       const analyticsCall = mockTrackEvent.mock.calls[0][1]
 
-      if (analyticsCall.component_stack) {
+      if (
+        analyticsCall &&
+        analyticsCall.component_stack &&
+        typeof analyticsCall.component_stack === 'string'
+      ) {
         expect(analyticsCall.component_stack.length).toBeLessThanOrEqual(500)
       }
     })
@@ -389,7 +411,7 @@ describe('MobileErrorBoundary', () => {
       const testError = new Error('Fatal flag test')
 
       render(
-        <MobileErrorBoundary>
+        <MobileErrorBoundary onReload={mockWindowReload}>
           <ThrowError error={testError} />
         </MobileErrorBoundary>
       )

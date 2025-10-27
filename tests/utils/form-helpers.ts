@@ -24,12 +24,14 @@ export const fillAndBlurFormField = async (label: string, value: string) => {
 
 /**
  * Submits a form by clicking the submit button
+ * Uses userEvent for realistic async interaction
  */
-export const submitForm = (buttonText: string = 'Submit') => {
+export const submitForm = async (buttonText: string = 'Submit') => {
+  const user = userEvent.setup()
   const button = screen.getByRole('button', {
     name: new RegExp(buttonText, 'i'),
   })
-  fireEvent.click(button)
+  await user.click(button)
 }
 
 /**
