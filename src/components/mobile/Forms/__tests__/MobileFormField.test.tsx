@@ -4,6 +4,7 @@ import React from 'react'
 import { render, screen, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MobileFormField } from '../MobileFormField'
+import { useTouchFeedback } from '@/hooks/mobile/useTouchFeedback'
 
 // Mock dependencies
 jest.mock('@/hooks/mobile/useTouchFeedback', () => ({
@@ -224,13 +225,13 @@ describe('MobileFormField', () => {
 
   describe('Touch Feedback', () => {
     it('should_apply_touch_feedback_props_to_input', () => {
-      const useTouchFeedback =
-        require('@/hooks/mobile/useTouchFeedback').useTouchFeedback
       const mockTouchProps = {
         onTouchStart: jest.fn(),
         onTouchEnd: jest.fn(),
       }
-      useTouchFeedback.mockReturnValue({ touchProps: mockTouchProps })
+      ;(useTouchFeedback as jest.Mock).mockReturnValue({
+        touchProps: mockTouchProps,
+      })
 
       const { container } = render(<MobileFormField {...defaultProps} />)
 
@@ -241,13 +242,13 @@ describe('MobileFormField', () => {
     })
 
     it('should_apply_touch_feedback_props_to_textarea', () => {
-      const useTouchFeedback =
-        require('@/hooks/mobile/useTouchFeedback').useTouchFeedback
       const mockTouchProps = {
         onTouchStart: jest.fn(),
         onTouchEnd: jest.fn(),
       }
-      useTouchFeedback.mockReturnValue({ touchProps: mockTouchProps })
+      ;(useTouchFeedback as jest.Mock).mockReturnValue({
+        touchProps: mockTouchProps,
+      })
 
       const { container } = render(
         <MobileFormField {...defaultProps} type="textarea" />
@@ -260,9 +261,6 @@ describe('MobileFormField', () => {
     })
 
     it('should_receive_props_from_useTouchFeedback_hook', () => {
-      const useTouchFeedback =
-        require('@/hooks/mobile/useTouchFeedback').useTouchFeedback
-
       render(<MobileFormField {...defaultProps} />)
 
       expect(useTouchFeedback).toHaveBeenCalled()

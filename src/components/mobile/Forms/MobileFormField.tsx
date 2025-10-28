@@ -1,4 +1,4 @@
-// src/components/mobile/Forms/MobileFormField.tsx
+// ABOUTME: Reusable mobile form field component with touch feedback and accessibility features
 'use client'
 
 import { forwardRef, ForwardedRef } from 'react'

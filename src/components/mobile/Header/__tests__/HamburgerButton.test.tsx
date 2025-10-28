@@ -3,6 +3,7 @@
 import React from 'react'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { HamburgerButton } from '../HamburgerButton'
+import { UmamiEvents } from '@/utils/analytics'
 
 jest.mock('@/utils/analytics', () => ({
   UmamiEvents: {
@@ -109,23 +110,21 @@ describe('HamburgerButton', () => {
     })
 
     it('should_track_open_analytics_event_when_opening', () => {
-      const analytics = require('@/utils/analytics').UmamiEvents
       render(<HamburgerButton {...defaultProps} isOpen={false} />)
 
       const button = screen.getByRole('button')
       fireEvent.click(button)
 
-      expect(analytics.mobileMenuToggle).toHaveBeenCalledWith('open')
+      expect(UmamiEvents.mobileMenuToggle).toHaveBeenCalledWith('open')
     })
 
     it('should_track_close_analytics_event_when_closing', () => {
-      const analytics = require('@/utils/analytics').UmamiEvents
       render(<HamburgerButton {...defaultProps} isOpen={true} />)
 
       const button = screen.getByRole('button')
       fireEvent.click(button)
 
-      expect(analytics.mobileMenuToggle).toHaveBeenCalledWith('close')
+      expect(UmamiEvents.mobileMenuToggle).toHaveBeenCalledWith('close')
     })
   })
 

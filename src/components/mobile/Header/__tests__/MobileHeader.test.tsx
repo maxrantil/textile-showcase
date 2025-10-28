@@ -2,6 +2,7 @@
 
 import { render, fireEvent, screen } from '@testing-library/react'
 import { MobileHeader } from '../MobileHeader'
+import { usePathname } from 'next/navigation'
 
 // Mock mobile environment
 beforeEach(() => {
@@ -21,8 +22,19 @@ jest.mock('../MobileLogo', () => ({
   MobileLogo: () => <div data-testid="mobile-logo">IDA ROMME</div>,
 }))
 
+interface MockHamburgerButtonProps {
+  isOpen: boolean
+  onClick: () => void
+}
+
+interface MockMobileMenuProps {
+  isOpen: boolean
+  onClose: () => void
+  pathname: string
+}
+
 jest.mock('../HamburgerButton', () => ({
-  HamburgerButton: ({ isOpen, onClick }: any) => (
+  HamburgerButton: ({ isOpen, onClick }: MockHamburgerButtonProps) => (
     <button
       data-testid="hamburger-button"
       aria-label={isOpen ? 'Close menu' : 'Open menu'}
@@ -35,7 +47,7 @@ jest.mock('../HamburgerButton', () => ({
 }))
 
 jest.mock('../MobileMenu', () => ({
-  MobileMenu: ({ isOpen, onClose, pathname }: any) =>
+  MobileMenu: ({ isOpen, onClose, pathname }: MockMobileMenuProps) =>
     isOpen ? (
       <div data-testid="mobile-menu" role="dialog" onClick={onClose}>
         Menu - {pathname}
@@ -158,8 +170,7 @@ describe('MobileHeader', () => {
 
   describe('Pathname Management', () => {
     it('should_get_current_pathname_from_usePathname_hook', () => {
-      const usePathname = require('next/navigation').usePathname
-      usePathname.mockReturnValue('/about')
+      ;(usePathname as jest.Mock).mockReturnValue('/about')
 
       render(<MobileHeader />)
 
@@ -170,8 +181,7 @@ describe('MobileHeader', () => {
     })
 
     it('should_pass_pathname_to_mobile_menu', () => {
-      const usePathname = require('next/navigation').usePathname
-      usePathname.mockReturnValue('/contact')
+      ;(usePathname as jest.Mock).mockReturnValue('/contact')
 
       render(<MobileHeader />)
 
@@ -182,8 +192,7 @@ describe('MobileHeader', () => {
     })
 
     it('should_default_to_root_path_when_pathname_null', () => {
-      const usePathname = require('next/navigation').usePathname
-      usePathname.mockReturnValue(null)
+      ;(usePathname as jest.Mock).mockReturnValue(null)
 
       render(<MobileHeader />)
 
@@ -195,8 +204,7 @@ describe('MobileHeader', () => {
     })
 
     it('should_update_active_nav_link_when_pathname_changes', () => {
-      const usePathname = require('next/navigation').usePathname
-      usePathname.mockReturnValue('/')
+      ;(usePathname as jest.Mock).mockReturnValue('/')
 
       const { rerender } = render(<MobileHeader />)
 
@@ -206,7 +214,7 @@ describe('MobileHeader', () => {
       expect(screen.getByText(/Menu - \//)).toBeInTheDocument()
 
       // Change pathname
-      usePathname.mockReturnValue('/about')
+      ;(usePathname as jest.Mock).mockReturnValue('/about')
       rerender(<MobileHeader />)
 
       expect(screen.getByText(/Menu - \/about/)).toBeInTheDocument()

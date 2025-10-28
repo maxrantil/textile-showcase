@@ -32,8 +32,20 @@ const mockTriggerNavigationStart =
     typeof scrollManager.triggerNavigationStart
   >
 
+interface MockButtonProps {
+  children: React.ReactNode
+  onClick?: () => void
+  variant?: string
+  className?: string
+}
+
 jest.mock('@/components/mobile/UI/MobileButton', () => ({
-  MobileButton: ({ children, onClick, variant, className }: any) => (
+  MobileButton: ({
+    children,
+    onClick,
+    variant,
+    className,
+  }: MockButtonProps) => (
     <button onClick={onClick} data-variant={variant} className={className}>
       {children}
     </button>

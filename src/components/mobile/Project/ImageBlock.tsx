@@ -1,3 +1,4 @@
+// ABOUTME: Project image component with lazy loading and iOS lockdown mode detection
 'use client'
 import React, { useState, useEffect } from 'react'
 import Image from 'next/image'

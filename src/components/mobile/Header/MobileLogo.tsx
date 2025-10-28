@@ -1,4 +1,4 @@
-// src/components/mobile/Header/MobileLogo.tsx
+// ABOUTME: Mobile header logo component with link to homepage
 'use client'
 import Link from 'next/link'
 

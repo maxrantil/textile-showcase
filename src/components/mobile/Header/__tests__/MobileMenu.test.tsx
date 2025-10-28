@@ -2,7 +2,9 @@
 
 import React from 'react'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { createPortal } from 'react-dom'
 import { MobileMenu } from '../MobileMenu'
+import { UmamiEvents } from '@/utils/analytics'
 
 // Mock dependencies
 jest.mock('react-dom', () => ({
@@ -17,8 +19,15 @@ jest.mock('@/utils/analytics', () => ({
   },
 }))
 
+interface MockNavLinkProps {
+  children: React.ReactNode
+  href: string
+  isActive?: boolean
+  onClick?: () => void
+}
+
 jest.mock('../MobileNavLink', () => ({
-  MobileNavLink: ({ children, href, isActive, onClick }: any) => (
+  MobileNavLink: ({ children, href, isActive, onClick }: MockNavLinkProps) => (
     <a
       href={href}
       className={`mobile-nav-link ${isActive ? 'active' : ''}`}
@@ -91,7 +100,6 @@ describe('MobileMenu', () => {
     })
 
     it('should_use_portal_to_render_in_document_body', () => {
-      const createPortal = require('react-dom').createPortal
       render(<MobileMenu {...defaultProps} />)
 
       expect(createPortal).toHaveBeenCalled()
@@ -148,30 +156,26 @@ describe('MobileMenu', () => {
     })
 
     it('should_track_menu_open_event_when_opened', () => {
-      const analytics = require('@/utils/analytics').UmamiEvents
-
       render(<MobileMenu {...defaultProps} />)
 
-      expect(analytics.mobileMenuOpen).toHaveBeenCalled()
+      expect(UmamiEvents.mobileMenuOpen).toHaveBeenCalled()
     })
 
     it('should_track_menu_close_event_with_backdrop_method', () => {
-      const analytics = require('@/utils/analytics').UmamiEvents
       const { container } = render(<MobileMenu {...defaultProps} />)
 
       const backdrop = container.querySelector('.mobile-menu-backdrop')
       fireEvent.click(backdrop!)
 
-      expect(analytics.mobileMenuClose).toHaveBeenCalledWith('backdrop')
+      expect(UmamiEvents.mobileMenuClose).toHaveBeenCalledWith('backdrop')
     })
 
     it('should_track_menu_close_event_with_keyboard_method', () => {
-      const analytics = require('@/utils/analytics').UmamiEvents
       render(<MobileMenu {...defaultProps} />)
 
       fireEvent.keyDown(document, { key: 'Escape' })
 
-      expect(analytics.mobileMenuClose).toHaveBeenCalledWith('keyboard')
+      expect(UmamiEvents.mobileMenuClose).toHaveBeenCalledWith('keyboard')
     })
   })
 
@@ -240,8 +244,6 @@ describe('MobileMenu', () => {
       render(<MobileMenu {...defaultProps} />)
 
       const closeButton = screen.getByRole('button', { name: /close menu/i })
-      const workLink = screen.getByText('WORK')
-      const contactLink = screen.getByText('CONTACT')
 
       closeButton.focus()
       expect(document.activeElement).toBe(closeButton)
@@ -315,27 +317,21 @@ describe('MobileMenu', () => {
 
   describe('Navigation Links', () => {
     it('should_mark_home_link_active_when_pathname_root', () => {
-      const { container } = render(
-        <MobileMenu {...defaultProps} pathname="/" />
-      )
+      render(<MobileMenu {...defaultProps} pathname="/" />)
 
       const workLink = screen.getByText('WORK').closest('a')
       expect(workLink).toHaveClass('active')
     })
 
     it('should_mark_about_link_active_when_pathname_about', () => {
-      const { container } = render(
-        <MobileMenu {...defaultProps} pathname="/about" />
-      )
+      render(<MobileMenu {...defaultProps} pathname="/about" />)
 
       const aboutLink = screen.getByText('ABOUT').closest('a')
       expect(aboutLink).toHaveClass('active')
     })
 
     it('should_mark_contact_link_active_when_pathname_contact', () => {
-      const { container } = render(
-        <MobileMenu {...defaultProps} pathname="/contact" />
-      )
+      render(<MobileMenu {...defaultProps} pathname="/contact" />)
 
       const contactLink = screen.getByText('CONTACT').closest('a')
       expect(contactLink).toHaveClass('active')

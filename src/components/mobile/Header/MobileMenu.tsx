@@ -1,4 +1,4 @@
-// src/components/mobile/Header/MobileMenu.tsx
+// ABOUTME: Slide-in mobile navigation menu with body scroll lock and analytics tracking
 'use client'
 
 import { useEffect } from 'react'

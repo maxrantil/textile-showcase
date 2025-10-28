@@ -1,4 +1,4 @@
-// src/components/mobile/UI/MobileButton.tsx
+// ABOUTME: Reusable mobile button with variants, loading states, and haptic feedback support
 'use client'
 import { forwardRef, ButtonHTMLAttributes } from 'react'
 

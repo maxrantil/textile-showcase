@@ -1,3 +1,4 @@
+// ABOUTME: React error boundary for mobile components with analytics tracking and custom reload handler
 'use client'
 import React, { Component, ReactNode } from 'react'
 import { MobileButton } from '../UI/MobileButton'

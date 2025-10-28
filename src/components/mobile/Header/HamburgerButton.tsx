@@ -1,4 +1,4 @@
-// src/components/mobile/Header/HamburgerButton.tsx - Update
+// ABOUTME: Animated hamburger menu button for mobile navigation with analytics tracking
 'use client'
 
 import { UmamiEvents } from '@/utils/analytics'
