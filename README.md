@@ -220,6 +220,34 @@ npm run lint
 - **Core Web Vitals**: Performance monitoring and optimization validation
 - **Cross-Browser Testing**: Chrome, Firefox, Safari compatibility
 
+### API Route Testing
+
+Comprehensive test coverage for all API endpoints:
+
+```bash
+# Run API tests
+npm test tests/api/
+
+# Run specific endpoint tests
+npm test tests/api/contact.test.ts
+npm test tests/api/projects.test.ts
+```
+
+**Coverage**:
+
+- `/api/contact` - 23 tests (validation, rate limiting, sanitization, email sending)
+- `/api/projects` - 19 tests (all GET endpoints, error handling, caching)
+- Test utilities - Reusable mocks for Next.js 15 API routes
+
+**Test Categories**:
+
+- ✅ Input validation and sanitization (XSS prevention)
+- ✅ Rate limiting enforcement (5 requests/minute per IP)
+- ✅ Email service integration (Resend API)
+- ✅ Error handling and graceful degradation
+- ✅ Cache header configuration
+- ✅ Sanity CMS integration resilience
+
 ### Performance Testing Strategy
 
 Fast TDD-compliant tests that document and validate our 83% bundle optimization:
