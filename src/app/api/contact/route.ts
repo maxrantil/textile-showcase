@@ -18,6 +18,13 @@ function sanitizeHtml(str: string): string {
 // Rate limiting - simple in-memory store
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>()
 
+// Export for testing purposes only
+export function clearRateLimitStore() {
+  if (process.env.NODE_ENV === 'test') {
+    rateLimitStore.clear()
+  }
+}
+
 function checkRateLimit(ip: string): boolean {
   const now = Date.now()
   const limit = rateLimitStore.get(ip)
@@ -39,33 +46,50 @@ function checkRateLimit(ip: string): boolean {
   return true
 }
 
-// Clean up old entries periodically
-setInterval(() => {
-  const now = Date.now()
-  for (const [ip, limit] of rateLimitStore.entries()) {
-    if (now > limit.resetTime) {
-      rateLimitStore.delete(ip)
+// Clean up old entries periodically (skip in test environment)
+if (process.env.NODE_ENV !== 'test') {
+  setInterval(() => {
+    const now = Date.now()
+    for (const [ip, limit] of rateLimitStore.entries()) {
+      if (now > limit.resetTime) {
+        rateLimitStore.delete(ip)
+      }
     }
-  }
-}, 60000) // Clean up every minute
+  }, 60000) // Clean up every minute
+}
 
 // Validation schema for contact form
 const contactFormSchema = z.object({
   name: z
     .string()
-    .min(1, 'Name is required')
-    .max(100, 'Name is too long')
-    .transform((str) => sanitizeHtml(str.trim())),
+    .transform((str) => str.trim())
+    .pipe(
+      z
+        .string()
+        .min(1, 'Name is required')
+        .max(100, 'Name is too long')
+        .transform((str) => sanitizeHtml(str))
+    ),
   email: z
     .string()
-    .email('Invalid email address')
-    .max(254, 'Email is too long')
-    .transform((str) => sanitizeHtml(str.trim())),
+    .transform((str) => str.trim())
+    .pipe(
+      z
+        .string()
+        .email('Invalid email address')
+        .max(254, 'Email is too long')
+        .transform((str) => sanitizeHtml(str))
+    ),
   message: z
     .string()
-    .min(10, 'Message must be at least 10 characters')
-    .max(5000, 'Message is too long')
-    .transform((str) => sanitizeHtml(str.trim())),
+    .transform((str) => str.trim())
+    .pipe(
+      z
+        .string()
+        .min(10, 'Message must be at least 10 characters')
+        .max(5000, 'Message is too long')
+        .transform((str) => sanitizeHtml(str))
+    ),
 })
 
 export async function POST(request: NextRequest) {

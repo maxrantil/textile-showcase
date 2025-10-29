@@ -95,11 +95,24 @@ if (!global.Request) {
         value: typeof input === 'string' ? input : input.toString(),
         writable: false,
       })
+      this.method = init?.method || 'GET'
+      this.headers = new Headers(init?.headers)
+      this._body = init?.body || undefined
     }
     headers = new Headers()
     method = 'GET'
-    json = jest.fn()
-    text = jest.fn()
+    private _body?: BodyInit
+
+    async json() {
+      if (typeof this._body === 'string') {
+        return JSON.parse(this._body)
+      }
+      return {}
+    }
+
+    async text() {
+      return typeof this._body === 'string' ? this._body : ''
+    }
   } as unknown as typeof Request
 }
 
@@ -108,12 +121,25 @@ if (!global.Response) {
     constructor(
       public body?: BodyInit,
       public init?: ResponseInit
-    ) {}
+    ) {
+      this.status = init?.status || 200
+      this.ok = this.status >= 200 && this.status < 300
+      this.headers = new Headers(init?.headers)
+    }
     headers = new Headers()
     status = 200
     ok = true
-    json = jest.fn()
-    text = jest.fn()
+
+    async json() {
+      if (typeof this.body === 'string') {
+        return JSON.parse(this.body)
+      }
+      return this.body
+    }
+
+    async text() {
+      return typeof this.body === 'string' ? this.body : ''
+    }
 
     static json(data: unknown, init?: ResponseInit) {
       const response = new MockResponse(JSON.stringify(data), init)

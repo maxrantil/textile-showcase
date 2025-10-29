@@ -132,13 +132,12 @@ repos:
       - id: no-ai-attribution-commit-msg
         name: Block AI Attribution in Commit Messages
         description: Prevent AI/agent attribution in commit message body
-        entry: bash
+        entry: python3
         language: system
         stages: [commit-msg]
         args:
           - -c
           - |
-            python3 - "$1" << 'PYEOF'
             import sys, re
 
             if len(sys.argv) < 2:
@@ -175,7 +174,6 @@ repos:
                     print('  • PRD/PDR documents')
                     print('')
                     sys.exit(1)
-            PYEOF
 
       # -------------------------------------------------------------------------
       # CONVENTIONAL COMMIT FORMAT VALIDATION
@@ -183,13 +181,12 @@ repos:
       - id: conventional-commit-msg
         name: Enforce Conventional Commit Format
         description: Validate commit messages follow conventional commit format
-        entry: bash
+        entry: python3
         language: system
         stages: [commit-msg]
         args:
           - -c
           - |
-            python3 - "$1" << 'PYEOF'
             import sys, re
 
             if len(sys.argv) < 2:
@@ -216,7 +213,6 @@ repos:
                 print('')
                 print('Breaking changes: Add ! after type/scope (e.g., feat!: remove old API)')
                 sys.exit(1)
-            PYEOF
 
       # -------------------------------------------------------------------------
       # CREDENTIALS/SECRETS DETECTION
