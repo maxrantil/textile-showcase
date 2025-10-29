@@ -14,7 +14,8 @@ export class HomePage {
   constructor(page: Page) {
     this.page = page
     this.header = page.locator('header')
-    this.projectCards = page.locator('[data-testid="project-card"]')
+    // Gallery items use data-testid="gallery-item-0", "gallery-item-1", etc.
+    this.projectCards = page.locator('[data-testid^="gallery-item-"]')
     this.firstProject = this.projectCards.first()
   }
 

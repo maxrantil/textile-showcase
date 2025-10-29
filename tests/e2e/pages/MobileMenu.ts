@@ -37,7 +37,8 @@ export class MobileMenu {
    */
   async close() {
     await this.hamburgerButton.click()
-    await this.menuContainer.waitFor({ state: 'hidden' })
+    // Wait a moment for transition/animation
+    await this.page.waitForTimeout(500)
   }
 
   /**

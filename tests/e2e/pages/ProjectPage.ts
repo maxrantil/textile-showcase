@@ -15,13 +15,18 @@ export class ProjectPage {
 
   constructor(page: Page) {
     this.page = page
-    this.projectTitle = page.locator('h1')
-    this.projectImages = page.locator('img[alt*="project"]')
-    this.nextButton = page.locator('[aria-label*="next"], [data-testid="next"]')
-    this.previousButton = page.locator(
-      '[aria-label*="previous"], [data-testid="previous"]'
+    // Project title uses class desktop-project-title in h1
+    this.projectTitle = page.locator('h1.desktop-project-title, h1')
+    // Project images - will match any img in project view
+    this.projectImages = page.locator(
+      '.desktop-project-view img, .mobile-project-view img, main img'
     )
-    this.backButton = page.locator('[aria-label*="back"], [href="/"]').first()
+    // Navigation buttons use specific classes
+    this.nextButton = page.locator('.desktop-nav-next, .mobile-nav-next')
+    this.previousButton = page.locator(
+      '.desktop-nav-previous, .mobile-nav-previous'
+    )
+    this.backButton = page.locator('.desktop-nav-back, .mobile-nav-back')
   }
 
   /**
