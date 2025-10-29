@@ -1,3 +1,4 @@
+// ABOUTME: Mobile project detail view with image stack, project details, and navigation
 'use client'
 import { MobileImageStack } from './MobileImageStack'
 import { MobileProjectDetails } from './MobileProjectDetails'

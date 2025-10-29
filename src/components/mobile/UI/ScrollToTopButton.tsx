@@ -1,3 +1,4 @@
+// ABOUTME: Scroll to top button component with automatic visibility based on scroll position
 'use client'
 
 import { useEffect, useState } from 'react'

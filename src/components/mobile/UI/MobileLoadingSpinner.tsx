@@ -1,4 +1,4 @@
-// src/components/mobile/UI/MobileLoadingSpinner.tsx
+// ABOUTME: Mobile loading spinner component with configurable size options
 'use client'
 
 interface MobileLoadingSpinnerProps {

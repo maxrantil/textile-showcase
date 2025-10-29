@@ -1,3 +1,4 @@
+// ABOUTME: Mobile project details component displaying title, description, materials, and technical specifications
 'use client'
 
 import { TextileDesign } from '@/types/textile'

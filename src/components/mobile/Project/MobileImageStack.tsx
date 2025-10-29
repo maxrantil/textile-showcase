@@ -1,3 +1,4 @@
+// ABOUTME: Mobile image gallery stack component combining main image and gallery images
 'use client'
 
 import { useMemo } from 'react'

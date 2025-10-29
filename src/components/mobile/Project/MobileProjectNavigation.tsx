@@ -1,4 +1,4 @@
-// src/components/mobile/Project/MobileProjectNavigation.tsx
+// ABOUTME: Mobile project navigation component with previous/next project buttons and back to gallery
 'use client'
 
 import { useRouter } from 'next/navigation'

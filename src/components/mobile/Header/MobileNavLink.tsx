@@ -1,4 +1,4 @@
-// src/components/mobile/Header/MobileNavLink.tsx
+// ABOUTME: Mobile navigation link component with active state styling
 'use client'
 import Link from 'next/link'
 

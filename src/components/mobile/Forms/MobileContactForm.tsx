@@ -1,4 +1,4 @@
-// src/components/mobile/Forms/MobileContactForm.tsx
+// ABOUTME: Mobile contact form with validation, API integration, and virtual keyboard handling
 'use client'
 
 import { useState } from 'react'

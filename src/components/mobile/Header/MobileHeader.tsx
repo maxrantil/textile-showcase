@@ -1,4 +1,4 @@
-// src/components/mobile/Header/MobileHeader.tsx
+// ABOUTME: Mobile header component with logo, hamburger menu, and navigation state management
 'use client'
 
 import { useState } from 'react'
