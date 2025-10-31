@@ -236,8 +236,14 @@ npm run test:unit
 # Integration tests
 npm run test:integration
 
-# E2E tests
+# E2E tests (all browsers and devices)
 npm run test:e2e
+
+# E2E tests with visible browser (debugging)
+npm run test:e2e:headed
+
+# Run all test types (unit + integration + E2E)
+npm test && npm run test:e2e
 
 # Type checking
 npm run type-check
@@ -283,6 +289,165 @@ npm test tests/api/projects.test.ts
 - ✅ Error handling and graceful degradation
 - ✅ Cache header configuration
 - ✅ Sanity CMS integration resilience
+
+### End-to-End Testing with Playwright
+
+**55 E2E tests** covering critical user journeys across **8 browser/device configurations** with comprehensive accessibility and performance validation.
+
+#### Test Coverage Categories
+
+**1. User Journey Tests** (16 tests)
+
+- Gallery browsing with lazy loading
+- Keyboard navigation workflows
+- Mobile touch interactions
+- Error handling and retry mechanisms
+- Slow network conditions (3G simulation)
+- Accessibility with screen readers
+
+**2. Performance Tests** (18 tests)
+
+- Dynamic import optimization
+- Progressive hydration metrics
+- Core Web Vitals validation
+- Device-specific performance tuning
+- Bundle size optimization
+
+**3. Bundle Optimization Tests** (10 tests)
+
+- Route-specific chunk loading
+- Sanity CMS lazy loading
+- Studio route isolation
+- Dynamic loading behavior
+
+**4. Accessibility Tests** (11 tests)
+
+- Automated a11y scans with axe-core
+- Keyboard navigation compliance
+- Screen reader compatibility
+- WCAG 2.1 AA color contrast
+- Focus management validation
+
+#### Browser & Device Coverage
+
+**Desktop Browsers:**
+
+- Chrome (1920x1080)
+- Firefox (1920x1080)
+- Safari (1920x1080)
+- Small Desktop (1366x768)
+
+**Mobile Devices:**
+
+- Pixel 5 (Android/Chrome)
+- iPhone 13 (iOS/Safari)
+- iPhone 13 Landscape
+
+**Tablet:**
+
+- iPad Pro
+
+#### Running E2E Tests
+
+```bash
+# Run all E2E tests (headless, all browsers)
+npm run test:e2e
+
+# Run with visible browser (debugging)
+npm run test:e2e:headed
+
+# Run specific test file
+npx playwright test tests/e2e/workflows/gallery-browsing.spec.ts
+
+# Run tests for specific browser
+npx playwright test --project="Desktop Chrome"
+
+# Run mobile-only tests
+npx playwright test --project="Mobile Chrome" --project="Mobile Safari"
+
+# View test report
+npx playwright show-report
+```
+
+#### Test Environment Setup
+
+**Prerequisites:**
+
+- Node.js 18+
+- Playwright browsers installed: `npx playwright install`
+- Dev server running (automatically started by tests)
+
+**Environment Variables:**
+
+```env
+E2E_BASE_URL=http://localhost:3000  # Optional, defaults to localhost:3000
+```
+
+#### Test Structure
+
+```
+tests/e2e/
+├── workflows/              # User journey tests
+│   ├── gallery-browsing.spec.ts
+│   ├── image-user-journeys.spec.ts
+│   └── smoke-test.spec.ts
+├── performance/            # Performance validation tests
+│   └── gallery-performance.spec.ts
+├── bundle-loading.spec.ts  # Bundle optimization tests
+├── optimized-image-a11y.spec.ts  # Accessibility tests
+├── utils/
+│   └── page-objects/       # Page Object Model pattern
+│       └── gallery-page.ts
+└── fixtures/               # Test data and helpers
+    ├── form-data.ts
+    └── gallery-data.ts
+```
+
+#### Debugging E2E Tests
+
+**Visual Debugging:**
+
+```bash
+# Run with browser visible
+npm run test:e2e:headed
+
+# Run with Playwright Inspector
+npx playwright test --debug
+
+# Run specific test with inspector
+npx playwright test tests/e2e/workflows/smoke-test.spec.ts --debug
+```
+
+**Failure Artifacts:**
+
+- Screenshots: `test-results/[test-name]/test-failed-1.png`
+- Videos: `test-results/[test-name]/video.webm`
+- Traces: `test-results/[test-name]/trace.zip` (view with `npx playwright show-trace`)
+
+#### Troubleshooting
+
+**Tests fail with "page.goto: net::ERR_CONNECTION_REFUSED":**
+
+- Ensure dev server is running: `npm run dev`
+- Or let Playwright auto-start: config includes `webServer` setup
+
+**Tests timeout on slow machines:**
+
+- Increase timeout in `playwright.config.ts`
+- Run fewer browsers: `npx playwright test --project="Desktop Chrome"`
+
+**Mobile tests fail:**
+
+- Verify mobile browsers installed: `npx playwright install`
+- Check viewport configuration in test files
+
+#### CI/CD Integration
+
+E2E tests run automatically on GitHub Actions:
+
+- Runs on all PRs and master branch pushes
+- Parallel execution across browser configurations
+- Artifacts uploaded on failure (screenshots, videos, traces)
 
 ### Performance Testing Strategy
 

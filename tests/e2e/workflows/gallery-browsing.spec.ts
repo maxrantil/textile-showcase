@@ -21,6 +21,8 @@ test.describe('Gallery Browsing Complete Workflows', () => {
       // Test right arrow navigation
       const initialIndex = await galleryPage.getActiveItemIndex()
       await galleryPage.navigateRight()
+      const newIndex = await galleryPage.getActiveItemIndex()
+      expect(newIndex).not.toBe(initialIndex) // Verify navigation changed active item
 
       // Test navigation to project
       await galleryPage.openActiveProject()
@@ -31,7 +33,7 @@ test.describe('Gallery Browsing Complete Workflows', () => {
       await page.waitForURL('/')
     })
 
-    test('Gallery performance and loading', async ({ page }) => {
+    test('Gallery performance and loading', async () => {
       const startTime = Date.now()
       await galleryPage.goto()
       const loadTime = Date.now() - startTime
