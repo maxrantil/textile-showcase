@@ -122,6 +122,7 @@ export function Header() {
                 pathname === item.href ? 'mobile-menu__link--active' : ''
               }`}
               onClick={() => setIsMenuOpen(false)}
+              tabIndex={isMenuOpen ? 0 : -1}
             >
               {item.label}
             </Link>
