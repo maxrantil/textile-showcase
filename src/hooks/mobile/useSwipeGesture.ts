@@ -63,7 +63,9 @@ export function useSwipeGesture({
         startTime: touch.time,
       }
 
-      console.log('🤏 Touch start:', { x: touch.x, y: touch.y, enabled })
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🤏 Touch start:', { x: touch.x, y: touch.y, enabled })
+      }
     },
     [enabled]
   )
@@ -85,11 +87,13 @@ export function useSwipeGesture({
       if (hasSignificantMovement) {
         if (!isSwiping) {
           setIsSwiping(true)
-          console.log('🔄 Swipe detected:', {
-            deltaX,
-            deltaY,
-            isHorizontal: isHorizontalMovement,
-          })
+          if (process.env.NODE_ENV === 'development') {
+            console.log('🔄 Swipe detected:', {
+              deltaX,
+              deltaY,
+              isHorizontal: isHorizontalMovement,
+            })
+          }
         }
       }
     },
@@ -97,14 +101,18 @@ export function useSwipeGesture({
   )
 
   const handleTouchEnd = useCallback(() => {
-    console.log('🏁 Touch end called', {
-      enabled,
-      hasTouchStart: !!touchStart,
-      hasSwipeRef: !!swipeRef.current,
-    })
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🏁 Touch end called', {
+        enabled,
+        hasTouchStart: !!touchStart,
+        hasSwipeRef: !!swipeRef.current,
+      })
+    }
 
     if (!enabled || !touchStart || !swipeRef.current) {
-      console.log('🚫 Touch end - missing data')
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🚫 Touch end - missing data')
+      }
       setTouchStart(null)
       setIsSwiping(false)
       swipeRef.current = null
@@ -115,7 +123,9 @@ export function useSwipeGesture({
     const swipeTime = endTime - swipeRef.current.startTime
 
     if (swipeTime > maxSwipeTime) {
-      console.log('⏰ Swipe too slow:', swipeTime + 'ms')
+      if (process.env.NODE_ENV === 'development') {
+        console.log('⏰ Swipe too slow:', swipeTime + 'ms')
+      }
       setTouchStart(null)
       setIsSwiping(false)
       swipeRef.current = null
@@ -127,36 +137,48 @@ export function useSwipeGesture({
     const absDeltaX = Math.abs(deltaX)
     const absDeltaY = Math.abs(deltaY)
 
-    console.log('📊 Swipe analysis:', {
-      deltaX,
-      deltaY,
-      absDeltaX,
-      absDeltaY,
-      minDistance: minSwipeDistance,
-      swipeTime,
-    })
+    if (process.env.NODE_ENV === 'development') {
+      console.log('📊 Swipe analysis:', {
+        deltaX,
+        deltaY,
+        absDeltaX,
+        absDeltaY,
+        minDistance: minSwipeDistance,
+        swipeTime,
+      })
+    }
 
     const isHorizontalSwipe = absDeltaX > absDeltaY
     const isVerticalSwipe = absDeltaY > absDeltaX
 
     if (isHorizontalSwipe && absDeltaX > minSwipeDistance) {
       if (deltaX > 0) {
-        console.log('👈 Swipe LEFT detected - calling onSwipeLeft')
+        if (process.env.NODE_ENV === 'development') {
+          console.log('👈 Swipe LEFT detected - calling onSwipeLeft')
+        }
         onSwipeLeft?.()
       } else {
-        console.log('👉 Swipe RIGHT detected - calling onSwipeRight')
+        if (process.env.NODE_ENV === 'development') {
+          console.log('👉 Swipe RIGHT detected - calling onSwipeRight')
+        }
         onSwipeRight?.()
       }
     } else if (isVerticalSwipe && absDeltaY > minSwipeDistance) {
       if (deltaY > 0) {
-        console.log('👆 Swipe UP detected')
+        if (process.env.NODE_ENV === 'development') {
+          console.log('👆 Swipe UP detected')
+        }
         onSwipeUp?.()
       } else {
-        console.log('👇 Swipe DOWN detected')
+        if (process.env.NODE_ENV === 'development') {
+          console.log('👇 Swipe DOWN detected')
+        }
         onSwipeDown?.()
       }
     } else {
-      console.log('❌ No valid swipe detected - not enough distance')
+      if (process.env.NODE_ENV === 'development') {
+        console.log('❌ No valid swipe detected - not enough distance')
+      }
     }
 
     // Reset state
@@ -201,13 +223,15 @@ export function useHorizontalSwipe({
   minSwipeDistance?: number
   maxSwipeTime?: number
 }) {
-  console.log('🔧 useHorizontalSwipe initialized with:', {
-    hasOnSwipeLeft: !!onSwipeLeft,
-    hasOnSwipeRight: !!onSwipeRight,
-    enabled,
-    minSwipeDistance,
-    maxSwipeTime,
-  })
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🔧 useHorizontalSwipe initialized with:', {
+      hasOnSwipeLeft: !!onSwipeLeft,
+      hasOnSwipeRight: !!onSwipeRight,
+      enabled,
+      minSwipeDistance,
+      maxSwipeTime,
+    })
+  }
 
   return useSwipeGesture({
     onSwipeLeft,
