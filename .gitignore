@@ -44,7 +44,6 @@ next-env.d.ts
 .sanity
 
 # Development workflow files (keep local)
-CLAUDE.md
 AGENT_FEEDBACK.md
 AGENT_REVIEW.md
 

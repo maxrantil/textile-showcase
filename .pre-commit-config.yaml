@@ -104,7 +104,7 @@ repos:
           - -c
           - |
             # Exclude common documentation and config files
-            EXCLUDES=":(exclude).pre-commit-config.yaml :(exclude)docs/ :(exclude)SESSION*.md :(exclude)*HANDOFF*.md :(exclude)test-*.sh :(exclude)test-*.txt :(exclude)test-*.log"
+            EXCLUDES=":(exclude).pre-commit-config.yaml :(exclude)docs/ :(exclude)SESSION*.md :(exclude)*HANDOFF*.md :(exclude)CLAUDE.md :(exclude)test-*.sh :(exclude)test-*.txt :(exclude)test-*.log"
 
             # Get staged changes
             DIFF=$(git diff --cached --diff-filter=ACMR -- $EXCLUDES | grep "^+")
@@ -121,7 +121,7 @@ repos:
             result = subprocess.run(
                 ['git', 'diff', '--cached', '--diff-filter=ACMR', '--',
                  ':(exclude).pre-commit-config.yaml', ':(exclude)docs/',
-                 ':(exclude)SESSION*.md', ':(exclude)*HANDOFF*.md',
+                 ':(exclude)SESSION*.md', ':(exclude)*HANDOFF*.md', ':(exclude)CLAUDE.md',
                  ':(exclude)test-*.sh', ':(exclude)test-*.txt', ':(exclude)test-*.log'],
                 capture_output=True, text=True
             )
