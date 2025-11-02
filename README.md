@@ -292,7 +292,7 @@ npm test tests/api/projects.test.ts
 
 ### End-to-End Testing with Playwright
 
-**55 E2E tests** covering critical user journeys across **8 browser/device configurations** with comprehensive accessibility and performance validation.
+**77 E2E tests** covering critical user journeys across **8 browser/device configurations** with comprehensive accessibility and performance validation.
 
 #### Test Coverage Categories
 
