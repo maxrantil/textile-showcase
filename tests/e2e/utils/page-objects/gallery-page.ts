@@ -33,7 +33,7 @@ export class GalleryPage {
     // Wait for loading spinner to disappear if present
     try {
       await this.loadingSpinner.waitFor({ state: 'hidden', timeout: 5000 })
-    } catch (e) {
+    } catch {
       // Loading spinner might not exist, continue
     }
   }

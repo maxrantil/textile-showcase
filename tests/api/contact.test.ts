@@ -1,7 +1,8 @@
 // ABOUTME: Comprehensive API route tests for /api/contact endpoint
 // Tests validation, rate limiting, sanitization, email sending, and error handling
 
-import { POST, clearRateLimitStore } from '@/app/api/contact/route'
+import { POST } from '@/app/api/contact/route'
+import { rateLimitStore } from '@/lib/rateLimit'
 import { createMockRequest, extractResponseJson } from './utils'
 
 // Create a shared mock for Resend send function
@@ -24,7 +25,7 @@ describe('POST /api/contact', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     mockResendSend.mockClear()
-    clearRateLimitStore() // Clear rate limit state between tests
+    rateLimitStore.clear() // Clear rate limit state between tests
     // Reset environment
     process.env = { ...originalEnv }
     process.env.RESEND_API_KEY = 'test_api_key'

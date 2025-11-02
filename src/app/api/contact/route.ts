@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { z } from 'zod'
+import { checkRateLimit } from '@/lib/rateLimit'
 
 // Simple HTML sanitization function
 function sanitizeHtml(str: string): string {
@@ -13,49 +14,6 @@ function sanitizeHtml(str: string): string {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#x27;')
     .replace(/\//g, '&#x2F;')
-}
-
-// Rate limiting - simple in-memory store
-const rateLimitStore = new Map<string, { count: number; resetTime: number }>()
-
-// Export for testing purposes only
-export function clearRateLimitStore() {
-  if (process.env.NODE_ENV === 'test') {
-    rateLimitStore.clear()
-  }
-}
-
-function checkRateLimit(ip: string): boolean {
-  const now = Date.now()
-  const limit = rateLimitStore.get(ip)
-
-  if (!limit || now > limit.resetTime) {
-    // Reset or initialize
-    rateLimitStore.set(ip, {
-      count: 1,
-      resetTime: now + 60000, // 1 minute window
-    })
-    return true
-  }
-
-  if (limit.count >= 5) {
-    return false // Rate limit exceeded
-  }
-
-  limit.count++
-  return true
-}
-
-// Clean up old entries periodically (skip in test environment)
-if (process.env.NODE_ENV !== 'test') {
-  setInterval(() => {
-    const now = Date.now()
-    for (const [ip, limit] of rateLimitStore.entries()) {
-      if (now > limit.resetTime) {
-        rateLimitStore.delete(ip)
-      }
-    }
-  }, 60000) // Clean up every minute
 }
 
 // Validation schema for contact form
