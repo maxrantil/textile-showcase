@@ -137,13 +137,9 @@ jobs:
             git fetch origin
             git reset --hard origin/master
 
-            # Install dependencies (only if package.json changed)
-            if git diff HEAD~1 --name-only | grep -q "package.json\|package-lock.json"; then
-              echo "📦 Installing dependencies..."
-              npm ci
-            else
-              echo "⏭️ No dependency changes, skipping npm ci"
-            fi
+            # Always install dependencies to ensure Node version compatibility
+            echo "📦 Installing dependencies..."
+            npm ci
 
             # Create production environment file
             echo "📝 Setting up production environment..."
