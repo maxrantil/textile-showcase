@@ -45,6 +45,12 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps ${{ matrix.project == 'Desktop Chrome' && 'chromium' || matrix.project == 'Mobile Chrome' && 'chromium' || 'webkit' }}
 
+      - name: Setup Environment Variables
+        run: |
+          echo "NEXT_PUBLIC_SANITY_PROJECT_ID=${{ secrets.NEXT_PUBLIC_SANITY_PROJECT_ID }}" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_SANITY_DATASET=production" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_SANITY_API_VERSION=2023-05-03" >> $GITHUB_ENV
+
       - name: Run Playwright tests
         run: npx playwright test --project="${{ matrix.project }}"
         env:
