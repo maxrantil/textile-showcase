@@ -7,17 +7,26 @@ on:
     branches: [master]
     types: [opened, synchronize, reopened, ready_for_review]
 
+# Cancel previous runs when new commits are pushed to the same PR
+concurrency:
+  group: e2e-tests-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   e2e-tests:
     name: Run Playwright E2E Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 40
     # Skip draft PRs unless explicitly requested
     if: github.event.pull_request.draft == false || contains(github.event.pull_request.labels.*.name, 'test-e2e')
 
     strategy:
       fail-fast: false
       matrix:
-        # Test on multiple projects for comprehensive coverage
+        # Strategic 3-browser CI selection (full 8-browser suite tested locally)
+        # Desktop Chrome: 65% market share, Chromium engine
+        # Mobile Chrome: 40% mobile market share, touch interactions
+        # Desktop Safari: 20% market share, WebKit engine, iOS compatibility
         project: ['Desktop Chrome', 'Mobile Chrome', 'Desktop Safari']
 
     steps:
