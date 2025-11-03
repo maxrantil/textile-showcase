@@ -2,7 +2,9 @@ import { TextileDesign } from '@/types/textile'
 
 export async function getProject(slug: string): Promise<TextileDesign | null> {
   try {
-    console.log(`🔍 Fetching project from API: ${slug}`)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔍 Fetching project from API: ${slug}`)
+    }
 
     // Fetch from our API route instead of direct Sanity queries
     const baseUrl = process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'
@@ -13,22 +15,28 @@ export async function getProject(slug: string): Promise<TextileDesign | null> {
 
     if (!response.ok) {
       if (response.status === 404) {
-        console.warn(`⚠️ Project not found: ${slug}`)
+        if (process.env.NODE_ENV === 'development') {
+          console.warn(`⚠️ Project not found: ${slug}`)
+        }
         return null
       }
-      console.warn(
-        `⚠️ API responded with status: ${response.status} for ${slug}`
-      )
+      if (process.env.NODE_ENV === 'development') {
+        console.warn(
+          `⚠️ API responded with status: ${response.status} for ${slug}`
+        )
+      }
       return null
     }
 
     const data = await response.json()
     const project = data.project
 
-    if (project) {
-      console.log(`✅ Project found: ${project.title}`)
-    } else {
-      console.warn(`⚠️ Project not found: ${slug}`)
+    if (process.env.NODE_ENV === 'development') {
+      if (project) {
+        console.log(`✅ Project found: ${project.title}`)
+      } else {
+        console.warn(`⚠️ Project not found: ${slug}`)
+      }
     }
 
     return project
@@ -40,7 +48,9 @@ export async function getProject(slug: string): Promise<TextileDesign | null> {
 
 export async function getAllProjectSlugs() {
   try {
-    console.log('🏗️ Generating static params (build-time Sanity import)...')
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🏗️ Generating static params (build-time Sanity import)...')
+    }
 
     // Build-time only: Direct Sanity import for generateStaticParams
     const [{ queries }, { resilientFetch }] = await Promise.all([
@@ -62,11 +72,15 @@ export async function getAllProjectSlugs() {
     )
 
     if (!designs || designs.length === 0) {
-      console.warn('⚠️ No designs found for static generation')
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('⚠️ No designs found for static generation')
+      }
       return []
     }
 
-    console.log(`✅ Found ${designs.length} designs for static generation`)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`✅ Found ${designs.length} designs for static generation`)
+    }
 
     return designs
       .filter((design) => design.slug)
@@ -85,7 +99,9 @@ export async function getProjectWithNavigation(slug: string): Promise<{
   previousProject?: { slug: string; title: string }
 }> {
   try {
-    console.log(`🔍 Fetching project with navigation from API: ${slug}`)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔍 Fetching project with navigation from API: ${slug}`)
+    }
 
     // Fetch from our API route instead of direct Sanity queries
     const baseUrl = process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'
@@ -96,25 +112,33 @@ export async function getProjectWithNavigation(slug: string): Promise<{
 
     if (!response.ok) {
       if (response.status === 404) {
-        console.warn(`⚠️ Project not found: ${slug}`)
+        if (process.env.NODE_ENV === 'development') {
+          console.warn(`⚠️ Project not found: ${slug}`)
+        }
         return { project: null }
       }
-      console.warn(
-        `⚠️ API responded with status: ${response.status} for ${slug}`
-      )
+      if (process.env.NODE_ENV === 'development') {
+        console.warn(
+          `⚠️ API responded with status: ${response.status} for ${slug}`
+        )
+      }
       return { project: null }
     }
 
     const data = await response.json()
 
     if (!data.project) {
-      console.warn(`⚠️ Project not found: ${slug}`)
+      if (process.env.NODE_ENV === 'development') {
+        console.warn(`⚠️ Project not found: ${slug}`)
+      }
       return { project: null }
     }
 
-    console.log(
-      `✅ Navigation data from API: previous=${data.previousProject?.title}, next=${data.nextProject?.title}`
-    )
+    if (process.env.NODE_ENV === 'development') {
+      console.log(
+        `✅ Navigation data from API: previous=${data.previousProject?.title}, next=${data.nextProject?.title}`
+      )
+    }
 
     return {
       project: data.project,

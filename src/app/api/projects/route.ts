@@ -6,7 +6,9 @@ import { TextileDesign } from '@/types/textile'
 
 export async function GET() {
   try {
-    console.log('🔍 API: Fetching all projects')
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔍 API: Fetching all projects')
+    }
 
     // Server-side dynamic import - Sanity only loaded on API routes
     const [{ queries }, { resilientFetch }] = await Promise.all([
@@ -26,11 +28,15 @@ export async function GET() {
     )
 
     if (!designs || designs.length === 0) {
-      console.warn('⚠️ API: No designs found')
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('⚠️ API: No designs found')
+      }
       return NextResponse.json({ designs: [] }, { status: 200 })
     }
 
-    console.log(`✅ API: Successfully fetched ${designs.length} projects`)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`✅ API: Successfully fetched ${designs.length} projects`)
+    }
 
     // Add cache headers for client-side caching
     const response = NextResponse.json({ designs }, { status: 200 })
