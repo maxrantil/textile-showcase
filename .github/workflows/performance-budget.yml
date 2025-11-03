@@ -59,6 +59,10 @@ jobs:
           echo "Dependencies installed successfully"
 
       - name: Build application
+        env:
+          NEXT_PUBLIC_SANITY_PROJECT_ID: 'ci-build-dummy'
+          NEXT_PUBLIC_SANITY_DATASET: 'production'
+          NEXT_PUBLIC_SANITY_API_VERSION: '2023-05-03'
         run: |
           echo "Building with production optimizations..."
           npm run build:production
@@ -169,6 +173,10 @@ jobs:
           npm install -g @lhci/cli@0.12.x
 
       - name: Build application
+        env:
+          NEXT_PUBLIC_SANITY_PROJECT_ID: 'ci-build-dummy'
+          NEXT_PUBLIC_SANITY_DATASET: 'production'
+          NEXT_PUBLIC_SANITY_API_VERSION: '2023-05-03'
         run: |
           echo "Building for Lighthouse testing..."
           npm run build:production

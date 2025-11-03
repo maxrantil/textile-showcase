@@ -22,8 +22,15 @@ export default async function health(req, res) {
       // Dynamic import to avoid bundling Sanity in main chunks
       const { createClient } = await import('next-sanity')
 
+      const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID
+      if (!projectId) {
+        throw new Error(
+          'NEXT_PUBLIC_SANITY_PROJECT_ID is required but not configured'
+        )
+      }
+
       const client = createClient({
-        projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || '2y05n6hf',
+        projectId,
         dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || 'production',
         apiVersion: process.env.NEXT_PUBLIC_SANITY_API_VERSION || '2023-05-03',
         token: process.env.SANITY_API_TOKEN,
