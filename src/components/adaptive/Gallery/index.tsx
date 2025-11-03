@@ -23,6 +23,7 @@ interface AdaptiveGalleryProps {
 function GallerySkeleton() {
   return (
     <div
+      data-testid="gallery-loading-skeleton"
       style={{
         minHeight: '400px',
         width: '100%',
