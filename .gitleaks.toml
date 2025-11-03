@@ -9,6 +9,8 @@ paths = [
   '''README\.md$''',
   '''docs/.*\.md$''',
   '''\.github/workflows/.*''',
+  '''SESSION-HANDOFF.*\.md$''',
+  '''dist/.*''',
 ]
 
 regexes = [
