@@ -53,6 +53,7 @@ docs/implementation/
 # Build outputs and temporary files
 dist/
 __pycache__/
+.bundle-history.json
 
 # Logs and reports
 logs/
