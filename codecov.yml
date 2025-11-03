@@ -1,0 +1,79 @@
+# ABOUTME: Codecov configuration for automated coverage reporting on PRs
+
+# Documentation: https://docs.codecov.com/docs/codecov-yaml
+
+codecov:
+  require_ci_to_pass: yes
+  notify:
+    wait_for_ci: yes
+
+coverage:
+  precision: 2
+  round: down
+  range: "60...90"
+
+  status:
+    # Project coverage: maintain current baseline, prevent regression
+    project:
+      default:
+        target: auto
+        threshold: 0.5%
+        informational: false
+        if_ci_failed: error
+
+    # Patch coverage: new/modified code must be well-tested
+    patch:
+      default:
+        target: 70%
+        threshold: 5%
+        informational: false
+        if_no_uploads: error
+        if_ci_failed: error
+
+    # Changes coverage: informational only, track trends
+    changes:
+      default:
+        informational: true
+        if_ci_failed: success
+
+# PR comment configuration
+comment:
+  layout: "header,diff,flags,files,footer"
+  behavior: default
+  require_changes: false
+  require_base: no
+  require_head: yes
+  branches:
+    - master
+
+# Files to exclude from coverage analysis
+ignore:
+  - "src/**/*.d.ts"
+  - "src/sanity/**/*"
+  - "src/app/layout.tsx"
+  - "src/__mocks__/**/*"
+  - "**/*.test.ts"
+  - "**/*.test.tsx"
+  - "**/__tests__/**/*"
+  - "tests/e2e/**/*"
+  - "playwright-report/**/*"
+  - "coverage/**/*"
+  - ".next/**/*"
+  - "node_modules/**/*"
+  - "scripts/**/*"
+  - "*.config.{js,ts,mjs,cjs}"
+
+# Coverage flags for different test types
+flags:
+  unit:
+    paths:
+      - src/components/
+      - src/hooks/
+      - src/utils/
+      - src/lib/
+    carryforward: true
+
+  integration:
+    paths:
+      - tests/integration/
+    carryforward: true

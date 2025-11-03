@@ -1,0 +1,67 @@
+# ABOUTME: Unit test workflow with Jest coverage reporting to Codecov
+
+name: Unit Tests
+
+on:
+  pull_request:
+    branches: [master]
+    types: [opened, synchronize, reopened]
+  push:
+    branches: [master]
+
+# Cancel previous runs when new commits are pushed to the same PR
+concurrency:
+  group: unit-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit-tests:
+    name: Run Jest Unit Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          # Fetch full history for accurate coverage comparison
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup Environment Variables
+        run: |
+          echo "NEXT_PUBLIC_SANITY_PROJECT_ID=${{ secrets.NEXT_PUBLIC_SANITY_PROJECT_ID }}" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_SANITY_DATASET=production" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_SANITY_API_VERSION=2023-05-03" >> $GITHUB_ENV
+
+      - name: Run unit tests with coverage
+        run: npm run test:ci
+        env:
+          CI: true
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          # Token required for private repos, optional for public repos
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/coverage-final.json,./coverage/lcov.info
+          flags: unit,integration
+          name: unit-test-coverage
+          fail_ci_if_error: false  # Don't fail if Codecov is down
+          verbose: true
+
+      - name: Upload coverage artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 14
