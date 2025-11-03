@@ -4,9 +4,14 @@
 import type { ImageSource } from '@/types/textile'
 
 // Sanity CDN configuration
-const SANITY_PROJECT_ID =
-  process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || '2y05n6hf'
+const SANITY_PROJECT_ID = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID
 const SANITY_DATASET = process.env.NEXT_PUBLIC_SANITY_DATASET || 'production'
+
+if (!SANITY_PROJECT_ID) {
+  throw new Error(
+    'NEXT_PUBLIC_SANITY_PROJECT_ID is required but not configured in environment variables'
+  )
+}
 
 /**
  * Generate optimized image URL from Sanity asset reference
