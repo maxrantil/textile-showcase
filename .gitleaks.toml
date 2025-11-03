@@ -1,0 +1,20 @@
+title = "Gitleaks Config for textile-showcase"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Allow known false positives"
+paths = [
+  '''README\.md$''',
+  '''docs/.*\.md$''',
+  '''\.github/workflows/.*''',
+  '''SESSION-HANDOFF.*\.md$''',
+  '''dist/.*''',
+]
+
+regexes = [
+  '''example\.com''',
+  '''REPLACEME''',
+  '''EXAMPLE_.*''',
+]
