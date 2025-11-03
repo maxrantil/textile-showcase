@@ -20,7 +20,7 @@ We take security vulnerabilities seriously. If you discover a security issue in 
 ### How to Report
 
 1. **Do NOT** create a public GitHub issue for security vulnerabilities
-2. Email security concerns to: **[Your contact email or create security@yourdomain.com]**
+2. Report via GitHub Security Advisories: https://github.com/maxrantil/textile-showcase/security/advisories/new
 3. Include the following information:
    - Description of the vulnerability
    - Steps to reproduce the issue
@@ -119,7 +119,6 @@ We appreciate responsible disclosure. Security researchers who report valid vuln
 ## Contact
 
 For security-related questions or concerns:
-- **Email**: [Your security contact email]
-- **GitHub**: Open a private security advisory through GitHub's interface
+- **GitHub Security Advisories**: https://github.com/maxrantil/textile-showcase/security/advisories/new
 
 Thank you for helping keep this project secure!
