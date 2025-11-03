@@ -443,11 +443,29 @@ npx playwright test tests/e2e/workflows/smoke-test.spec.ts --debug
 
 #### CI/CD Integration
 
-E2E tests run automatically on GitHub Actions:
+E2E tests run automatically on GitHub Actions for all pull requests:
 
-- Runs on all PRs and master branch pushes
-- Parallel execution across browser configurations
-- Artifacts uploaded on failure (screenshots, videos, traces)
+**Workflow Configuration:**
+- **Trigger**: Automatically runs on all non-draft PRs to master
+- **Browser Matrix**: Tests run in parallel across Desktop Chrome, Mobile Chrome, and Desktop Safari
+- **Efficiency**: Only installs required browser binaries per project (saves CI time)
+- **Failure Handling**: `fail-fast: false` ensures all browser tests complete even if one fails
+
+**Artifacts & Debugging:**
+- **Test Results**: JSON reports uploaded for all test runs (7-day retention)
+- **HTML Reports**: Full Playwright HTML reports available for review
+- **Screenshots**: Captured on test failures for visual debugging
+- **Videos**: Test execution videos recorded on failures
+- **Traces**: Full execution traces with timeline, network, and console logs
+
+**Draft PR Behavior:**
+- Draft PRs skip E2E tests by default to save CI resources
+- Add the `test-e2e` label to any draft PR to force E2E test execution
+
+**Viewing Results:**
+- Check the "E2E Tests" workflow in the PR's Checks tab
+- Download artifacts from the workflow run for local inspection
+- View the Playwright HTML report artifact for detailed test results
 
 ### Performance Testing Strategy
 

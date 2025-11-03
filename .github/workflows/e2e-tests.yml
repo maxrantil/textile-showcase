@@ -1,0 +1,88 @@
+# ABOUTME: E2E testing workflow for Playwright tests in CI/CD pipeline
+
+name: E2E Tests
+
+on:
+  pull_request:
+    branches: [master]
+    types: [opened, synchronize, reopened, ready_for_review]
+
+# Cancel previous runs when new commits are pushed to the same PR
+concurrency:
+  group: e2e-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e-tests:
+    name: Run Playwright E2E Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    # Temporary: Non-blocking while Issue #132 implements missing features
+    # Some tests validate unimplemented features (/projects page, advanced scenarios)
+    # Remove this when all features are built and tests pass
+    continue-on-error: true
+    # Skip draft PRs unless explicitly requested
+    if: github.event.pull_request.draft == false || contains(github.event.pull_request.labels.*.name, 'test-e2e')
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # Strategic 3-browser CI selection (full 8-browser suite tested locally)
+        # Desktop Chrome: 65% market share, Chromium engine
+        # Mobile Chrome: 40% mobile market share, touch interactions
+        # Desktop Safari: 20% market share, WebKit engine, iOS compatibility
+        project: ['Desktop Chrome', 'Mobile Chrome', 'Desktop Safari']
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps ${{ matrix.project == 'Desktop Chrome' && 'chromium' || matrix.project == 'Mobile Chrome' && 'chromium' || 'webkit' }}
+
+      - name: Setup Environment Variables
+        run: |
+          echo "NEXT_PUBLIC_SANITY_PROJECT_ID=${{ secrets.NEXT_PUBLIC_SANITY_PROJECT_ID }}" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_SANITY_DATASET=production" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_SANITY_API_VERSION=2023-05-03" >> $GITHUB_ENV
+
+      - name: Run Playwright tests
+        run: npx playwright test --project="${{ matrix.project }}"
+        env:
+          CI: true
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results-${{ matrix.project }}
+          path: test-results/
+          retention-days: 7
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ matrix.project }}
+          path: playwright-report/
+          retention-days: 7
+
+      - name: Upload test artifacts (videos, screenshots, traces)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-artifacts-${{ matrix.project }}
+          path: |
+            test-results/**/*.png
+            test-results/**/*.webm
+            test-results/**/*.zip
+          retention-days: 7

@@ -54,6 +54,7 @@ const GalleryItem = memo(function GalleryItem({
       onClick={handleClick}
       role="button"
       tabIndex={0}
+      aria-label={`View ${design.title}${design.year ? ` from ${design.year}` : ''} project details`}
       data-testid={`gallery-item-${index}`}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
