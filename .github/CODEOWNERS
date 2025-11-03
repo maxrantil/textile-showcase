@@ -1,0 +1,32 @@
+# CODEOWNERS
+# This file defines individuals or teams responsible for code in the repository.
+# Pull requests will automatically request reviews from relevant owners.
+#
+# Documentation: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owner for everything in the repo
+* @maxrantil
+
+# Documentation files
+*.md @maxrantil
+/docs/ @maxrantil
+
+# Configuration files
+/.github/ @maxrantil
+*.config.* @maxrantil
+*.json @maxrantil
+
+# Security-related files
+/SECURITY.md @maxrantil
+/CODE_OF_CONDUCT.md @maxrantil
+/.github/workflows/ @maxrantil
+
+# Source code
+/src/ @maxrantil
+/pages/ @maxrantil
+
+# Tests
+/tests/ @maxrantil
+/e2e/ @maxrantil
+*.test.* @maxrantil
+*.spec.* @maxrantil
