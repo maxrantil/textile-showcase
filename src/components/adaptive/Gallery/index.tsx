@@ -3,7 +3,7 @@
 'use client'
 
 import { useDeviceType } from '@/hooks/shared/useDeviceType'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import dynamic from 'next/dynamic'
 import { TextileDesign } from '@/types/textile'
 
@@ -39,12 +39,24 @@ function GallerySkeleton() {
   )
 }
 
+// Minimum skeleton display time (prevents CLS flash, allows test detection)
+const MIN_SKELETON_DISPLAY_TIME = 300 // ms
+
 export default function AdaptiveGallery({ designs }: AdaptiveGalleryProps) {
   const deviceType = useDeviceType()
   const [isHydrated, setIsHydrated] = useState(false)
+  const skeletonStartTime = useRef(Date.now())
 
   useEffect(() => {
-    setIsHydrated(true)
+    // Ensure skeleton displays for minimum time to prevent CLS and allow E2E test detection
+    const elapsed = Date.now() - skeletonStartTime.current
+    const remainingTime = Math.max(0, MIN_SKELETON_DISPLAY_TIME - elapsed)
+
+    const timer = setTimeout(() => {
+      setIsHydrated(true)
+    }, remainingTime)
+
+    return () => clearTimeout(timer)
   }, [])
 
   // Opacity transition masks desktop→mobile switch during hydration (prevents CLS)
