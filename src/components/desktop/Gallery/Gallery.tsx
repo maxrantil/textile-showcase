@@ -26,12 +26,12 @@ const GalleryItem = memo(function GalleryItem({
   design: TextileDesign
   index: number
   isActive: boolean
-  onNavigate?: () => void
+  onNavigate?: (clickedIndex: number) => void
 }) {
   const router = useRouter()
 
   const handleClick = () => {
-    onNavigate?.()
+    onNavigate?.(index)
     UmamiEvents.viewProject(design.title, design.year)
     router.push(`/project/${design.slug?.current || design._id}`)
   }
@@ -228,7 +228,7 @@ export default function Gallery({ designs }: GalleryProps) {
     }
   }, [checkScrollBounds])
 
-  // Restore scroll position
+  // Restore scroll position and focus
   useEffect(() => {
     if (designs.length === 0 || hasRestoredRef.current) return
 
@@ -244,10 +244,45 @@ export default function Gallery({ designs }: GalleryProps) {
           setTimeout(() => {
             scrollToIndex(savedIndex, true)
             hasRestoredRef.current = true
+
+            // Restore focus after scroll restoration
+            const savedFocusIndex = sessionStorage.getItem('galleryFocusIndex')
+            if (savedFocusIndex !== null && pathname === '/') {
+              const focusIndex = parseInt(savedFocusIndex, 10)
+
+              // Additional delay to ensure DOM is ready
+              setTimeout(() => {
+                const galleryItem = document.querySelector(
+                  `[data-testid="gallery-item-${focusIndex}"]`
+                ) as HTMLElement
+
+                if (galleryItem) {
+                  galleryItem.focus()
+                  sessionStorage.removeItem('galleryFocusIndex')
+                }
+              }, 200)
+            }
           }, 150)
         } else {
           hasRestoredRef.current = true
           setTimeout(checkScrollBounds, 100)
+
+          // Still try to restore focus even if no scroll position
+          const savedFocusIndex = sessionStorage.getItem('galleryFocusIndex')
+          if (savedFocusIndex !== null && pathname === '/') {
+            const focusIndex = parseInt(savedFocusIndex, 10)
+
+            setTimeout(() => {
+              const galleryItem = document.querySelector(
+                `[data-testid="gallery-item-${focusIndex}"]`
+              ) as HTMLElement
+
+              if (galleryItem) {
+                galleryItem.focus()
+                sessionStorage.removeItem('galleryFocusIndex')
+              }
+            }, 200)
+          }
         }
       } catch {
         hasRestoredRef.current = true
@@ -258,9 +293,15 @@ export default function Gallery({ designs }: GalleryProps) {
     restorePosition()
   }, [designs.length, pathname, scrollToIndex, checkScrollBounds])
 
-  // Save position before navigation
-  const handleNavigate = useCallback(() => {
-    scrollManager.saveImmediate(currentIndex, pathname ?? undefined)
+  // Save position and focus before navigation
+  const handleNavigate = useCallback((clickedIndex?: number) => {
+    // Use clicked index if provided, otherwise use currentIndex (for keyboard navigation)
+    const indexToSave = clickedIndex !== undefined ? clickedIndex : currentIndex
+    scrollManager.saveImmediate(indexToSave, pathname ?? undefined)
+    // Save current focused element index for restoration
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('galleryFocusIndex', indexToSave.toString())
+    }
   }, [pathname, currentIndex])
 
   // Keyboard navigation (with vim keybindings)
