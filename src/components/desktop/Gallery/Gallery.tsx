@@ -99,14 +99,46 @@ export default function Gallery({ designs }: GalleryProps) {
   const isScrollingRef = useRef(false)
   const hasRestoredRef = useRef(false)
 
-  // Hide static first image after hydration (visibility:hidden preserves layout)
+  // Phase 3: Hide static first image AFTER first gallery image loads (event-driven)
+  // Ensures smooth visual transition without blank screen gaps
   useEffect(() => {
-    const staticFirstImage = document.querySelector(
-      '[data-first-image="true"]'
-    ) as HTMLElement
-    if (staticFirstImage) {
-      staticFirstImage.style.visibility = 'hidden'
-      staticFirstImage.style.pointerEvents = 'none'
+    const hideFirstImage = () => {
+      const staticFirstImage = document.querySelector(
+        '[data-first-image="true"]'
+      ) as HTMLElement
+      if (staticFirstImage) {
+        staticFirstImage.style.visibility = 'hidden'
+        staticFirstImage.style.pointerEvents = 'none'
+      }
+    }
+
+    // Wait for first gallery image to load before hiding FirstImage
+    const firstGalleryImg = document.querySelector(
+      '.desktop-gallery-img'
+    ) as HTMLImageElement
+
+    if (firstGalleryImg) {
+      if (firstGalleryImg.complete && firstGalleryImg.naturalWidth > 0) {
+        // Image already loaded
+        hideFirstImage()
+      } else {
+        // Wait for image load
+        firstGalleryImg.addEventListener('load', hideFirstImage, {
+          once: true,
+        })
+
+        // Fallback: hide after 15s regardless (safety net for very slow networks)
+        const fallbackTimer = setTimeout(hideFirstImage, 15000)
+
+        return () => {
+          firstGalleryImg.removeEventListener('load', hideFirstImage)
+          clearTimeout(fallbackTimer)
+        }
+      }
+    } else {
+      // Gallery not rendered yet, use fallback timer
+      const fallbackTimer = setTimeout(hideFirstImage, 15000)
+      return () => clearTimeout(fallbackTimer)
     }
   }, [])
 

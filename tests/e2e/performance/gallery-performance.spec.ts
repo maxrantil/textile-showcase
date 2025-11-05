@@ -300,7 +300,7 @@ test.describe('Gallery Performance Optimization E2E Tests', () => {
 
       // Navigation should still work
       await expect(page.locator('header')).toBeVisible()
-      await expect(page.locator('nav, [role="navigation"]')).toBeVisible()
+      await expect(page.locator('nav, [role="navigation"]').first()).toBeVisible()
 
       // User should still be able to navigate
       const aboutLink = page.locator('a[href*="about"], a:has-text("About")')
@@ -397,7 +397,7 @@ test.describe('Gallery Performance Optimization E2E Tests', () => {
       await page.goto('/')
 
       // Should be able to interact with navigation immediately
-      const navElement = page.locator('nav, header')
+      const navElement = page.locator('nav, header').first()
       await expect(navElement).toBeVisible()
 
       // Navigation should be interactive even before gallery hydration completes

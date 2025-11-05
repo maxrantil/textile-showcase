@@ -120,11 +120,29 @@ export default function AdaptiveGallery({ designs }: AdaptiveGalleryProps) {
     }
   }, [isHydrated, deviceType, retryCount])
 
-  // Opacity transition masks desktop→mobile switch during hydration (prevents CLS)
-  const transitionStyle = {
-    opacity: isHydrated && GalleryComponent ? 1 : 0,
-    transition: 'opacity 300ms ease-in-out',
+  // Phase 3: Remove opacity hiding - images must be visible while loading on slow 3G
+  // Skeleton now overlays via z-index instead of hiding content with opacity
+  const containerStyle = {
+    position: 'relative' as const,
     minHeight: '400px', // Reserve space to prevent layout shift
+  }
+
+  const galleryStyle = {
+    // Gallery visible immediately, even during hydration
+    opacity: 1,
+    transition: 'opacity 300ms ease-in-out',
+  }
+
+  const skeletonStyle = {
+    position: 'absolute' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 10, // Overlay on top of gallery during loading
+    pointerEvents: 'none' as const, // Don't block interactions
+    opacity: !isHydrated || !GalleryComponent ? 1 : 0,
+    transition: 'opacity 300ms ease-in-out',
   }
 
   // Show error fallback if max retries exceeded
@@ -163,11 +181,14 @@ export default function AdaptiveGallery({ designs }: AdaptiveGalleryProps) {
   }
 
   return (
-    <div style={transitionStyle} suppressHydrationWarning>
-      {!isHydrated || !GalleryComponent ? (
-        <GallerySkeleton />
-      ) : (
-        <GalleryComponent designs={designs} />
+    <div style={containerStyle} suppressHydrationWarning>
+      <div style={galleryStyle}>
+        {GalleryComponent && <GalleryComponent designs={designs} />}
+      </div>
+      {(!isHydrated || !GalleryComponent) && (
+        <div style={skeletonStyle}>
+          <GallerySkeleton />
+        </div>
       )}
     </div>
   )
