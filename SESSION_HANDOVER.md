@@ -48,12 +48,16 @@ Read CLAUDE.md to understand our workflow, then continue Issue #132 Phase 4 - Ve
 **Immediate priority**: Systematic investigation and validation (4-6 hours)
 **Context**: Phase 3 completed with pragmatic triage - quick wins implemented, complex issues documented. Environment issue (dev server not running) was root cause of initial failures.
 **Reference docs**: SESSION_HANDOVER.md, docs/implementation/ISSUE-132-E2E-FEATURE-IMPLEMENTATION-2025-11-04.md, GitHub Issue #135
-**Ready state**: Clean branch, 9 commits ahead, ~72% Phase 3 pass rate
+**Ready state**: Clean branch, 10 commits ahead, ~72% Phase 3 pass rate, ⚠️ dev server NOT running (cleaned up)
 
-**CRITICAL FIRST STEP**: Verify environment health!
+**CRITICAL FIRST STEP**: Start dev server and verify environment health!
 ```bash
+# Start dev server
+npm run dev
+
+# In another terminal, verify health:
 curl http://localhost:3000 || echo "⚠️ Dev server not running!"
-ps aux | grep -E "playwright|test:e2e" | grep -v grep
+ps aux | grep -E "playwright|test:e2e" | grep -v grep  # Should show NO processes
 ```
 
 **Expected scope**:
