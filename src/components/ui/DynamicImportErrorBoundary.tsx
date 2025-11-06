@@ -1,17 +1,15 @@
 // ABOUTME: Error boundary for dynamic imports with retry logic and fallback UI
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 
 interface Props {
   children: React.ReactNode
-  fallback?: React.ReactNode
   maxRetries?: number
 }
 
 export function DynamicImportErrorBoundary({
   children,
-  fallback,
   maxRetries = 3,
 }: Props) {
   const [error, setError] = useState<Error | null>(null)

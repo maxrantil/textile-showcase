@@ -52,7 +52,7 @@ const MIN_SKELETON_DISPLAY_TIME = 300 // ms
 export default function AdaptiveGallery({ designs }: AdaptiveGalleryProps) {
   const deviceType = useDeviceType()
   const [isHydrated, setIsHydrated] = useState(false)
-  const [GalleryComponent, setGalleryComponent] = useState<any>(null)
+  const [GalleryComponent, setGalleryComponent] = useState<React.ComponentType<{ designs: TextileDesign[] }> | null>(null)
   const [importError, setImportError] = useState<Error | null>(null)
   const [retryCount, setRetryCount] = useState(0)
   const skeletonStartTime = useRef(Date.now())
@@ -82,7 +82,7 @@ export default function AdaptiveGallery({ designs }: AdaptiveGalleryProps) {
       try {
         // Use shorter timeout for retries (5s instead of 10s)
         const timeout = retryCount > 0 ? 5000 : 10000
-        const module = isMobile
+        const importedModule = isMobile
           ? await withTimeout(
               import('@/components/mobile/Gallery/MobileGallery'),
               timeout
@@ -93,7 +93,7 @@ export default function AdaptiveGallery({ designs }: AdaptiveGalleryProps) {
             )
 
         if (!isCancelled) {
-          setGalleryComponent(() => module.default)
+          setGalleryComponent(() => importedModule.default)
           setImportError(null)
         }
       } catch (error) {
