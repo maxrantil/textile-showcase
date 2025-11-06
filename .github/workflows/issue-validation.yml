@@ -9,16 +9,24 @@ on:
 jobs:
   ai-attribution:
     name: Block AI Attribution in Issues
+    permissions:
+      issues: write
     uses: maxrantil/.github/.github/workflows/issue-ai-attribution-check-reusable.yml@master
 
   format-check:
     name: Check Issue Format
+    permissions:
+      issues: write
     uses: maxrantil/.github/.github/workflows/issue-format-check-reusable.yml@master
 
   prd-reminder:
     name: PRD/PDR Reminder
+    permissions:
+      issues: write
     uses: maxrantil/.github/.github/workflows/issue-prd-reminder-reusable.yml@master
 
   auto-label:
     name: Auto-label Issues
+    permissions:
+      issues: write
     uses: maxrantil/.github/.github/workflows/issue-auto-label-reusable.yml@master

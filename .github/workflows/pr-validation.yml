@@ -10,12 +10,16 @@ on:
 jobs:
   pr-title:
     name: Check PR Title
+    permissions:
+      pull-requests: read
     uses: maxrantil/.github/.github/workflows/pr-title-check-reusable.yml@master
     with:
       allowed-types: 'feat,fix,docs,style,refactor,test,chore,perf,ci,build'
 
   commit-format:
     name: Check Commit Format
+    permissions:
+      contents: read
     uses: maxrantil/.github/.github/workflows/conventional-commit-check-reusable.yml@master
     with:
       base-branch: 'master'
@@ -23,6 +27,9 @@ jobs:
 
   ai-attribution:
     name: Block AI Attribution
+    permissions:
+      contents: read
+      pull-requests: read
     uses: maxrantil/.github/.github/workflows/block-ai-attribution-reusable.yml@master
     with:
       base-branch: 'master'
@@ -41,6 +48,8 @@ jobs:
 
   session-handoff:
     name: Verify Session Handoff
+    permissions:
+      contents: read
     uses: maxrantil/.github/.github/workflows/session-handoff-check-reusable.yml@master
     with:
       base-branch: 'master'
