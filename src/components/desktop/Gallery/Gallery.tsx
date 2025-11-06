@@ -98,10 +98,13 @@ export default function Gallery({ designs }: GalleryProps) {
   const [canScrollRight, setCanScrollRight] = useState(true)
   const isScrollingRef = useRef(false)
   const hasRestoredRef = useRef(false)
+  const mountTimeRef = useRef(Date.now()) // Track when component mounts
 
-  // Phase 3: Hide static first image AFTER first gallery image loads (event-driven)
-  // Ensures smooth visual transition without blank screen gaps
+  // Phase 4: Hide static first image AFTER first gallery image loads AND minimum display time
+  // Issue #132: Ensures FirstImage visible for minimum 300ms (allows E2E tests to verify + prevents CLS flash)
   useEffect(() => {
+    const MIN_DISPLAY_TIME = 300 // ms - minimum time FirstImage must be visible
+
     const hideFirstImage = () => {
       const staticFirstImage = document.querySelector(
         '[data-first-image="true"]'
@@ -112,6 +115,14 @@ export default function Gallery({ designs }: GalleryProps) {
       }
     }
 
+    const hideWithMinimumTime = () => {
+      const elapsed = Date.now() - mountTimeRef.current
+      const remaining = Math.max(0, MIN_DISPLAY_TIME - elapsed)
+
+      // Ensure FirstImage visible for at least 300ms
+      setTimeout(hideFirstImage, remaining)
+    }
+
     // Wait for first gallery image to load before hiding FirstImage
     const firstGalleryImg = document.querySelector(
       '.desktop-gallery-img'
@@ -119,11 +130,11 @@ export default function Gallery({ designs }: GalleryProps) {
 
     if (firstGalleryImg) {
       if (firstGalleryImg.complete && firstGalleryImg.naturalWidth > 0) {
-        // Image already loaded
-        hideFirstImage()
+        // Image already loaded - hide after minimum time
+        hideWithMinimumTime()
       } else {
-        // Wait for image load
-        firstGalleryImg.addEventListener('load', hideFirstImage, {
+        // Wait for image load, then hide after minimum time
+        firstGalleryImg.addEventListener('load', hideWithMinimumTime, {
           once: true,
         })
 
@@ -131,7 +142,7 @@ export default function Gallery({ designs }: GalleryProps) {
         const fallbackTimer = setTimeout(hideFirstImage, 15000)
 
         return () => {
-          firstGalleryImg.removeEventListener('load', hideFirstImage)
+          firstGalleryImg.removeEventListener('load', hideWithMinimumTime)
           clearTimeout(fallbackTimer)
         }
       }
