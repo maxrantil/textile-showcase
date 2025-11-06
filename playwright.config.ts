@@ -61,23 +61,24 @@ export default defineConfig({
     // Mobile devices
     {
       name: 'Mobile Chrome',
-      use: { ...devices['Pixel 5'] },
+      use: { ...devices['Pixel 5'], hasTouch: true },
     },
     {
       name: 'Mobile Safari',
-      use: { ...devices['iPhone 13'] },
+      use: { ...devices['iPhone 13'], hasTouch: true },
     },
     {
       name: 'Mobile Safari Landscape',
       use: {
         ...devices['iPhone 13 landscape'],
+        hasTouch: true,
       },
     },
 
     // Tablet devices
     {
       name: 'iPad',
-      use: { ...devices['iPad Pro'] },
+      use: { ...devices['iPad Pro'], hasTouch: true },
     },
 
     // Specific viewport testing for responsive design

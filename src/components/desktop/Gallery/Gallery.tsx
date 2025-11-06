@@ -26,12 +26,12 @@ const GalleryItem = memo(function GalleryItem({
   design: TextileDesign
   index: number
   isActive: boolean
-  onNavigate?: () => void
+  onNavigate?: (clickedIndex: number) => void
 }) {
   const router = useRouter()
 
   const handleClick = () => {
-    onNavigate?.()
+    onNavigate?.(index)
     UmamiEvents.viewProject(design.title, design.year)
     router.push(`/project/${design.slug?.current || design._id}`)
   }
@@ -98,15 +98,58 @@ export default function Gallery({ designs }: GalleryProps) {
   const [canScrollRight, setCanScrollRight] = useState(true)
   const isScrollingRef = useRef(false)
   const hasRestoredRef = useRef(false)
+  const mountTimeRef = useRef(Date.now()) // Track when component mounts
 
-  // Hide static first image after hydration (visibility:hidden preserves layout)
+  // Phase 4: Hide static first image AFTER first gallery image loads AND minimum display time
+  // Issue #132: Ensures FirstImage visible for minimum 300ms (allows E2E tests to verify + prevents CLS flash)
   useEffect(() => {
-    const staticFirstImage = document.querySelector(
-      '[data-first-image="true"]'
-    ) as HTMLElement
-    if (staticFirstImage) {
-      staticFirstImage.style.visibility = 'hidden'
-      staticFirstImage.style.pointerEvents = 'none'
+    const MIN_DISPLAY_TIME = 300 // ms - minimum time FirstImage must be visible
+
+    const hideFirstImage = () => {
+      const staticFirstImage = document.querySelector(
+        '[data-first-image="true"]'
+      ) as HTMLElement
+      if (staticFirstImage) {
+        staticFirstImage.style.visibility = 'hidden'
+        staticFirstImage.style.pointerEvents = 'none'
+      }
+    }
+
+    const hideWithMinimumTime = () => {
+      const elapsed = Date.now() - mountTimeRef.current
+      const remaining = Math.max(0, MIN_DISPLAY_TIME - elapsed)
+
+      // Ensure FirstImage visible for at least 300ms
+      setTimeout(hideFirstImage, remaining)
+    }
+
+    // Wait for first gallery image to load before hiding FirstImage
+    const firstGalleryImg = document.querySelector(
+      '.desktop-gallery-img'
+    ) as HTMLImageElement
+
+    if (firstGalleryImg) {
+      if (firstGalleryImg.complete && firstGalleryImg.naturalWidth > 0) {
+        // Image already loaded - hide after minimum time
+        hideWithMinimumTime()
+      } else {
+        // Wait for image load, then hide after minimum time
+        firstGalleryImg.addEventListener('load', hideWithMinimumTime, {
+          once: true,
+        })
+
+        // Fallback: hide after 15s regardless (safety net for very slow networks)
+        const fallbackTimer = setTimeout(hideFirstImage, 15000)
+
+        return () => {
+          firstGalleryImg.removeEventListener('load', hideWithMinimumTime)
+          clearTimeout(fallbackTimer)
+        }
+      }
+    } else {
+      // Gallery not rendered yet, use fallback timer
+      const fallbackTimer = setTimeout(hideFirstImage, 15000)
+      return () => clearTimeout(fallbackTimer)
     }
   }, [])
 
@@ -228,7 +271,7 @@ export default function Gallery({ designs }: GalleryProps) {
     }
   }, [checkScrollBounds])
 
-  // Restore scroll position
+  // Restore scroll position and focus
   useEffect(() => {
     if (designs.length === 0 || hasRestoredRef.current) return
 
@@ -244,10 +287,45 @@ export default function Gallery({ designs }: GalleryProps) {
           setTimeout(() => {
             scrollToIndex(savedIndex, true)
             hasRestoredRef.current = true
+
+            // Restore focus after scroll restoration
+            const savedFocusIndex = sessionStorage.getItem('galleryFocusIndex')
+            if (savedFocusIndex !== null && pathname === '/') {
+              const focusIndex = parseInt(savedFocusIndex, 10)
+
+              // Additional delay to ensure DOM is ready
+              setTimeout(() => {
+                const galleryItem = document.querySelector(
+                  `[data-testid="gallery-item-${focusIndex}"]`
+                ) as HTMLElement
+
+                if (galleryItem) {
+                  galleryItem.focus()
+                  sessionStorage.removeItem('galleryFocusIndex')
+                }
+              }, 200)
+            }
           }, 150)
         } else {
           hasRestoredRef.current = true
           setTimeout(checkScrollBounds, 100)
+
+          // Still try to restore focus even if no scroll position
+          const savedFocusIndex = sessionStorage.getItem('galleryFocusIndex')
+          if (savedFocusIndex !== null && pathname === '/') {
+            const focusIndex = parseInt(savedFocusIndex, 10)
+
+            setTimeout(() => {
+              const galleryItem = document.querySelector(
+                `[data-testid="gallery-item-${focusIndex}"]`
+              ) as HTMLElement
+
+              if (galleryItem) {
+                galleryItem.focus()
+                sessionStorage.removeItem('galleryFocusIndex')
+              }
+            }, 200)
+          }
         }
       } catch {
         hasRestoredRef.current = true
@@ -258,9 +336,15 @@ export default function Gallery({ designs }: GalleryProps) {
     restorePosition()
   }, [designs.length, pathname, scrollToIndex, checkScrollBounds])
 
-  // Save position before navigation
-  const handleNavigate = useCallback(() => {
-    scrollManager.saveImmediate(currentIndex, pathname ?? undefined)
+  // Save position and focus before navigation
+  const handleNavigate = useCallback((clickedIndex?: number) => {
+    // Use clicked index if provided, otherwise use currentIndex (for keyboard navigation)
+    const indexToSave = clickedIndex !== undefined ? clickedIndex : currentIndex
+    scrollManager.saveImmediate(indexToSave, pathname ?? undefined)
+    // Save current focused element index for restoration
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('galleryFocusIndex', indexToSave.toString())
+    }
   }, [pathname, currentIndex])
 
   // Keyboard navigation (with vim keybindings)
