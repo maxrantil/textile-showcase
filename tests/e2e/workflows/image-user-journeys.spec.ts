@@ -26,33 +26,33 @@ test.describe('OptimizedImage User Journeys', () => {
       // Wait for page to be ready
       await page.waitForLoadState('networkidle')
 
-      // Verify gallery or first image is visible immediately (no hero section on homepage)
-      const galleryOrImage = page.locator(
-        '[data-testid="desktop-gallery"], [data-testid="mobile-gallery"], img'
+      // Issue #132 Phase 4: Check for gallery images specifically, not FirstImage
+      // FirstImage is hidden after 300ms minimum display time, so check gallery instead
+      const galleryContainer = page.locator(
+        '[data-testid="desktop-gallery"], [data-testid="mobile-gallery"]'
       ).first()
-      await expect(galleryOrImage).toBeVisible({ timeout: 3000 })
+      await expect(galleryContainer).toBeVisible({ timeout: 3000 })
 
-      // Find all images on the page
-      const images = page.locator('img')
-      const imageCount = await images.count()
-      expect(imageCount).toBeGreaterThan(0)
+      // Find gallery images (not FirstImage which is hidden during hydration)
+      const galleryImages = page.locator(
+        '[data-testid="gallery-item"] img, .desktop-gallery-item img, .mobile-gallery-item img'
+      )
+      const galleryImageCount = await galleryImages.count()
+      expect(galleryImageCount).toBeGreaterThan(0)
 
-      // Verify first image (hero or first gallery item) loads immediately
-      const firstImage = images.first()
-      await expect(firstImage).toBeVisible({ timeout: 5000 })
+      // Verify first gallery image loads and is visible
+      const firstGalleryImage = galleryImages.first()
+      await expect(firstGalleryImage).toBeVisible({ timeout: 5000 })
 
       // Scroll down to trigger lazy loading
       await page.evaluate(() => window.scrollTo(0, 800))
       await page.waitForTimeout(1000) // Allow time for IntersectionObserver to trigger
 
-      // Verify gallery images become visible after scrolling
-      const galleryImages = page.locator(
-        '[data-testid="gallery-item"] img, .desktop-gallery-item img'
-      )
-      const galleryImageCount = await galleryImages.count()
+      // Verify more gallery images become visible after scrolling (reuse galleryImages locator)
+      const scrolledImageCount = await galleryImages.count()
 
-      if (galleryImageCount > 0) {
-        await expect(galleryImages.first()).toBeVisible({ timeout: 5000 })
+      if (scrolledImageCount > 0) {
+        await expect(galleryImages.nth(1)).toBeVisible({ timeout: 5000 })
       }
 
       // Verify no JavaScript errors occurred
