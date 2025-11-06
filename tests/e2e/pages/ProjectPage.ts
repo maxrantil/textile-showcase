@@ -15,8 +15,8 @@ export class ProjectPage {
 
   constructor(page: Page) {
     this.page = page
-    // Project title uses class desktop-project-title in h1
-    this.projectTitle = page.locator('h1.desktop-project-title, h1')
+    // Project title uses class desktop-project-title or mobile-project-title in h1
+    this.projectTitle = page.locator('h1.desktop-project-title, h1.mobile-project-title')
     // Project images - will match any img in project view
     this.projectImages = page.locator(
       '.desktop-project-view img, .mobile-project-view img, main img'
