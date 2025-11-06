@@ -109,20 +109,28 @@ test.describe('OptimizedImage User Journeys', () => {
       await page.goto('/')
       await page.waitForLoadState('networkidle')
 
-      // Verify gallery is present
+      // Verify gallery is present (viewport-aware selector)
       const gallery = page.locator(
-        '[data-testid="desktop-gallery"], .desktop-gallery'
+        '[data-testid="desktop-gallery"], [data-testid="mobile-gallery"], .desktop-gallery, .mobile-gallery'
       )
       await expect(gallery).toBeVisible({ timeout: 5000 })
+
+      // Wait for gallery items to be visible and clickable (viewport-aware selector)
+      const galleryItems = page.locator('.desktop-gallery-item, .mobile-gallery-item')
+      await expect(galleryItems.first()).toBeVisible({ timeout: 5000 })
 
       // Get initial URL
       const initialUrl = page.url()
 
-      // Press ArrowRight to navigate gallery
-      await page.keyboard.press('ArrowRight')
-      await page.waitForTimeout(500) // Allow scroll animation
+      // Click on the gallery to ensure window has focus for keyboard events
+      await gallery.click()
 
-      // Press Enter to open project
+      // Use arrow key to navigate gallery (updates currentIndex)
+      // Gallery keyboard handler is window-level, not element-level
+      await page.keyboard.press('ArrowRight')
+      await page.waitForTimeout(500) // Allow scroll animation and state update
+
+      // Press Enter to open project at currentIndex
       await page.keyboard.press('Enter')
 
       // Wait for navigation to project page
@@ -257,9 +265,9 @@ test.describe('OptimizedImage User Journeys', () => {
       await page.goto('/')
       await page.waitForLoadState('networkidle')
 
-      // Find first gallery item (may be gallery-item or desktop-gallery-item)
+      // Find first mobile gallery item (mobile uses mobile-gallery-item testid)
       const firstGalleryItem = page
-        .locator('[data-testid="gallery-item"], .desktop-gallery-item')
+        .locator('[data-testid^="mobile-gallery-item"]')
         .first()
 
       // Verify it's visible
@@ -305,7 +313,7 @@ test.describe('OptimizedImage User Journeys', () => {
 
       // Verify gallery is present
       const gallery = page.locator(
-        '[data-testid="desktop-gallery"], .desktop-gallery'
+        '[data-testid="mobile-gallery"], .mobile-gallery'
       )
       const galleryVisible = await gallery.isVisible()
       expect(galleryVisible).toBe(true)
