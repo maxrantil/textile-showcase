@@ -67,7 +67,18 @@ test.describe('Gallery Browsing Complete Workflows', () => {
       const galleryItems = page.locator('[data-testid^="gallery-item-"]')
       const firstItem = galleryItems.first()
 
-      const boundingBox = await firstItem.boundingBox()
+      // Wait for element to be fully laid out with valid bounding box
+      // Mobile Chrome needs extra time for layout calculation after visibility
+      let boundingBox = await firstItem.boundingBox()
+      let retries = 0
+      const maxRetries = 10
+
+      while ((!boundingBox || boundingBox.width === 0 || boundingBox.height === 0) && retries < maxRetries) {
+        await page.waitForTimeout(100)
+        boundingBox = await firstItem.boundingBox()
+        retries++
+      }
+
       expect(boundingBox).toBeTruthy()
 
       if (boundingBox) {
