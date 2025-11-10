@@ -47,6 +47,12 @@ test.describe('OptimizedImage Accessibility', () => {
       await page.goto('/')
       await page.waitForLoadState('networkidle')
 
+      // Wait for gallery to fully load (skeleton to disappear)
+      await page.waitForSelector('[data-testid="gallery-loading-skeleton"]', {
+        state: 'detached',
+        timeout: 10000
+      })
+
       // Navigate to first project
       const firstProject = page
         .locator('[data-testid="gallery-item"], .desktop-gallery-item')

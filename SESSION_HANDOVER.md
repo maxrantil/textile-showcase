@@ -1,189 +1,304 @@
-# Session Handoff: Issue #132 Phase 4 - PR #138 Merged to Master
+# Session Handoff: E2E Test CI Investigation Required
 
-**Date**: 2025-11-06
-**PR**: #138 (merged to master)
-**Commits**: `167830d`, `b52ed19`, `9fb5ebb`, `510232d`
-**Status**: ✅ Phase 4 Complete & Merged - PR #138 squash-merged to master
-
----
-
-## ✅ Phase 4 Work Completed
-
-### Systematic Investigation & Fixes (4.5 hours)
-
-**1. FirstImage Visibility Race Condition** ✅
-- **Root Cause**: FirstImage hidden in <100ms after gallery hydration on fast connections
-- **Fix**: Added 300ms minimum display time (src/components/desktop/Gallery/Gallery.tsx:101-154)
-- **Rationale**: Prevents CLS (Cumulative Layout Shift) while allowing E2E test verification
-- **Result**: Imperceptible to users, robust for tests
-
-**2. Test Selector Improvements** ✅
-- **Issue**: Tests targeting FirstImage which gets hidden during hydration
-- **Fix**: Updated image-user-journeys.spec.ts:29-45 to target gallery images specifically
-- **Principle**: Test user-facing behavior, not implementation details
-
-**3. Bundle Splitting Behavior Validation** ✅
-- **Issue**: Test expected network requests with 'Desktop'/'Mobile' in URL (Turbopack dev bundling differs)
-- **Fix**: Refactored gallery-performance.spec.ts:316-351 to test behavior (correct component renders) not implementation (chunk URLs)
-- **TDD Principle**: Verify what works, not how it works
-- **Decision Framework**: Applied /motto directive with systematic comparison table (Option B won on ALL 6 criteria)
-
-**4. Menu Button Visibility Check** ✅
-- **Issue**: Test checked existence but not visibility (button hidden with CSS `display: none` on desktop)
-- **Fix**: Added `isVisible()` check in gallery-performance.spec.ts:409-419
+**Date**: 2025-11-10
+**Current Status**: Issue #141 complete locally, but CI failures discovered across ALL E2E PRs
+**Critical**: 3 open E2E PRs all failing in CI despite passing locally
 
 ---
 
-## 📊 Final Test Suite Results
+## 🚨 **URGENT: Systematic E2E CI Failures**
 
-**Full Suite (Desktop Chrome)**: 90 tests
-- ✅ **78 passed** (86.7% pass rate)
-- ❌ **8 failed** (8.9%)
-- ⏭️ **4 skipped** (4.4%)
-- ⏱️ **Duration**: 2.0 minutes
+### Current Situation
 
-**Our Phase 4 Fixes - All Passing** ✅:
-- ✅ gallery-performance.spec.ts:316 - Bundle splitting behavior validation
-- ✅ gallery-performance.spec.ts:396 - Menu button visibility check
-- ✅ image-user-journeys.spec.ts:21 - Gallery browsing with lazy loading
+**Issue #141 work is COMPLETE** (skeleton-based waiting fix works locally), but when pushed to PR #147, **CI is failing** along with 2 other E2E PRs.
 
-**8 Remaining Failures (Unrelated to Phase 4)**:
-1. ❌ 4x gallery-browsing.spec.ts - GalleryPage page object uses non-existent `[data-testid="gallery-container"]`
-2. ❌ 1x project-browsing.spec.ts:140 - ProjectPage mobile viewport timeout
-3. ❌ 3x image-user-journeys.spec.ts - Keyboard/mobile selector issues
+### The 3 E2E PRs
 
-**Key Insight**: Our fixes did not introduce new failures. All 8 failures are pre-existing issues with page objects and test selectors.
+| PR | Branch | Issue | Test File | Local | CI Status |
+|----|--------|-------|-----------|-------|-----------|
+| **#147** | feat/issue-141-image-user-journeys-fixes | #141 | `image-user-journeys.spec.ts` | ✅ 14/14 pass | ❌ Desktop Chrome FAILED<br>⏳ Safari/Mobile pending |
+| **#144** | fix/issue-140-projectpage-mobile-viewport | #140 | `project-browsing.spec.ts` | ✅ 6/6 pass | ❌ ALL E2E FAILED |
+| **#143** | fix/issue-139-gallery-page-selector | #139 | `gallery-browsing.spec.ts` | ⚠️ 3/4 pass | ❌ ALL E2E FAILED |
 
----
+**Pattern**: All 3 PRs have E2E failures in CI but pass (mostly) locally.
 
-## 💾 Commits Created & Merged
+### What We Know
 
-```bash
-# Commit 1: Production fix
-167830d - fix: ensure FirstImage visible for minimum 300ms before hiding
+1. **PR #147 (this session)**:
+   - Fixed test flakiness via skeleton-based waiting
+   - All 14/14 tests pass locally
+   - Desktop Chrome failed in CI (logs not yet available)
+   - Safari and Mobile Chrome still running
 
-# Commit 2: Test improvements
-b52ed19 - test: improve E2E test selectors and behavior validation
+2. **PR #144**:
+   - Fixes page object selectors for mobile viewports
+   - All 6/6 tests pass locally on both Desktop and Mobile
+   - All E2E jobs failed in CI
 
-# Commit 3: Documentation update
-9fb5ebb - docs: update session handoff for Phase 4 completion
+3. **PR #143**:
+   - Fixes GalleryPage page object selectors
+   - 3/4 tests pass locally
+   - All E2E jobs failed in CI
 
-# Commit 4: Lint fixes (added during PR review)
-510232d - fix: resolve production build lint errors
-```
+### What We DON'T Know Yet
 
-All commits passed pre-commit hooks and CI checks. PR #138 squash-merged to master (24b1d3c → 5e3e2ad).
+- **Which specific tests are failing in CI?**
+- **Are they the same failures across all PRs?** (suggests master branch issue)
+- **Or different failures?** (suggests each PR needs work)
+- **Is master branch's E2E already broken?**
+- **What's different between local and CI environments?**
 
----
+### Commits on PR #147 (Issue #141)
 
-## 🎯 Decision Framework Applied
-
-**User's /motto Directive**: "Do it by the book. Low time-preference is our motto. Slow is smooth, smooth is fast."
-
-**Evaluation Criteria**: Simplicity, Robustness, Alignment, Testing, Long-term, Agent Validation
-
-**Comparison Table for Bundle Splitting Test Fix**:
-
-| Criteria | Option A: Skip in dev | Option B: Test behavior | Winner |
-|----------|----------------------|-------------------------|--------|
-| Simplicity | Adds conditional logic | Tests what matters | **B** |
-| Robustness | Brittle (env-dependent) | Works in all envs | **B** |
-| Alignment | Tests implementation | Tests user experience | **B** |
-| Testing | Skips verification | Verifies behavior | **B** |
-| Long-term | Technical debt | Maintainable | **B** |
-| Agent Validation | 3/6 approve | 6/6 approve | **B** |
-
-**Result**: Option B selected for ALL fixes - test behavior, not implementation.
+- `3bf1776` - Initial fix (2000ms fixed waits)
+- `df9ef95` - **Improved fix** (skeleton-based waiting) ⭐
+- `c9b9725` - Session handoff documentation
+- `1fbf9db` - Earlier session handoff
 
 ---
 
-## 📝 PR Preparation Summary
+## 📋 **Next Session Tasks**
 
-### Fixes Implemented
+### **PRIORITY 1: Investigate CI Failures**
 
-1. **FirstImage Minimum Display Time**
-   - File: src/components/desktop/Gallery/Gallery.tsx:101-154
-   - Change: Event-driven hiding with 300ms minimum display time
-   - Test: image-user-journeys.spec.ts:21 ✅
+1. **Check CI logs for PR #147**:
+   ```bash
+   gh run list --branch feat/issue-141-image-user-journeys-fixes --limit 1
+   # Get run ID, then:
+   gh run view <RUN_ID> --log-failed
+   ```
 
-2. **Test Selector Improvements**
-   - File: tests/e2e/workflows/image-user-journeys.spec.ts:29-45
-   - Change: Target gallery images instead of FirstImage
-   - Impact: Avoids timing race conditions
+2. **Compare failures across all 3 PRs**:
+   - Are the same tests failing?
+   - Same error messages?
+   - Pattern suggests root cause?
 
-3. **Bundle Splitting Behavior Validation**
-   - File: tests/e2e/performance/gallery-performance.spec.ts:316-351
-   - Change: Verify correct component renders (not chunk URLs)
-   - Principle: TDD - test behavior, not implementation
+3. **Check master branch E2E status**:
+   ```bash
+   # Look for recent E2E test runs on master
+   gh run list --branch master --workflow="*.yml" --limit 10 | grep -i e2e
+   ```
 
-4. **Menu Button Visibility Check**
-   - File: tests/e2e/performance/gallery-performance.spec.ts:409-419
-   - Change: Added `isVisible()` check to prevent false positives
-   - Impact: Test only runs when button actually visible
+4. **Identify root cause**:
+   - If master is broken → Fix master first
+   - If CI environment issue → Adjust tests for CI
+   - If timing issues → May need longer waits in CI
 
-### Individual Test Validations
+### **PRIORITY 2: Decide Merge Strategy**
 
-All 3 target fixes validated individually before full suite:
-- image-user-journeys.spec.ts:21 ✅ (4.5s)
-- gallery-performance.spec.ts:396 ✅ (3.7s)
-- gallery-performance.spec.ts:316 ✅ (3.5s)
+Based on investigation:
 
-### Remaining Work
+**Scenario A: Master is broken**
+- Don't merge any PRs yet
+- Create new issue/PR to fix master
+- Rebase all 3 PRs after master fix
 
-**Low Priority Cleanup** (Not blocking PR):
-1. Fix GalleryPage page object (replace `[data-testid="gallery-container"]` with `[data-testid="desktop-gallery"]`)
-2. Fix ProjectPage mobile viewport timeout (selector issue)
-3. Fix image-user-journeys keyboard/mobile tests (selector improvements)
+**Scenario B: CI needs longer timeouts**
+- PRs may need CI-specific timing adjustments
+- Consider environment variable for CI detection
+- Update skeleton wait timeout from 10s to 15s for CI
 
----
+**Scenario C: Different issues per PR**
+- Each PR needs individual fixes
+- PR #147 might be good (just waiting for logs)
+- PRs #143 and #144 may need updates
 
-## 📚 Key Reference Documents
+### **PRIORITY 3: Document Findings**
 
-- **Implementation Plan**: docs/implementation/ISSUE-132-E2E-FEATURE-IMPLEMENTATION-2025-11-04.md
-- **Related Issues**: GitHub Issue #135 (keyboard focus management)
-- **Test Logs**: /tmp/full-suite-run2-with-fixes.log
-
----
-
-## 🎓 Phase 4 Lessons Learned
-
-1. **Low time-preference approach works** - Systematic investigation prevented hasty fixes
-2. **TDD principles are gold** - Test behavior, not implementation details
-3. **Comparison tables clarify decisions** - 6/6 criteria alignment = clear winner
-4. **Minimum display time pattern** - 300ms threshold balances UX and testability
-5. **Pre-existing failures are OK** - Don't block on unrelated issues if scope is clear
-
----
-
-## ✅ Merge Summary
-
-**PR #138 Successfully Merged**: 2025-11-06
-- ✅ All CI checks passed (Bundle Size, Lighthouse Performance, Jest, Security, Quality)
-- ✅ Squash merge to master (24b1d3c → 5e3e2ad)
-- ✅ Branch `feat/issue-132-e2e-feature-implementation` automatically deleted
-- ✅ 16 files changed: +2699 insertions, -443 deletions
-- ✅ Issues #139, #140, #141 created for 8 remaining pre-existing test failures
-
-**Production Build Lint Fixes** (added during PR review):
-- Fixed `any` type → `React.ComponentType<{ designs: TextileDesign[] }>`
-- Renamed `module` → `importedModule` (avoid Next.js reserved name)
-- Removed unused imports in DynamicImportErrorBoundary
+After investigation, update this handoff with:
+- Root cause of CI failures
+- Which PRs are ready to merge (if any)
+- What fixes are needed
+- Recommended merge order
 
 ---
 
 ## 📝 Startup Prompt for Next Session
 
 ```
-Read CLAUDE.md to understand our workflow, then continue from Issue #132 Phase 4 completion and PR #138 merge (✅ merged to master).
+Read CLAUDE.md to understand our workflow, then investigate CI failures for E2E test PRs.
 
-**Immediate priority**: Issue #139, #140, or #141 cleanup (2-4 hours each)
-**Context**: Phase 4 completed and merged - 3 fixes implemented using TDD principles, all passing in production. 8 pre-existing test failures now tracked in separate issues for future cleanup.
-**Reference docs**: SESSION_HANDOVER.md, docs/implementation/ISSUE-132-E2E-FEATURE-IMPLEMENTATION-2025-11-04.md, Issues #139-141
-**Ready state**: Clean master branch, all Phase 4 tests passing, PR #138 merged
+**Context**: Issue #141 local fixes work (14/14 tests pass), but PR #147 failing in CI along with PRs #143 and #144. All 3 E2E PRs pass locally but fail in CI - classic "works on my machine" scenario.
 
-**Expected scope**: Pick one cleanup issue (#139, #140, or #141) and fix systematically using same TDD approach
+**Immediate task**: Investigate why E2E tests fail in CI (1-2 hours)
+- Check PR #147 CI logs: `gh run list --branch feat/issue-141-image-user-journeys-fixes --limit 1`
+- Compare failures across PRs #143, #144, #147
+- Check if master branch E2E is already broken
+- Identify if same test(s) failing or different issues
+
+**Reference docs**: SESSION_HANDOVER.md (this file), PR descriptions for #143, #144, #147
+**Ready state**: PR #147 pushed (commit df9ef95), CI still running, clean working directory
+
+**Expected outcome**:
+- Understand why CI fails while local passes
+- Determine if PRs are ready to merge or need fixes
+- Recommend merge strategy or next steps
+- If master is broken, flag for Doctor Hubert
+- If simple timing fix needed, apply and push
+
+**Key question to answer**: Why do E2E tests pass locally but fail in CI?
 ```
 
 ---
 
-**Doctor Hubert**, Phase 4 complete and successfully merged to master! PR #138 includes 4 systematic fixes with comprehensive documentation. All CI checks passed after lint error resolution. 8 remaining pre-existing failures documented in Issues #139-141 for future cleanup.
+## 📚 Session 4 Summary (2025-11-10)
+
+### What We Accomplished
+
+✅ **Discovered Issue #141 wasn't actually complete**
+- Previous session claimed 3/3 tests passing
+- Background tests from previous session were actually failing
+- Tests were FLAKY (race conditions), not consistently passing
+
+✅ **Implemented proper fix for test flakiness**
+- Changed from fixed 2000ms waits to skeleton-based waiting
+- Wait for `[data-testid="gallery-loading-skeleton"]` to disappear
+- Tests now pass consistently locally (14/14)
+
+✅ **Updated PR #147 with accurate information**
+- Rewrote description to reflect skeleton-based fix
+- Updated SESSION_HANDOVER.md with correct approach
+- Pushed commits to branch
+
+✅ **Discovered systematic CI problem**
+- Not just PR #147 - ALL 3 E2E PRs failing in CI
+- All pass locally but fail in CI
+- Identified need for investigation
+
+### What's Pending
+
+⏳ **CI Results** - PR #147 CI still running
+⏳ **Root Cause** - Why CI fails when local passes
+⏳ **Merge Decision** - Can't merge until CI passes
+⏳ **Other PRs** - Status of #143 and #144 unclear
+
+### Key Files Modified
+
+- `tests/e2e/workflows/image-user-journeys.spec.ts` - Skeleton-based waits
+- `SESSION_HANDOVER.md` - This file (comprehensive handoff)
+
+### Branch Status
+
+```
+Branch: feat/issue-141-image-user-journeys-fixes
+Status: ✅ Clean working directory
+Commits pushed: ✅ All pushed to origin
+PR #147: Open, CI running
+```
+
+---
+
+## 🔍 Investigation Checklist for Next Session
+
+Use this checklist to ensure thorough investigation:
+
+### Step 1: Gather Data
+- [ ] Get PR #147 CI failure logs
+- [ ] Get PR #144 CI failure logs
+- [ ] Get PR #143 CI failure logs
+- [ ] Check master branch recent E2E runs
+- [ ] Note which specific tests failed in each PR
+
+### Step 2: Analyze Patterns
+- [ ] Are the same tests failing across all PRs?
+- [ ] Are error messages identical or different?
+- [ ] Do failures suggest timing issues?
+- [ ] Do failures suggest environment differences?
+- [ ] Is there a common root cause?
+
+### Step 3: Check Environment Differences
+- [ ] Compare local Node version vs CI
+- [ ] Compare local Playwright version vs CI
+- [ ] Check CI machine specs (may be slower)
+- [ ] Check CI network conditions (may be throttled)
+- [ ] Review CI workflow files for config issues
+
+### Step 4: Determine Root Cause
+- [ ] Master branch broken? (Fix master first)
+- [ ] CI timing issues? (Increase timeouts for CI)
+- [ ] Page object problems? (Review selector changes)
+- [ ] Test interdependence? (Tests affecting each other)
+- [ ] Sanity API rate limits? (Too many requests in CI)
+
+### Step 5: Recommend Action
+- [ ] Document findings in SESSION_HANDOVER.md
+- [ ] If quick fix possible, implement and test
+- [ ] If complex issue, create detailed plan
+- [ ] If master broken, flag for Doctor Hubert
+- [ ] If ready to merge, specify order (likely #144 → #143 → #147)
+
+---
+
+## 🎯 Expected Outcomes from Next Session
+
+**Best Case**:
+- Simple timing issue in CI
+- Increase skeleton wait from 10s to 15s
+- Push fix, CI passes
+- Merge PRs in order: #144 → #143 → #147
+
+**Medium Case**:
+- Master branch E2E already broken
+- Create new issue to fix master
+- Rebase all 3 PRs after fix
+- Then merge in order
+
+**Worst Case**:
+- Different failures per PR
+- Each needs individual investigation
+- Could take multiple sessions to resolve
+- May need to prioritize which PR is most important
+
+---
+
+## 📊 Background Process Status
+
+**Note**: Previous session left multiple Playwright test processes running in background. These can be safely ignored - they were test runs from previous session.
+
+Background processes that may still be running:
+- `213573`, `106ad8`, `ff6cad`, `c78734`, `c71aea`, `27e718`, `698c7b`
+
+These are old and don't affect the investigation.
+
+---
+
+## 💡 Hints for Next Session
+
+**If you see "timeout" errors in CI**:
+- Likely need to increase waits (10s → 15s or 20s)
+- CI machines are slower than local
+
+**If you see "selector not found" errors**:
+- Page objects may need review
+- Check if selectors exist in actual components
+
+**If you see "navigation failed" errors**:
+- Same issue we just fixed, but needs more time in CI
+- May need CI-specific environment detection
+
+**If you see "rate limit" (429) errors**:
+- Sanity API throttling in CI
+- May need to reduce test parallelism
+- Or add waits between tests
+
+**If ALL tests fail immediately**:
+- Master branch likely broken
+- Don't waste time on PR fixes
+- Fix master first
+
+---
+
+## 📞 Questions for Doctor Hubert
+
+When you start the next session, you may want to ask:
+
+1. **Priority**: Should we fix CI issues or move to other work?
+2. **Strategy**: If master is broken, should we fix master or work around it?
+3. **Merge order**: Once fixed, any preference on which PR to merge first?
+4. **Test coverage**: Are we okay with 3/4 tests passing (PR #143) or need 4/4?
+
+---
+
+**Session Status**: ✅ HANDOFF COMPLETE
+
+**Next Session Ready**: Yes - clear tasks, comprehensive documentation, startup prompt provided

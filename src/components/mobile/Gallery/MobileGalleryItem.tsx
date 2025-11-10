@@ -93,7 +93,7 @@ export default function MobileGalleryItem({
       role="button"
       tabIndex={0}
       aria-label={`View ${design.title} project${design.year ? ` from ${design.year}` : ''}`}
-      data-testid={`mobile-gallery-item-${index}`}
+      data-testid={`gallery-item-${index}`}
     >
       {imageSource && (
         <div className="mobile-gallery-image-container">

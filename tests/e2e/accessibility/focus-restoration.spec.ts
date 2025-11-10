@@ -13,6 +13,9 @@ test.describe('Gallery Focus Restoration - WCAG 2.4.3', () => {
       timeout: 10000
     })
 
+    // Wait for gallery to fully load (skeleton to disappear)
+    await page.waitForSelector('[data-testid="gallery-loading-skeleton"]', { state: 'detached', timeout: 10000 })
+
     // Click on item 3 (index 2) to focus it
     const item3 = page.locator('[data-testid="gallery-item-2"]')
     await item3.click()
@@ -41,6 +44,9 @@ test.describe('Gallery Focus Restoration - WCAG 2.4.3', () => {
       timeout: 10000
     })
 
+    // Wait for gallery to fully load (skeleton to disappear)
+    await page.waitForSelector('[data-testid="gallery-loading-skeleton"]', { state: 'detached', timeout: 10000 })
+
     // Click on item 4 (index 3) to focus it
     const item4 = page.locator('[data-testid="gallery-item-3"]')
     await item4.click()
@@ -67,6 +73,9 @@ test.describe('Gallery Focus Restoration - WCAG 2.4.3', () => {
       state: 'visible',
       timeout: 10000
     })
+
+    // Wait for gallery to fully load (skeleton to disappear)
+    await page.waitForSelector('[data-testid="gallery-loading-skeleton"]', { state: 'detached', timeout: 10000 })
 
     // Click on item 5 (index 4) which might require scrolling
     const item5 = page.locator('[data-testid="gallery-item-4"]')
@@ -96,6 +105,9 @@ test.describe('Gallery Focus Restoration - WCAG 2.4.3', () => {
       state: 'visible',
       timeout: 10000
     })
+
+    // Wait for gallery to fully load (skeleton to disappear)
+    await page.waitForSelector('[data-testid="gallery-loading-skeleton"]', { state: 'detached', timeout: 10000 })
 
     // Click on item 2 (index 1) to focus it
     const item2 = page.locator('[data-testid="gallery-item-1"]')
