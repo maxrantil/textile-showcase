@@ -28,8 +28,6 @@ const config: Config = {
     '<rootDir>/.next/',
     '<rootDir>/node_modules/',
     '<rootDir>/tests/e2e/',
-    '<rootDir>/tests/performance/bundle',
-    '<rootDir>/__tests__/deployment/production-config',
   ],
 }
 
