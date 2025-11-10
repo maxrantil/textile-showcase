@@ -122,19 +122,23 @@ test.describe('OptimizedImage User Journeys', () => {
       // Get initial URL
       const initialUrl = page.url()
 
+      // Wait for hydration and window keyboard handler attachment
+      // AdaptiveGallery has 300ms skeleton + dynamic import + React hydration + window event setup
+      await page.waitForTimeout(2000)
+
       // Click on the gallery to ensure window has focus for keyboard events
       await gallery.click()
 
       // Use arrow key to navigate gallery (updates currentIndex)
       // Gallery keyboard handler is window-level, not element-level
       await page.keyboard.press('ArrowRight')
-      await page.waitForTimeout(500) // Allow scroll animation and state update
+      await page.waitForTimeout(1000) // Allow scroll animation and state update
 
-      // Press Enter to open project at currentIndex
-      await page.keyboard.press('Enter')
-
-      // Wait for navigation to project page
-      await page.waitForLoadState('networkidle', { timeout: 10000 })
+      // Press Enter to open project at currentIndex - wait for navigation
+      await Promise.all([
+        page.waitForURL('**/project/**', { timeout: 10000 }),
+        page.keyboard.press('Enter')
+      ])
 
       // Verify we navigated to a project page
       const currentUrl = page.url()
@@ -283,23 +287,39 @@ test.describe('OptimizedImage User Journeys', () => {
         expect(boundingBox.height).toBeGreaterThanOrEqual(44)
       }
 
-      // Tap the first gallery item
-      await firstGalleryItem.tap()
+      // Wait for hydration and event handlers to attach
+      // AdaptiveGallery has 300ms skeleton + dynamic import + React hydration
+      await page.waitForTimeout(2000)
 
-      // Wait for navigation to project page
-      await page.waitForLoadState('networkidle', { timeout: 10000 })
+      // Ensure element is in clickable state
+      await expect(firstGalleryItem).toBeEnabled()
+
+      // Click and wait for navigation to occur
+      await Promise.all([
+        page.waitForURL('**/project/**', { timeout: 10000 }),
+        firstGalleryItem.click()
+      ])
 
       // Verify we're on a project page
       const currentUrl = page.url()
       expect(currentUrl).toContain('/project/')
 
+      // Wait for project content to load (client-side API fetch)
+      // The "Loading project..." text should disappear when content is ready
+      await page.waitForFunction(
+        () => !document.body.textContent?.includes('Loading project...'),
+        { timeout: 10000 }
+      )
+
+      // Additional wait for images to render after data loads
+      await page.waitForLoadState('networkidle', { timeout: 10000 })
+
       // Verify project images load correctly on mobile
       const projectImages = page.locator('img')
+      await expect(projectImages.first()).toBeVisible({ timeout: 5000 })
+
       const projectImageCount = await projectImages.count()
       expect(projectImageCount).toBeGreaterThan(0)
-
-      const firstProjectImage = projectImages.first()
-      await expect(firstProjectImage).toBeVisible({ timeout: 5000 })
     })
 
     test('Mobile layout renders correctly', async ({ page }) => {
