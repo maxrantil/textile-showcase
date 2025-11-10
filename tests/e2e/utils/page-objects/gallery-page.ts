@@ -11,8 +11,9 @@ export class GalleryPage {
 
   constructor(page: Page) {
     this.page = page
-    this.galleryContainer = page.locator('[data-testid="gallery-container"]')
-    this.galleryItems = page.locator('[data-testid="gallery-item"]')
+    // Accept either desktop or mobile gallery container
+    this.galleryContainer = page.locator('[data-testid="desktop-gallery"], [data-testid="mobile-gallery"]')
+    this.galleryItems = page.locator('[data-testid^="gallery-item-"]')
     this.activeItem = page.locator('[data-active="true"]')
     this.navigationArrows = page.locator('[data-testid="navigation-arrows"]')
     this.loadingSpinner = page.locator('[data-testid="loading-spinner"]')
@@ -27,15 +28,18 @@ export class GalleryPage {
     // Wait for gallery container to be visible
     await this.galleryContainer.waitFor({ state: 'visible' })
 
+    // Wait for gallery loading skeleton to disappear (ensures gallery is fully hydrated)
+    try {
+      await this.page.waitForSelector('[data-testid="gallery-loading-skeleton"]', {
+        state: 'detached',
+        timeout: 10000
+      })
+    } catch {
+      // Skeleton might not exist if gallery loads very quickly, continue
+    }
+
     // Wait for at least one gallery item to load
     await this.galleryItems.first().waitFor({ state: 'visible' })
-
-    // Wait for loading spinner to disappear if present
-    try {
-      await this.loadingSpinner.waitFor({ state: 'hidden', timeout: 5000 })
-    } catch {
-      // Loading spinner might not exist, continue
-    }
   }
 
   async getGalleryItemCount(): Promise<number> {

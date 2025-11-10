@@ -277,9 +277,9 @@ test.describe('OptimizedImage User Journeys', () => {
       const skeleton = page.locator('[data-testid="gallery-loading-skeleton"]')
       await skeleton.waitFor({ state: 'hidden', timeout: 10000 })
 
-      // Find first mobile gallery item (mobile uses mobile-gallery-item testid)
+      // Find first mobile gallery item (unified gallery-item testid)
       const firstGalleryItem = page
-        .locator('[data-testid^="mobile-gallery-item"]')
+        .locator('[data-testid^="gallery-item"]')
         .first()
 
       // Verify it's visible
