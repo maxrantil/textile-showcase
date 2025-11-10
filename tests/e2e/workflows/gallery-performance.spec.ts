@@ -54,8 +54,18 @@ test.describe('Gallery Performance & Error Handling', () => {
       await page.waitForSelector('[data-testid="import-error-fallback"]', { timeout: 20000 })
 
       // Navigation should still work (header/footer/contact link)
+      // On mobile, contact link may be in hamburger menu (hidden by default)
+      // Check if mobile menu button exists, open it if needed
+      const mobileMenuButton = page.locator('button[aria-label*="menu"], .mobile-menu-button, [data-testid="mobile-menu"]')
+      const hasMobileMenu = await mobileMenuButton.count() > 0
+
+      if (hasMobileMenu) {
+        await mobileMenuButton.first().click()
+        await page.waitForTimeout(300) // Allow menu animation
+      }
+
       const contactLink = page.locator('a[href="/contact"]').first()
-      await expect(contactLink).toBeVisible()
+      await expect(contactLink).toBeVisible({ timeout: 10000 })
 
       // Should be able to navigate to contact page
       await contactLink.click()
