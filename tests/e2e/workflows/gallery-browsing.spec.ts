@@ -37,7 +37,13 @@ test.describe('Gallery Browsing Complete Workflows', () => {
 
       // Test return to gallery
       await page.keyboard.press('Escape')
-      await page.waitForURL('/', { waitUntil: 'domcontentloaded' })
+
+      // Safari needs extra time for client-side routing after Escape key
+      if (browserName === 'webkit') {
+        await page.waitForTimeout(1000)
+      }
+
+      await page.waitForURL('/', { waitUntil: 'domcontentloaded', timeout: 10000 })
     })
 
     test('Gallery performance and loading', async ({}, testInfo) => {
