@@ -4,7 +4,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { notFound, useRouter } from 'next/navigation'
+import { notFound } from 'next/navigation'
 import { TextileDesign } from '@/types/textile'
 import { ProjectContent } from '@/app/project/[slug]/components/project-content'
 
@@ -13,7 +13,6 @@ interface ClientProjectContentProps {
 }
 
 export function ClientProjectContent({ slug }: ClientProjectContentProps) {
-  const router = useRouter()
   const [project, setProject] = useState<TextileDesign | null>(null)
   const [nextProject, setNextProject] = useState<
     | {
@@ -75,19 +74,6 @@ export function ClientProjectContent({ slug }: ClientProjectContentProps) {
 
     fetchProject()
   }, [slug])
-
-  // Escape key navigation back to gallery
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.preventDefault()
-        router.push('/')
-      }
-    }
-
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [router])
 
   if (loading) {
     return (
