@@ -28,9 +28,13 @@ test.describe('Gallery Browsing Complete Workflows', () => {
       await galleryPage.openActiveProject()
       await page.waitForLoadState('networkidle')
 
+      // Wait for project content to be fully loaded and interactive
+      await page.waitForSelector('.nordic-container', { state: 'visible' })
+      await page.waitForTimeout(500) // Allow for client-side hydration and event listeners
+
       // Test return to gallery
       await page.keyboard.press('Escape')
-      await page.waitForURL('/')
+      await page.waitForURL('/', { waitUntil: 'domcontentloaded' })
     })
 
     test('Gallery performance and loading', async () => {
