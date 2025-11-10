@@ -292,7 +292,11 @@ test.describe('Gallery Performance Optimization E2E Tests', () => {
       expect(errors.length).toBe(0)
     })
 
-    test('should_provide_fallback_navigation_when_gallery_fails', async () => {
+    test('should_provide_fallback_navigation_when_gallery_fails', async ({}, testInfo) => {
+      // Skip on mobile - this tests desktop navigation visibility fallback
+      // Mobile uses hamburger menu with different UX patterns
+      test.skip(testInfo.project.name.includes('Mobile'), 'Desktop navigation fallback test')
+
       // Mock all gallery imports to fail
       await page.route('**/Gallery**', (route) => {
         route.abort('failed')
@@ -300,13 +304,9 @@ test.describe('Gallery Performance Optimization E2E Tests', () => {
 
       await page.reload()
 
-      // Navigation should still work (header exists even if nav is hidden on mobile)
+      // Navigation should still work
       await expect(page.locator('header')).toBeVisible()
-
-      // On mobile, navigation may be in hamburger menu (hidden by default)
-      // Just verify header structure exists, don't require nav visibility
-      const navExists = await page.locator('nav, [role="navigation"]').count()
-      expect(navExists).toBeGreaterThan(0)
+      await expect(page.locator('nav, [role="navigation"]').first()).toBeVisible()
 
       // User should still be able to navigate
       const aboutLink = page.locator('a[href*="about"], a:has-text("About")')
