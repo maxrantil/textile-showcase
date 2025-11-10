@@ -11,7 +11,10 @@ test.describe('Gallery Browsing Complete Workflows', () => {
   })
 
   test.describe('Desktop Gallery Navigation', () => {
-    test('Complete keyboard navigation workflow', async ({ page }) => {
+    test('Complete keyboard navigation workflow', async ({ page, browserName }, testInfo) => {
+      // Skip on mobile browsers - they use vertical gallery without arrow navigation
+      test.skip(testInfo.project.name.includes('Mobile'), 'Desktop-only test - mobile uses different gallery')
+
       // Validate initial gallery state
       await galleryPage.validateGalleryStructure()
 
@@ -37,7 +40,10 @@ test.describe('Gallery Browsing Complete Workflows', () => {
       await page.waitForURL('/', { waitUntil: 'domcontentloaded' })
     })
 
-    test('Gallery performance and loading', async () => {
+    test('Gallery performance and loading', async ({}, testInfo) => {
+      // Skip on mobile browsers - they use vertical gallery
+      test.skip(testInfo.project.name.includes('Mobile'), 'Desktop-only test - mobile uses different gallery')
+
       const startTime = Date.now()
       await galleryPage.goto()
       const loadTime = Date.now() - startTime
