@@ -54,7 +54,7 @@ test.describe('Gallery Browsing Complete Workflows', () => {
       await galleryPage.validateGalleryStructure()
 
       // Test touch targets are appropriately sized for mobile
-      const galleryItems = page.locator('[data-testid="gallery-item"]')
+      const galleryItems = page.locator('[data-testid^="gallery-item-"]')
       const firstItem = galleryItems.first()
 
       const boundingBox = await firstItem.boundingBox()
