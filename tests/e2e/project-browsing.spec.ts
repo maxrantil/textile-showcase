@@ -137,9 +137,14 @@ test.describe('Project Browsing', () => {
     expect(altText?.length).toBeGreaterThan(0)
   })
 
-  test('project view adapts to mobile viewport', async ({ page }) => {
+  test('project view adapts to mobile viewport', async ({ page, browserName }) => {
     // Arrange: Set mobile viewport
     await page.setViewportSize({ width: 375, height: 667 })
+
+    // Safari needs extra time after viewport change for layout calculation
+    if (browserName === 'webkit') {
+      await page.waitForTimeout(500)
+    }
 
     // Act: Navigate to project
     await homePage.goto()
@@ -148,7 +153,7 @@ test.describe('Project Browsing', () => {
     await projectPage.waitForProject()
 
     // Assert: Project loads on mobile
-    await expect(projectPage.projectTitle).toBeVisible()
+    await expect(projectPage.projectTitle).toBeVisible({ timeout: 10000 })
 
     // Assert: Images exist on mobile (may include hidden thumbnails)
     const imageCount = await projectPage.getImageCount()
@@ -166,7 +171,10 @@ test.describe('Project Browsing', () => {
     expect(viewport?.height).toBe(667)
   })
 
-  test('user sees loading states during navigation', async ({ page }) => {
+  test('user sees loading states during navigation', async ({ page, browserName }) => {
+    // CDP (Chrome DevTools Protocol) is only supported on Chromium-based browsers
+    test.skip(browserName === 'webkit', 'CDP network throttling not supported on Safari/WebKit')
+
     // Arrange: Throttle network to slow down loading
     const client = await page.context().newCDPSession(page)
     await client.send('Network.emulateNetworkConditions', {

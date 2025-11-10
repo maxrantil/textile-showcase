@@ -37,7 +37,11 @@ test.describe('Gallery Performance & Error Handling', () => {
       await expect(reloadButton).toBeVisible()
     })
 
-    test('should allow navigation even when dynamic imports fail', async ({ page, context }) => {
+    test('should allow navigation even when dynamic imports fail', async ({ page, context }, testInfo) => {
+      // Skip on mobile - this tests desktop navigation fallback behavior
+      // Mobile uses hamburger menu with different UX patterns
+      test.skip(testInfo.project.name.includes('Mobile'), 'Desktop navigation fallback test')
+
       // Block Gallery component imports
       await context.route('**/*.js', (route) => {
         const url = route.request().url()

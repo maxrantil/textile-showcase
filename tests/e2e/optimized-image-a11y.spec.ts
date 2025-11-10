@@ -34,7 +34,7 @@ test.describe('OptimizedImage Accessibility', () => {
       await page.waitForLoadState('networkidle')
 
       const accessibilityScanResults = await new AxeBuilder({ page })
-        .include('[data-testid="gallery-item"], .desktop-gallery-item')
+        .include('[data-testid^="gallery-item-"], .desktop-gallery-item')
         .withTags(['wcag2a', 'wcag2aa'])
         .analyze()
 
@@ -55,7 +55,7 @@ test.describe('OptimizedImage Accessibility', () => {
 
       // Navigate to first project
       const firstProject = page
-        .locator('[data-testid="gallery-item"], .desktop-gallery-item')
+        .locator('[data-testid^="gallery-item-"], .desktop-gallery-item')
         .first()
       await firstProject.click()
 
