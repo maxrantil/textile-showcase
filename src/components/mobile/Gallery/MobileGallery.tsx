@@ -36,6 +36,7 @@ export default function MobileGallery({ designs }: MobileGalleryProps) {
           design={design}
           index={index}
           isPriority={index < 2}
+          isActive={index === 0}
         />
       ))}
     </section>

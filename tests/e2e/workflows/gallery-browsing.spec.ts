@@ -11,7 +11,10 @@ test.describe('Gallery Browsing Complete Workflows', () => {
   })
 
   test.describe('Desktop Gallery Navigation', () => {
-    test('Complete keyboard navigation workflow', async ({ page }) => {
+    test('Complete keyboard navigation workflow', async ({ page, browserName }, testInfo) => {
+      // Skip on mobile browsers - they use vertical gallery without arrow navigation
+      test.skip(testInfo.project.name.includes('Mobile'), 'Desktop-only test - mobile uses different gallery')
+
       // Validate initial gallery state
       await galleryPage.validateGalleryStructure()
 
@@ -28,12 +31,19 @@ test.describe('Gallery Browsing Complete Workflows', () => {
       await galleryPage.openActiveProject()
       await page.waitForLoadState('networkidle')
 
+      // Wait for project content to be fully loaded and interactive
+      await page.waitForSelector('.nordic-container', { state: 'visible' })
+      await page.waitForTimeout(500) // Allow for client-side hydration and event listeners
+
       // Test return to gallery
       await page.keyboard.press('Escape')
-      await page.waitForURL('/')
+      await page.waitForURL('/', { waitUntil: 'domcontentloaded' })
     })
 
-    test('Gallery performance and loading', async () => {
+    test('Gallery performance and loading', async ({}, testInfo) => {
+      // Skip on mobile browsers - they use vertical gallery
+      test.skip(testInfo.project.name.includes('Mobile'), 'Desktop-only test - mobile uses different gallery')
+
       const startTime = Date.now()
       await galleryPage.goto()
       const loadTime = Date.now() - startTime
@@ -54,7 +64,7 @@ test.describe('Gallery Browsing Complete Workflows', () => {
       await galleryPage.validateGalleryStructure()
 
       // Test touch targets are appropriately sized for mobile
-      const galleryItems = page.locator('[data-testid="gallery-item"]')
+      const galleryItems = page.locator('[data-testid^="gallery-item-"]')
       const firstItem = galleryItems.first()
 
       const boundingBox = await firstItem.boundingBox()

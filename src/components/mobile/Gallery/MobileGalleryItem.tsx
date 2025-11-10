@@ -14,6 +14,7 @@ interface MobileGalleryItemProps {
   design: TextileDesign
   index?: number
   isPriority?: boolean
+  isActive?: boolean
   onNavigate?: () => void
 }
 
@@ -36,6 +37,7 @@ export default function MobileGalleryItem({
   design,
   index = 0,
   isPriority = false,
+  isActive = false,
   onNavigate,
 }: MobileGalleryItemProps) {
   const router = useRouter()
@@ -94,6 +96,7 @@ export default function MobileGalleryItem({
       tabIndex={0}
       aria-label={`View ${design.title} project${design.year ? ` from ${design.year}` : ''}`}
       data-testid={`gallery-item-${index}`}
+      data-active={isActive}
     >
       {imageSource && (
         <div className="mobile-gallery-image-container">
