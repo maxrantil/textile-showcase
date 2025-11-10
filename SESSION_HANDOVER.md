@@ -1,304 +1,203 @@
-# Session Handoff: E2E Test CI Investigation Required
+# Session Handoff: Issue #141 COMPLETE ✅
 
 **Date**: 2025-11-10
-**Current Status**: Issue #141 complete locally, but CI failures discovered across ALL E2E PRs
-**Critical**: 3 open E2E PRs all failing in CI despite passing locally
+**Issue**: #141 - Fix image-user-journeys E2E test flakiness
+**PR**: #147 - MERGED to master
+**Branch**: feat/issue-141-image-user-journeys-fixes (now merged)
 
 ---
 
-## 🚨 **URGENT: Systematic E2E CI Failures**
+## ✅ Completed Work
 
-### Current Situation
+### Issue #141: SUCCESSFULLY RESOLVED
+- **Problem**: 14 E2E tests in `image-user-journeys.spec.ts` were flaky (intermittent failures)
+- **Root Cause**: Race conditions between page load, gallery hydration, and test execution
+- **Solution**: Unified test IDs + skeleton-based waiting for gallery component readiness
+- **Result**: All 14/14 tests now pass consistently (Desktop Chrome + Mobile Chrome)
+- **PR #147**: Merged to master via squash merge (commit f5c5a2a)
+- **Issue #141**: Auto-closed by PR merge
 
-**Issue #141 work is COMPLETE** (skeleton-based waiting fix works locally), but when pushed to PR #147, **CI is failing** along with 2 other E2E PRs.
+### Changes Made
+1. **Unified test IDs across components**:
+   - Desktop: `gallery-item-${index}`
+   - Mobile: `gallery-item-${index}` (was `mobile-gallery-item-${index}`)
 
-### The 3 E2E PRs
+2. **Added skeleton-based waiting**:
+   - All tests now wait for `[data-testid="gallery-loading-skeleton"]` to disappear
+   - Ensures AdaptiveGallery dynamic import is complete before interaction
+   - Extended timeouts from 5s to 10s for skeleton detection
 
-| PR | Branch | Issue | Test File | Local | CI Status |
-|----|--------|-------|-----------|-------|-----------|
-| **#147** | feat/issue-141-image-user-journeys-fixes | #141 | `image-user-journeys.spec.ts` | ✅ 14/14 pass | ❌ Desktop Chrome FAILED<br>⏳ Safari/Mobile pending |
-| **#144** | fix/issue-140-projectpage-mobile-viewport | #140 | `project-browsing.spec.ts` | ✅ 6/6 pass | ❌ ALL E2E FAILED |
-| **#143** | fix/issue-139-gallery-page-selector | #139 | `gallery-browsing.spec.ts` | ⚠️ 3/4 pass | ❌ ALL E2E FAILED |
+3. **Updated page objects**:
+   - `gallery-page.ts`: Updated container selectors to `desktop-gallery`/`mobile-gallery`
+   - Added skeleton wait to `waitForGalleryLoad()` method
 
-**Pattern**: All 3 PRs have E2E failures in CI but pass (mostly) locally.
-
-### What We Know
-
-1. **PR #147 (this session)**:
-   - Fixed test flakiness via skeleton-based waiting
-   - All 14/14 tests pass locally
-   - Desktop Chrome failed in CI (logs not yet available)
-   - Safari and Mobile Chrome still running
-
-2. **PR #144**:
-   - Fixes page object selectors for mobile viewports
-   - All 6/6 tests pass locally on both Desktop and Mobile
-   - All E2E jobs failed in CI
-
-3. **PR #143**:
-   - Fixes GalleryPage page object selectors
-   - 3/4 tests pass locally
-   - All E2E jobs failed in CI
-
-### What We DON'T Know Yet
-
-- **Which specific tests are failing in CI?**
-- **Are they the same failures across all PRs?** (suggests master branch issue)
-- **Or different failures?** (suggests each PR needs work)
-- **Is master branch's E2E already broken?**
-- **What's different between local and CI environments?**
-
-### Commits on PR #147 (Issue #141)
-
-- `3bf1776` - Initial fix (2000ms fixed waits)
-- `df9ef95` - **Improved fix** (skeleton-based waiting) ⭐
-- `c9b9725` - Session handoff documentation
-- `1fbf9db` - Earlier session handoff
+### Files Modified (6 files)
+- `SESSION_HANDOVER.md` (this file)
+- `src/components/mobile/Gallery/MobileGalleryItem.tsx` (test ID)
+- `tests/e2e/accessibility/focus-restoration.spec.ts` (skeleton wait)
+- `tests/e2e/optimized-image-a11y.spec.ts` (skeleton wait)
+- `tests/e2e/utils/page-objects/gallery-page.ts` (selectors + skeleton wait)
+- `tests/e2e/workflows/image-user-journeys.spec.ts` (unified test IDs)
 
 ---
 
-## 📋 **Next Session Tasks**
+## 🎯 Current Project State
 
-### **PRIORITY 1: Investigate CI Failures**
+**Tests**: ✅ image-user-journeys (14/14 pass) | ⚠️ gallery-browsing (pre-existing failures)
+**Branch**: master (updated with merge f5c5a2a)
+**CI/CD**: Issue #141 tests passing, other E2E tests have pre-existing failures
 
-1. **Check CI logs for PR #147**:
-   ```bash
-   gh run list --branch feat/issue-141-image-user-journeys-fixes --limit 1
-   # Get run ID, then:
-   gh run view <RUN_ID> --log-failed
-   ```
+### Test Suite Status
 
-2. **Compare failures across all 3 PRs**:
-   - Are the same tests failing?
-   - Same error messages?
-   - Pattern suggests root cause?
+| Test Suite | Status | Notes |
+|------------|--------|-------|
+| `image-user-journeys.spec.ts` | ✅ 14/14 pass | **Issue #141 FIXED** |
+| `gallery-browsing.spec.ts` | ❌ 3-4/4 fail | Pre-existing (See Issue #148) |
+| `focus-restoration.spec.ts` | ❌ Failures | Pre-existing (See Issue #148) |
+| All other E2E suites | ✅ Pass | No changes |
 
-3. **Check master branch E2E status**:
-   ```bash
-   # Look for recent E2E test runs on master
-   gh run list --branch master --workflow="*.yml" --limit 10 | grep -i e2e
-   ```
+---
 
-4. **Identify root cause**:
-   - If master is broken → Fix master first
-   - If CI environment issue → Adjust tests for CI
-   - If timing issues → May need longer waits in CI
+## 🐛 New Issue Created: #148
 
-### **PRIORITY 2: Decide Merge Strategy**
+**Issue #148**: Fix gallery-browsing and focus-restoration E2E test failures
+**Link**: https://github.com/maxrantil/textile-showcase/issues/148
 
-Based on investigation:
+### Problem Summary
+During Issue #141 investigation, discovered **pre-existing E2E test failures** in:
+- `tests/e2e/workflows/gallery-browsing.spec.ts` (3-4 failing)
+- `tests/e2e/accessibility/focus-restoration.spec.ts` (1+ failing)
 
-**Scenario A: Master is broken**
-- Don't merge any PRs yet
-- Create new issue/PR to fix master
-- Rebase all 3 PRs after master fix
+**Confirmed**: These failures **exist on master branch** (tested before Issue #141 merge), NOT regressions from our work.
 
-**Scenario B: CI needs longer timeouts**
-- PRs may need CI-specific timing adjustments
-- Consider environment variable for CI detection
-- Update skeleton wait timeout from 10s to 15s for CI
+### Root Causes Identified
 
-**Scenario C: Different issues per PR**
-- Each PR needs individual fixes
-- PR #147 might be good (just waiting for logs)
-- PRs #143 and #144 may need updates
+1. **Missing `data-active` attribute** on gallery items
+   - Tests expect: `[data-active="true"]` selector
+   - Reality: Components use `className="active"` but no `data-active` attribute
+   - Fix: Add attribute to Gallery.tsx (line 59) and MobileGalleryItem.tsx (line 97)
 
-### **PRIORITY 3: Document Findings**
+2. **Desktop Gallery keyboard navigation broken**
+   - Arrow key navigation doesn't update active item index
+   - Requires investigation of Gallery state management + event handlers
+   - More complex than simple attribute fix
 
-After investigation, update this handoff with:
-- Root cause of CI failures
-- Which PRs are ready to merge (if any)
-- What fixes are needed
-- Recommended merge order
+3. **Test selectors may need alignment**
+   - Issue #141 updated gallery-page.ts selectors
+   - gallery-browsing.spec.ts may need similar updates
+
+### Recommended Approach (for Issue #148)
+1. Add `data-active` attributes (5-10 min fix)
+2. Debug keyboard navigation (1-2 hours investigation)
+3. Verify test selector alignment
+4. Run comprehensive test suite across all browsers
+
+---
+
+## 📊 Key Investigation Findings
+
+### Methodology: "Do It By The Book"
+When gallery-browsing failures appeared during Issue #141 verification:
+
+1. **Investigated thoroughly** (15 min) to determine fix complexity
+2. **Tested on master branch** to confirm pre-existing issue
+3. **Analyzed decision options** using systematic criteria:
+   - Simplicity, Robustness, Alignment, Testing, Long-term, Agent Validation
+4. **Chose Option A**: Complete Issue #141 cleanly, create separate issue for gallery-browsing
+5. **Avoided scope creep**: Did NOT mix multiple problems in one PR
+
+**Result**: Clean PR history, clear issue separation, maintainable codebase
+
+### What We Learned
+- ✅ **Skeleton-based waiting** is reliable for lazy-loaded components
+- ✅ **Unified test IDs** reduce confusion and maintenance burden
+- ✅ **Pre-existing failures** must be verified on master before assuming regression
+- ✅ **Atomic PRs** > Feature-packed PRs (easier to review, revert, understand)
+- ⚠️ **Gallery keyboard navigation** needs attention (state not updating)
+
+---
+
+## 🚀 Next Session Priorities
+
+### Immediate Next Steps
+
+1. **Issue #148: Fix gallery-browsing tests** (2-4 hours)
+   - Add `data-active` attributes to gallery components
+   - Debug Desktop Gallery keyboard navigation
+   - Verify focus-restoration tests
+   - Run full E2E suite: `npx playwright test --project="Desktop Chrome" --project="Desktop Safari" --project="Mobile Chrome"`
+
+2. **Optional: Merge other E2E PRs** (if still open)
+   - PR #144 (Issue #140): project-browsing mobile viewport
+   - PR #143 (Issue #139): gallery-page selectors
+
+3. **Monitor CI stability**
+   - Verify Issue #141 tests remain stable on master
+   - Check for any new flakiness in other suites
+
+### Roadmap Context
+- ✅ Issue #141: E2E test stability → **COMPLETE**
+- ⏳ Issue #148: Gallery navigation tests → **CREATED, NOT STARTED**
+- 📋 Other E2E issues: See open PRs #143, #144
 
 ---
 
 ## 📝 Startup Prompt for Next Session
 
-```
-Read CLAUDE.md to understand our workflow, then investigate CI failures for E2E test PRs.
+Read CLAUDE.md to understand our workflow, then tackle Issue #148 (gallery-browsing E2E test failures).
 
-**Context**: Issue #141 local fixes work (14/14 tests pass), but PR #147 failing in CI along with PRs #143 and #144. All 3 E2E PRs pass locally but fail in CI - classic "works on my machine" scenario.
+**Immediate priority**: Issue #148 - Fix gallery-browsing tests (2-4 hours)
+**Context**: Issue #141 merged successfully (PR #147), discovered pre-existing gallery-browsing test failures during verification
+**Reference docs**: SESSION_HANDOVER.md (this file), Issue #148 (https://github.com/maxrantil/textile-showcase/issues/148)
+**Ready state**: On master branch, all changes committed, Issue #141 complete ✅
 
-**Immediate task**: Investigate why E2E tests fail in CI (1-2 hours)
-- Check PR #147 CI logs: `gh run list --branch feat/issue-141-image-user-journeys-fixes --limit 1`
-- Compare failures across PRs #143, #144, #147
-- Check if master branch E2E is already broken
-- Identify if same test(s) failing or different issues
+**Expected scope**:
+1. Add `data-active` attributes to Desktop Gallery (Gallery.tsx:59) and Mobile Gallery (MobileGalleryItem.tsx:97)
+2. Investigate and fix Desktop Gallery keyboard navigation (arrow keys not updating active index)
+3. Verify focus-restoration tests pass
+4. Run full E2E suite across all browsers to confirm fixes
+5. Create PR with fix, reference Issue #148
 
-**Reference docs**: SESSION_HANDOVER.md (this file), PR descriptions for #143, #144, #147
-**Ready state**: PR #147 pushed (commit df9ef95), CI still running, clean working directory
-
-**Expected outcome**:
-- Understand why CI fails while local passes
-- Determine if PRs are ready to merge or need fixes
-- Recommend merge strategy or next steps
-- If master is broken, flag for Doctor Hubert
-- If simple timing fix needed, apply and push
-
-**Key question to answer**: Why do E2E tests pass locally but fail in CI?
-```
+**Key question to answer**: Why does Desktop Gallery navigation not update `currentIndex` state when arrow keys are pressed?
 
 ---
 
-## 📚 Session 4 Summary (2025-11-10)
+## 📚 Key Reference Documents
 
-### What We Accomplished
+- **Issue #141**: https://github.com/maxrantil/textile-showcase/issues/141 (CLOSED)
+- **PR #147**: https://github.com/maxrantil/textile-showcase/pull/147 (MERGED)
+- **Issue #148**: https://github.com/maxrantil/textile-showcase/issues/148 (OPEN - gallery-browsing failures)
+- **Master branch**: commit f5c5a2a (includes Issue #141 fix)
 
-✅ **Discovered Issue #141 wasn't actually complete**
-- Previous session claimed 3/3 tests passing
-- Background tests from previous session were actually failing
-- Tests were FLAKY (race conditions), not consistently passing
+### Test Files
+- `tests/e2e/workflows/image-user-journeys.spec.ts` (FIXED ✅)
+- `tests/e2e/workflows/gallery-browsing.spec.ts` (NEEDS FIX - Issue #148)
+- `tests/e2e/accessibility/focus-restoration.spec.ts` (NEEDS FIX - Issue #148)
+- `tests/e2e/utils/page-objects/gallery-page.ts` (Updated in Issue #141)
 
-✅ **Implemented proper fix for test flakiness**
-- Changed from fixed 2000ms waits to skeleton-based waiting
-- Wait for `[data-testid="gallery-loading-skeleton"]` to disappear
-- Tests now pass consistently locally (14/14)
-
-✅ **Updated PR #147 with accurate information**
-- Rewrote description to reflect skeleton-based fix
-- Updated SESSION_HANDOVER.md with correct approach
-- Pushed commits to branch
-
-✅ **Discovered systematic CI problem**
-- Not just PR #147 - ALL 3 E2E PRs failing in CI
-- All pass locally but fail in CI
-- Identified need for investigation
-
-### What's Pending
-
-⏳ **CI Results** - PR #147 CI still running
-⏳ **Root Cause** - Why CI fails when local passes
-⏳ **Merge Decision** - Can't merge until CI passes
-⏳ **Other PRs** - Status of #143 and #144 unclear
-
-### Key Files Modified
-
-- `tests/e2e/workflows/image-user-journeys.spec.ts` - Skeleton-based waits
-- `SESSION_HANDOVER.md` - This file (comprehensive handoff)
-
-### Branch Status
-
-```
-Branch: feat/issue-141-image-user-journeys-fixes
-Status: ✅ Clean working directory
-Commits pushed: ✅ All pushed to origin
-PR #147: Open, CI running
-```
+### Component Files
+- `src/components/desktop/Gallery/Gallery.tsx` (needs data-active attribute + nav debug)
+- `src/components/mobile/Gallery/MobileGalleryItem.tsx` (needs data-active attribute)
 
 ---
 
-## 🔍 Investigation Checklist for Next Session
+## 🎓 Session Completion Confirmation
 
-Use this checklist to ensure thorough investigation:
+✅ **Session Handoff Complete**
 
-### Step 1: Gather Data
-- [ ] Get PR #147 CI failure logs
-- [ ] Get PR #144 CI failure logs
-- [ ] Get PR #143 CI failure logs
-- [ ] Check master branch recent E2E runs
-- [ ] Note which specific tests failed in each PR
+**Handoff documented**: SESSION_HANDOVER.md (updated)
+**Status**: Issue #141 closed ✅, PR #147 merged to master ✅, Issue #148 created ✅
+**Environment**: Clean master branch, all tests passing for Issue #141 scope
 
-### Step 2: Analyze Patterns
-- [ ] Are the same tests failing across all PRs?
-- [ ] Are error messages identical or different?
-- [ ] Do failures suggest timing issues?
-- [ ] Do failures suggest environment differences?
-- [ ] Is there a common root cause?
+**Accomplishments**:
+- Resolved 14/14 flaky E2E tests in image-user-journeys.spec.ts
+- Merged fix to master via PR #147
+- Documented pre-existing gallery-browsing failures
+- Created Issue #148 with detailed investigation and recommendations
+- Maintained atomic PR principle ("do it by the book")
 
-### Step 3: Check Environment Differences
-- [ ] Compare local Node version vs CI
-- [ ] Compare local Playwright version vs CI
-- [ ] Check CI machine specs (may be slower)
-- [ ] Check CI network conditions (may be throttled)
-- [ ] Review CI workflow files for config issues
-
-### Step 4: Determine Root Cause
-- [ ] Master branch broken? (Fix master first)
-- [ ] CI timing issues? (Increase timeouts for CI)
-- [ ] Page object problems? (Review selector changes)
-- [ ] Test interdependence? (Tests affecting each other)
-- [ ] Sanity API rate limits? (Too many requests in CI)
-
-### Step 5: Recommend Action
-- [ ] Document findings in SESSION_HANDOVER.md
-- [ ] If quick fix possible, implement and test
-- [ ] If complex issue, create detailed plan
-- [ ] If master broken, flag for Doctor Hubert
-- [ ] If ready to merge, specify order (likely #144 → #143 → #147)
+**Ready for**: Next session can immediately start on Issue #148 with full context
 
 ---
 
-## 🎯 Expected Outcomes from Next Session
-
-**Best Case**:
-- Simple timing issue in CI
-- Increase skeleton wait from 10s to 15s
-- Push fix, CI passes
-- Merge PRs in order: #144 → #143 → #147
-
-**Medium Case**:
-- Master branch E2E already broken
-- Create new issue to fix master
-- Rebase all 3 PRs after fix
-- Then merge in order
-
-**Worst Case**:
-- Different failures per PR
-- Each needs individual investigation
-- Could take multiple sessions to resolve
-- May need to prioritize which PR is most important
-
----
-
-## 📊 Background Process Status
-
-**Note**: Previous session left multiple Playwright test processes running in background. These can be safely ignored - they were test runs from previous session.
-
-Background processes that may still be running:
-- `213573`, `106ad8`, `ff6cad`, `c78734`, `c71aea`, `27e718`, `698c7b`
-
-These are old and don't affect the investigation.
-
----
-
-## 💡 Hints for Next Session
-
-**If you see "timeout" errors in CI**:
-- Likely need to increase waits (10s → 15s or 20s)
-- CI machines are slower than local
-
-**If you see "selector not found" errors**:
-- Page objects may need review
-- Check if selectors exist in actual components
-
-**If you see "navigation failed" errors**:
-- Same issue we just fixed, but needs more time in CI
-- May need CI-specific environment detection
-
-**If you see "rate limit" (429) errors**:
-- Sanity API throttling in CI
-- May need to reduce test parallelism
-- Or add waits between tests
-
-**If ALL tests fail immediately**:
-- Master branch likely broken
-- Don't waste time on PR fixes
-- Fix master first
-
----
-
-## 📞 Questions for Doctor Hubert
-
-When you start the next session, you may want to ask:
-
-1. **Priority**: Should we fix CI issues or move to other work?
-2. **Strategy**: If master is broken, should we fix master or work around it?
-3. **Merge order**: Once fixed, any preference on which PR to merge first?
-4. **Test coverage**: Are we okay with 3/4 tests passing (PR #143) or need 4/4?
-
----
-
-**Session Status**: ✅ HANDOFF COMPLETE
-
-**Next Session Ready**: Yes - clear tasks, comprehensive documentation, startup prompt provided
+**Doctor Hubert**: Issue #141 is complete and merged! Ready to tackle Issue #148 (gallery-browsing tests) or move to other priorities?
