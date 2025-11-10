@@ -1,188 +1,304 @@
-# Session Handoff: Issue #141 - ✅ COMPLETE (IMPROVED)
+# Session Handoff: E2E Test CI Investigation Required
 
 **Date**: 2025-11-10
-**Issue**: #141 - image-user-journeys keyboard/mobile test failures
-**Branch**: feat/issue-141-image-user-journeys-fixes
-**PR**: #147 - https://github.com/maxrantil/textile-showcase/pull/147
-**Status**: ✅ **COMPLETE** - All tests passing consistently, test flakiness eliminated
+**Current Status**: Issue #141 complete locally, but CI failures discovered across ALL E2E PRs
+**Critical**: 3 open E2E PRs all failing in CI despite passing locally
 
 ---
 
-## ✅ Session 4 Completion (2025-11-10) - **FINAL FIX**
+## 🚨 **URGENT: Systematic E2E CI Failures**
 
-### Final Status: SUCCESS ✅
-- **All 14/14 tests PASSING** (2 skipped as expected)
-- **Test flakiness ELIMINATED** via skeleton-based waiting
-- **PR #147 updated** with improved solution
-- **Commit df9ef95** contains the final fix
+### Current Situation
 
-### Test Results (Final - Full Suite)
-```bash
-# Full suite run
-npx playwright test tests/e2e/workflows/image-user-journeys.spec.ts \
-  --project="Desktop Chrome" --project="Mobile Chrome"
+**Issue #141 work is COMPLETE** (skeleton-based waiting fix works locally), but when pushed to PR #147, **CI is failing** along with 2 other E2E PRs.
 
-Result: 2 skipped, 14 passed (25.6s) ✅
+### The 3 E2E PRs
 
-# Stability test (3x repeat on critical tests)
-npx playwright test tests/e2e/workflows/image-user-journeys.spec.ts:108 \
-                    tests/e2e/workflows/image-user-journeys.spec.ts:272 \
-                    --project="Desktop Chrome" --project="Mobile Chrome" \
-                    --repeat-each=3
+| PR | Branch | Issue | Test File | Local | CI Status |
+|----|--------|-------|-----------|-------|-----------|
+| **#147** | feat/issue-141-image-user-journeys-fixes | #141 | `image-user-journeys.spec.ts` | ✅ 14/14 pass | ❌ Desktop Chrome FAILED<br>⏳ Safari/Mobile pending |
+| **#144** | fix/issue-140-projectpage-mobile-viewport | #140 | `project-browsing.spec.ts` | ✅ 6/6 pass | ❌ ALL E2E FAILED |
+| **#143** | fix/issue-139-gallery-page-selector | #139 | `gallery-browsing.spec.ts` | ⚠️ 3/4 pass | ❌ ALL E2E FAILED |
 
-Result: 1 failed (API rate limit 429), 11 passed (33.8s) ✅
-         ^ Failure was NOT navigation - API rate limit after successful nav
-```
+**Pattern**: All 3 PRs have E2E failures in CI but pass (mostly) locally.
 
-### **IMPROVED** Solution Applied
+### What We Know
 
-#### Root Cause (Confirmed)
-**Tests were FLAKY, not consistently failing**. When run individually, they often passed. When run in suites or under load, they sometimes failed. This is the hallmark of a **race condition**.
+1. **PR #147 (this session)**:
+   - Fixed test flakiness via skeleton-based waiting
+   - All 14/14 tests pass locally
+   - Desktop Chrome failed in CI (logs not yet available)
+   - Safari and Mobile Chrome still running
 
-The race: Fixed 2000ms wait was not always enough for AdaptiveGallery's dynamic import to complete. Import time varied based on:
-- System load
-- CI environment speed
-- Network conditions
-- Bundle size
+2. **PR #144**:
+   - Fixes page object selectors for mobile viewports
+   - All 6/6 tests pass locally on both Desktop and Mobile
+   - All E2E jobs failed in CI
 
-#### The Fix: Skeleton-Based Waiting (Elegant & Reliable)
-Instead of guessing with fixed timeouts, **wait for the component to signal it's ready**:
+3. **PR #143**:
+   - Fixes GalleryPage page object selectors
+   - 3/4 tests pass locally
+   - All E2E jobs failed in CI
 
-```typescript
-// Before (FLAKY): Fixed 2000ms wait
-await page.waitForTimeout(2000)
+### What We DON'T Know Yet
 
-// After (STABLE): Wait for skeleton to disappear
-const skeleton = page.locator('[data-testid="gallery-loading-skeleton"]')
-await skeleton.waitFor({ state: 'hidden', timeout: 10000 })
-// Additional 500ms for event handler attachment
-await page.waitForTimeout(500)
-```
+- **Which specific tests are failing in CI?**
+- **Are they the same failures across all PRs?** (suggests master branch issue)
+- **Or different failures?** (suggests each PR needs work)
+- **Is master branch's E2E already broken?**
+- **What's different between local and CI environments?**
 
-#### Changes Made
+### Commits on PR #147 (Issue #141)
 
-**Test 108: Desktop Keyboard Navigation**
-- Added skeleton disappearance wait before interaction
-- Reduced post-load wait from 2000ms to 500ms
-- **Result**: Test now consistently passes
-
-**Test 272: Mobile Tap Navigation**
-- Added skeleton disappearance wait before interaction
-- Reduced post-load wait from 2000ms to 500ms
-- **Result**: Test now consistently passes
-
-### Why This Solution is Better
-
-| Aspect | Old Fix (2000ms wait) | New Fix (Skeleton-based) |
-|--------|----------------------|--------------------------|
-| **Reliability** | ❌ Still flaky under load | ✅ Consistently passes |
-| **Speed** | ⚠️ Always waits 2000ms | ✅ Proceeds as soon as ready (~800ms avg) |
-| **Maintainability** | ❌ Magic number, no clear reason | ✅ Semantic - waits for actual state |
-| **Debuggability** | ❌ Hard to know why it failed | ✅ Clear: skeleton didn't hide = import failed |
-| **CI Resilience** | ❌ May fail on slower runners | ✅ Adapts to environment speed |
-
-### Commit History
-- `91fb7ec` - Session 1/2: Viewport-aware selector fixes
-- `3bf1776` - Session 3: Initial hydration wait fixes (2000ms approach)
-- `1fbf9db` - Session 3 handoff documentation
-- `df9ef95` - Session 4: **Skeleton-based waiting (FINAL FIX)** ⭐
+- `3bf1776` - Initial fix (2000ms fixed waits)
+- `df9ef95` - **Improved fix** (skeleton-based waiting) ⭐
+- `c9b9725` - Session handoff documentation
+- `1fbf9db` - Earlier session handoff
 
 ---
 
-## 🚀 Next Session Priorities
+## 📋 **Next Session Tasks**
 
-**Issue #141 is COMPLETE**. PR #147 is ready for review and merge.
+### **PRIORITY 1: Investigate CI Failures**
 
-**Immediate Actions**:
-1. Wait for CI to pass (checks currently running)
-2. Review PR #147 (Doctor Hubert)
-3. Merge to master (if approved)
-4. Close Issue #141 (should auto-close on merge)
+1. **Check CI logs for PR #147**:
+   ```bash
+   gh run list --branch feat/issue-141-image-user-journeys-fixes --limit 1
+   # Get run ID, then:
+   gh run view <RUN_ID> --log-failed
+   ```
 
-**Optional Future Improvements** (not blocking):
-- Add `data-hydrated="true"` attribute to galleries when fully ready
-- Use MutationObserver for even more precise event handler detection
-- Consider reducing skeleton display time (currently 300ms)
+2. **Compare failures across all 3 PRs**:
+   - Are the same tests failing?
+   - Same error messages?
+   - Pattern suggests root cause?
+
+3. **Check master branch E2E status**:
+   ```bash
+   # Look for recent E2E test runs on master
+   gh run list --branch master --workflow="*.yml" --limit 10 | grep -i e2e
+   ```
+
+4. **Identify root cause**:
+   - If master is broken → Fix master first
+   - If CI environment issue → Adjust tests for CI
+   - If timing issues → May need longer waits in CI
+
+### **PRIORITY 2: Decide Merge Strategy**
+
+Based on investigation:
+
+**Scenario A: Master is broken**
+- Don't merge any PRs yet
+- Create new issue/PR to fix master
+- Rebase all 3 PRs after master fix
+
+**Scenario B: CI needs longer timeouts**
+- PRs may need CI-specific timing adjustments
+- Consider environment variable for CI detection
+- Update skeleton wait timeout from 10s to 15s for CI
+
+**Scenario C: Different issues per PR**
+- Each PR needs individual fixes
+- PR #147 might be good (just waiting for logs)
+- PRs #143 and #144 may need updates
+
+### **PRIORITY 3: Document Findings**
+
+After investigation, update this handoff with:
+- Root cause of CI failures
+- Which PRs are ready to merge (if any)
+- What fixes are needed
+- Recommended merge order
 
 ---
 
 ## 📝 Startup Prompt for Next Session
 
-Read CLAUDE.md to understand our workflow, then proceed with next priority task.
+```
+Read CLAUDE.md to understand our workflow, then investigate CI failures for E2E test PRs.
 
-**Recent completion**: Issue #141 test stability improvements (✅ complete, PR #147 updated)
-**Context**: Eliminated test flakiness via skeleton-based waiting; 14/14 tests passing
-**Reference docs**: PR #147, commit df9ef95 (final fix)
-**Ready state**: feat/issue-141 branch pushed, PR updated, CI running
+**Context**: Issue #141 local fixes work (14/14 tests pass), but PR #147 failing in CI along with PRs #143 and #144. All 3 E2E PRs pass locally but fail in CI - classic "works on my machine" scenario.
 
-**Expected flow**:
-1. CI finishes (E2E tests should pass)
-2. Doctor Hubert reviews PR #147
-3. Merge to master
-4. Address any new issues or features
+**Immediate task**: Investigate why E2E tests fail in CI (1-2 hours)
+- Check PR #147 CI logs: `gh run list --branch feat/issue-141-image-user-journeys-fixes --limit 1`
+- Compare failures across PRs #143, #144, #147
+- Check if master branch E2E is already broken
+- Identify if same test(s) failing or different issues
 
----
+**Reference docs**: SESSION_HANDOVER.md (this file), PR descriptions for #143, #144, #147
+**Ready state**: PR #147 pushed (commit df9ef95), CI still running, clean working directory
 
-## 📚 Session 4 Learning Notes
+**Expected outcome**:
+- Understand why CI fails while local passes
+- Determine if PRs are ready to merge or need fixes
+- Recommend merge strategy or next steps
+- If master is broken, flag for Doctor Hubert
+- If simple timing fix needed, apply and push
 
-### What Worked Well
-✅ **Identified root cause correctly** - Tests were flaky, not consistently broken
-✅ **Systematic diagnosis** - Ran tests individually to observe behavior variance
-✅ **Elegant solution** - Wait for skeleton instead of arbitrary timeouts
-✅ **Thorough validation** - Full suite + repeat runs confirmed stability
-
-### Key Insights
-- **Fixed timeouts are anti-patterns** - Always prefer waiting for state changes
-- **Flaky tests indicate race conditions** - Inconsistent behavior is the key signal
-- **The component already provides signals** - Skeleton visibility is perfect indicator
-- **Repeat runs are critical** - Single pass doesn't prove stability
-
-### Debugging Process
-1. Checked background test results (saw failures from previous session)
-2. Ran tests individually (they passed - revealed flakiness)
-3. Analyzed component architecture (found skeleton mechanism)
-4. Implemented state-based waiting (eliminated race condition)
-5. Validated with repeat runs (confirmed stability)
-
-### Process Improvements
-- **Always check for flakiness** - Run tests multiple times before claiming fixed
-- **Use component state** - Leverage testids and visibility for reliable waits
-- **Optimize wait times** - Reduce fixed waits after ensuring component ready
-- **Document the actual fix** - Session handoffs must reflect final implementation
+**Key question to answer**: Why do E2E tests pass locally but fail in CI?
+```
 
 ---
 
-## 📄 Historical Context (Previous Sessions)
+## 📚 Session 4 Summary (2025-11-10)
 
-### Session 3 Notes (2025-11-10 - Earlier)
-- Applied 2000ms hydration waits to both tests
-- Tests started passing but approach was suboptimal
-- Created PR #147 with initial fix
-- Documented solution in session handoff
+### What We Accomplished
 
-### Session 2 Notes (2025-11-06)
-- Corrected Session 1 findings (2/3 tests were actually passing)
-- Identified test 264 as the true blocker
-- Documented root cause as hydration timing issue
+✅ **Discovered Issue #141 wasn't actually complete**
+- Previous session claimed 3/3 tests passing
+- Background tests from previous session were actually failing
+- Tests were FLAKY (race conditions), not consistently passing
 
-### Session 1 Notes (Original)
-- Made viewport-aware selector improvements
-- Tests 108 and 305 fixed via selector updates
-- Test 264 remained problematic (hydration race condition)
+✅ **Implemented proper fix for test flakiness**
+- Changed from fixed 2000ms waits to skeleton-based waiting
+- Wait for `[data-testid="gallery-loading-skeleton"]` to disappear
+- Tests now pass consistently locally (14/14)
+
+✅ **Updated PR #147 with accurate information**
+- Rewrote description to reflect skeleton-based fix
+- Updated SESSION_HANDOVER.md with correct approach
+- Pushed commits to branch
+
+✅ **Discovered systematic CI problem**
+- Not just PR #147 - ALL 3 E2E PRs failing in CI
+- All pass locally but fail in CI
+- Identified need for investigation
+
+### What's Pending
+
+⏳ **CI Results** - PR #147 CI still running
+⏳ **Root Cause** - Why CI fails when local passes
+⏳ **Merge Decision** - Can't merge until CI passes
+⏳ **Other PRs** - Status of #143 and #144 unclear
+
+### Key Files Modified
+
+- `tests/e2e/workflows/image-user-journeys.spec.ts` - Skeleton-based waits
+- `SESSION_HANDOVER.md` - This file (comprehensive handoff)
+
+### Branch Status
+
+```
+Branch: feat/issue-141-image-user-journeys-fixes
+Status: ✅ Clean working directory
+Commits pushed: ✅ All pushed to origin
+PR #147: Open, CI running
+```
 
 ---
 
-## 🎯 Summary for Doctor Hubert
+## 🔍 Investigation Checklist for Next Session
 
-**Issue #141 is NOW TRULY COMPLETE**. The previous "fix" with 2000ms waits made tests pass but they were still flaky. This session discovered and fixed the root cause properly.
+Use this checklist to ensure thorough investigation:
 
-**What changed**:
-- FROM: Fixed 2000ms waits (still flaky)
-- TO: Wait for skeleton to disappear (rock solid)
+### Step 1: Gather Data
+- [ ] Get PR #147 CI failure logs
+- [ ] Get PR #144 CI failure logs
+- [ ] Get PR #143 CI failure logs
+- [ ] Check master branch recent E2E runs
+- [ ] Note which specific tests failed in each PR
 
-**Evidence**:
-- Full test suite: 14/14 passed ✅
-- Stability test (3x): 11/12 passed (1 failure was API rate limit, not navigation)
-- PR #147 updated with accurate description
+### Step 2: Analyze Patterns
+- [ ] Are the same tests failing across all PRs?
+- [ ] Are error messages identical or different?
+- [ ] Do failures suggest timing issues?
+- [ ] Do failures suggest environment differences?
+- [ ] Is there a common root cause?
 
-**Ready for**: Review and merge
+### Step 3: Check Environment Differences
+- [ ] Compare local Node version vs CI
+- [ ] Compare local Playwright version vs CI
+- [ ] Check CI machine specs (may be slower)
+- [ ] Check CI network conditions (may be throttled)
+- [ ] Review CI workflow files for config issues
+
+### Step 4: Determine Root Cause
+- [ ] Master branch broken? (Fix master first)
+- [ ] CI timing issues? (Increase timeouts for CI)
+- [ ] Page object problems? (Review selector changes)
+- [ ] Test interdependence? (Tests affecting each other)
+- [ ] Sanity API rate limits? (Too many requests in CI)
+
+### Step 5: Recommend Action
+- [ ] Document findings in SESSION_HANDOVER.md
+- [ ] If quick fix possible, implement and test
+- [ ] If complex issue, create detailed plan
+- [ ] If master broken, flag for Doctor Hubert
+- [ ] If ready to merge, specify order (likely #144 → #143 → #147)
+
+---
+
+## 🎯 Expected Outcomes from Next Session
+
+**Best Case**:
+- Simple timing issue in CI
+- Increase skeleton wait from 10s to 15s
+- Push fix, CI passes
+- Merge PRs in order: #144 → #143 → #147
+
+**Medium Case**:
+- Master branch E2E already broken
+- Create new issue to fix master
+- Rebase all 3 PRs after fix
+- Then merge in order
+
+**Worst Case**:
+- Different failures per PR
+- Each needs individual investigation
+- Could take multiple sessions to resolve
+- May need to prioritize which PR is most important
+
+---
+
+## 📊 Background Process Status
+
+**Note**: Previous session left multiple Playwright test processes running in background. These can be safely ignored - they were test runs from previous session.
+
+Background processes that may still be running:
+- `213573`, `106ad8`, `ff6cad`, `c78734`, `c71aea`, `27e718`, `698c7b`
+
+These are old and don't affect the investigation.
+
+---
+
+## 💡 Hints for Next Session
+
+**If you see "timeout" errors in CI**:
+- Likely need to increase waits (10s → 15s or 20s)
+- CI machines are slower than local
+
+**If you see "selector not found" errors**:
+- Page objects may need review
+- Check if selectors exist in actual components
+
+**If you see "navigation failed" errors**:
+- Same issue we just fixed, but needs more time in CI
+- May need CI-specific environment detection
+
+**If you see "rate limit" (429) errors**:
+- Sanity API throttling in CI
+- May need to reduce test parallelism
+- Or add waits between tests
+
+**If ALL tests fail immediately**:
+- Master branch likely broken
+- Don't waste time on PR fixes
+- Fix master first
+
+---
+
+## 📞 Questions for Doctor Hubert
+
+When you start the next session, you may want to ask:
+
+1. **Priority**: Should we fix CI issues or move to other work?
+2. **Strategy**: If master is broken, should we fix master or work around it?
+3. **Merge order**: Once fixed, any preference on which PR to merge first?
+4. **Test coverage**: Are we okay with 3/4 tests passing (PR #143) or need 4/4?
+
+---
+
+**Session Status**: ✅ HANDOFF COMPLETE
+
+**Next Session Ready**: Yes - clear tasks, comprehensive documentation, startup prompt provided
