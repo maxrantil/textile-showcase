@@ -109,6 +109,10 @@ test.describe('OptimizedImage User Journeys', () => {
       await page.goto('/')
       await page.waitForLoadState('networkidle')
 
+      // Wait for AdaptiveGallery skeleton to disappear (indicates dynamic import complete)
+      const skeleton = page.locator('[data-testid="gallery-loading-skeleton"]')
+      await skeleton.waitFor({ state: 'hidden', timeout: 10000 })
+
       // Verify gallery is present (viewport-aware selector)
       const gallery = page.locator(
         '[data-testid="desktop-gallery"], [data-testid="mobile-gallery"], .desktop-gallery, .mobile-gallery'
@@ -122,9 +126,9 @@ test.describe('OptimizedImage User Journeys', () => {
       // Get initial URL
       const initialUrl = page.url()
 
-      // Wait for hydration and window keyboard handler attachment
-      // AdaptiveGallery has 300ms skeleton + dynamic import + React hydration + window event setup
-      await page.waitForTimeout(2000)
+      // Additional wait for window keyboard handler attachment
+      // Desktop Gallery attaches keyboard handlers in useEffect after render
+      await page.waitForTimeout(500)
 
       // Click on the gallery to ensure window has focus for keyboard events
       await gallery.click()
@@ -269,6 +273,10 @@ test.describe('OptimizedImage User Journeys', () => {
       await page.goto('/')
       await page.waitForLoadState('networkidle')
 
+      // Wait for AdaptiveGallery skeleton to disappear (indicates dynamic import complete)
+      const skeleton = page.locator('[data-testid="gallery-loading-skeleton"]')
+      await skeleton.waitFor({ state: 'hidden', timeout: 10000 })
+
       // Find first mobile gallery item (mobile uses mobile-gallery-item testid)
       const firstGalleryItem = page
         .locator('[data-testid^="mobile-gallery-item"]')
@@ -287,9 +295,8 @@ test.describe('OptimizedImage User Journeys', () => {
         expect(boundingBox.height).toBeGreaterThanOrEqual(44)
       }
 
-      // Wait for hydration and event handlers to attach
-      // AdaptiveGallery has 300ms skeleton + dynamic import + React hydration
-      await page.waitForTimeout(2000)
+      // Additional wait for React event handlers to attach after hydration
+      await page.waitForTimeout(500)
 
       // Ensure element is in clickable state
       await expect(firstGalleryItem).toBeEnabled()
