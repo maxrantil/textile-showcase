@@ -6,12 +6,13 @@ import {
   mockDesigns,
   mockEmptyDesigns,
 } from '../../../../../tests/fixtures/designs'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { TextileDesign } from '@/types/textile'
 
-// Mock Next.js router
+// Mock Next.js router and pathname
 jest.mock('next/navigation', () => ({
   useRouter: jest.fn(),
+  usePathname: jest.fn(),
 }))
 
 // Mock image helpers
@@ -52,6 +53,7 @@ describe('MobileGallery', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     ;(useRouter as jest.Mock).mockReturnValue(mockRouter)
+    ;(usePathname as jest.Mock).mockReturnValue('/')
   })
 
   describe('Rendering', () => {
