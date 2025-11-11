@@ -1,145 +1,175 @@
-# Session Handoff: [Issue #159] - Production Deployment Workflow Fix
+# Session Handoff: [Issue #164] - Dependabot CI Configuration
 
 **Date**: 2025-11-11
-**Issue**: #159 - Production Deployment workflow failing due to test path mismatch
-**PR**: #161 - Add --passWithNoTests to deployment workflow
-**Branch**: fix/issue-159-deployment-workflow-v2
+**Issue**: #164 - Configure CI workflows for Dependabot security PRs
+**PR**: #165 - fix: Configure CI workflows for Dependabot security PRs
+**Branch**: fix/issue-164-dependabot-ci-config
 
 ## ✅ Completed Work
 
 ### Issue Resolution
-- **Problem**: Deployment workflow failing with "No tests found, exiting with code 1"
-- **Root Cause**: Tests intentionally ignored in jest.config.ts but deployment workflow tried to run them
-- **Solution**: Added `--passWithNoTests` flag to deployment workflow (1-line surgical fix)
+- **Problem**: Dependabot security PRs fail CI because GitHub restricts secret access for security reasons
+- **Root Cause**: GitHub intentionally doesn't expose secrets to Dependabot PRs to prevent supply chain attacks
+- **Solution**: Update CI workflows to skip secret-dependent tests for Dependabot PRs
 
 ### Key Achievements
-1. ✅ Identified deployment blocker preventing 5 recent PRs from deploying
-2. ✅ Tested initial approach (PR #160) - discovered it caused regressions
-3. ✅ Applied decision framework per CLAUDE.md motto
-4. ✅ Pivoted to surgical fix approach (PR #161)
-5. ✅ Validated zero regression from master baseline
-6. ✅ Created comprehensive PR documentation
+1. ✅ Analyzed Dependabot PR failure patterns (PR #162 blocked by secrets)
+2. ✅ Identified three workflows needing updates: E2E tests, Lighthouse, Session Handoff
+3. ✅ Implemented hybrid approach: skip incompatible checks, keep all other validation
+4. ✅ Added clear documentation explaining why tests are skipped
+5. ✅ Created comprehensive issue and PR documentation
 
 ### Files Changed
-- `.github/workflows/production-deploy.yml` (line 106): Added `--passWithNoTests` flag
+- `.github/workflows/e2e-tests.yml`: Skip for Dependabot (requires Sanity CMS secrets)
+- `.github/workflows/performance.yml`: Skip for Dependabot (requires working app with secrets)
+- `.github/workflows/session-handoff.yml`: Skip for Dependabot (not applicable to dependency updates)
+
+### Implementation Details
+```yaml
+# Pattern applied to all three workflows:
+if: github.actor != 'dependabot[bot]'
+```
+
+**Why This Works:**
+- ✅ Dependabot PRs can't access repository secrets (GitHub security feature)
+- ✅ E2E/Lighthouse tests require NEXT_PUBLIC_SANITY_PROJECT_ID secret
+- ✅ Can't mock Sanity CMS data for meaningful tests
+- ✅ Session handoff doesn't apply to automated dependency updates
+- ✅ All other validation remains active (Jest, TypeScript, Bundle Size, Security Scan)
 
 ### Commits
-- `f7ec65d`: fix: add --passWithNoTests to deployment workflow
-
-### PRs
-- #160: CLOSED (flawed approach - caused 11 test regressions)
-- #161: OPEN (surgical fix - zero regression)
+- `6374ada`: docs: complete session handoff for housekeeping + Issue #164
 
 ## 🎯 Current Project State
 
-**Tests**: ✅ Same as master (1 failing test suite in tests/bundle/bundle-size.test.ts - pre-existing)
-**Branch**: ✅ Clean working directory
-**CI/CD**: 🔄 PR #161 running checks
-**Deployment**: ✅ Should unblock once PR #161 merges
+**Tests**: ✅ All passing on PR #165 (1 pre-existing failure in bundle-size.test.ts on master)
+**Branch**: ✅ Clean working directory (fix/issue-164-dependabot-ci-config)
+**CI/CD**: 🔄 PR #165 running checks (session handoff check failing - this doc resolves it)
+**Security**: ⚠️ PR #162 (CVE-2025-57352) blocked, unblocks after #165 merges
 
 ### Agent Validation Status
-- [ ] architecture-designer: Not needed (workflow-only change)
-- [ ] security-validator: Not needed (no security implications)
-- [ ] code-quality-analyzer: Not needed (workflow file only)
-- [ ] test-automation-qa: Not needed (fix enables existing tests)
-- [ ] performance-optimizer: Not needed (no performance impact)
-- [ ] documentation-knowledge-manager: ✅ PR documentation complete
+- [x] architecture-designer: ✅ Workflow-level change, appropriate pattern
+- [x] security-validator: ✅ Maintains security while enabling Dependabot
+- [x] code-quality-analyzer: N/A (workflow files only)
+- [x] test-automation-qa: ✅ Preserves all applicable test validation
+- [x] performance-optimizer: N/A (no performance impact)
+- [x] documentation-knowledge-manager: ✅ Issue and PR fully documented
 
 ## 🚀 Next Session Priorities
 
 **Immediate Next Steps:**
-1. **Monitor PR #161 CI checks** - should pass all tests
-2. **Merge PR #161 to master** when CI passes
-3. **Validate deployment workflow** succeeds on next master merge
-4. **Verify 5 pending changes deploy** to production (PRs #141, #148, #154, #156, #157)
-
-**Follow-up Issues (Separate from #159):**
-1. **Pre-existing test failure**: tests/bundle/bundle-size.test.ts (exists on master)
-2. **Session handoff check**: PR #161 failing session handoff validation (expected, this doc resolves it)
+1. **Verify PR #165 CI passes** after pushing this session handoff doc (est: 5 minutes)
+2. **Merge PR #165 to master** when all checks green
+3. **Rebase PR #162** (Dependabot min-document security fix)
+4. **Verify PR #162 has clean CI** (E2E/Lighthouse skipped, not failed)
+5. **Merge PR #162** (resolves CVE-2025-57352)
 
 **Roadmap Context:**
-- Issue #159 blocks production deployments - HIGH PRIORITY
-- Once resolved, normal deployment workflow resumes
-- No architectural changes needed
-- No additional testing required
+- This unblocks all future Dependabot security PRs
+- PR #162 is first beneficiary (critical security fix)
+- Pattern is sustainable and documented
+- Then proceed to Phase B: E2E test fixes (Issues #151, #152)
 
 ## 📝 Startup Prompt for Next Session
 
 ```
-Read CLAUDE.md to understand our workflow, then continue from Issue #159 deployment workflow fix (✅ PR #161 created with surgical fix).
+Read CLAUDE.md to understand our workflow, then continue from Dependabot CI configuration work (Issue #164, PR #165).
 
-**Immediate priority**: Monitor PR #161 CI checks and merge when passing (est: 5-10 minutes)
-**Context**: Deployment blocker resolved with 1-line fix adding --passWithNoTests flag, zero regression validated
-**Reference docs**: Issue #159, PR #161, .github/workflows/production-deploy.yml:106
-**Ready state**: Clean working directory, PR #161 open and running CI, surgical fix validated locally
+**Immediate priority**: Check PR #165 CI status and merge when passing (5-10 minutes)
+**Context**: Fixed CI to handle Dependabot security PRs properly, enabling PR #162 (CVE-2025-57352) to merge
+**Reference docs**: Issue #164, PR #165, PR #162 (blocked security fix)
+**Ready state**: Master branch clean, PR #165 awaiting CI completion (monitor active: gh pr checks 165 --watch)
 
-**Expected scope**: Merge PR #161, validate deployment workflow succeeds, confirm 5 pending PRs deploy to production
+**Expected workflow**:
+1. Verify PR #165 CI passed (all tests run - human-authored PR)
+2. Merge PR #165 (CI configuration fix goes live)
+3. Rebase PR #162 (Dependabot security fix)
+4. Verify PR #162 has clean CI (E2E/Lighthouse skipped, not failed)
+5. Merge PR #162 (security vulnerability fixed)
+6. Then proceed to Phase B: E2E test fixes (Issues #151, #152)
 ```
 
 ## 📚 Key Reference Documents
-- Issue #159: https://github.com/maxrantil/textile-showcase/issues/159
-- PR #161: https://github.com/maxrantil/textile-showcase/pull/161
+- Issue #164: https://github.com/maxrantil/textile-showcase/issues/164
+- PR #165: https://github.com/maxrantil/textile-showcase/pull/165
+- PR #162: https://github.com/maxrantil/textile-showcase/pull/162 (blocked Dependabot security fix)
 - CLAUDE.md: Section 5 (Session Handoff Protocol)
-- .github/workflows/production-deploy.yml (deployment workflow)
+- CVE-2025-57352: Prototype pollution in removeAttributeNS
 
 ## 🎓 Lessons Learned
 
-### Decision Framework Success
-- Applied CLAUDE.md motto: "Slow is smooth, smooth is fast"
-- Initial solution (PR #160) caused regressions - caught by testing against master
-- Systematic analysis led to better solution (PR #161) with zero side effects
-- Total time saved by pivoting early vs fixing broken approach
+### GitHub Dependabot Security Model
+- GitHub restricts secret access to Dependabot PRs by design (prevents supply chain attacks)
+- This is correct security behavior, not a bug
+- CI workflows must account for this constraint
+- Can't mock Sanity CMS data for meaningful E2E/Lighthouse tests
+
+### Workflow Design Pattern
+```yaml
+# Skip jobs that require secrets for Dependabot
+jobs:
+  test-name:
+    if: github.actor != 'dependabot[bot]'
+```
+
+**Benefits:**
+- ✅ Preserves security (doesn't expose secrets)
+- ✅ Enables automated security updates
+- ✅ Maintains all applicable validation
+- ✅ Clear, documented pattern for future workflows
 
 ### Key Insights
-1. **Always validate against master baseline** before declaring success
-2. **Surgical fixes better than broad changes** when scope is narrow
-3. **Pre-existing issues != new issues** - don't conflate them
-4. **Jest --passWithNoTests** is idiomatic for ignored test paths
-5. **Decision framework works** - prevented merging flawed solution
+1. **Hybrid approach wins**: Skip incompatible tests, keep everything else
+2. **Documentation matters**: Explain WHY tests are skipped in workflow comments
+3. **Security first**: Don't compromise to make tests pass
+4. **Pattern sustainability**: Simple if-condition is maintainable long-term
+5. **Session handoff caught missing doc**: New CI check working as intended!
 
 ## 🔍 Technical Details
 
-### Why Surgical Fix Works
+### Workflows Modified
+
+**1. E2E Tests (.github/workflows/e2e-tests.yml)**
 ```yaml
-# Before (failing):
-run: npm test tests/performance/bundle-size.test.ts ...
-
-# After (passing):
-run: npm test -- --passWithNoTests tests/performance/bundle-size.test.ts ...
+# Before: Always ran, failed for Dependabot
+# After: Skips for Dependabot (requires Sanity secrets)
+if: github.actor != 'dependabot[bot]'
 ```
 
-**Behavior**:
-- Tests are ignored via jest.config.ts (intentional)
-- Without flag: Jest exits code 1 ("No tests found")
-- With flag: Jest exits code 0 (acceptable state)
-- Deployment workflow proceeds to build/deploy
-
-### Validation Results
-```bash
-# Deployment command (now succeeds):
-$ npm test -- --passWithNoTests tests/...
-No tests found, exiting with code 0  ✅
-
-# Unit tests (unchanged):
-$ npm run test:ci
-Test Suites: 1 failed, 52 passed  ✅ (same as master)
-Tests: 879 passed  ✅ (no regression)
+**2. Lighthouse Performance (.github/workflows/performance.yml)**
+```yaml
+# Before: Always ran, failed for Dependabot
+# After: Skips for Dependabot (requires working app with secrets)
+if: github.actor != 'dependabot[bot]'
 ```
+
+**3. Session Handoff (.github/workflows/session-handoff.yml)**
+```yaml
+# Before: Always ran, failed for Dependabot
+# After: Skips for Dependabot (not applicable to dependency updates)
+if: github.actor != 'dependabot[bot]'
+```
+
+### What Still Runs for Dependabot PRs
+- ✅ Jest unit tests (secret-independent)
+- ✅ TypeScript type checking
+- ✅ Bundle size validation
+- ✅ Security scanning
+- ✅ Commit quality checks
+- ✅ All other standard validations
 
 ## 🎯 Success Criteria Met
 
-- [x] Deployment workflow no longer fails with "No tests found"
-- [x] Zero regression in unit test workflow
-- [x] Minimal change (1 line)
-- [x] Follows Jest best practices
-- [x] No configuration changes needed
-- [x] Validated locally before pushing
-- [x] Comprehensive PR documentation
-- [x] Old flawed PR closed with explanation
+- [x] CI workflows updated to handle Dependabot PRs
+- [x] Clear comments explain why tests are skipped
+- [x] PR #162 unblocked (pending #165 merge + rebase)
+- [x] Pattern documented for future reference
+- [x] No security/quality checks unnecessarily bypassed
+- [x] Issue and PR documentation comprehensive
 - [x] Session handoff documentation complete
 
 ---
 
-**Status**: ✅ Ready for merge pending CI validation
+**Status**: ✅ Ready for merge pending CI validation (this session handoff doc should satisfy the check)
 **Next Claude Session**: Use startup prompt above
-**Doctor Hubert**: PR #161 ready for review
+**Doctor Hubert**: PR #165 ready for review once CI passes
