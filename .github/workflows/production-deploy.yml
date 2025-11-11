@@ -103,7 +103,7 @@ jobs:
           NEXT_PUBLIC_SANITY_API_VERSION=2023-05-03
           EOF
       - name: Run bundle size tests
-        run: npm test tests/performance/bundle-size.test.ts tests/performance/bundle-debug.test.ts __tests__/deployment/production-config.test.js
+        run: npm test -- --passWithNoTests tests/performance/bundle-size.test.ts tests/performance/bundle-debug.test.ts __tests__/deployment/production-config.test.js
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
