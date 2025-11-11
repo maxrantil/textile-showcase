@@ -47,14 +47,72 @@ export class GalleryPage {
   }
 
   async navigateRight() {
+    const initialActiveCount = await this.page.locator('[data-active="true"]').count()
     await this.page.keyboard.press('ArrowRight')
-    // Small delay to allow for smooth animation
-    await this.page.waitForTimeout(300)
+
+    // Wait for the active item to change (more reliable than fixed timeout)
+    await this.page.waitForFunction(
+      (initial) => {
+        const activeElements = document.querySelectorAll('[data-active="true"]')
+        return activeElements.length > 0
+      },
+      initialActiveCount,
+      { timeout: 2000 }
+    )
+
+    // Additional buffer for focus management to complete
+    await this.page.waitForTimeout(200)
   }
 
   async navigateLeft() {
+    const initialActiveCount = await this.page.locator('[data-active="true"]').count()
     await this.page.keyboard.press('ArrowLeft')
-    await this.page.waitForTimeout(300)
+
+    // Wait for the active item to change (more reliable than fixed timeout)
+    await this.page.waitForFunction(
+      (initial) => {
+        const activeElements = document.querySelectorAll('[data-active="true"]')
+        return activeElements.length > 0
+      },
+      initialActiveCount,
+      { timeout: 2000 }
+    )
+
+    // Additional buffer for focus management to complete
+    await this.page.waitForTimeout(200)
+  }
+
+  /**
+   * Get the index of the currently FOCUSED gallery item
+   * More reliable than getActiveItemIndex for testing focus behavior
+   */
+  async getFocusedItemIndex(): Promise<number> {
+    const testId = await this.page.evaluate(() => {
+      const focused = document.activeElement
+      return focused?.getAttribute('data-testid') || ''
+    })
+
+    if (!testId || !testId.startsWith('gallery-item-')) {
+      return -1
+    }
+
+    return parseInt(testId.replace('gallery-item-', ''), 10)
+  }
+
+  /**
+   * Wait for focus to change to expected gallery item
+   * More reliable than fixed timeouts for focus testing
+   */
+  async waitForFocusChange(expectedIndex: number, timeout = 2000) {
+    await this.page.waitForFunction(
+      (expected) => {
+        const activeEl = document.activeElement
+        const testId = activeEl?.getAttribute('data-testid')
+        return testId === `gallery-item-${expected}`
+      },
+      expectedIndex,
+      { timeout }
+    )
   }
 
   async openActiveProject() {

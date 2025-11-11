@@ -21,11 +21,23 @@ test.describe('Gallery Browsing Complete Workflows', () => {
       const itemCount = await galleryPage.getGalleryItemCount()
       expect(itemCount).toBeGreaterThan(0)
 
-      // Test right arrow navigation
-      const initialIndex = await galleryPage.getActiveItemIndex()
+      // Test right arrow navigation (WCAG 2.4.3: Focus Order)
+      // First, focus on the first gallery item (user would Tab to gallery)
+      const firstItem = galleryPage.galleryItems.first()
+      await firstItem.focus()
+
+      // Verify initial focus
+      const initialFocusIndex = await galleryPage.getFocusedItemIndex()
+      expect(initialFocusIndex).toBeGreaterThanOrEqual(0) // Should have focus on a gallery item
+
+      // Navigate right with arrow key
       await galleryPage.navigateRight()
-      const newIndex = await galleryPage.getActiveItemIndex()
-      expect(newIndex).not.toBe(initialIndex) // Verify navigation changed active item
+
+      // Verify that focus moved to the next gallery item after arrow key navigation
+      const newFocusIndex = await galleryPage.getFocusedItemIndex()
+
+      // Focus should move to next item (WCAG 2.4.3 compliance)
+      expect(newFocusIndex).toBe(initialFocusIndex + 1)
 
       // Test navigation to project
       await galleryPage.openActiveProject()
