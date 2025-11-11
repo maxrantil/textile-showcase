@@ -47,14 +47,88 @@ export class GalleryPage {
   }
 
   async navigateRight() {
+    // Get the current active item's index before navigation
+    const initialIndex = await this.getActiveItemIndex()
+
     await this.page.keyboard.press('ArrowRight')
-    // Small delay to allow for smooth animation
-    await this.page.waitForTimeout(300)
+
+    // Wait for the active item index to actually change
+    await this.page.waitForFunction(
+      (expectedNewIndex) => {
+        const activeElement = document.querySelector('[data-active="true"]')
+        if (!activeElement) return false
+
+        const testId = activeElement.getAttribute('data-testid')
+        if (!testId || !testId.startsWith('gallery-item-')) return false
+
+        const currentIndex = parseInt(testId.replace('gallery-item-', ''), 10)
+        return currentIndex === expectedNewIndex
+      },
+      initialIndex + 1,
+      { timeout: 2000 }
+    )
+
+    // Additional buffer for focus management to complete (gallery delays 600ms)
+    await this.page.waitForTimeout(700)
   }
 
   async navigateLeft() {
+    // Get the current active item's index before navigation
+    const initialIndex = await this.getActiveItemIndex()
+
     await this.page.keyboard.press('ArrowLeft')
-    await this.page.waitForTimeout(300)
+
+    // Wait for the active item index to actually change
+    await this.page.waitForFunction(
+      (expectedNewIndex) => {
+        const activeElement = document.querySelector('[data-active="true"]')
+        if (!activeElement) return false
+
+        const testId = activeElement.getAttribute('data-testid')
+        if (!testId || !testId.startsWith('gallery-item-')) return false
+
+        const currentIndex = parseInt(testId.replace('gallery-item-', ''), 10)
+        return currentIndex === expectedNewIndex
+      },
+      initialIndex - 1,
+      { timeout: 2000 }
+    )
+
+    // Additional buffer for focus management to complete (gallery delays 600ms)
+    await this.page.waitForTimeout(700)
+  }
+
+  /**
+   * Get the index of the currently FOCUSED gallery item
+   * More reliable than getActiveItemIndex for testing focus behavior
+   */
+  async getFocusedItemIndex(): Promise<number> {
+    const testId = await this.page.evaluate(() => {
+      const focused = document.activeElement
+      return focused?.getAttribute('data-testid') || ''
+    })
+
+    if (!testId || !testId.startsWith('gallery-item-')) {
+      return -1
+    }
+
+    return parseInt(testId.replace('gallery-item-', ''), 10)
+  }
+
+  /**
+   * Wait for focus to change to expected gallery item
+   * More reliable than fixed timeouts for focus testing
+   */
+  async waitForFocusChange(expectedIndex: number, timeout = 2000) {
+    await this.page.waitForFunction(
+      (expected) => {
+        const activeEl = document.activeElement
+        const testId = activeEl?.getAttribute('data-testid')
+        return testId === `gallery-item-${expected}`
+      },
+      expectedIndex,
+      { timeout }
+    )
   }
 
   async openActiveProject() {

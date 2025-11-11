@@ -100,6 +100,7 @@ export default function Gallery({ designs }: GalleryProps) {
   const isScrollingRef = useRef(false)
   const hasRestoredRef = useRef(false)
   const mountTimeRef = useRef(Date.now()) // Track when component mounts
+  const focusTimeoutRef = useRef<NodeJS.Timeout | null>(null) // Track focus management timeout for cleanup
 
   // Phase 4: Hide static first image AFTER first gallery image loads AND minimum display time
   // Issue #132: Ensures FirstImage visible for minimum 300ms (allows E2E tests to verify + prevents CLS flash)
@@ -364,12 +365,54 @@ export default function Gallery({ designs }: GalleryProps) {
       // Left navigation: ArrowLeft or h (vim)
       if (e.key === 'ArrowLeft' || e.key === 'h') {
         e.preventDefault()
+        const newIndex = Math.max(0, currentIndex - 1)
         scrollToImage('left')
+
+        // Clear any pending focus timeout (handles rapid key presses)
+        if (focusTimeoutRef.current) {
+          clearTimeout(focusTimeoutRef.current)
+        }
+
+        // Move focus to newly centered item after scroll animation completes
+        // Delay matches scroll animation duration (600ms from line 182-184)
+        focusTimeoutRef.current = setTimeout(() => {
+          const newItem = document.querySelector(
+            `[data-testid="gallery-item-${newIndex}"]`
+          ) as HTMLElement
+
+          if (newItem) {
+            // Use preventScroll to avoid triggering additional scroll
+            newItem.focus({ preventScroll: true })
+          }
+
+          focusTimeoutRef.current = null
+        }, 600)
       }
       // Right navigation: ArrowRight or l (vim)
       else if (e.key === 'ArrowRight' || e.key === 'l') {
         e.preventDefault()
+        const newIndex = Math.min(designs.length - 1, currentIndex + 1)
         scrollToImage('right')
+
+        // Clear any pending focus timeout (handles rapid key presses)
+        if (focusTimeoutRef.current) {
+          clearTimeout(focusTimeoutRef.current)
+        }
+
+        // Move focus to newly centered item after scroll animation completes
+        // Delay matches scroll animation duration (600ms from line 182-184)
+        focusTimeoutRef.current = setTimeout(() => {
+          const newItem = document.querySelector(
+            `[data-testid="gallery-item-${newIndex}"]`
+          ) as HTMLElement
+
+          if (newItem) {
+            // Use preventScroll to avoid triggering additional scroll
+            newItem.focus({ preventScroll: true })
+          }
+
+          focusTimeoutRef.current = null
+        }, 600)
       }
       // Enter or Space to open project
       else if ((e.key === 'Enter' || e.key === ' ') && designs[currentIndex]) {
@@ -382,7 +425,13 @@ export default function Gallery({ designs }: GalleryProps) {
     }
 
     window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+      // Cleanup focus timeout on unmount
+      if (focusTimeoutRef.current) {
+        clearTimeout(focusTimeoutRef.current)
+      }
+    }
   }, [currentIndex, designs, router, scrollToImage, handleNavigate])
 
   if (!designs || designs.length === 0) {
