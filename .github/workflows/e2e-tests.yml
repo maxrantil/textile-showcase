@@ -22,7 +22,13 @@ jobs:
     # Remove this when all features are built and tests pass
     continue-on-error: true
     # Skip draft PRs unless explicitly requested
-    if: github.event.pull_request.draft == false || contains(github.event.pull_request.labels.*.name, 'test-e2e')
+    # Skip Dependabot PRs - they don't get repository secrets (GitHub security restriction)
+    # Dependabot PRs are dependency-only changes that don't affect E2E behavior
+    if: |
+      github.actor != 'dependabot[bot]' && (
+        github.event.pull_request.draft == false ||
+        contains(github.event.pull_request.labels.*.name, 'test-e2e')
+      )
 
     strategy:
       fail-fast: false

@@ -48,6 +48,9 @@ jobs:
 
   session-handoff:
     name: Verify Session Handoff
+    # Skip Dependabot PRs - session handoff only applies to manual development work
+    # Dependabot PRs are automated dependency updates that don't require session documentation
+    if: github.actor != 'dependabot[bot]'
     permissions:
       contents: read
     uses: maxrantil/.github/.github/workflows/session-handoff-check-reusable.yml@master

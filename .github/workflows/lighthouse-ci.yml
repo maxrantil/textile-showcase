@@ -41,6 +41,9 @@ jobs:
     name: Lighthouse Performance Audit
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    # Skip Dependabot PRs - they don't get repository secrets (GitHub security restriction)
+    # Dependabot PRs are dependency-only changes tested via unit tests and bundle size checks
+    if: github.actor != 'dependabot[bot]'
     permissions:
       contents: read
       pull-requests: write
