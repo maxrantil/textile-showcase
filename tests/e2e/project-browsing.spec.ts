@@ -171,17 +171,13 @@ test.describe('Project Browsing', () => {
     expect(viewport?.height).toBe(667)
   })
 
-  test('user sees loading states during navigation', async ({ page, browserName }) => {
-    // CDP (Chrome DevTools Protocol) is only supported on Chromium-based browsers
-    test.skip(browserName === 'webkit', 'CDP network throttling not supported on Safari/WebKit')
-
-    // Arrange: Throttle network to slow down loading
-    const client = await page.context().newCDPSession(page)
-    await client.send('Network.emulateNetworkConditions', {
-      offline: false,
-      downloadThroughput: (500 * 1024) / 8, // 500kb/s
-      uploadThroughput: (500 * 1024) / 8,
-      latency: 200, // 200ms latency
+  test('user sees loading states during navigation', async ({ page }) => {
+    // Arrange: Add realistic network latency to make loading states visible
+    // Note: This is cross-browser compatible (works on Chrome, Firefox, Safari)
+    await page.route('**/*', async (route) => {
+      // Add delay to all network requests to simulate slow connection
+      await new Promise((resolve) => setTimeout(resolve, 200)) // 200ms latency
+      return route.continue()
     })
 
     // Act: Navigate to project
@@ -191,20 +187,15 @@ test.describe('Project Browsing', () => {
     // Start navigation
     const navigationPromise = homePage.clickProject(0)
 
-    // Assert: Wait briefly to check for loading state
-    // Note: Loading states may be very fast, so we just verify navigation completes
+    // Assert: Loading state might be visible during navigation
+    // Note: Loading states may be very fast even with throttling,
+    // so we verify navigation completes successfully
     await navigationPromise
 
     // Assert: Project eventually loads
     await projectPage.waitForProject()
     await expect(projectPage.projectTitle).toBeVisible()
 
-    // Cleanup: Restore normal network conditions
-    await client.send('Network.emulateNetworkConditions', {
-      offline: false,
-      downloadThroughput: -1,
-      uploadThroughput: -1,
-      latency: 0,
-    })
+    // Note: No cleanup needed - routes auto-cleanup with page context
   })
 })
