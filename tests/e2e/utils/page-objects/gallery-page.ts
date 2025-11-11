@@ -47,39 +47,55 @@ export class GalleryPage {
   }
 
   async navigateRight() {
-    const initialActiveCount = await this.page.locator('[data-active="true"]').count()
+    // Get the current active item's index before navigation
+    const initialIndex = await this.getActiveItemIndex()
+
     await this.page.keyboard.press('ArrowRight')
 
-    // Wait for the active item to change (more reliable than fixed timeout)
+    // Wait for the active item index to actually change
     await this.page.waitForFunction(
-      (initial) => {
-        const activeElements = document.querySelectorAll('[data-active="true"]')
-        return activeElements.length > 0
+      (expectedNewIndex) => {
+        const activeElement = document.querySelector('[data-active="true"]')
+        if (!activeElement) return false
+
+        const testId = activeElement.getAttribute('data-testid')
+        if (!testId || !testId.startsWith('gallery-item-')) return false
+
+        const currentIndex = parseInt(testId.replace('gallery-item-', ''), 10)
+        return currentIndex === expectedNewIndex
       },
-      initialActiveCount,
+      initialIndex + 1,
       { timeout: 2000 }
     )
 
-    // Additional buffer for focus management to complete
-    await this.page.waitForTimeout(200)
+    // Additional buffer for focus management to complete (gallery delays 600ms)
+    await this.page.waitForTimeout(700)
   }
 
   async navigateLeft() {
-    const initialActiveCount = await this.page.locator('[data-active="true"]').count()
+    // Get the current active item's index before navigation
+    const initialIndex = await this.getActiveItemIndex()
+
     await this.page.keyboard.press('ArrowLeft')
 
-    // Wait for the active item to change (more reliable than fixed timeout)
+    // Wait for the active item index to actually change
     await this.page.waitForFunction(
-      (initial) => {
-        const activeElements = document.querySelectorAll('[data-active="true"]')
-        return activeElements.length > 0
+      (expectedNewIndex) => {
+        const activeElement = document.querySelector('[data-active="true"]')
+        if (!activeElement) return false
+
+        const testId = activeElement.getAttribute('data-testid')
+        if (!testId || !testId.startsWith('gallery-item-')) return false
+
+        const currentIndex = parseInt(testId.replace('gallery-item-', ''), 10)
+        return currentIndex === expectedNewIndex
       },
-      initialActiveCount,
+      initialIndex - 1,
       { timeout: 2000 }
     )
 
-    // Additional buffer for focus management to complete
-    await this.page.waitForTimeout(200)
+    // Additional buffer for focus management to complete (gallery delays 600ms)
+    await this.page.waitForTimeout(700)
   }
 
   /**
