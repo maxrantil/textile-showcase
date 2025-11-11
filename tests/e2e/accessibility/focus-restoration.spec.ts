@@ -4,10 +4,7 @@ import { test, expect } from '@playwright/test'
 
 test.describe('Gallery Focus Restoration - WCAG 2.4.3', () => {
   test('focus restored when returning to gallery via back navigation', async ({ page }, testInfo) => {
-    // Skip on mobile - Mobile gallery uses vertical scroll layout without focus restoration
-    // Focus restoration is implemented only for desktop horizontal carousel navigation
-    test.skip(testInfo.project.name.includes('Mobile'), 'Mobile gallery does not implement focus restoration')
-
+    // Focus restoration now implemented for both Desktop and Mobile galleries
     // Navigate to homepage
     await page.goto('/')
 
@@ -39,10 +36,7 @@ test.describe('Gallery Focus Restoration - WCAG 2.4.3', () => {
   })
 
   test('focus restoration works consistently across multiple navigations', async ({ page }, testInfo) => {
-    // Skip on mobile - Mobile gallery uses vertical scroll layout without focus restoration
-    // Focus restoration is implemented only for desktop horizontal carousel navigation
-    test.skip(testInfo.project.name.includes('Mobile'), 'Mobile gallery does not implement focus restoration')
-
+    // Focus restoration now implemented for both Desktop and Mobile galleries
     // Navigate to homepage
     await page.goto('/')
 
@@ -73,10 +67,7 @@ test.describe('Gallery Focus Restoration - WCAG 2.4.3', () => {
   })
 
   test('focus restoration does not interfere with scroll restoration', async ({ page }, testInfo) => {
-    // Skip on mobile - Mobile gallery uses vertical scroll layout without focus restoration
-    // Focus restoration is implemented only for desktop horizontal carousel navigation
-    test.skip(testInfo.project.name.includes('Mobile'), 'Mobile gallery does not implement focus restoration')
-
+    // Focus restoration now implemented for both Desktop and Mobile galleries
     // Navigate to homepage
     await page.goto('/')
 
@@ -109,10 +100,7 @@ test.describe('Gallery Focus Restoration - WCAG 2.4.3', () => {
   })
 
   test('focus restoration clears sessionStorage after restoration', async ({ page }, testInfo) => {
-    // Skip on mobile - Mobile gallery uses vertical scroll layout without focus restoration
-    // Focus restoration is implemented only for desktop horizontal carousel navigation
-    test.skip(testInfo.project.name.includes('Mobile'), 'Mobile gallery does not implement focus restoration')
-
+    // Focus restoration now implemented for both Desktop and Mobile galleries
     // Navigate to homepage
     await page.goto('/')
 

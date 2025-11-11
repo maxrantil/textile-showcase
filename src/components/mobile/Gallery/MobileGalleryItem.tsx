@@ -49,6 +49,11 @@ export default function MobileGalleryItem({
   }, [])
 
   const handleClick = () => {
+    // Save focus index BEFORE navigation for restoration (WCAG 2.4.3)
+    if (typeof window !== 'undefined' && index !== undefined) {
+      sessionStorage.setItem('galleryFocusIndex', index.toString())
+    }
+
     // Call optional navigation callback first
     if (onNavigate) {
       onNavigate()
