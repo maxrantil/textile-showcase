@@ -128,6 +128,17 @@ jobs:
             # Navigate to project directory
             cd /var/www/idaromme.dk || { echo "❌ Project directory not found"; exit 1; }
 
+            # Use Node.js v22 from NVM installation (MUST happen before npm ci)
+            echo "🔍 Setting up Node.js v22 from NVM..."
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"
+            nvm use 22 || nvm use default
+
+            # Verify Node.js version
+            echo "🔍 Node.js version:"
+            node --version
+            npm --version
+
             # Backup current state
             echo "📦 Creating backup..."
             cp -r .next .next.backup || echo "⚠️ No previous build to backup"
@@ -136,10 +147,6 @@ jobs:
             echo "📥 Pulling latest changes..."
             git fetch origin
             git reset --hard origin/master
-
-            # Always install dependencies to ensure Node version compatibility
-            echo "📦 Installing dependencies..."
-            npm ci
 
             # Create production environment file
             echo "📝 Setting up production environment..."
@@ -150,16 +157,9 @@ jobs:
             SECURITY_ENABLED=false
             EOF
 
-            # Use Node.js v22 from NVM installation
-            echo "🔍 Setting up Node.js v22 from NVM..."
-            export NVM_DIR="$HOME/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            nvm use 22 || nvm use default
-
-            # Verify Node.js version
-            echo "🔍 Node.js version:"
-            node --version
-            npm --version
+            # Install dependencies with correct Node version
+            echo "📦 Installing dependencies..."
+            npm ci
 
             # Build application
             echo "🔨 Building application..."
