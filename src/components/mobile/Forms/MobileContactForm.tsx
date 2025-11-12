@@ -1,4 +1,4 @@
-// ABOUTME: Mobile contact form with validation, API integration, and virtual keyboard handling
+// ABOUTME: Mobile contact form with validation, API integration, virtual keyboard handling, and email reveal fallback
 'use client'
 
 import { useState } from 'react'
@@ -8,6 +8,7 @@ import { FormValidator } from '@/utils/validation/formValidator'
 import { commonValidationRules } from '@/utils/validation/validators'
 import { UmamiEvents } from '@/utils/analytics'
 import { useVirtualKeyboard } from '@/hooks/mobile/useVirtualKeyboard'
+import { EmailRevealButton } from '@/components/shared/EmailReveal/EmailRevealButton'
 
 interface ContactFormData {
   name: string
@@ -34,6 +35,7 @@ export function MobileContactForm({
   const [errors, setErrors] = useState<Partial<ContactFormData>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
+  const [hasSubmissionError, setHasSubmissionError] = useState(false)
 
   const { isKeyboardOpen } = useVirtualKeyboard()
   const validator = new FormValidator<ContactFormData>(commonValidationRules)
@@ -41,9 +43,12 @@ export function MobileContactForm({
   const handleFieldChange = (field: keyof ContactFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
 
-    // Clear success message when user starts typing again
+    // Clear success and error states when user starts typing again
     if (showSuccess) {
       setShowSuccess(false)
+    }
+    if (hasSubmissionError) {
+      setHasSubmissionError(false)
     }
 
     // Validate field
@@ -79,6 +84,7 @@ export function MobileContactForm({
         setFormData({ name: '', email: '', message: '' })
         setErrors({})
         setShowSuccess(true)
+        setHasSubmissionError(false)
         onSuccess?.()
 
         // Hide success message after 5 seconds
@@ -88,6 +94,7 @@ export function MobileContactForm({
       }
     } catch (error) {
       UmamiEvents.contactFormError()
+      setHasSubmissionError(true)
       onError?.(
         error instanceof Error ? error.message : 'Failed to send message'
       )
@@ -155,6 +162,8 @@ export function MobileContactForm({
           Send Message
         </MobileButton>
       </div>
+
+      <EmailRevealButton hasError={hasSubmissionError} />
     </form>
   )
 }

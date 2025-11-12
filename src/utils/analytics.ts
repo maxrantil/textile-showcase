@@ -67,6 +67,13 @@ export const UmamiEvents = {
   contactFormSuccess: () => trackEvent('contact-form-success'),
   contactFormError: () => trackEvent('contact-form-error'),
 
+  // Email reveal fallback
+  emailRevealClicked: (context: 'normal' | 'error') =>
+    trackEvent('email-reveal-clicked', { context }),
+  emailCopied: (status: 'success' | 'error') =>
+    trackEvent('email-copied', { status }),
+  emailHidden: () => trackEvent('email-hidden'),
+
   // Page navigation
   navigateToAbout: () => trackEvent('navigate-about'),
   navigateToContact: () => trackEvent('navigate-contact'),

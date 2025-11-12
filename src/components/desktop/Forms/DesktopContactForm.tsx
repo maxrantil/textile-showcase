@@ -5,6 +5,7 @@ import { DesktopButton } from '../UI/DesktopButton'
 import { FormValidator } from '@/utils/validation/formValidator'
 import { commonValidationRules } from '@/utils/validation/validators'
 import { UmamiEvents } from '@/utils/analytics'
+import { EmailRevealButton } from '@/components/shared/EmailReveal/EmailRevealButton'
 
 interface ContactFormData {
   name: string
@@ -29,11 +30,17 @@ export function DesktopContactForm({
   })
   const [errors, setErrors] = useState<Partial<ContactFormData>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [hasSubmissionError, setHasSubmissionError] = useState(false)
 
   const validator = new FormValidator<ContactFormData>(commonValidationRules)
 
   const handleFieldChange = (field: keyof ContactFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
+
+    // Clear error state when user starts typing again
+    if (hasSubmissionError) {
+      setHasSubmissionError(false)
+    }
 
     // Validate field
     const result = validator.validateField(field as string, value)
@@ -65,12 +72,14 @@ export function DesktopContactForm({
       if (response.ok) {
         UmamiEvents.contactFormSuccess()
         setFormData({ name: '', email: '', message: '' })
+        setHasSubmissionError(false)
         onSuccess?.()
       } else {
         throw new Error('Failed to send message')
       }
     } catch (error) {
       UmamiEvents.contactFormError()
+      setHasSubmissionError(true)
       onError?.(
         error instanceof Error ? error.message : 'Failed to send message'
       )
@@ -119,6 +128,8 @@ export function DesktopContactForm({
           Send Message
         </DesktopButton>
       </div>
+
+      <EmailRevealButton hasError={hasSubmissionError} />
     </form>
   )
 }
