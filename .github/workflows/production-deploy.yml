@@ -175,7 +175,7 @@ jobs:
 
             # Build application
             echo "🔨 Building application..."
-            if SKIP_ENV_VALIDATION=true npm run build; then
+            if NODE_ENV=production SKIP_ENV_VALIDATION=true npm run build; then
               echo "✅ Build successful"
 
               # Restart PM2 with zero downtime
