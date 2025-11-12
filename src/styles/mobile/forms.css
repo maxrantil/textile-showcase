@@ -197,6 +197,7 @@
   border: 1px solid #d1d5db;
   border-radius: 0.375rem;
   background-color: #ffffff;
+  color: #1f2937; /* Gray-800 for WCAG AAA compliance (12.6:1 contrast) - fixes Issue #173 */
   width: 100%;
   transition:
     border-color 0.15s ease-in-out,
@@ -220,6 +221,7 @@
   border: 1px solid #d1d5db;
   border-radius: 0.375rem;
   background-color: #ffffff;
+  color: #1f2937; /* Gray-800 for WCAG AAA compliance (12.6:1 contrast) - fixes Issue #173 */
   width: 100%;
   min-height: 120px;
   resize: vertical;
