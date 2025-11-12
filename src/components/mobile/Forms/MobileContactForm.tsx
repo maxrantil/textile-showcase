@@ -35,7 +35,6 @@ export function MobileContactForm({
   const [errors, setErrors] = useState<Partial<ContactFormData>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
-  const [hasSubmissionError, setHasSubmissionError] = useState(false)
 
   const { isKeyboardOpen } = useVirtualKeyboard()
   const validator = new FormValidator<ContactFormData>(commonValidationRules)
@@ -43,12 +42,9 @@ export function MobileContactForm({
   const handleFieldChange = (field: keyof ContactFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
 
-    // Clear success and error states when user starts typing again
+    // Clear success state when user starts typing again
     if (showSuccess) {
       setShowSuccess(false)
-    }
-    if (hasSubmissionError) {
-      setHasSubmissionError(false)
     }
 
     // Validate field
@@ -84,7 +80,6 @@ export function MobileContactForm({
         setFormData({ name: '', email: '', message: '' })
         setErrors({})
         setShowSuccess(true)
-        setHasSubmissionError(false)
         onSuccess?.()
 
         // Hide success message after 5 seconds
@@ -94,7 +89,6 @@ export function MobileContactForm({
       }
     } catch (error) {
       UmamiEvents.contactFormError()
-      setHasSubmissionError(true)
       onError?.(
         error instanceof Error ? error.message : 'Failed to send message'
       )
@@ -163,7 +157,7 @@ export function MobileContactForm({
         </MobileButton>
       </div>
 
-      <EmailRevealButton hasError={hasSubmissionError} />
+      <EmailRevealButton />
     </form>
   )
 }

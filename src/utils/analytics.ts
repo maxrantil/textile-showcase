@@ -70,9 +70,6 @@ export const UmamiEvents = {
   // Email reveal fallback
   emailRevealClicked: (context: 'normal' | 'error') =>
     trackEvent('email-reveal-clicked', { context }),
-  emailCopied: (status: 'success' | 'error') =>
-    trackEvent('email-copied', { status }),
-  emailHidden: () => trackEvent('email-hidden'),
 
   // Page navigation
   navigateToAbout: () => trackEvent('navigate-about'),

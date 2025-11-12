@@ -30,17 +30,12 @@ export function DesktopContactForm({
   })
   const [errors, setErrors] = useState<Partial<ContactFormData>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [hasSubmissionError, setHasSubmissionError] = useState(false)
 
   const validator = new FormValidator<ContactFormData>(commonValidationRules)
 
   const handleFieldChange = (field: keyof ContactFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
 
-    // Clear error state when user starts typing again
-    if (hasSubmissionError) {
-      setHasSubmissionError(false)
-    }
 
     // Validate field
     const result = validator.validateField(field as string, value)
@@ -72,14 +67,12 @@ export function DesktopContactForm({
       if (response.ok) {
         UmamiEvents.contactFormSuccess()
         setFormData({ name: '', email: '', message: '' })
-        setHasSubmissionError(false)
         onSuccess?.()
       } else {
         throw new Error('Failed to send message')
       }
     } catch (error) {
       UmamiEvents.contactFormError()
-      setHasSubmissionError(true)
       onError?.(
         error instanceof Error ? error.message : 'Failed to send message'
       )
@@ -129,7 +122,7 @@ export function DesktopContactForm({
         </DesktopButton>
       </div>
 
-      <EmailRevealButton hasError={hasSubmissionError} />
+      <EmailRevealButton />
     </form>
   )
 }

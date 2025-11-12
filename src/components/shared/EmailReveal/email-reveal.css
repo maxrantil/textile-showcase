@@ -1,17 +1,4 @@
-/* ABOUTME: Email reveal button styles with WCAG AA compliant contrast ratios and accessibility features */
-
-/* Screen reader only utility */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border-width: 0;
-}
+/* ABOUTME: Minimal email reveal button styles with WCAG AA accessibility */
 
 /* Email reveal container */
 .email-reveal-container {
@@ -21,125 +8,49 @@
   text-align: center;
 }
 
-/* Base button styles */
+/* Reveal button - subtle and minimal */
 .email-reveal-button {
   font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
-  font-size: 11px;
-  font-weight: 500;
-  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 400;
+  padding: 8px 16px;
   border-radius: 4px;
-  border: 1px solid transparent;
-  cursor: pointer;
-  transition:
-    background-color 0.2s ease,
-    color 0.2s ease,
-    border-color 0.2s ease,
-    transform 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  min-height: 44px;
-  min-width: 44px;
-}
-
-/* Normal state button (subtle) - WCAG AA compliant */
-.email-reveal-button.normal-state {
-  color: #666; /* WCAG AA compliant: 5.74:1 contrast on #fafafa */
+  border: none;
   background: transparent;
-  border-color: #e5e5e5;
+  color: #666;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  min-height: 44px;
 }
 
-.email-reveal-button.normal-state:hover {
+.email-reveal-button:hover {
   color: #333;
-  background: rgba(0, 0, 0, 0.02);
-  border-color: #999;
 }
 
-.email-reveal-button.normal-state:active {
-  background: rgba(0, 0, 0, 0.05);
-}
-
-/* Error state button (prominent) - WCAG AA compliant */
-.email-reveal-button.error-state {
-  background: #666; /* WCAG AA compliant: 5.74:1 contrast with white text */
-  color: #ffffff;
-  border-color: #666;
-  font-size: 12px;
-  padding: 14px 28px;
-  font-weight: 600;
-}
-
-.email-reveal-button.error-state:hover {
-  background: #333;
-  border-color: #333;
-}
-
-.email-reveal-button.error-state:active {
-  background: #1a1a1a;
-}
-
-/* Focus visible for all buttons - WCAG AA */
 .email-reveal-button:focus-visible {
   outline: 2px solid #333;
   outline-offset: 2px;
 }
 
-.email-reveal-button.error-state:focus-visible {
-  outline: 2px solid #333;
-  outline-offset: 3px;
-}
-
-/* Email icon spacing */
-.email-icon {
-  font-size: 14px;
-  line-height: 1;
-}
-
-/* Revealed content container */
+/* Revealed container */
 .email-revealed-container {
-  padding: 20px;
-  background: #f9f9f9;
-  border-radius: 8px;
-  border: 1px solid #e5e5e5;
+  margin-top: 12px;
 }
 
-.email-label {
-  margin: 0 0 12px 0;
-  font-size: 14px;
-  color: #666;
-  font-weight: 500;
-}
-
-/* Email display */
-.email-display {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
-}
-
-/* Email address link - WCAG AAA compliant */
+/* Email address link - WCAG AA compliant */
 .email-address {
   font-size: 16px;
-  color: #333; /* WCAG AAA: 12.6:1 contrast on white */
+  color: #333; /* WCAG AA: 12.6:1 contrast */
   font-weight: 500;
-  text-decoration: none;
-  padding: 8px 12px;
-  border-radius: 4px;
-  background: #ffffff;
-  border: 1px solid #ddd;
-  word-break: break-all;
-  transition:
-    border-color 0.2s ease,
-    background-color 0.2s ease;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.2s ease;
 }
 
 .email-address:hover {
-  border-color: #333;
-  background: #fafafa;
+  color: #000;
 }
 
 .email-address:focus-visible {
@@ -147,122 +58,9 @@
   outline-offset: 2px;
 }
 
-/* Copy button */
-.copy-button {
-  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
-  font-size: 12px;
-  font-weight: 500;
-  padding: 8px 16px;
-  border-radius: 4px;
-  border: 1px solid #666;
-  background: transparent;
-  color: #666;
-  cursor: pointer;
-  transition:
-    background-color 0.2s ease,
-    color 0.2s ease,
-    border-color 0.2s ease;
-  min-height: 44px;
-  min-width: 60px;
-}
-
-.copy-button:hover:not(:disabled) {
-  background: #f5f5f5;
-  border-color: #333;
-  color: #333;
-}
-
-.copy-button:focus-visible {
-  outline: 2px solid #333;
-  outline-offset: 2px;
-}
-
-/* Copy button success state */
-.copy-button.copied {
-  background: #10b981; /* Success green */
-  border-color: #10b981;
-  color: #ffffff;
-  pointer-events: none;
-}
-
-/* Hide email button */
-.hide-email-button {
-  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
-  font-size: 10px;
-  font-weight: 500;
-  padding: 8px 16px;
-  border-radius: 4px;
-  border: 1px solid transparent;
-  background: transparent;
-  color: #666;
-  cursor: pointer;
-  transition:
-    color 0.2s ease,
-    background-color 0.2s ease;
-  min-height: 36px;
-}
-
-.hide-email-button:hover {
-  color: #333;
-  background: rgba(0, 0, 0, 0.02);
-}
-
-.hide-email-button:focus-visible {
-  outline: 2px solid #333;
-  outline-offset: 2px;
-}
-
-/* Mobile optimizations */
-@media (max-width: 768px) {
-  .email-reveal-button {
-    width: 100%; /* Full width on mobile */
-    font-size: 12px;
-  }
-
-  .email-display {
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .email-address {
-    width: 100%;
-    text-align: center;
-  }
-
-  .copy-button {
-    width: 100%;
-  }
-}
-
-/* Small screens optimization */
-@media (max-width: 374px) {
-  .email-reveal-button {
-    font-size: 10px;
-    padding: 12px 16px;
-  }
-
-  .email-reveal-button.error-state {
-    font-size: 11px;
-  }
-}
-
-/* Landscape mode optimization */
-@media (orientation: landscape) and (max-height: 500px) {
-  .email-reveal-container {
-    margin-top: 16px;
-    padding-top: 16px;
-  }
-
-  .email-revealed-container {
-    padding: 16px;
-  }
-}
-
 /* Reduced motion preference */
 @media (prefers-reduced-motion: reduce) {
   .email-reveal-button,
-  .copy-button,
-  .hide-email-button,
   .email-address {
     transition: none;
   }
@@ -271,71 +69,7 @@
 /* High contrast mode support */
 @media (prefers-contrast: high) {
   .email-reveal-button,
-  .email-address,
-  .copy-button {
-    border-width: 2px;
-  }
-
-  .email-reveal-button.error-state {
-    border-width: 3px;
-  }
-}
-
-/* Animation for error state button (optional, respects reduced motion) */
-@media (prefers-reduced-motion: no-preference) {
-  .email-reveal-button.error-state {
-    animation: emphasize 0.3s ease-out;
-  }
-
-  @keyframes emphasize {
-    0% {
-      transform: scale(1);
-      opacity: 0.8;
-    }
-    50% {
-      transform: scale(1.03);
-      opacity: 1;
-    }
-    100% {
-      transform: scale(1);
-      opacity: 1;
-    }
-  }
-
-  /* Reveal animation */
-  .email-revealed-container {
-    animation: slideDown 0.3s ease-out;
-  }
-
-  @keyframes slideDown {
-    from {
-      opacity: 0;
-      transform: translateY(-10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  /* Copy success animation */
-  .copy-button.copied {
-    animation: success 0.4s ease-out;
-  }
-
-  @keyframes success {
-    0%,
-    100% {
-      transform: scale(1);
-    }
-    25% {
-      transform: scale(1.1);
-    }
-    50% {
-      transform: scale(0.95);
-    }
-    75% {
-      transform: scale(1.05);
-    }
+  .email-address {
+    text-decoration-thickness: 2px;
   }
 }
