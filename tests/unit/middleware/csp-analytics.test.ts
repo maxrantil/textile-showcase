@@ -69,13 +69,22 @@ describe('CSP Middleware - Analytics Configuration', () => {
     MockedNextResponse.redirect.mockClear()
     jest.resetModules()
     // Reset environment
-    delete process.env.SECURITY_ENABLED
-    delete process.env.NODE_ENV
+    Object.defineProperty(process.env, 'SECURITY_ENABLED', {
+      writable: true,
+      value: undefined,
+    })
+    Object.defineProperty(process.env, 'NODE_ENV', {
+      writable: true,
+      value: undefined,
+    })
   })
 
   describe('CSP Header Analytics Domain Inclusion', () => {
     it('should include analytics.idaromme.dk in script-src directive', async () => {
-      process.env.NODE_ENV = 'production'
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        writable: true,
+        value: 'production',
+      })
 
       const { middleware } = await import('../../../src/middleware')
 
@@ -97,7 +106,10 @@ describe('CSP Middleware - Analytics Configuration', () => {
     })
 
     it('should include analytics.idaromme.dk in connect-src directive', async () => {
-      process.env.NODE_ENV = 'production'
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        writable: true,
+        value: 'production',
+      })
 
       const { middleware } = await import('../../../src/middleware')
 
@@ -119,7 +131,10 @@ describe('CSP Middleware - Analytics Configuration', () => {
     })
 
     it('should maintain analytics domain in CSP for all routes', async () => {
-      process.env.NODE_ENV = 'production'
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        writable: true,
+        value: 'production',
+      })
 
       const { middleware } = await import('../../../src/middleware')
 
@@ -147,7 +162,10 @@ describe('CSP Middleware - Analytics Configuration', () => {
     })
 
     it('should include analytics domain in development mode', async () => {
-      process.env.NODE_ENV = 'development'
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        writable: true,
+        value: 'development',
+      })
 
       const { middleware } = await import('../../../src/middleware')
 
@@ -170,7 +188,10 @@ describe('CSP Middleware - Analytics Configuration', () => {
 
   describe('CSP Header Structure Validation', () => {
     it('should generate valid CSP header structure', async () => {
-      process.env.NODE_ENV = 'production'
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        writable: true,
+        value: 'production',
+      })
 
       const { middleware } = await import('../../../src/middleware')
 
@@ -192,7 +213,10 @@ describe('CSP Middleware - Analytics Configuration', () => {
     })
 
     it('should include nonce in script-src alongside analytics domain', async () => {
-      process.env.NODE_ENV = 'production'
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        writable: true,
+        value: 'production',
+      })
 
       const { middleware } = await import('../../../src/middleware')
 
@@ -212,7 +236,10 @@ describe('CSP Middleware - Analytics Configuration', () => {
 
   describe('Regression Prevention Tests', () => {
     it('should fail if analytics domain is removed from script-src', async () => {
-      process.env.NODE_ENV = 'production'
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        writable: true,
+        value: 'production',
+      })
 
       const { middleware } = await import('../../../src/middleware')
 
@@ -236,7 +263,10 @@ describe('CSP Middleware - Analytics Configuration', () => {
     })
 
     it('should fail if analytics domain is removed from connect-src', async () => {
-      process.env.NODE_ENV = 'production'
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        writable: true,
+        value: 'production',
+      })
 
       const { middleware } = await import('../../../src/middleware')
 
@@ -260,8 +290,14 @@ describe('CSP Middleware - Analytics Configuration', () => {
     })
 
     it('should maintain analytics domain with other CSP modifications', async () => {
-      process.env.NODE_ENV = 'production'
-      process.env.CSP_REPORT_URI = 'https://example.com/csp-report'
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        writable: true,
+        value: 'production',
+      })
+      Object.defineProperty(process.env, 'CSP_REPORT_URI', {
+        writable: true,
+        value: 'https://example.com/csp-report',
+      })
 
       const { middleware } = await import('../../../src/middleware')
 
@@ -284,7 +320,10 @@ describe('CSP Middleware - Analytics Configuration', () => {
 
   describe('Security Validation', () => {
     it('should not allow wildcard origins with analytics domain', async () => {
-      process.env.NODE_ENV = 'production'
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        writable: true,
+        value: 'production',
+      })
 
       const { middleware } = await import('../../../src/middleware')
 
@@ -304,7 +343,10 @@ describe('CSP Middleware - Analytics Configuration', () => {
     })
 
     it('should maintain strict CSP while allowing analytics', async () => {
-      process.env.NODE_ENV = 'production'
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        writable: true,
+        value: 'production',
+      })
 
       const { middleware } = await import('../../../src/middleware')
 

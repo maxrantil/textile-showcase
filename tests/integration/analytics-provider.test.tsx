@@ -51,9 +51,18 @@ describe('AnalyticsProvider Integration Tests', () => {
 
   describe('Production Mode - Script Loading', () => {
     it('should load Umami script in production mode with env vars set', async () => {
-      process.env.NODE_ENV = 'production'
-      process.env.NEXT_PUBLIC_UMAMI_URL = UMAMI_URL
-      process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID = WEBSITE_ID
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        writable: true,
+        value: 'production',
+      })
+      Object.defineProperty(process.env, 'NEXT_PUBLIC_UMAMI_URL', {
+        writable: true,
+        value: UMAMI_URL,
+      })
+      Object.defineProperty(process.env, 'NEXT_PUBLIC_UMAMI_WEBSITE_ID', {
+        writable: true,
+        value: WEBSITE_ID,
+      })
 
       render(
         <AnalyticsProvider>
@@ -80,9 +89,18 @@ describe('AnalyticsProvider Integration Tests', () => {
     })
 
     it('should use requestIdleCallback for deferred loading in production', async () => {
-      process.env.NODE_ENV = 'production'
-      process.env.NEXT_PUBLIC_UMAMI_URL = UMAMI_URL
-      process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID = WEBSITE_ID
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        writable: true,
+        value: 'production',
+      })
+      Object.defineProperty(process.env, 'NEXT_PUBLIC_UMAMI_URL', {
+        writable: true,
+        value: UMAMI_URL,
+      })
+      Object.defineProperty(process.env, 'NEXT_PUBLIC_UMAMI_WEBSITE_ID', {
+        writable: true,
+        value: WEBSITE_ID,
+      })
 
       render(
         <AnalyticsProvider>
@@ -101,9 +119,18 @@ describe('AnalyticsProvider Integration Tests', () => {
     })
 
     it('should fallback to setTimeout when requestIdleCallback unavailable', async () => {
-      process.env.NODE_ENV = 'production'
-      process.env.NEXT_PUBLIC_UMAMI_URL = UMAMI_URL
-      process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID = WEBSITE_ID
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        writable: true,
+        value: 'production',
+      })
+      Object.defineProperty(process.env, 'NEXT_PUBLIC_UMAMI_URL', {
+        writable: true,
+        value: UMAMI_URL,
+      })
+      Object.defineProperty(process.env, 'NEXT_PUBLIC_UMAMI_WEBSITE_ID', {
+        writable: true,
+        value: WEBSITE_ID,
+      })
 
       // Remove requestIdleCallback
       const originalRIC = window.requestIdleCallback
@@ -132,9 +159,18 @@ describe('AnalyticsProvider Integration Tests', () => {
 
   describe('Development Mode - No Script Loading', () => {
     it('should NOT load script in development mode', async () => {
-      process.env.NODE_ENV = 'development'
-      process.env.NEXT_PUBLIC_UMAMI_URL = UMAMI_URL
-      process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID = WEBSITE_ID
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        writable: true,
+        value: 'development',
+      })
+      Object.defineProperty(process.env, 'NEXT_PUBLIC_UMAMI_URL', {
+        writable: true,
+        value: UMAMI_URL,
+      })
+      Object.defineProperty(process.env, 'NEXT_PUBLIC_UMAMI_WEBSITE_ID', {
+        writable: true,
+        value: WEBSITE_ID,
+      })
 
       render(
         <AnalyticsProvider>
@@ -150,9 +186,18 @@ describe('AnalyticsProvider Integration Tests', () => {
     })
 
     it('should NOT load script when NODE_ENV is test', async () => {
-      process.env.NODE_ENV = 'test'
-      process.env.NEXT_PUBLIC_UMAMI_URL = UMAMI_URL
-      process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID = WEBSITE_ID
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        writable: true,
+        value: 'test',
+      })
+      Object.defineProperty(process.env, 'NEXT_PUBLIC_UMAMI_URL', {
+        writable: true,
+        value: UMAMI_URL,
+      })
+      Object.defineProperty(process.env, 'NEXT_PUBLIC_UMAMI_WEBSITE_ID', {
+        writable: true,
+        value: WEBSITE_ID,
+      })
 
       render(
         <AnalyticsProvider>
@@ -168,9 +213,18 @@ describe('AnalyticsProvider Integration Tests', () => {
 
   describe('Missing Environment Variables', () => {
     it('should NOT load script when NEXT_PUBLIC_UMAMI_URL is missing', async () => {
-      process.env.NODE_ENV = 'production'
-      delete process.env.NEXT_PUBLIC_UMAMI_URL
-      process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID = WEBSITE_ID
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        writable: true,
+        value: 'production',
+      })
+      Object.defineProperty(process.env, 'NEXT_PUBLIC_UMAMI_URL', {
+        writable: true,
+        value: undefined,
+      })
+      Object.defineProperty(process.env, 'NEXT_PUBLIC_UMAMI_WEBSITE_ID', {
+        writable: true,
+        value: WEBSITE_ID,
+      })
 
       render(
         <AnalyticsProvider>
@@ -185,9 +239,18 @@ describe('AnalyticsProvider Integration Tests', () => {
     })
 
     it('should NOT load script when NEXT_PUBLIC_UMAMI_WEBSITE_ID is missing', async () => {
-      process.env.NODE_ENV = 'production'
-      process.env.NEXT_PUBLIC_UMAMI_URL = UMAMI_URL
-      delete process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        writable: true,
+        value: 'production',
+      })
+      Object.defineProperty(process.env, 'NEXT_PUBLIC_UMAMI_URL', {
+        writable: true,
+        value: UMAMI_URL,
+      })
+      Object.defineProperty(process.env, 'NEXT_PUBLIC_UMAMI_WEBSITE_ID', {
+        writable: true,
+        value: undefined,
+      })
 
       render(
         <AnalyticsProvider>
@@ -212,9 +275,18 @@ describe('AnalyticsProvider Integration Tests', () => {
     })
 
     it('should NOT load script when both env vars are missing', async () => {
-      process.env.NODE_ENV = 'production'
-      delete process.env.NEXT_PUBLIC_UMAMI_URL
-      delete process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        writable: true,
+        value: 'production',
+      })
+      Object.defineProperty(process.env, 'NEXT_PUBLIC_UMAMI_URL', {
+        writable: true,
+        value: undefined,
+      })
+      Object.defineProperty(process.env, 'NEXT_PUBLIC_UMAMI_WEBSITE_ID', {
+        writable: true,
+        value: undefined,
+      })
 
       render(
         <AnalyticsProvider>
@@ -230,9 +302,18 @@ describe('AnalyticsProvider Integration Tests', () => {
 
   describe('Children Rendering', () => {
     it('should render children regardless of analytics loading', async () => {
-      process.env.NODE_ENV = 'production'
-      process.env.NEXT_PUBLIC_UMAMI_URL = UMAMI_URL
-      process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID = WEBSITE_ID
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        writable: true,
+        value: 'production',
+      })
+      Object.defineProperty(process.env, 'NEXT_PUBLIC_UMAMI_URL', {
+        writable: true,
+        value: UMAMI_URL,
+      })
+      Object.defineProperty(process.env, 'NEXT_PUBLIC_UMAMI_WEBSITE_ID', {
+        writable: true,
+        value: WEBSITE_ID,
+      })
 
       const { getByText } = render(
         <AnalyticsProvider>
@@ -244,7 +325,10 @@ describe('AnalyticsProvider Integration Tests', () => {
     })
 
     it('should render children even when analytics fails to load', async () => {
-      process.env.NODE_ENV = 'development'
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        writable: true,
+        value: 'development',
+      })
 
       const { getByText } = render(
         <AnalyticsProvider>
@@ -256,9 +340,18 @@ describe('AnalyticsProvider Integration Tests', () => {
     })
 
     it('should render multiple children correctly', async () => {
-      process.env.NODE_ENV = 'production'
-      process.env.NEXT_PUBLIC_UMAMI_URL = UMAMI_URL
-      process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID = WEBSITE_ID
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        writable: true,
+        value: 'production',
+      })
+      Object.defineProperty(process.env, 'NEXT_PUBLIC_UMAMI_URL', {
+        writable: true,
+        value: UMAMI_URL,
+      })
+      Object.defineProperty(process.env, 'NEXT_PUBLIC_UMAMI_WEBSITE_ID', {
+        writable: true,
+        value: WEBSITE_ID,
+      })
 
       const { getByText } = render(
         <AnalyticsProvider>
@@ -276,9 +369,18 @@ describe('AnalyticsProvider Integration Tests', () => {
 
   describe('Script Attributes Validation', () => {
     it('should set defer attribute on script element', async () => {
-      process.env.NODE_ENV = 'production'
-      process.env.NEXT_PUBLIC_UMAMI_URL = UMAMI_URL
-      process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID = WEBSITE_ID
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        writable: true,
+        value: 'production',
+      })
+      Object.defineProperty(process.env, 'NEXT_PUBLIC_UMAMI_URL', {
+        writable: true,
+        value: UMAMI_URL,
+      })
+      Object.defineProperty(process.env, 'NEXT_PUBLIC_UMAMI_WEBSITE_ID', {
+        writable: true,
+        value: WEBSITE_ID,
+      })
 
       render(
         <AnalyticsProvider>
@@ -301,9 +403,18 @@ describe('AnalyticsProvider Integration Tests', () => {
 
     it('should construct correct script URL from environment variable', async () => {
       const customURL = 'https://custom-analytics.example.com'
-      process.env.NODE_ENV = 'production'
-      process.env.NEXT_PUBLIC_UMAMI_URL = customURL
-      process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID = WEBSITE_ID
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        writable: true,
+        value: 'production',
+      })
+      Object.defineProperty(process.env, 'NEXT_PUBLIC_UMAMI_URL', {
+        writable: true,
+        value: customURL,
+      })
+      Object.defineProperty(process.env, 'NEXT_PUBLIC_UMAMI_WEBSITE_ID', {
+        writable: true,
+        value: WEBSITE_ID,
+      })
 
       render(
         <AnalyticsProvider>
@@ -326,9 +437,18 @@ describe('AnalyticsProvider Integration Tests', () => {
 
     it('should set data-website-id attribute correctly', async () => {
       const customWebsiteId = 'custom-website-id-12345'
-      process.env.NODE_ENV = 'production'
-      process.env.NEXT_PUBLIC_UMAMI_URL = UMAMI_URL
-      process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID = customWebsiteId
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        writable: true,
+        value: 'production',
+      })
+      Object.defineProperty(process.env, 'NEXT_PUBLIC_UMAMI_URL', {
+        writable: true,
+        value: UMAMI_URL,
+      })
+      Object.defineProperty(process.env, 'NEXT_PUBLIC_UMAMI_WEBSITE_ID', {
+        writable: true,
+        value: customWebsiteId,
+      })
 
       render(
         <AnalyticsProvider>
@@ -352,9 +472,18 @@ describe('AnalyticsProvider Integration Tests', () => {
 
   describe('Regression Prevention', () => {
     it('should fail if script is not deferred', async () => {
-      process.env.NODE_ENV = 'production'
-      process.env.NEXT_PUBLIC_UMAMI_URL = UMAMI_URL
-      process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID = WEBSITE_ID
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        writable: true,
+        value: 'production',
+      })
+      Object.defineProperty(process.env, 'NEXT_PUBLIC_UMAMI_URL', {
+        writable: true,
+        value: UMAMI_URL,
+      })
+      Object.defineProperty(process.env, 'NEXT_PUBLIC_UMAMI_WEBSITE_ID', {
+        writable: true,
+        value: WEBSITE_ID,
+      })
 
       render(
         <AnalyticsProvider>
@@ -384,9 +513,18 @@ describe('AnalyticsProvider Integration Tests', () => {
 
     it('should fail if production mode check is removed', async () => {
       // This test ensures analytics only loads in production
-      process.env.NODE_ENV = 'development'
-      process.env.NEXT_PUBLIC_UMAMI_URL = UMAMI_URL
-      process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID = WEBSITE_ID
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        writable: true,
+        value: 'development',
+      })
+      Object.defineProperty(process.env, 'NEXT_PUBLIC_UMAMI_URL', {
+        writable: true,
+        value: UMAMI_URL,
+      })
+      Object.defineProperty(process.env, 'NEXT_PUBLIC_UMAMI_WEBSITE_ID', {
+        writable: true,
+        value: WEBSITE_ID,
+      })
 
       render(
         <AnalyticsProvider>
@@ -411,8 +549,14 @@ describe('AnalyticsProvider Integration Tests', () => {
     })
 
     it('should fail if environment variable check is removed', async () => {
-      process.env.NODE_ENV = 'production'
-      delete process.env.NEXT_PUBLIC_UMAMI_URL
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        writable: true,
+        value: 'production',
+      })
+      Object.defineProperty(process.env, 'NEXT_PUBLIC_UMAMI_URL', {
+        writable: true,
+        value: undefined,
+      })
 
       render(
         <AnalyticsProvider>
