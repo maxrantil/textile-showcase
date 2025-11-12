@@ -48,6 +48,7 @@
   border: 2px solid #e5e5e5;
   border-radius: 8px;
   background: #fff;
+  color: #1f2937; /* Gray-800 for WCAG AAA compliance (12.6:1 contrast) - fixes Issue #173 desktop */
   transition: all 0.3s ease;
   -webkit-appearance: none;
   appearance: none;
