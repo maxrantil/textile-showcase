@@ -5,6 +5,7 @@ import { DesktopButton } from '../UI/DesktopButton'
 import { FormValidator } from '@/utils/validation/formValidator'
 import { commonValidationRules } from '@/utils/validation/validators'
 import { UmamiEvents } from '@/utils/analytics'
+import { EmailRevealButton } from '@/components/shared/EmailReveal/EmailRevealButton'
 
 interface ContactFormData {
   name: string
@@ -34,6 +35,7 @@ export function DesktopContactForm({
 
   const handleFieldChange = (field: keyof ContactFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
+
 
     // Validate field
     const result = validator.validateField(field as string, value)
@@ -119,6 +121,8 @@ export function DesktopContactForm({
           Send Message
         </DesktopButton>
       </div>
+
+      <EmailRevealButton />
     </form>
   )
 }

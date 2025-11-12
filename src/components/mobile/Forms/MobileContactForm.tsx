@@ -1,4 +1,4 @@
-// ABOUTME: Mobile contact form with validation, API integration, and virtual keyboard handling
+// ABOUTME: Mobile contact form with validation, API integration, virtual keyboard handling, and email reveal fallback
 'use client'
 
 import { useState } from 'react'
@@ -8,6 +8,7 @@ import { FormValidator } from '@/utils/validation/formValidator'
 import { commonValidationRules } from '@/utils/validation/validators'
 import { UmamiEvents } from '@/utils/analytics'
 import { useVirtualKeyboard } from '@/hooks/mobile/useVirtualKeyboard'
+import { EmailRevealButton } from '@/components/shared/EmailReveal/EmailRevealButton'
 
 interface ContactFormData {
   name: string
@@ -41,7 +42,7 @@ export function MobileContactForm({
   const handleFieldChange = (field: keyof ContactFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
 
-    // Clear success message when user starts typing again
+    // Clear success state when user starts typing again
     if (showSuccess) {
       setShowSuccess(false)
     }
@@ -155,6 +156,8 @@ export function MobileContactForm({
           Send Message
         </MobileButton>
       </div>
+
+      <EmailRevealButton />
     </form>
   )
 }
