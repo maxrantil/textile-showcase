@@ -1,258 +1,264 @@
-# Session Handoff: Issue #178 - Minimal Email Reveal - MERGED ✅
+# Session Handoff: Umami Analytics Integration Complete
 
-**Date**: 2025-01-12
-**Issue**: #178 - Add fallback email reveal button to contact form (CLOSED)
-**PR**: #180 - Minimal email reveal button (MERGED to master)
-**Status**: ✅ COMPLETE - Merged with streamlined minimal UX
-
----
+**Date**: 2025-11-12
+**Issues**: N/A (analytics setup request)
+**PRs**: #182, #183, #184, #185, #186
+**Branch**: master (all changes merged)
 
 ## ✅ Completed Work
 
-### **Implementation Journey**
+### 1. Analytics Infrastructure Setup
+- **DNS Configuration**: Resolved analytics.idaromme.dk DNS (was NXDOMAIN, added Cloudflare A record)
+- **Umami Docker**: Verified running on Vultr (port 3000, 5 months uptime)
+- **Nginx Proxy**: Confirmed configuration at `/etc/nginx/sites-available/analytics.idaromme.dk`
+- **SSL Certificates**: Using shared Let's Encrypt cert for idaromme.dk domain
 
-**Initial Implementation** (commit a746d77):
-- Progressive disclosure with normal/error states
-- Copy-to-clipboard + hide email buttons
-- 135-line component, 342-line CSS, 607-line test suite
-- 38 tests covering all functionality
+### 2. Code Changes (5 PRs Merged)
 
-**Streamlined Refactor** (commit 8367875):
-- Doctor Hubert feedback: "I like the UX but I think its a bit clunky, lets make it more minimal and streamlined"
-- Simplified to single "Show email" link
-- Email displays as mailto: link (stays visible, no hide)
-- Removed copy button, hide button, error state variants
-- **Code reduction: ~900 lines removed**
+#### PR #182: CSP Fix for Analytics
+- **File**: `src/middleware.ts`
+- **Changes**: Added `https://analytics.idaromme.dk` to:
+  - `script-src` directive (allows loading tracking script)
+  - `connect-src` directive (allows sending analytics data)
+- **Why**: CSP was blocking Umami script with "Content-Security-Policy" errors
 
-### **Final Implementation Details**
+#### PR #183: Comprehensive Test Suite
+- **Files Created**:
+  - `tests/unit/middleware/csp-analytics.test.ts` (11 tests)
+  - `tests/integration/analytics-provider.test.tsx` (17 tests)
+  - `tests/e2e/analytics-integration.spec.ts` (18 E2E tests)
+  - `tests/ANALYTICS_TESTING.md` (test documentation)
+  - `tests/README.md` (general testing docs)
+- **Coverage**: 28 passing tests validating CSP, component logic, browser behavior
+- **Purpose**: Prevent future regressions when CSP or analytics config changes
 
-**EmailRevealButton Component** (47 lines):
-- Simple text link: "Show email" (underlined, subtle)
-- Click reveals: `idaromme@gmail.com` as mailto: link
-- No additional buttons or complexity
-- Analytics tracking: `emailRevealClicked('normal')`
+#### PR #184: TypeScript Fixes
+- **Problem**: CI failing with `error TS2540: Cannot assign to 'NODE_ENV' because it is a read-only property`
+- **Solution**: Replaced direct assignments with `Object.defineProperty` in test files
+- **Result**: All tests passing, TypeScript type checking clean
 
-**CSS Styling** (76 lines):
-- Minimal styling with WCAG AA color contrast
-- Reduced motion and high contrast support
-- No animations or complex states
+#### PR #185: GitHub Workflow Updates
+- **File**: `.github/workflows/production-deploy.yml`
+- **Changes**: Added Umami environment variables to deployment workflow:
+  - `NEXT_PUBLIC_UMAMI_URL`
+  - `NEXT_PUBLIC_UMAMI_WEBSITE_ID`
+- **Why**: Deployment was overwriting `.env.local` without Umami variables
 
-**Test Suite** (19 tests, all passing):
-- Rendering and interaction tests
-- ARIA attributes and accessibility
-- Keyboard navigation (Enter/Space keys)
-- Analytics tracking verification
+#### PR #186: NODE_ENV Fix (CRITICAL)
+- **File**: `.github/workflows/production-deploy.yml`
+- **Changes**: Added `NODE_ENV: production` to build environment
+- **Why**: `AnalyticsProvider` checks `process.env.NODE_ENV !== 'production'` before loading script
+- **Root Cause**: Without NODE_ENV=production, component returns early and never injects script
 
-**Form Integration**:
-- MobileContactForm.tsx: `<EmailRevealButton />` below submit
-- DesktopContactForm.tsx: `<EmailRevealButton />` below submit
-- No error state tracking needed (removed hasSubmissionError)
+### 3. GitHub Secrets Added
+- `NEXT_PUBLIC_UMAMI_URL` = `https://analytics.idaromme.dk`
+- `NEXT_PUBLIC_UMAMI_WEBSITE_ID` = `caa54504-d542-4ccc-893f-70b6eb054036`
 
-**Analytics**:
-- Removed: `emailCopied`, `emailHidden` (unused)
-- Kept: `emailRevealClicked` for tracking usage
-
----
-
-## 📊 Code Simplification Metrics
-
-| File | Before | After | Reduction |
-|------|--------|-------|-----------|
-| EmailRevealButton.tsx | 135 lines | 47 lines | **65%** |
-| email-reveal.css | 342 lines | 76 lines | **78%** |
-| EmailRevealButton.test.tsx | 607 lines | 201 lines | **67%** |
-| **Total removed** | | | **~900 lines** |
-
----
+### 4. Umami Configuration
+- **Dashboard URL**: https://analytics.idaromme.dk
+- **Website ID**: caa54504-d542-4ccc-893f-70b6eb054036
+- **Website**: idaromme.dk (already configured in Umami)
+- **Docker Containers**:
+  - `umami-analytics_umami_1` (PostgreSQL image, port 3000)
+  - `umami-analytics_db_1` (Postgres 15-alpine, port 5432)
 
 ## 🎯 Current Project State
 
-**Branch**: master (up to date)
-**Commit**: 817c2e3 (merge commit from PR #180)
-**Issue #178**: CLOSED
-**PR #180**: MERGED
-**Tests**: ✅ 19/19 EmailRevealButton tests passing, full suite passing
-**Build**: ✅ Production build successful
-**Deployment**: Ready for production
+**Deployment**: IN PROGRESS (PR #186)
+- Run ID: 19312062192
+- Status: Building and deploying with NODE_ENV=production
+- Started: 2025-11-12 21:13:09 UTC
+- Duration: ~4-5 minutes expected
 
----
+**Tests**: ✅ All passing
+- Unit tests: 11 passing (CSP middleware)
+- Integration tests: 17 passing (AnalyticsProvider)
+- TypeScript: Clean (no errors)
+
+**Branch**: master (clean, all PRs merged)
+
+**CI/CD**:
+- ✅ Unit Tests workflow: passing
+- ✅ Security Monitoring: passing (with expected vulnerabilities tracked in #45)
+- 🔄 Production Deployment: in progress (PR #186)
+
+### Agent Validation Status
+- ✅ **test-automation-qa**: Created comprehensive test suite (28 tests)
+- ✅ **security-validator**: CSP properly configured, analytics domain whitelisted
+- ✅ **architecture-designer**: Client-side analytics with deferred loading
+- ✅ **code-quality-analyzer**: All linting and formatting passing
+- ✅ **documentation-knowledge-manager**: Test documentation complete
 
 ## 🚀 Next Session Priorities
 
-### **Immediate Options**
+### Immediate Priority 1: Verify Analytics Working (15-20 minutes)
 
-1. **No follow-up required** - Issue #178 complete, minimal UX deployed
-2. **Optional improvements** (from agent recommendations):
-   - Migrate email to environment variable (20 min)
-   - Create privacy policy page (2-3 hours)
-   - Add JSDoc comments to EmailRevealButton (10 min)
+**Wait for deployment to complete**, then verify:
 
-### **Roadmap Context**
+1. **Check Script Tag Exists**:
+   ```bash
+   curl -s https://idaromme.dk | grep "analytics.idaromme.dk"
+   ```
+   **Expected**: Should see `<script defer src="https://analytics.idaromme.dk/script.js" data-website-id="caa54504-d542-4ccc-893f-70b6eb054036">`
 
-Issue #178 was the last open issue from the contact form enhancement phase. All critical functionality is now complete:
+2. **Browser Verification**:
+   - Visit https://idaromme.dk in browser
+   - Open DevTools (F12) → Network tab
+   - Look for `script.js` from analytics.idaromme.dk
+   - **Expected**: 200 status, no CSP errors in Console
 
-- ✅ Mobile contact form with validation
-- ✅ Desktop contact form with validation
-- ✅ API integration with Resend
-- ✅ Error handling and user feedback
-- ✅ Fallback email reveal for reliability
+3. **Umami Dashboard Check**:
+   - Log in to https://analytics.idaromme.dk
+   - Default credentials: admin/umami (change password!)
+   - Go to Dashboard → Check real-time visitor count
+   - Visit idaromme.dk in another tab → Should see +1 visitor
 
----
+### Immediate Priority 2: Update Umami Container (30 minutes)
+
+**Current**: 5-month-old Umami container (`Created: 5 months ago`)
+**Goal**: Update to latest version for security and features
+
+**On Vultr server**:
+```bash
+cd ~/umami-analytics
+
+# Pull latest images
+docker-compose pull
+
+# Restart with new images (zero downtime)
+docker-compose up -d
+
+# Verify containers running
+docker ps | grep umami
+
+# Check logs for errors
+docker-compose logs --tail=50 umami
+```
+
+**Verification**:
+- Analytics continue tracking after update
+- No errors in Docker logs
+- Dashboard still accessible
+
+### Future Work (Optional)
+
+1. **Umami Dashboard Password**: Change from default admin/umami
+2. **Analytics Testing**: Review tracked events in `src/utils/analytics.ts` (UmamiEvents)
+3. **Performance Impact**: Monitor Core Web Vitals after analytics deployed
+4. **Docker Auto-Restart**: Verify `restart: always` in `docker-compose.yml`
 
 ## 📝 Startup Prompt for Next Session
 
 ```
-Read CLAUDE.md to understand our workflow, then review the project status for next priorities.
+Read CLAUDE.md to understand our workflow, then verify Umami analytics integration is working on production.
 
-**Immediate priority**: Determine next feature or improvement (no blocking issues)
-**Context**: Issue #178 minimal email reveal merged to master, all tests passing
-**Reference docs**: SESSION_HANDOVER.md, CLAUDE.md
-**Ready state**: Clean master branch, all tests passing, production-ready build
+**Context**: Completed full Umami analytics setup across 5 PRs (#182-#186). Final fix (NODE_ENV=production) deployed via PR #186. Deployment in progress at session end (Run ID: 19312062192).
 
-**Expected scope**: Review project roadmap, plan next feature, or address optional improvements (email env var, privacy policy, etc.)
+**Immediate priority**: Analytics Verification (15-20 minutes)
+1. Wait for deployment completion: `gh run watch 19312062192`
+2. Verify script tag: `curl -s https://idaromme.dk | grep analytics.idaromme.dk`
+3. Browser test: Visit https://idaromme.dk, check Network tab for script.js (200 status)
+4. Dashboard check: Log in to https://analytics.idaromme.dk, verify visitor tracking
+
+**If analytics NOT working**:
+- Check deployment logs: `gh run view 19312062192 --log`
+- SSH to Vultr: verify `.env.local` has UMAMI vars
+- Check browser console for CSP errors
+- Verify NODE_ENV was set during build in CI logs
+
+**Reference docs**:
+- SESSION_HANDOVER.md (this file)
+- tests/ANALYTICS_TESTING.md (test guide)
+- src/app/components/analytics-provider.tsx (component code)
+- src/middleware.ts (CSP configuration)
+
+**Ready state**: PR #186 deployment in progress, master branch clean, all tests passing
+
+**Expected scope**:
+- Verify analytics working on production
+- Optionally update Umami containers to latest version
+- Close out analytics integration task
 ```
-
----
 
 ## 📚 Key Reference Documents
+- **Tests**: `tests/ANALYTICS_TESTING.md` - How to run and troubleshoot analytics tests
+- **Component**: `src/app/components/analytics-provider.tsx` - Analytics loading logic
+- **CSP**: `src/middleware.ts` - Content Security Policy configuration
+- **Utils**: `src/utils/analytics.ts` - Event tracking functions (UmamiEvents)
+- **Workflow**: `.github/workflows/production-deploy.yml` - Deployment configuration
 
-- **Issue #178**: https://github.com/maxrantil/textile-showcase/issues/178 (CLOSED)
-- **PR #180**: https://github.com/maxrantil/textile-showcase/pull/180 (MERGED)
-- **Master branch**: Up to date with minimal email reveal implementation
-- **CLAUDE.md**: Development workflow and guidelines
+## 🔧 Troubleshooting Guide
 
----
+### If Analytics Script Not Loading:
 
-## 🔧 Technical Details
+**1. Check Environment Variables in Build**:
+```bash
+gh run view 19312062192 --log | grep "Debug environment variables" -A 10
+```
+Should show:
+- `NODE_ENV: production` ✅
+- `NEXT_PUBLIC_UMAMI_URL: ***` ✅
+- `NEXT_PUBLIC_UMAMI_WEBSITE_ID: ***` ✅
 
-### **Final Implementation**
+**2. Check Production .env.local on Vultr**:
+```bash
+# SSH to server
+ssh max@70.34.205.18
 
-**Component Structure:**
-```tsx
-export function EmailRevealButton() {
-  const [isRevealed, setIsRevealed] = useState(false)
-
-  const handleReveal = () => {
-    setIsRevealed(true)
-    UmamiEvents.emailRevealClicked('normal')
-  }
-
-  return (
-    <div className="email-reveal-container">
-      {!isRevealed ? (
-        <button onClick={handleReveal}>Show email</button>
-      ) : (
-        <a href="mailto:idaromme@gmail.com">idaromme@gmail.com</a>
-      )}
-    </div>
-  )
-}
+# Check file
+cd /var/www/idaromme.dk
+cat .env.local | grep UMAMI
 ```
 
-**Accessibility Features:**
-- ARIA attributes: `aria-expanded`, `aria-controls`, `aria-label`
-- Keyboard navigation: Tab, Enter, Space support
-- WCAG AA color contrast: #666 (5.74:1), #333 (12.6:1)
-- Focus indicators: 2px solid outlines
-- Reduced motion support
+**3. Check CSP Headers**:
+```bash
+curl -I https://idaromme.dk | grep -i "content-security-policy"
+```
+Should include `analytics.idaromme.dk` in script-src and connect-src
 
-**Analytics Events:**
-```typescript
-UmamiEvents.emailRevealClicked('normal')  // Tracks reveal action
+**4. Run Analytics Tests**:
+```bash
+npm test -- tests/unit/middleware/csp-analytics.test.ts tests/integration/analytics-provider.test.tsx
+```
+All 28 tests should pass
+
+### If Umami Dashboard Not Accessible:
+
+**1. Check DNS**:
+```bash
+dig analytics.idaromme.dk
+# Should return: 70.34.205.18
 ```
 
----
+**2. Check Docker Containers**:
+```bash
+docker ps | grep umami
+# Should show 2 containers running
+```
 
-## 🎓 Key Insights
+**3. Check Nginx**:
+```bash
+sudo nginx -t
+sudo systemctl status nginx
+```
 
-### **Design Evolution**
+**4. Check Umami Logs**:
+```bash
+cd ~/umami-analytics
+docker-compose logs --tail=100 umami
+```
 
-**Initial approach:**
-- Assumed progressive disclosure complexity was necessary
-- Built error state variants, copy/hide buttons
-- 38 comprehensive tests for all features
+## 📊 Summary Stats
 
-**Doctor Hubert feedback:**
-- "I like the UX but I think its a bit clunky, lets make it more minimal and streamlined"
-- Removed progressive states ("Too many states")
-- Removed extra buttons ("Revealed UI busy")
-- Simplified to core functionality
+- **PRs Merged**: 5 (#182, #183, #184, #185, #186)
+- **Files Changed**: 8 (middleware, tests, workflow, docs)
+- **Tests Created**: 28 (11 unit, 17 integration)
+- **Lines Added**: ~2,200 (tests + documentation)
+- **Issues Resolved**: DNS, CSP, TypeScript, env vars, NODE_ENV
+- **Time Investment**: Full debugging session identifying root causes
 
-**Final result:**
-- Single-state button: "Show email"
-- Email as mailto: link (no hide needed)
-- 65-78% code reduction across all files
-- Maintained accessibility and test coverage
+## ✅ Session Handoff Complete
 
-### **Lessons Learned**
-
-1. **Simplicity wins**: Doctor Hubert prioritizes minimal, streamlined UX
-2. **Less is more**: ~900 lines removed while maintaining functionality
-3. **Iterative refinement**: Initial implementation → feedback → streamlined version
-4. **Core over features**: Focus on essential functionality, not nice-to-haves
-5. **User feedback matters**: Build → review → refactor based on actual needs
-
-### **What Doctor Hubert Values**
-
-✅ **Minimal complexity**: Simple, straightforward solutions
-✅ **Streamlined UX**: Fewest clicks/steps to accomplish goal
-✅ **Clean code**: Less code = less debt, easier maintenance
-✅ **Practical design**: Functional over fancy
-❌ **Over-engineering**: Avoid unnecessary states/features
-❌ **Verbose text**: Short, clear messaging
-❌ **Extra actions**: Remove copy/hide if not essential
-
----
-
-## 📊 Success Metrics
-
-**Implementation Quality:**
-- ✅ Issue #178 closed (fallback contact method implemented)
-- ✅ PR #180 merged to master (streamlined UX)
-- ✅ 19/19 tests passing (comprehensive coverage)
-- ✅ Build successful (production-ready)
-- ✅ WCAG 2.1 AA compliant (accessibility maintained)
-- ✅ Code simplified (65-78% reduction)
-
-**User Value:**
-- ✅ Fallback contact method when form fails
-- ✅ One-click email reveal (minimal friction)
-- ✅ Accessible to all users (keyboard, screen reader)
-- ✅ Tracked via analytics (usage monitoring)
-
-**Code Health:**
-- ✅ ~900 lines removed (reduced complexity)
-- ✅ Single responsibility (reveal email, nothing more)
-- ✅ Easy to maintain (47-line component)
-- ✅ Well-tested (19 focused tests)
-
----
-
-## 🎉 Session Summary
-
-**What was accomplished:**
-1. ✅ Reviewed PR #180 for final merge
-2. ✅ Doctor Hubert requested minimal/streamlined UX
-3. ✅ Refactored EmailRevealButton (removed 65-78% code)
-4. ✅ Updated tests (607 → 201 lines, all passing)
-5. ✅ Verified build and pre-commit hooks
-6. ✅ Updated PR description with simplified design
-7. ✅ Merged PR #180 to master
-8. ✅ Closed Issue #178
-9. ✅ Updated session handoff documentation
-
-**Doctor Hubert's feedback:**
-> "I like the UX but I think its a bit clunky, lets make it more minimal and streamlined"
-
-**Result:**
-- Minimal "Show email" link
-- No progressive states, copy buttons, or hide functionality
-- ~900 lines of code removed
-- Maintained accessibility and test coverage
-- Merged to master, production-ready
-
----
-
-**Status**: ✅ Issue #178 COMPLETE - Minimal email reveal merged to master
-**Next Session**: Open for new priorities - no blocking issues
-**Doctor Hubert**: Project ready for next feature or optional improvements
+**Status**: All code merged, deployment in progress, comprehensive tests in place
+**Next Claude**: Verify analytics working and optionally update Umami containers
+**Environment**: Clean master branch, all CI passing, ready for verification
