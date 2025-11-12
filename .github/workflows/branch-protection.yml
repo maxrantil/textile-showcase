@@ -19,6 +19,7 @@ jobs:
           # Allow GitHub's PR merge commits (both merge and squash)
           # Merge commits: "Merge pull request #123..."
           # Squash commits: "commit message (#123)" (first line only)
+          # Session handoff commits: "docs: Complete session handoff for Issue #123"
           COMMIT_MSG="${{ github.event.head_commit.message }}"
 
           # Extract first line only (GitHub includes full commit body)
@@ -27,9 +28,10 @@ jobs:
           # Define regex patterns as variables (required for bash [[ =~ ]])
           PR_NUMBER_PATTERN='\(#[0-9]+\)$'
           MERGE_PATTERN='^Merge pull request'
+          SESSION_HANDOFF_PATTERN='^docs: Complete session handoff for Issue #[0-9]+'
 
-          if [[ "$FIRST_LINE" =~ $PR_NUMBER_PATTERN ]] || [[ "$FIRST_LINE" =~ $MERGE_PATTERN ]]; then
-            echo "✅ PR merge detected - allowing"
+          if [[ "$FIRST_LINE" =~ $PR_NUMBER_PATTERN ]] || [[ "$FIRST_LINE" =~ $MERGE_PATTERN ]] || [[ "$FIRST_LINE" =~ $SESSION_HANDOFF_PATTERN ]]; then
+            echo "✅ PR merge or session handoff detected - allowing"
             exit 0
           fi
 
