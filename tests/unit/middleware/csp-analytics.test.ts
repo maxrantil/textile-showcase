@@ -86,7 +86,7 @@ describe('CSP Middleware - Analytics Configuration', () => {
         value: 'production',
       })
 
-      const { middleware } = await import('../../../src/middleware')
+      const { middleware } = await import('../../../middleware')
 
       const request = mockNextRequest('https://idaromme.dk/', 'https:')
       await middleware(request as unknown as NextRequest)
@@ -111,7 +111,7 @@ describe('CSP Middleware - Analytics Configuration', () => {
         value: 'production',
       })
 
-      const { middleware } = await import('../../../src/middleware')
+      const { middleware } = await import('../../../middleware')
 
       const request = mockNextRequest('https://idaromme.dk/', 'https:')
       await middleware(request as unknown as NextRequest)
@@ -136,7 +136,7 @@ describe('CSP Middleware - Analytics Configuration', () => {
         value: 'production',
       })
 
-      const { middleware } = await import('../../../src/middleware')
+      const { middleware } = await import('../../../middleware')
 
       const routes = ['/', '/contact', '/gallery', '/about']
 
@@ -167,7 +167,7 @@ describe('CSP Middleware - Analytics Configuration', () => {
         value: 'development',
       })
 
-      const { middleware } = await import('../../../src/middleware')
+      const { middleware } = await import('../../../middleware')
 
       const request = mockNextRequest('http://localhost:3000/', 'http:')
       await middleware(request as unknown as NextRequest)
@@ -193,7 +193,7 @@ describe('CSP Middleware - Analytics Configuration', () => {
         value: 'production',
       })
 
-      const { middleware } = await import('../../../src/middleware')
+      const { middleware } = await import('../../../middleware')
 
       const request = mockNextRequest('https://idaromme.dk/', 'https:')
       await middleware(request as unknown as NextRequest)
@@ -218,7 +218,7 @@ describe('CSP Middleware - Analytics Configuration', () => {
         value: 'production',
       })
 
-      const { middleware } = await import('../../../src/middleware')
+      const { middleware } = await import('../../../middleware')
 
       const request = mockNextRequest('https://idaromme.dk/', 'https:')
       await middleware(request as unknown as NextRequest)
@@ -241,7 +241,7 @@ describe('CSP Middleware - Analytics Configuration', () => {
         value: 'production',
       })
 
-      const { middleware } = await import('../../../src/middleware')
+      const { middleware } = await import('../../../middleware')
 
       const request = mockNextRequest('https://idaromme.dk/', 'https:')
       await middleware(request as unknown as NextRequest)
@@ -268,7 +268,7 @@ describe('CSP Middleware - Analytics Configuration', () => {
         value: 'production',
       })
 
-      const { middleware } = await import('../../../src/middleware')
+      const { middleware } = await import('../../../middleware')
 
       const request = mockNextRequest('https://idaromme.dk/', 'https:')
       await middleware(request as unknown as NextRequest)
@@ -299,7 +299,7 @@ describe('CSP Middleware - Analytics Configuration', () => {
         value: 'https://example.com/csp-report',
       })
 
-      const { middleware } = await import('../../../src/middleware')
+      const { middleware } = await import('../../../middleware')
 
       const request = mockNextRequest('https://idaromme.dk/', 'https:')
       await middleware(request as unknown as NextRequest)
@@ -325,7 +325,7 @@ describe('CSP Middleware - Analytics Configuration', () => {
         value: 'production',
       })
 
-      const { middleware } = await import('../../../src/middleware')
+      const { middleware } = await import('../../../middleware')
 
       const request = mockNextRequest('https://idaromme.dk/', 'https:')
       await middleware(request as unknown as NextRequest)
@@ -348,7 +348,7 @@ describe('CSP Middleware - Analytics Configuration', () => {
         value: 'production',
       })
 
-      const { middleware } = await import('../../../src/middleware')
+      const { middleware } = await import('../../../middleware')
 
       const request = mockNextRequest('https://idaromme.dk/', 'https:')
       await middleware(request as unknown as NextRequest)

@@ -70,7 +70,7 @@ describe('Authentication Layer - TDD Implementation', () => {
       process.env.SECURITY_ENABLED = 'false' // Demo mode
 
       // Import middleware after setting env
-      const { middleware } = await import('../../../src/middleware')
+      const { middleware } = await import('../../../middleware')
 
       const request = mockNextRequest('http://localhost:3000/security')
       await middleware(request as unknown as NextRequest)
@@ -84,7 +84,7 @@ describe('Authentication Layer - TDD Implementation', () => {
     it('should allow access to /security/dashboard in demo mode without auth', async () => {
       process.env.SECURITY_ENABLED = 'false' // Demo mode
 
-      const { middleware } = await import('../../../src/middleware')
+      const { middleware } = await import('../../../middleware')
 
       const request = mockNextRequest(
         'http://localhost:3000/security/dashboard'
@@ -105,7 +105,7 @@ describe('Authentication Layer - TDD Implementation', () => {
 
     // TDD RED PHASE: Test will fail - no auth implementation
     it('should require authentication for /security route in production', async () => {
-      const { middleware } = await import('../../../src/middleware')
+      const { middleware } = await import('../../../middleware')
 
       const request = mockNextRequest('http://localhost:3000/security')
       await middleware(request as unknown as NextRequest)
@@ -121,7 +121,7 @@ describe('Authentication Layer - TDD Implementation', () => {
 
     // TDD RED PHASE: Test will fail - no auth implementation
     it('should allow access with valid authentication token', async () => {
-      const { middleware } = await import('../../../src/middleware')
+      const { middleware } = await import('../../../middleware')
 
       const validToken = 'valid-auth-token'
       const request = mockNextRequest('http://localhost:3000/security', {
@@ -142,7 +142,7 @@ describe('Authentication Layer - TDD Implementation', () => {
 
     // TDD RED PHASE: Test will fail - no auth implementation
     it('should reject invalid authentication tokens', async () => {
-      const { middleware } = await import('../../../src/middleware')
+      const { middleware } = await import('../../../middleware')
 
       const invalidToken = 'invalid-token'
       const request = mockNextRequest('http://localhost:3000/security', {
@@ -163,7 +163,7 @@ describe('Authentication Layer - TDD Implementation', () => {
 
     // TDD RED PHASE: Test will fail - no role-based access
     it('should support role-based access control', async () => {
-      const { middleware } = await import('../../../src/middleware')
+      const { middleware } = await import('../../../middleware')
 
       const userToken = 'user-token-with-security-viewer-role'
       const request = mockNextRequest('http://localhost:3000/security', {
@@ -184,7 +184,7 @@ describe('Authentication Layer - TDD Implementation', () => {
 
     // TDD RED PHASE: Test will fail - no role-based access
     it('should reject users without security role', async () => {
-      const { middleware } = await import('../../../src/middleware')
+      const { middleware } = await import('../../../middleware')
 
       const userToken = 'user-token-no-security-role'
       const request = mockNextRequest('http://localhost:3000/security', {
@@ -213,7 +213,7 @@ describe('Authentication Layer - TDD Implementation', () => {
     it('should only apply auth to security routes', async () => {
       process.env.SECURITY_ENABLED = 'true' // Production mode
 
-      const { middleware } = await import('../../../src/middleware')
+      const { middleware } = await import('../../../middleware')
 
       // Test public route
       const publicRequest = mockNextRequest('http://localhost:3000/')
@@ -238,7 +238,7 @@ describe('Authentication Layer - TDD Implementation', () => {
     it('should match all security-related routes', async () => {
       process.env.SECURITY_ENABLED = 'true' // Production mode
 
-      const { middleware } = await import('../../../src/middleware')
+      const { middleware } = await import('../../../middleware')
 
       const securityRoutes = [
         '/security',
@@ -272,7 +272,7 @@ describe('Authentication Layer - TDD Implementation', () => {
     it('should preserve original URL in login redirect', async () => {
       process.env.SECURITY_ENABLED = 'true'
 
-      const { middleware } = await import('../../../src/middleware')
+      const { middleware } = await import('../../../middleware')
 
       const originalUrl = '/security/dashboard?filter=critical'
       const request = mockNextRequest(`http://localhost:3000${originalUrl}`)
@@ -290,7 +290,7 @@ describe('Authentication Layer - TDD Implementation', () => {
     it('should handle session expiration gracefully', async () => {
       process.env.SECURITY_ENABLED = 'true'
 
-      const { middleware } = await import('../../../src/middleware')
+      const { middleware } = await import('../../../middleware')
 
       const expiredToken = 'expired-session-token'
       const request = mockNextRequest('http://localhost:3000/security', {
@@ -313,7 +313,7 @@ describe('Authentication Layer - TDD Implementation', () => {
     it('should add security headers to security routes', async () => {
       process.env.SECURITY_ENABLED = 'true'
 
-      const { middleware } = await import('../../../src/middleware')
+      const { middleware } = await import('../../../middleware')
 
       const validToken = 'valid-token'
       const request = mockNextRequest('http://localhost:3000/security', {
