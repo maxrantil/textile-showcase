@@ -1,79 +1,41 @@
 # Session Handoff: CSP Inline Style Violations (Issue #198)
 
-**Date**: 2025-11-13
+**Date**: 2025-11-13 (Updated 21:10 UTC)
 **Issue**: #198 - E2E test failures due to CSP violations
 **Branch**: `fix/issue-198-csp-inline-styles`
-**Status**: 🔄 **IN PROGRESS** - Phase 1 complete, Phase 2 ready to start
+**Status**: 🔄 **IN PROGRESS** - Partial progress (25→18 violations), source identification needed
 
 ---
 
-## ✅ Completed Work This Session
+## ✅ Completed Work This Session (3+ hours)
 
-### Root Cause Analysis: CSP Inline Style Violations
+### Session 1: Root Cause + Phase 1 (Previous session)
+- ✅ CSP nonce behavior identified (invalidates 'unsafe-inline')
+- ✅ /motto framework applied → CSS Modules chosen
+- ✅ OptimizedImage, Gallery, MobileGalleryItem converted
+- ⚠️ Still 25 violations (components don't render on homepage)
 
-**Problem**: E2E tests failing with 25 CSP violations
-- **Symptom**: Browser console errors refusing to apply inline styles
-- **Root Cause**: Middleware sets nonce for CSP, which invalidates `'unsafe-inline'` per CSP spec
-- **Result**: ALL inline `style={{}}` attributes blocked, generating console errors
+### Session 2: Systematic Diagnostic Approach (Current session)
 
-**Evidence from CI logs**:
-```
-Browser console error: Refused to apply inline style because it violates the following
-Content Security Policy directive: "style-src 'self' 'nonce-xxx' 'unsafe-inline' ...".
-Note that 'unsafe-inline' is ignored if either a hash or nonce value is present.
-```
+**Diagnostic Test Implementation** (✅ Completed):
+1. Modified smoke-test.spec.ts to log ALL CSP errors
+2. Ran diagnostic → Confirmed 18 identical "Refused to apply inline style" messages
+3. CSP errors don't specify WHICH component (generic browser messages)
 
-**CSP Behavior (middleware.ts:207)**:
-```typescript
-`style-src 'self' 'nonce-${nonce}' 'unsafe-inline' https://fonts.googleapis.com`
-```
-When nonce is present, browsers IGNORE `'unsafe-inline'` → all inline styles must have nonces OR be CSS classes
+**Components Converted** (✅ Completed):
+1. **FirstImage.tsx** → FirstImage.module.css (2 inline styles)
+2. **adaptive/Gallery/index.tsx** → index.module.css (10 inline styles)
+3. **NavigationArrows.tsx** → NavigationArrows.module.css (4+ inline styles, triangle shapes)
+4. **DesktopHeader.tsx** → DesktopHeader.module.css (1 inline style)
+5. **OptimizedImage.tsx** → Added object-fit CSS classes (5 variants)
 
-### Systematic Decision-Making Process
+**Total converted**: 8 CSS module files created, ~30+ inline styles eliminated
 
-Applied `/motto` framework to evaluate 3 options:
-
-| Criteria | Option A: Add Nonces | Option B: CSS Modules | Option C: Remove Nonce |
-|----------|---------------------|----------------------|----------------------|
-| Simplicity | ⚠️ Medium | ✅ High | ❌ Low |
-| Robustness | ⚠️ Medium | ✅ High | ❌ Low |
-| Alignment | ⚠️ Partial | ✅ Perfect | ❌ Poor |
-| Testing | ⚠️ Complex | ✅ Simple | ✅ Simple |
-| Long-term Debt | ❌ High | ✅ Low | ❌ Critical |
-| Code Volume | ➕ More | ➖ Less | ➖ Less |
-
-**Decision: Option B (CSS Modules)** - Less code, matches existing patterns, security-positive
-
-### Phase 1: Converted High-Impact Components
-
-**Completed conversions** (3 files, 10 inline styles):
-
-1. **OptimizedImage.tsx** → OptimizedImage.module.css
-   - 7 inline styles eliminated
-   - Commit: `fd35dd5` ✅
-
-2. **Gallery.tsx** → Gallery.module.css
-   - 1 inline style eliminated
-   - Commit: `cb45228` ✅
-
-3. **MobileGalleryItem.tsx** → MobileGalleryItem.module.css
-   - 2 inline styles eliminated
-   - Commit: `cb45228` ✅
-
-**Build Status**: ✅ All passing (middleware 35.1 KB)
-
-### Phase 2: Identified Actual Sources
-
-**Smoke test results**: Still 25 violations (Phase 1 components not rendering on homepage)
-
-**Root source investigation**:
-- Homepage renders: `FirstImage` + `adaptive/Gallery`
-- These components have ~12 inline styles total
-- **Found**: These are the ACTUAL sources of the 25 violations
-
-**Files needing conversion**:
-1. `src/components/server/FirstImage.tsx` - 2 inline styles
-2. `src/components/adaptive/Gallery/index.tsx` - ~10 inline styles (loading, error, containers)
+**Build & Test Results** (⚠️ **BLOCKER**):
+- ✅ Build passes (clean build completed)
+- ❌ **Still 18 CSP violations** (down from 25, but not 0)
+- ❌ Test expectations: 0 violations
+- ⚠️ **Unknown source**: Remaining violations from unidentified component(s)
 
 ---
 
@@ -81,127 +43,131 @@ Applied `/motto` framework to evaluate 3 options:
 
 ### Code
 - **Branch**: `fix/issue-198-csp-inline-styles`
-- **Commits**: 2 (OptimizedImage, Gallery components)
-- **Build**: ✅ Passing
-- **Tests**: ⚠️ 25 CSP violations (from FirstImage + adaptive/Gallery)
+- **Commits**: 3 (previous session commits)
+- **Uncommitted Changes**: 8 modified files + 8 new CSS modules
+- **Build**: ✅ Passing (clean build completed)
+- **Tests**: ❌ **18 CSP violations** (down from 25, source unknown)
 
 ### Git Status
 ```bash
 On branch fix/issue-198-csp-inline-styles
-2 commits ahead of master
-Clean working directory
+Changes not staged for commit:
+  modified:   playwright-report/index.html
+  modified:   src/components/adaptive/Gallery/index.tsx
+  modified:   src/components/desktop/Header/DesktopHeader.tsx
+  modified:   src/components/server/FirstImage.tsx
+  modified:   src/components/ui/NavigationArrows.tsx
+  modified:   src/components/ui/OptimizedImage.tsx
+  modified:   tests/e2e/workflows/smoke-test.spec.ts (TEMP diagnostic logging)
+
+Untracked files:
+  src/components/adaptive/Gallery/index.module.css
+  src/components/desktop/Header/DesktopHeader.module.css
+  src/components/server/FirstImage.module.css
+  src/components/ui/NavigationArrows.module.css
+  src/components/ui/OptimizedImage.module.css (UPDATED with object-fit classes)
 ```
 
-### Files Modified
-✅ `src/components/ui/OptimizedImage.tsx` + `.module.css`
-✅ `src/components/desktop/Gallery/Gallery.tsx` + `.module.css`
-✅ `src/components/mobile/Gallery/MobileGalleryItem.tsx` + `.module.css`
+### Files Converted (Session 2)
+✅ FirstImage.tsx + .module.css (2 inline styles)
+✅ adaptive/Gallery/index.tsx + .module.css (10 inline styles)
+✅ NavigationArrows.tsx + .module.css (4+ inline styles)
+✅ DesktopHeader.tsx + .module.css (1 inline style)
+✅ OptimizedImage.module.css (added object-fit variants)
+✅ OptimizedImage.tsx (attempted fix - NO EFFECT)
 
 ### Remaining Work
-📋 `src/components/server/FirstImage.tsx` (2 inline styles)
-📋 `src/components/adaptive/Gallery/index.tsx` (~10 inline styles)
+⚠️ **BLOCKER**: Identify source of remaining 18 CSP violations
+⚠️ Smoke test still shows TEMP diagnostic logging (needs restoration)
+⚠️ No commits made this session (all changes uncommitted)
 
 ---
 
-## 🚀 Next Session: Complete CSP Violation Fix
+## 🚀 Next Session: Identify & Eliminate Remaining 18 CSP Violations
 
-### Immediate Priority
+### **CRITICAL BLOCKER**: Unknown Violation Source
 
-**Convert remaining homepage components** (~20 minutes)
+**Problem**: After converting 5 homepage components (30+ inline styles), still 18 CSP violations remain.
 
-### Step-by-Step Plan
+**Evidence**:
+- ✅ Converted: FirstImage, adaptive/Gallery, NavigationArrows, DesktopHeader, OptimizedImage
+- ✅ Clean build completed (.next deleted, rebuilt from scratch)
+- ❌ Smoke test: **18 violations persist** (down from 25, but not 0)
+- ⚠️ CSP error messages are generic - don't specify which component/file
 
+**Hypothesis**: The 18 violations are from a component NOT yet identified. Possible sources:
+1. **Next.js Image component itself** (if using inline styles internally)
+2. **Third-party library components** (Sanity UI, etc.)
+3. **Global styles or layout components** not yet checked
+4. **Error/loading states** that only render under specific conditions
+5. **Hydration-related inline styles** from React
+
+### Immediate Priority (30-45 minutes)
+
+**STEP 1: Enhanced Diagnostic Approach**
+1. Add component stack trace logging to smoke test
+2. Use browser DevTools protocol to capture CSP violation details
+3. Modify test to log element selectors that caused violations
+4. Run with headed mode to manually inspect violating elements
+
+**STEP 2: Systematic Component Audit**
+Since conversions didn't work, audit ALL components that render on homepage:
 ```bash
-# 1. Verify current branch
-git status  # Should be on fix/issue-198-csp-inline-styles
+# Check which components actually render
+npx playwright test --headed --project="Desktop Chrome"
+# Manually inspect page during test, note all rendered components
 
-# 2. Convert FirstImage.tsx
-# - Create src/components/server/FirstImage.module.css
-# - Move 2 inline styles to CSS classes
-# - Update FirstImage.tsx to use className
+# Search for ANY remaining inline styles in render path
+grep -r "style={" src/components/ --include="*.tsx" | \
+  grep -v ".module.css" | \
+  grep -v "test" | \
+  sort
 
-# 3. Convert adaptive/Gallery/index.tsx
-# - Create src/components/adaptive/Gallery/index.module.css
-# - Move ~10 inline styles to CSS classes (skeleton, error, containers)
-# - Update index.tsx to use className
+# Check if Next.js Image has inline styles
+node -e "console.log(require('next/image'))" # Inspect internals
+```
 
-# 4. Test build
-npm run build
+**STEP 3: Alternative Diagnostic**
+If above doesn't work, try browser-based debugging:
+```javascript
+// Add to smoke test before assertions
+await page.evaluate(() => {
+  // Intercept inline style violations
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach(mut => {
+      if (mut.attributeName === 'style') {
+        console.log('Inline style detected:', mut.target, mut.target.getAttribute('style'))
+      }
+    })
+  })
+  observer.observe(document.body, {
+    attributes: true,
+    subtree: true,
+    attributeFilter: ['style']
+  })
+})
+```
 
-# 5. Run smoke test
-npx playwright test tests/e2e/workflows/smoke-test.spec.ts \
-  --grep "No critical JavaScript errors" \
-  --project="Desktop Chrome" \
-  --reporter=line
+**STEP 4: Fallback Plan**
+If source remains unidentifiable after 1 hour:
+1. Commit current progress (25→18 violation reduction)
+2. Create detailed issue documenting findings
+3. Request code review / pair programming session
+4. Consider alternative approach (nonce propagation)
 
-# Expected: 0 CSP violations (down from 25)
+### Pre-Session Cleanup Required
 
-# 6. Commit changes
-git add src/components/server/FirstImage.* \
-        src/components/adaptive/Gallery/index.*
-git commit -m "fix: Convert FirstImage and adaptive/Gallery to CSS modules
+**Before starting new work**:
+```bash
+# 1. Restore smoke test to original state
+git checkout tests/e2e/workflows/smoke-test.spec.ts
 
-Eliminates remaining 25 CSP violations on homepage by replacing
-inline styles with CSS module classes.
+# 2. Verify current uncommitted changes
+git status
+git diff src/components/
 
-Changes:
-- Create FirstImage.module.css (2 styles)
-- Create adaptive/Gallery/index.module.css (~10 styles)
-- Replace all style={{}} with className references
-
-Impact: Resolves all homepage CSP violations
-Testing: Smoke test should show 0 violations
-
-Fixes #198"
-
-# 7. Run full E2E test suite
-npm run test:e2e
-
-# 8. Push branch
-git push origin fix/issue-198-csp-inline-styles
-
-# 9. Create PR
-gh pr create \
-  --title "fix: Resolve CSP violations by converting inline styles to CSS modules" \
-  --body "$(cat <<'EOF'
-## Summary
-Fixes #198 - E2E test failures caused by CSP violations
-
-## Root Cause
-Middleware CSP policy includes nonce, which invalidates 'unsafe-inline' per CSP spec.
-All inline `style={{}}` attributes were blocked, generating 25 console errors.
-
-## Solution
-Converted inline styles to CSS modules for homepage components:
-- FirstImage.tsx
-- adaptive/Gallery/index.tsx
-- OptimizedImage.tsx (preventive)
-- Gallery.tsx (preventive)
-- MobileGalleryItem.tsx (preventive)
-
-## Testing
-- ✅ Build passes (middleware 35.1 KB)
-- ✅ Smoke test: 0 CSP violations (down from 25)
-- ✅ All E2E tests passing
-- ✅ No visual regression
-
-## Impact
-- Security: Maintains strict CSP without 'unsafe-inline'
-- Performance: CSS modules optimized by Next.js
-- Maintenance: Standard pattern, no runtime dependencies
-
-## Remaining Work
-Issue #199 created for systematic cleanup of remaining 22 files with inline styles.
-EOF
-)"
-
-# 10. Wait for CI to pass
-
-# 11. Merge PR
-
-# 12. Close Issue #198
-
-# 13. MANDATORY: Session handoff for Issue #198 completion
+# 3. Review all changes before committing
+# (Don't commit broken state - either fix or revert)
 ```
 
 ---
@@ -209,45 +175,53 @@ EOF
 ## 📝 Startup Prompt for Next Session
 
 ```
-Read CLAUDE.md to understand our workflow, then complete Issue #198 CSP violation fix.
+Read CLAUDE.md to understand our workflow, then identify & eliminate remaining 18 CSP violations for Issue #198.
 
-**Immediate priority**: Convert FirstImage + adaptive/Gallery to CSS modules (20 minutes)
+**Immediate priority**: Enhanced diagnostic to identify unknown violation source (30-45 min)
 
-**Context**: Issue #198 E2E tests failing with 25 CSP violations. Root cause: middleware CSP nonce invalidates 'unsafe-inline', blocking all inline styles. Solution: Convert to CSS modules. Phase 1 complete (OptimizedImage, Gallery components). Phase 2 ready: convert actual homepage sources (FirstImage, adaptive/Gallery).
+**Context**: Issue #198 CSP violations. After converting 5 homepage components (30+ inline styles), still 18 violations remain (down from 25). Root cause known: middleware CSP nonce invalidates 'unsafe-inline'. But BLOCKER: source of remaining 18 violations unknown despite clean build.
 
 **Current state**:
-- Branch: fix/issue-198-csp-inline-styles (clean, 2 commits)
-- Phase 1: ✅ 3 files converted (10 inline styles)
-- Phase 2: 📋 2 files remaining (12 inline styles)
-- Tests: ⚠️ 25 CSP violations from FirstImage + adaptive/Gallery
-- Build: ✅ Passing
+- Branch: fix/issue-198-csp-inline-styles (dirty - uncommitted changes)
+- Conversions completed: FirstImage, adaptive/Gallery, NavigationArrows, DesktopHeader, OptimizedImage
+- Tests: ❌ 18 CSP violations (source unknown)
+- Build: ✅ Passing (clean build)
+- Uncommitted: 8 modified files + 8 new CSS modules
+- TEMP changes: smoke-test.spec.ts has diagnostic logging (needs restoration)
 
-**Files to convert**:
-1. src/components/server/FirstImage.tsx (2 inline styles)
-2. src/components/adaptive/Gallery/index.tsx (~10 inline styles)
+**BLOCKER**: Unknown source of 18 violations
+Converted components don't eliminate violations - suggests:
+- Next.js Image internals using inline styles?
+- Third-party library components?
+- Hydration/loading states?
+- Different component path than expected?
 
 **Reference docs**:
 - Issue #198: https://github.com/maxrantil/textile-showcase/issues/198
+- SESSION_HANDOVER.md: Detailed diagnostic steps + hypotheses
 - Branch: fix/issue-198-csp-inline-styles
-- SESSION_HANDOVER.md: This file
 
 **Expected scope**:
-1. Create FirstImage.module.css, convert 2 inline styles
-2. Create adaptive/Gallery/index.module.css, convert 10 inline styles
-3. Run smoke test → verify 0 CSP violations
-4. Commit changes with comprehensive message
-5. Push branch
-6. Create PR with detailed description
-7. Merge after CI passes
-8. Close Issue #198
-9. MANDATORY: Session handoff for completion
+1. Restore smoke test (git checkout tests/e2e/workflows/smoke-test.spec.ts)
+2. Enhanced diagnostic: DevTools protocol to capture violation details
+3. Headed test mode: manually inspect violating elements
+4. Identify actual source components
+5. Convert identified components
+6. Achieve 0 CSP violations
+7. Commit all changes
+8. Create PR, merge, close issue
+9. MANDATORY: Session handoff
+
+**Fallback** (if >1 hour without solution):
+- Commit progress (25→18 reduction documented)
+- Create follow-up issue with findings
+- Request pair programming / code review
 
 **Success criteria**:
-- ✅ Smoke test shows 0 CSP violations (down from 25)
-- ✅ All E2E tests passing
-- ✅ PR merged to master
-- ✅ Issue #198 closed
-- ✅ Session handoff completed
+- ✅ Violation source identified
+- ✅ 0 CSP violations achieved
+- ✅ All changes committed
+- ✅ PR merged, Issue #198 closed
 ```
 
 ---
