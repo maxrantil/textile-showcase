@@ -11,6 +11,7 @@ import { getOptimizedImageUrl } from '@/utils/image-helpers'
 import { UmamiEvents } from '@/utils/analytics'
 import { scrollManager } from '@/lib/scrollManager'
 import { NavigationArrows } from '@/components/ui/NavigationArrows'
+import styles from './Gallery.module.css'
 
 interface GalleryProps {
   designs: TextileDesign[]
@@ -71,14 +72,9 @@ const GalleryItem = memo(function GalleryItem({
           height={600}
           width={800}
           sizes="(max-width: 1024px) 90vw, (max-width: 1440px) 800px, 900px"
-          style={{
-            width: 'auto',
-            height: '60vh',
-            objectFit: 'contain',
-          }}
+          className={`desktop-gallery-img ${styles.galleryImage}`}
           priority={index < 2}
           loading={index < 2 ? 'eager' : 'lazy'}
-          className="desktop-gallery-img"
         />
       </div>
 

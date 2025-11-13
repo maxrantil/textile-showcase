@@ -1,0 +1,7 @@
+/* ABOUTME: CSS Module for desktop Gallery component - replaces inline styles for CSP compliance */
+
+.galleryImage {
+  width: auto;
+  height: 60vh;
+  object-fit: contain;
+}

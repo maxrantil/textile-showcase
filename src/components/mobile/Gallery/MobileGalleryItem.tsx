@@ -9,6 +9,7 @@ import { getOptimizedImageUrl } from '@/utils/image-helpers'
 import { UmamiEvents } from '@/utils/analytics'
 import { LockdownImage } from '@/components/ui/LockdownImage'
 import { useState, useEffect } from 'react'
+import styles from './MobileGalleryItem.module.css'
 
 interface MobileGalleryItemProps {
   design: TextileDesign
@@ -110,8 +111,7 @@ export default function MobileGalleryItem({
             <LockdownImage
               src={imageSource}
               alt={alt}
-              className="mobile-gallery-image"
-              style={{ width: '100%', height: 'auto' }}
+              className={`mobile-gallery-image ${styles.fullWidthImage}`}
             />
           ) : (
             // Normal mode - use Next.js Image
@@ -123,8 +123,7 @@ export default function MobileGalleryItem({
               sizes="100vw"
               priority={isPriority}
               loading={isPriority ? 'eager' : 'lazy'}
-              style={{ width: '100%', height: 'auto' }}
-              className="mobile-gallery-image"
+              className={`mobile-gallery-image ${styles.fullWidthImage}`}
               onError={handleImageError}
             />
           )}
