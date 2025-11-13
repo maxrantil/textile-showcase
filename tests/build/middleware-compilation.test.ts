@@ -147,7 +147,7 @@ describe('Middleware Build Artifact Validation', () => {
   })
 
   describe('Source File Structure Validation', () => {
-    it('should have ONLY src/middleware.ts, NOT root middleware.ts', () => {
+    it('should have middleware.ts in either root OR src (Next.js 15+ compatibility)', () => {
       const rootMiddlewarePath = path.join(process.cwd(), 'middleware.ts')
       const srcMiddlewarePath = path.join(
         process.cwd(),
@@ -158,58 +158,58 @@ describe('Middleware Build Artifact Validation', () => {
       const rootExists = fs.existsSync(rootMiddlewarePath)
       const srcExists = fs.existsSync(srcMiddlewarePath)
 
-      // src/middleware.ts MUST exist
-      if (!srcExists) {
+      // At least one MUST exist
+      if (!rootExists && !srcExists) {
         throw new Error(
-          `CRITICAL: src/middleware.ts does not exist! This is the correct location for Next.js middleware.`
+          `CRITICAL: No middleware.ts found! Must exist at either:\n` +
+            `- Project root: middleware.ts\n` +
+            `- Or src directory: src/middleware.ts`
         )
       }
 
-      expect(srcExists).toBe(true)
+      expect(rootExists || srcExists).toBe(true)
 
-      // Root middleware.ts MUST NOT exist (causes override issues)
-      if (rootExists) {
-        // Read both files to show the conflict
+      // If BOTH exist, ensure they have the same content (sync issue)
+      if (rootExists && srcExists) {
         const rootContent = fs.readFileSync(rootMiddlewarePath, 'utf-8')
         const srcContent = fs.readFileSync(srcMiddlewarePath, 'utf-8')
 
-        const rootHasOldDomains =
-          rootContent.includes('umami.is') ||
-          rootContent.includes('70.34.205.18')
-        const srcHasNewDomain = srcContent.includes('analytics.idaromme.dk')
+        if (rootContent !== srcContent) {
+          throw new Error(
+            `CRITICAL: Both middleware.ts and src/middleware.ts exist with DIFFERENT content!\n\n` +
+              `This will cause confusion. Next.js prioritizes root-level middleware.ts.\n\n` +
+              `FIX: Keep only ONE file:\n` +
+              `1. If using Next.js 15+: Keep root middleware.ts, remove src/middleware.ts\n` +
+              `2. If using Next.js 14: Keep src/middleware.ts, remove root middleware.ts`
+          )
+        }
 
-        throw new Error(
-          `CRITICAL FILE STRUCTURE ERROR: Duplicate middleware files detected!\n\n` +
-            `❌ FOUND: middleware.ts (root level) ${rootHasOldDomains ? '- Contains OLD domains!' : ''}\n` +
-            `✅ FOUND: src/middleware.ts ${srcHasNewDomain ? '- Contains CORRECT domains' : ''}\n\n` +
-            `PROBLEM: Next.js prioritizes root-level middleware.ts over src/middleware.ts.\n` +
-            `This causes the old/incorrect middleware to be used in production builds.\n\n` +
-            `FIX:\n` +
-            `1. Delete middleware.ts from project root:\n` +
-            `   rm middleware.ts\n\n` +
-            `2. Verify only src/middleware.ts exists:\n` +
-            `   ls -la middleware.ts src/middleware.ts\n\n` +
-            `3. Rebuild:\n` +
-            `   rm -rf .next && npm run build\n\n` +
-            `This test will pass once root middleware.ts is removed.`
+        console.warn(
+          `⚠️  WARNING: Both middleware.ts and src/middleware.ts exist.\n` +
+            `Next.js will use root-level middleware.ts and ignore src/middleware.ts.\n` +
+            `Consider removing src/middleware.ts to avoid confusion.`
         )
       }
-
-      expect(rootExists).toBe(false)
     })
 
-    it('should have correct analytics domain in src/middleware.ts', () => {
+    it('should have correct analytics domain in middleware.ts', () => {
+      const rootMiddlewarePath = path.join(process.cwd(), 'middleware.ts')
       const srcMiddlewarePath = path.join(
         process.cwd(),
         'src',
         'middleware.ts'
       )
 
-      if (!fs.existsSync(srcMiddlewarePath)) {
-        throw new Error('src/middleware.ts not found!')
+      // Check whichever file exists (prefer root if both exist)
+      const middlewarePath = fs.existsSync(rootMiddlewarePath)
+        ? rootMiddlewarePath
+        : srcMiddlewarePath
+
+      if (!fs.existsSync(middlewarePath)) {
+        throw new Error('No middleware.ts found in root or src!')
       }
 
-      const content = fs.readFileSync(srcMiddlewarePath, 'utf-8')
+      const content = fs.readFileSync(middlewarePath, 'utf-8')
 
       const hasAnalyticsDomain = content.includes(ANALYTICS_DOMAIN)
       const hasOldDomains =
@@ -220,13 +220,13 @@ describe('Middleware Build Artifact Validation', () => {
 
       if (!hasAnalyticsDomain) {
         throw new Error(
-          `src/middleware.ts is missing analytics.idaromme.dk in CSP configuration!`
+          `middleware.ts is missing analytics.idaromme.dk in CSP configuration!`
         )
       }
 
       if (hasOldDomains) {
         throw new Error(
-          `src/middleware.ts contains old domains (umami.is or 70.34.205.18)! These should be removed.`
+          `middleware.ts contains old domains (umami.is or 70.34.205.18)! These should be removed.`
         )
       }
     })
