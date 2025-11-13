@@ -4,13 +4,21 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { randomBytes } from 'crypto'
 
 /**
- * Generate CSP nonce for secure inline scripts/styles
+ * Generate CSP nonce for secure inline scripts/styles using Web Crypto API
+ * Edge Runtime compatible - uses crypto.getRandomValues instead of Node.js crypto
  */
 function generateNonce(): string {
-  return randomBytes(16).toString('base64')
+  const array = new Uint8Array(16)
+  crypto.getRandomValues(array)
+
+  // Convert Uint8Array to base64 string (Edge Runtime compatible)
+  let binary = ''
+  for (let i = 0; i < array.length; i++) {
+    binary += String.fromCharCode(array[i])
+  }
+  return btoa(binary)
 }
 
 /**
