@@ -5,6 +5,7 @@
 import { useDeviceType } from '@/hooks/shared/useDeviceType'
 import { useState, useEffect, useRef } from 'react'
 import { TextileDesign } from '@/types/textile'
+import styles from './index.module.css'
 
 // Helper to add timeout to dynamic imports
 const withTimeout = <T,>(
@@ -31,17 +32,10 @@ export function GallerySkeleton() {
   return (
     <div
       data-testid="gallery-loading-skeleton"
-      style={{
-        minHeight: '400px',
-        width: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        opacity: 0.3,
-      }}
+      className={styles.skeletonContent}
       aria-hidden="true"
     >
-      <div style={{ fontSize: '14px', color: '#999' }}>Loading gallery...</div>
+      <div className={styles.skeletonText}>Loading gallery...</div>
     </div>
   )
 }
@@ -122,57 +116,21 @@ export default function AdaptiveGallery({ designs }: AdaptiveGalleryProps) {
 
   // Phase 3: Remove opacity hiding - images must be visible while loading on slow 3G
   // Skeleton now overlays via z-index instead of hiding content with opacity
-  const containerStyle = {
-    position: 'relative' as const,
-    minHeight: '400px', // Reserve space to prevent layout shift
-  }
-
-  const galleryStyle = {
-    // Gallery visible immediately, even during hydration
-    opacity: 1,
-    transition: 'opacity 300ms ease-in-out',
-  }
-
-  const skeletonStyle = {
-    position: 'absolute' as const,
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 10, // Overlay on top of gallery during loading
-    pointerEvents: 'none' as const, // Don't block interactions
-    opacity: !isHydrated || !GalleryComponent ? 1 : 0,
-    transition: 'opacity 300ms ease-in-out',
-  }
+  const skeletonVisible = !isHydrated || !GalleryComponent
 
   // Show error fallback if max retries exceeded
   if (importError && retryCount >= maxRetries) {
     return (
       <div
         data-testid="import-error-fallback"
-        style={{
-          minHeight: '400px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexDirection: 'column',
-          padding: '2rem',
-          textAlign: 'center',
-        }}
+        className={styles.errorFallback}
       >
-        <p style={{ marginBottom: '1rem', color: '#666' }}>
+        <p className={styles.errorMessage}>
           Unable to load gallery. Please check your connection.
         </p>
         <button
           onClick={() => window.location.reload()}
-          style={{
-            padding: '0.75rem 1.5rem',
-            background: '#000',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-          }}
+          className={styles.errorButton}
         >
           Reload Page
         </button>
@@ -181,12 +139,12 @@ export default function AdaptiveGallery({ designs }: AdaptiveGalleryProps) {
   }
 
   return (
-    <div style={containerStyle} suppressHydrationWarning>
-      <div style={galleryStyle}>
+    <div className={styles.container} suppressHydrationWarning>
+      <div className={styles.gallery}>
         {GalleryComponent && <GalleryComponent designs={designs} />}
       </div>
       {(!isHydrated || !GalleryComponent) && (
-        <div style={skeletonStyle}>
+        <div className={`${styles.skeleton} ${skeletonVisible ? styles.visible : styles.hidden}`}>
           <GallerySkeleton />
         </div>
       )}

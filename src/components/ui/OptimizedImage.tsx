@@ -62,6 +62,18 @@ export function OptimizedImage({
   const [isLoaded, setIsLoaded] = useState(false)
   const [isError, setIsError] = useState(false)
   const [isInView, setIsInView] = useState(priority) // Start true if priority
+
+  // Get object-fit CSS class for CSP compliance
+  const getObjectFitClass = () => {
+    const fitMap = {
+      contain: styles.objectFitContain,
+      cover: styles.objectFitCover,
+      fill: styles.objectFitFill,
+      none: styles.objectFitNone,
+      'scale-down': styles.objectFitScaleDown,
+    }
+    return fitMap[objectFit]
+  }
   const [currentImageUrl, setCurrentImageUrl] = useState<string>('')
   const [usesFallback, setUsesFallback] = useState(false)
   const imgRef = useRef<HTMLDivElement>(null)
@@ -210,8 +222,7 @@ export function OptimizedImage({
               blurDataURL={blurDataUrl}
               onLoad={handleImageLoad}
               onError={handleImageError}
-              className={isLoaded ? styles.fadeInLoaded : styles.fadeIn}
-              style={{ objectFit }}
+              className={`${isLoaded ? styles.fadeInLoaded : styles.fadeIn} ${getObjectFitClass()}`}
               decoding="async"
               // Enhanced resource hint for performance optimization
               {...({ fetchpriority: optimizedFetchPriority } as Record<
@@ -232,8 +243,8 @@ export function OptimizedImage({
               blurDataURL={blurDataUrl}
               onLoad={handleImageLoad}
               onError={handleImageError}
-              className={isLoaded ? styles.fadeInLoaded : styles.fadeIn}
-              style={{ objectFit, ...style }}
+              className={`${isLoaded ? styles.fadeInLoaded : styles.fadeIn} ${getObjectFitClass()}`}
+              style={style}
               decoding="async"
               // Enhanced resource hint for performance optimization
               {...({ fetchpriority: optimizedFetchPriority } as Record<

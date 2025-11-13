@@ -1,0 +1,8 @@
+/* Header visibility states */
+.headerVisible {
+  transform: translateY(0);
+}
+
+.headerHidden {
+  transform: translateY(-100%);
+}

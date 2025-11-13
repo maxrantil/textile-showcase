@@ -3,6 +3,7 @@
 
 import { getOptimizedImageUrl } from '@/utils/image-helpers'
 import { TextileDesign } from '@/types/textile'
+import styles from './FirstImage.module.css'
 
 interface FirstImageProps {
   design: TextileDesign
@@ -60,16 +61,8 @@ export function FirstImage({ design }: FirstImageProps) {
   return (
     <div
       data-first-image="true"
-      className="first-image-container"
+      className={`first-image-container ${styles.container}`}
       suppressHydrationWarning
-      style={{
-        position: 'absolute',
-        width: '100%',
-        height: '60vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
     >
       <picture>
         {/* AVIF for modern browsers (30-40% better compression than WebP) */}
@@ -86,11 +79,7 @@ export function FirstImage({ design }: FirstImageProps) {
           loading="eager"
           decoding="async"
           suppressHydrationWarning
-          style={{
-            width: 'auto',
-            height: '60vh',
-            objectFit: 'contain',
-          }}
+          className={styles.image}
         />
       </picture>
     </div>

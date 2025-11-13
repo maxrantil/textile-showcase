@@ -2,6 +2,7 @@
 'use client'
 
 import { memo } from 'react'
+import styles from './NavigationArrows.module.css'
 
 interface NavigationArrowsProps {
   canScrollLeft: boolean
@@ -46,84 +47,41 @@ const NavigationArrows = memo(function NavigationArrows({
   const config = sizeConfig[size]
   const triangleSize = config.triangleSize
 
-  // Triangle colors
-  const triangleColor = '#a3a3a3'
-
-  // Triangle components with regular CSS classes
+  // Triangle components using CSS modules with size classes
   const LeftTriangle = ({ size }: { size: number }) => (
     <div
-      className="triangle-left"
-      style={{
-        width: 0,
-        height: 0,
-        borderTop: `${Math.round(size * 1.5)}px solid transparent`,
-        borderBottom: `${Math.round(size * 1.5)}px solid transparent`,
-        borderRight: `${Math.round(size * 1.5)}px solid ${triangleColor}`,
-        transition: 'border-color 0.2s ease',
-      }}
+      className={`${styles.triangleLeft} ${styles[`triangleSize${size}`]}`}
       aria-hidden="true"
     />
   )
 
   const RightTriangle = ({ size }: { size: number }) => (
     <div
-      className="triangle-right"
-      style={{
-        width: 0,
-        height: 0,
-        borderTop: `${Math.round(size * 1.5)}px solid transparent`,
-        borderBottom: `${Math.round(size * 1.5)}px solid transparent`,
-        borderLeft: `${Math.round(size * 1.5)}px solid ${triangleColor}`,
-        transition: 'border-color 0.2s ease',
-      }}
+      className={`${styles.triangleRight} ${styles[`triangleSize${size}`]}`}
       aria-hidden="true"
     />
   )
 
-  // Updated positioning logic
-  const getClickableAreaStyle = (
-    side: 'left' | 'right'
-  ): React.CSSProperties => {
-    const baseStyles = {
-      width: `${config.clickableWidth}px`,
-      background: 'transparent',
-      border: 'none',
-      cursor: 'pointer',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: side === 'left' ? 'flex-start' : 'flex-end',
-      paddingLeft: side === 'left' ? `${config.padding}px` : 0,
-      paddingRight: side === 'right' ? `${config.padding}px` : 0,
-      zIndex: 40,
-      outline: 'none',
-      WebkitTapHighlightColor: 'transparent',
-      userSelect: 'none',
-      opacity: 1,
-      transition: 'none',
-      [side]: 0,
-    } as React.CSSProperties
+  // Build CSS class names based on props
+  const getButtonClasses = (side: 'left' | 'right'): string => {
+    const classes = [
+      styles.navButton,
+      side === 'left' ? styles.navButtonLeft : styles.navButtonRight,
+      variant === 'project' || position === 'absolute' ? styles.navButtonProject : styles.navButtonGallery,
+      styles[`navButton${size.charAt(0).toUpperCase() + size.slice(1)}`], // Small/Medium/Large
+    ]
 
-    // Different positioning based on variant and position prop
-    if (variant === 'project' || position === 'absolute') {
-      return {
-        ...baseStyles,
-        position: 'absolute',
-        top: '50%',
-        transform: 'translateY(-50%)',
-        height: '70vh',
-        maxHeight: '700px',
-        minHeight: '300px',
-      }
+    // Add padding classes
+    if (side === 'left') {
+      classes.push(styles[`navButtonLeft${size.charAt(0).toUpperCase() + size.slice(1)}`])
     } else {
-      // Gallery mode - fixed positioning
-      return {
-        ...baseStyles,
-        position: 'fixed',
-        top: 0,
-        bottom: 0,
-        height: '100vh',
-      }
+      classes.push(styles[`navButtonRight${size.charAt(0).toUpperCase() + size.slice(1)}`])
     }
+
+    // Add mobile visibility class
+    classes.push(showOnMobile ? 'nav-show-mobile' : 'nav-hide-mobile')
+
+    return classes.join(' ')
   }
 
   const handleKeyDown = (
@@ -142,13 +100,12 @@ const NavigationArrows = memo(function NavigationArrows({
       {canScrollLeft && (
         <button
           onClick={onScrollLeft}
-          style={getClickableAreaStyle('left')}
+          className={getButtonClasses('left')}
           aria-label="Previous image"
           type="button"
           onKeyDown={(e) => handleKeyDown(e, onScrollLeft)}
           data-nav="left"
           data-testid="nav-arrow-left"
-          className={`nav-button ${showOnMobile ? 'nav-show-mobile' : 'nav-hide-mobile'}`}
         >
           <LeftTriangle size={triangleSize} />
         </button>
@@ -158,13 +115,12 @@ const NavigationArrows = memo(function NavigationArrows({
       {canScrollRight && (
         <button
           onClick={onScrollRight}
-          style={getClickableAreaStyle('right')}
+          className={getButtonClasses('right')}
           aria-label="Next image"
           type="button"
           onKeyDown={(e) => handleKeyDown(e, onScrollRight)}
           data-nav="right"
           data-testid="nav-arrow-right"
-          className={`nav-button ${showOnMobile ? 'nav-show-mobile' : 'nav-hide-mobile'}`}
         >
           <RightTriangle size={triangleSize} />
         </button>

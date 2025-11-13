@@ -5,7 +5,7 @@
 
 import { useEffect, useRef, useState, useCallback, memo } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
-import Image from 'next/image'
+import ImageNoStyle from '@/components/ui/ImageNoStyle'
 import { TextileDesign } from '@/types/textile'
 import { getOptimizedImageUrl } from '@/utils/image-helpers'
 import { UmamiEvents } from '@/utils/analytics'
@@ -66,7 +66,7 @@ const GalleryItem = memo(function GalleryItem({
       }}
     >
       <div className="desktop-gallery-image">
-        <Image
+        <ImageNoStyle
           src={displayImageUrl}
           alt={design.title}
           height={600}
@@ -108,8 +108,8 @@ export default function Gallery({ designs }: GalleryProps) {
         '[data-first-image="true"]'
       ) as HTMLElement
       if (staticFirstImage) {
-        staticFirstImage.style.visibility = 'hidden'
-        staticFirstImage.style.pointerEvents = 'none'
+        // CSP compliant: Use CSS class instead of inline styles
+        staticFirstImage.classList.add(styles.firstImageHidden)
       }
     }
 

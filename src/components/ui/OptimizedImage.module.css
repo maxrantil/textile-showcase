@@ -99,3 +99,24 @@
   border-radius: 2px;
   z-index: 10;
 }
+
+/* Object-fit variants for CSP compliance */
+.objectFitContain {
+  object-fit: contain;
+}
+
+.objectFitCover {
+  object-fit: cover;
+}
+
+.objectFitFill {
+  object-fit: fill;
+}
+
+.objectFitNone {
+  object-fit: none;
+}
+
+.objectFitScaleDown {
+  object-fit: scale-down;
+}

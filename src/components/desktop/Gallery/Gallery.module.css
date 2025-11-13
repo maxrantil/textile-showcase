@@ -5,3 +5,9 @@
   height: 60vh;
   object-fit: contain;
 }
+
+/* Hidden state for first image (CSP compliant) */
+.firstImageHidden {
+  visibility: hidden;
+  pointer-events: none;
+}
