@@ -19,6 +19,8 @@ jobs:
         run: npm ci
       - name: Run tests
         run: npm test -- --testPathIgnorePatterns="bundle-size|production-config|bundle-debug|e2e|credential-manager|demo-mode|audit-logger|api-security|performance-security|middleware-security"
+      - name: Run middleware build validation
+        run: npm test -- tests/build/middleware-compilation.test.ts
       - name: Run type checking
         run: npm run type-check
 
@@ -153,6 +155,10 @@ jobs:
             echo "📦 Creating backup..."
             cp -r .next .next.backup || echo "⚠️ No previous build to backup"
 
+            # Clear Next.js build cache to prevent stale middleware
+            echo "🧹 Clearing Next.js build cache..."
+            rm -rf .next
+
             # Pull latest changes
             echo "📥 Pulling latest changes..."
             git fetch origin
@@ -178,11 +184,11 @@ jobs:
             if NODE_ENV=production SKIP_ENV_VALIDATION=true npm run build; then
               echo "✅ Build successful"
 
-              # Restart PM2 with zero downtime
+              # Restart PM2 (use restart to clear Node module cache)
               echo "🔄 Restarting application..."
               if pm2 list | grep -q "idaromme-website"; then
-                echo "📋 PM2 process exists, reloading..."
-                pm2 reload idaromme-website || pm2 restart idaromme-website
+                echo "📋 PM2 process exists, restarting..."
+                pm2 restart idaromme-website
               else
                 echo "🚀 PM2 process not found, starting new instance..."
                 PORT=3001 pm2 start npm --name "idaromme-website" -- start
@@ -199,3 +205,32 @@ jobs:
               mv .next.backup .next 2>/dev/null || echo "⚠️ No backup to restore"
               exit 1
             fi
+
+  production-validation:
+    runs-on: ubuntu-latest
+    needs: [deploy]
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Install Playwright
+        run: npx playwright install --with-deps chromium
+      - name: Wait for deployment to stabilize
+        run: sleep 30
+      - name: Run production smoke tests
+        env:
+          RUN_PRODUCTION_TESTS: 'true'
+        run: npx playwright test tests/e2e/production-smoke.spec.ts
+      - name: Upload test results on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-smoke-test-results
+          path: test-results/
+          retention-days: 7
