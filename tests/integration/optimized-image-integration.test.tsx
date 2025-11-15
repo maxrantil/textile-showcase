@@ -416,7 +416,8 @@ describe('OptimizedImage Integration Tests', () => {
       // Fill mode wrapper should have 100% width and height
       const wrapper = container.querySelector('[data-image-type="gallery"]')
       expect(wrapper).toBeInTheDocument()
-      expect(wrapper).toHaveStyle({ width: '100%', height: '100%' })
+      // Styles are now in CSS module class, not inline
+      expect(wrapper).toHaveClass('containerFill')
     })
   })
 
