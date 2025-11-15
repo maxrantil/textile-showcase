@@ -203,7 +203,7 @@ function addSecurityHeaders(
   // Build CSP directives
   const cspDirectives: string[] = [
     `default-src 'self'`,
-    `script-src 'self' 'nonce-${nonce}' ${isDevelopment ? "'unsafe-eval'" : ''} https://cdn.sanity.io https://www.googletagmanager.com https://www.google-analytics.com https://analytics.idaromme.dk`,
+    `script-src 'self' 'nonce-${nonce}' 'unsafe-inline' ${isDevelopment ? "'unsafe-eval'" : ''} https://cdn.sanity.io https://www.googletagmanager.com https://www.google-analytics.com https://analytics.idaromme.dk`,
     `style-src 'self' 'nonce-${nonce}' 'unsafe-inline' https://fonts.googleapis.com`,
     `img-src 'self' data: blob: https://cdn.sanity.io https://*.googleusercontent.com https://www.google-analytics.com`,
     `font-src 'self' data: https://fonts.gstatic.com`,
