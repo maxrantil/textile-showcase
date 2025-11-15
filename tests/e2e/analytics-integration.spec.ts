@@ -408,23 +408,17 @@ test.describe('Umami Analytics Integration E2E', () => {
       page,
     }) => {
       await page.goto('/')
+      await page.waitForLoadState('networkidle')
 
-      // Measure FCP
+      // Measure FCP using getEntriesByName (avoids PerformanceObserver race condition)
+      // Reference: https://web.dev/articles/fcp & Playwright best practices
       const fcp = await page.evaluate(() => {
-        return new Promise((resolve) => {
-          new PerformanceObserver((list) => {
-            const entries = list.getEntries()
-            const fcpEntry = entries.find(
-              (entry) => entry.name === 'first-contentful-paint'
-            )
-            if (fcpEntry) {
-              resolve(fcpEntry.startTime)
-            }
-          }).observe({ entryTypes: ['paint'] })
-        })
+        const fcpEntry = performance.getEntriesByName('first-contentful-paint')[0]
+        return fcpEntry?.startTime || 0
       })
 
-      // FCP should be reasonably fast (deferred analytics shouldn't impact it)
+      // FCP should exist and be reasonably fast (deferred analytics shouldn't impact it)
+      expect(fcp).toBeGreaterThan(0) // FCP must have occurred
       expect(fcp).toBeLessThan(3000) // 3 seconds max
 
       console.log(`✅ FCP: ${fcp}ms (analytics deferred, no blocking)`)
