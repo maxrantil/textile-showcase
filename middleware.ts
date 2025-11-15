@@ -201,10 +201,11 @@ function addSecurityHeaders(
   const isDevelopment = process.env.NODE_ENV === 'development'
 
   // Build CSP directives
+  // NOTE: Nonces removed due to Next.js incompatibility - nonce presence causes 'unsafe-inline' to be ignored per CSP spec
   const cspDirectives: string[] = [
     `default-src 'self'`,
-    `script-src 'self' 'nonce-${nonce}' 'unsafe-inline' ${isDevelopment ? "'unsafe-eval'" : ''} https://cdn.sanity.io https://www.googletagmanager.com https://www.google-analytics.com https://analytics.idaromme.dk`,
-    `style-src 'self' 'nonce-${nonce}' 'unsafe-inline' https://fonts.googleapis.com`,
+    `script-src 'self' 'unsafe-inline' ${isDevelopment ? "'unsafe-eval'" : ''} https://cdn.sanity.io https://www.googletagmanager.com https://www.google-analytics.com https://analytics.idaromme.dk`,
+    `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`,
     `img-src 'self' data: blob: https://cdn.sanity.io https://*.googleusercontent.com https://www.google-analytics.com`,
     `font-src 'self' data: https://fonts.gstatic.com`,
     `connect-src 'self' https://cdn.sanity.io https://www.google-analytics.com https://analytics.google.com https://analytics.idaromme.dk ${isDevelopment ? 'ws://localhost:*' : ''}`,
