@@ -1,0 +1,134 @@
+/* Triangle shapes for navigation arrows */
+.triangleLeft {
+  width: 0;
+  height: 0;
+  transition: border-color 0.2s ease;
+}
+
+.triangleRight {
+  width: 0;
+  height: 0;
+  transition: border-color 0.2s ease;
+}
+
+/* Triangle size variants - left triangles */
+.triangleSize16.triangleLeft {
+  border-top: 24px solid transparent;
+  border-bottom: 24px solid transparent;
+  border-right: 24px solid #a3a3a3;
+}
+
+.triangleSize24.triangleLeft {
+  border-top: 36px solid transparent;
+  border-bottom: 36px solid transparent;
+  border-right: 36px solid #a3a3a3;
+}
+
+.triangleSize32.triangleLeft {
+  border-top: 48px solid transparent;
+  border-bottom: 48px solid transparent;
+  border-right: 48px solid #a3a3a3;
+}
+
+/* Triangle size variants - right triangles */
+.triangleSize16.triangleRight {
+  border-top: 24px solid transparent;
+  border-bottom: 24px solid transparent;
+  border-left: 24px solid #a3a3a3;
+}
+
+.triangleSize24.triangleRight {
+  border-top: 36px solid transparent;
+  border-bottom: 36px solid transparent;
+  border-left: 36px solid #a3a3a3;
+}
+
+.triangleSize32.triangleRight {
+  border-top: 48px solid transparent;
+  border-bottom: 48px solid transparent;
+  border-left: 48px solid #a3a3a3;
+}
+
+/* Base button styles */
+.navButton {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  z-index: 40;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  opacity: 1;
+  transition: none;
+}
+
+/* Left button alignment */
+.navButtonLeft {
+  justify-content: flex-start;
+  left: 0;
+}
+
+/* Right button alignment */
+.navButtonRight {
+  justify-content: flex-end;
+  right: 0;
+}
+
+/* Gallery mode - fixed positioning */
+.navButtonGallery {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  height: 100vh;
+}
+
+/* Project mode - absolute positioning */
+.navButtonProject {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 70vh;
+  max-height: 700px;
+  min-height: 300px;
+}
+
+/* Size variants */
+.navButtonSmall {
+  width: 80px;
+}
+
+.navButtonMedium {
+  width: 100px;
+}
+
+.navButtonLarge {
+  width: 120px;
+}
+
+/* Padding variants for left */
+.navButtonLeftSmall {
+  padding-left: 15px;
+}
+
+.navButtonLeftMedium {
+  padding-left: 20px;
+}
+
+.navButtonLeftLarge {
+  padding-left: 25px;
+}
+
+/* Padding variants for right */
+.navButtonRightSmall {
+  padding-right: 15px;
+}
+
+.navButtonRightMedium {
+  padding-right: 20px;
+}
+
+.navButtonRightLarge {
+  padding-right: 25px;
+}

@@ -1,0 +1,6 @@
+/* ABOUTME: CSS Module for mobile Gallery item - replaces inline styles for CSP compliance */
+
+.fullWidthImage {
+  width: 100%;
+  height: auto;
+}

@@ -19,16 +19,9 @@ import {
   BLUR_PLACEHOLDER_QUALITY,
   BLUR_WIDTH,
   BLUR_HEIGHT,
-  ERROR_CONTAINER_STYLE,
-  ERROR_ICON_STYLE,
-  ERROR_TEXT_STYLE,
-  RETRY_BUTTON_STYLE,
-  DEBUG_PRIORITY_BASE_STYLE,
-  DEBUG_FALLBACK_STYLE,
-  DEBUG_PRIORITY_COLORS,
-  getFadeInStyle,
   LARGE_IMAGE_THRESHOLD,
 } from './OptimizedImage.constants'
+import styles from './OptimizedImage.module.css'
 
 interface OptimizedImageProps {
   src: ImageSource | null | undefined
@@ -69,6 +62,18 @@ export function OptimizedImage({
   const [isLoaded, setIsLoaded] = useState(false)
   const [isError, setIsError] = useState(false)
   const [isInView, setIsInView] = useState(priority) // Start true if priority
+
+  // Get object-fit CSS class for CSP compliance
+  const getObjectFitClass = () => {
+    const fitMap = {
+      contain: styles.objectFitContain,
+      cover: styles.objectFitCover,
+      fill: styles.objectFitFill,
+      none: styles.objectFitNone,
+      'scale-down': styles.objectFitScaleDown,
+    }
+    return fitMap[objectFit]
+  }
   const [currentImageUrl, setCurrentImageUrl] = useState<string>('')
   const [usesFallback, setUsesFallback] = useState(false)
   const imgRef = useRef<HTMLDivElement>(null)
@@ -187,12 +192,8 @@ export function OptimizedImage({
   return (
     <div
       ref={imgRef}
-      className={`relative ${className}`}
-      style={{
-        width: fill ? '100%' : 'auto',
-        height: fill ? '100%' : 'auto',
-        ...style,
-      }}
+      className={`relative ${fill ? styles.containerFill : styles.containerAuto} ${className}`}
+      style={style}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
       tabIndex={onClick ? 0 : undefined}
@@ -221,10 +222,7 @@ export function OptimizedImage({
               blurDataURL={blurDataUrl}
               onLoad={handleImageLoad}
               onError={handleImageError}
-              style={{
-                objectFit: objectFit,
-                ...getFadeInStyle(isLoaded),
-              }}
+              className={`${isLoaded ? styles.fadeInLoaded : styles.fadeIn} ${getObjectFitClass()}`}
               decoding="async"
               // Enhanced resource hint for performance optimization
               {...({ fetchpriority: optimizedFetchPriority } as Record<
@@ -245,11 +243,8 @@ export function OptimizedImage({
               blurDataURL={blurDataUrl}
               onLoad={handleImageLoad}
               onError={handleImageError}
-              style={{
-                objectFit: objectFit,
-                ...getFadeInStyle(isLoaded),
-                ...(style || {}),
-              }}
+              className={`${isLoaded ? styles.fadeInLoaded : styles.fadeIn} ${getObjectFitClass()}`}
+              style={style}
               decoding="async"
               // Enhanced resource hint for performance optimization
               {...({ fetchpriority: optimizedFetchPriority } as Record<
@@ -263,7 +258,7 @@ export function OptimizedImage({
 
       {/* Error state with retry option */}
       {isError && (
-        <div style={ERROR_CONTAINER_STYLE}>
+        <div className={styles.errorContainer}>
           <svg
             width="48"
             height="48"
@@ -271,13 +266,13 @@ export function OptimizedImage({
             fill="none"
             stroke="currentColor"
             strokeWidth="1"
-            style={ERROR_ICON_STYLE}
+            className={styles.errorIcon}
           >
             <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
             <circle cx="8.5" cy="8.5" r="1.5" />
             <polyline points="21,15 16,10 5,21" />
           </svg>
-          <span style={ERROR_TEXT_STYLE}>Failed to load image</span>
+          <span className={styles.errorText}>Failed to load image</span>
           <button
             onClick={(e) => {
               e.stopPropagation()
@@ -286,7 +281,7 @@ export function OptimizedImage({
               setUsesFallback(false)
               setCurrentImageUrl(primaryImageUrl)
             }}
-            style={RETRY_BUTTON_STYLE}
+            className={styles.retryButton}
           >
             Retry
           </button>
@@ -296,17 +291,20 @@ export function OptimizedImage({
       {/* Debug info in development */}
       {process.env.NODE_ENV === 'development' && (
         <div
-          style={{
-            ...DEBUG_PRIORITY_BASE_STYLE,
-            background: DEBUG_PRIORITY_COLORS[optimizedFetchPriority],
-          }}
+          className={`${styles.debugPriority} ${
+            optimizedFetchPriority === 'high'
+              ? styles.debugPriorityHigh
+              : optimizedFetchPriority === 'low'
+                ? styles.debugPriorityLow
+                : styles.debugPriorityAuto
+          }`}
         >
           {optimizedFetchPriority.toUpperCase()}
         </div>
       )}
 
       {process.env.NODE_ENV === 'development' && usesFallback && (
-        <div style={DEBUG_FALLBACK_STYLE}>FALLBACK</div>
+        <div className={styles.debugFallback}>FALLBACK</div>
       )}
     </div>
   )

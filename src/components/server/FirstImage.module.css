@@ -1,0 +1,16 @@
+/* Container for server-rendered first image */
+.container {
+  position: absolute;
+  width: 100%;
+  height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* First image styling */
+.image {
+  width: auto;
+  height: 60vh;
+  object-fit: contain;
+}

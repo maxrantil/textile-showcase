@@ -1,0 +1,13 @@
+/* ABOUTME: CSS Module for desktop Gallery component - replaces inline styles for CSP compliance */
+
+.galleryImage {
+  width: auto;
+  height: 60vh;
+  object-fit: contain;
+}
+
+/* Hidden state for first image (CSP compliant) */
+.firstImageHidden {
+  visibility: hidden;
+  pointer-events: none;
+}
