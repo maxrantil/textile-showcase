@@ -129,7 +129,9 @@ describe('OptimizedImage Component - Phase 0 TDD Baseline', () => {
   })
 
   afterEach(() => {
-    jest.runOnlyPendingTimers()
+    act(() => {
+      jest.runOnlyPendingTimers()
+    })
     jest.useRealTimers()
     intersectionObserverInstance = null
   })
