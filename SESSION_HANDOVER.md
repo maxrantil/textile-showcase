@@ -1,3 +1,119 @@
+# Session Handoff: Issue #202 - FCP Test Race Condition ✅ FIXED
+
+**Date**: 2025-11-15
+**Issue**: #202 - E2E test timeout: FCP PerformanceObserver race condition
+**PR**: #203 - ✅ **READY FOR REVIEW** (fix/issue-202-fcp-test-race-condition)
+**Status**: ✅ **TEST FIX COMPLETE** - All analytics tests passing
+**Commit**: 3ef8c16
+
+---
+
+## ✅ Completed Work - E2E Test Fix
+
+### Problem Identified
+
+**PerformanceObserver Race Condition**: Analytics integration test "should load analytics without blocking First Contentful Paint" experienced intermittent 30s timeout failures.
+
+**Root Cause**: FCP (First Contentful Paint) event often fires **before** the PerformanceObserver is set up, causing the promise to never resolve.
+
+```typescript
+// FLAKY PATTERN:
+const fcp = await page.evaluate(() => {
+  return new Promise((resolve) => {
+    new PerformanceObserver((list) => {
+      // FCP might have already fired - observer misses it
+      const fcpEntry = list.getEntries().find(...)
+      if (fcpEntry) resolve(fcpEntry.startTime)
+    }).observe({ entryTypes: ['paint'] })
+  })
+})
+// Result: 30s timeout when FCP fires before observer setup
+```
+
+### Fix Applied
+
+**Solution**: Use synchronous `performance.getEntriesByName()` API instead of async PerformanceObserver.
+
+```typescript
+// RELIABLE PATTERN:
+await page.waitForLoadState('networkidle')
+const fcp = await page.evaluate(() => {
+  const fcpEntry = performance.getEntriesByName('first-contentful-paint')[0]
+  return fcpEntry?.startTime || 0
+})
+
+expect(fcp).toBeGreaterThan(0)  // FCP must have occurred
+expect(fcp).toBeLessThan(3000)  // Performance budget
+```
+
+**Why It Works**:
+- FCP entry persists in performance timeline after paint occurs
+- `getEntriesByName()` is synchronous and deterministic
+- No timing dependency - no race condition
+- Follows web.dev and Playwright best practices
+
+### Test Results
+
+✅ **All 16 analytics tests passing**
+- FCP: 276-568ms range (well under 3000ms budget)
+- No more 30s timeouts
+- 100% pass rate across multiple runs
+- Chrome + Firefox validated
+
+### Agent Validation
+
+**test-automation-qa**: ✅ PASS - Production-ready
+
+**Validation Points**:
+- ✅ Follows Playwright best practices
+- ✅ Test pattern is reliable and non-flaky
+- ✅ Handles edge cases (FCP missing, slow loads)
+- ✅ Test structure and assertions appropriate
+- 📝 Noted similar pattern in `gallery-performance.spec.ts` for future monitoring
+
+### Files Modified
+
+- `tests/e2e/analytics-integration.spec.ts` (lines 407-425)
+
+### References
+
+- Web.dev FCP measurement: https://web.dev/articles/fcp
+- Playwright performance testing patterns
+- Issue #202 full analysis
+
+---
+
+## 📝 Startup Prompt for Next Session
+
+```
+Read CLAUDE.md to understand our workflow, then continue from Issue #202 completion (✅ PR #203 ready for review).
+
+**Immediate priority**: Review PR #203 CI checks and merge when passing (15-30 min)
+
+**Context**: Fixed E2E test race condition. FCP timeout eliminated by switching from PerformanceObserver to getEntriesByName API. All 16 analytics tests passing.
+
+**PR Details**:
+- Issue: #202
+- PR: #203 (fix/issue-202-fcp-test-race-condition)
+- Branch: Ready for review, waiting on CI
+- Commit: 3ef8c16
+
+**Reference docs**:
+- SESSION_HANDOVER.md: Complete race condition analysis & fix details
+- Issue #202: Full problem/solution documentation
+- PR #203: Test results and agent validation
+
+**Ready state**: Branch fix/issue-202-fcp-test-race-condition pushed, PR ready for review
+
+**Expected scope**: Monitor CI checks, merge when green, then choose next priority (Issue #200 framework CSP research OR other project work)
+```
+
+---
+
+# Previous Sessions
+
+---
+
 # Session Handoff: Issue #198 - CSP Inline Style Violations ✅ COMPLETED
 
 **Date**: 2025-11-15 (Merged)
