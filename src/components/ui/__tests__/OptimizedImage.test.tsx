@@ -603,9 +603,8 @@ describe('OptimizedImage Component - Phase 0 TDD Baseline', () => {
         />
       )
 
-      const debugOverlay = container.querySelector(
-        'div[style*="position: absolute"]'
-      )
+      // Debug overlays now use CSS module classes instead of inline styles
+      const debugOverlay = container.querySelector('.debugPriority')
       expect(debugOverlay).toHaveTextContent('HIGH')
     })
 
@@ -622,10 +621,8 @@ describe('OptimizedImage Component - Phase 0 TDD Baseline', () => {
       })
 
       await waitFor(() => {
-        const fallbackOverlay = Array.from(
-          container.querySelectorAll('div[style*="position: absolute"]')
-        ).find((el) => el.textContent === 'FALLBACK')
-
+        // Debug overlays now use CSS module classes instead of inline styles
+        const fallbackOverlay = container.querySelector('.debugFallback')
         expect(fallbackOverlay).toBeInTheDocument()
       })
     })
@@ -640,7 +637,7 @@ describe('OptimizedImage Component - Phase 0 TDD Baseline', () => {
       render(<OptimizedImage src={mockImageSource} alt="Test image" priority />)
 
       const img = screen.getByAltText('Test image')
-      expect(img).toHaveStyle({ opacity: 0 })
+      expect(img).toHaveClass('fadeIn')
     })
 
     it('applies opacity 1 after image loads', async () => {
@@ -653,7 +650,7 @@ describe('OptimizedImage Component - Phase 0 TDD Baseline', () => {
       })
 
       await waitFor(() => {
-        expect(img).toHaveStyle({ opacity: 1 })
+        expect(img).toHaveClass('fadeInLoaded')
       })
     })
 
@@ -661,9 +658,8 @@ describe('OptimizedImage Component - Phase 0 TDD Baseline', () => {
       render(<OptimizedImage src={mockImageSource} alt="Test image" priority />)
 
       const img = screen.getByAltText('Test image')
-      expect(img).toHaveStyle({
-        transition: 'opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
-      })
+      // Transition is now in CSS module class (fadeIn or fadeInLoaded)
+      expect(img).toHaveClass(/fadeIn/)
     })
   })
 
@@ -747,10 +743,10 @@ describe('OptimizedImage Component - Phase 0 TDD Baseline', () => {
       )
 
       const wrapper = container.firstChild as HTMLElement
-      expect(wrapper).toHaveStyle({ width: '100%', height: '100%' })
+      expect(wrapper).toHaveClass('containerFill')
 
       // Note: Next.js Image component handles 'fill' internally, not as a DOM attribute
-      // We verify fill mode by checking wrapper styles
+      // We verify fill mode by checking wrapper CSS class
       const img = screen.getByAltText('Test image')
       expect(img).toBeInTheDocument()
     })
@@ -782,7 +778,7 @@ describe('OptimizedImage Component - Phase 0 TDD Baseline', () => {
       )
 
       const img = screen.getByAltText('Test image')
-      expect(img).toHaveStyle({ objectFit: 'cover' })
+      expect(img).toHaveClass('objectFitCover')
     })
 
     it('applies data-image-type attribute', () => {
