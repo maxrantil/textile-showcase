@@ -1,3 +1,46 @@
+# Session Handoff: Production Emergency - CSP Nonce Issue ✅ RESOLVED
+
+**Date**: 2025-11-15
+**Emergency**: Production white screen outage
+**Status**: ✅ **RESOLVED** - Site fully functional
+**Hotfix**: hotfix/csp-unsafe-inline-emergency (merged to master 37705eb)
+**Production**: https://idaromme.dk ✅ WORKING
+
+---
+
+## 🚨 Root Cause
+
+**CSP Level 2 Spec**: When `nonce-source` is present, `'unsafe-inline'` is **IGNORED**
+
+**The Chain**:
+1. PR #201 added CSP nonces → `script-src 'self' 'nonce-ABC123'`
+2. Next.js framework scripts don't have nonces
+3. CSP blocks all → White screen
+
+**Fix**: Removed nonces entirely (commit e6a9bae → merged 37705eb)
+**Security Impact**: ⚠️ Weaker CSP (unsafe-inline allowed temporarily)
+
+## 📝 Startup Prompt for Next Session
+
+```
+Read CLAUDE.md, continue from production emergency RESOLVED.
+
+**Status**: Site working at https://idaromme.dk. Uses unsafe-inline (security regression).
+
+**Priorities**:
+1. Update Issue #193 with CSP findings
+2. PR #203 (Issue #202) ready when CI passes
+3. Decide: Hash-based CSP OR other work
+
+**State**: Master 6 commits ahead, production functional, temporary CSP
+```
+
+---
+
+# Previous Sessions
+
+---
+
 # Session Handoff: Issue #202 - FCP Test Race Condition ✅ FIXED
 
 **Date**: 2025-11-15
