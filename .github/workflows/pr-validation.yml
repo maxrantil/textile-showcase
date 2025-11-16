@@ -34,6 +34,16 @@ jobs:
     with:
       base-branch: 'master'
 
+  pr-body-ai-attribution:
+    name: Block AI Attribution in PR Body
+    permissions:
+      contents: read
+      pull-requests: read
+    uses: maxrantil/.github/.github/workflows/pr-body-ai-attribution-check-reusable.yml@master
+    with:
+      block-ai-tools: true
+      block-agent-mentions: true
+
   commit-quality:
     name: Commit Quality Check
     permissions:
