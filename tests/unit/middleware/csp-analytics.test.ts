@@ -212,7 +212,7 @@ describe('CSP Middleware - Analytics Configuration', () => {
       expect(directiveNames).toContain('default-src')
     })
 
-    it('should include nonce in script-src alongside analytics domain', async () => {
+    it('should include unsafe-inline in script-src alongside analytics domain', async () => {
       Object.defineProperty(process.env, 'NODE_ENV', {
         writable: true,
         value: 'production',
@@ -227,8 +227,10 @@ describe('CSP Middleware - Analytics Configuration', () => {
       const scriptSrcMatch = cspHeader?.match(/script-src[^;]+/)
       const scriptSrcDirective = scriptSrcMatch?.[0] || ''
 
-      // Should have both nonce and analytics domain
-      expect(scriptSrcDirective).toMatch(/'nonce-[A-Za-z0-9+/=]+'/)
+      // TEMPORARY: Using 'unsafe-inline' instead of nonces due to Next.js incompatibility
+      // (Emergency fix 2025-11-15: Nonces break Next.js framework scripts)
+      // TODO: Research hash-based CSP as alternative (Issue #200)
+      expect(scriptSrcDirective).toContain("'unsafe-inline'")
       expect(scriptSrcDirective).toContain(ANALYTICS_DOMAIN)
       expect(scriptSrcDirective).toContain("'self'")
     })
