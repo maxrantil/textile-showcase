@@ -1,38 +1,234 @@
-# Session Handoff: Production Emergency - CSP Nonce Issue ✅ RESOLVED
+# Session Handoff: CSP Research Complete - Nonce Implementation Path Forward ✅
 
-**Date**: 2025-11-15
-**Emergency**: Production white screen outage
-**Status**: ✅ **RESOLVED** - Site fully functional
-**Hotfix**: hotfix/csp-unsafe-inline-emergency (merged to master 37705eb)
-**Production**: https://idaromme.dk ✅ WORKING
+**Date**: 2025-11-16
+**Issues Completed**: #202 (merged PR #203), #193 (updated), Hash-based CSP research
+**Issue Created**: #204 - Proper Nonce-Based CSP Implementation
+**Status**: ✅ **RESEARCH COMPLETE** - Clear implementation path identified
+**Production**: https://idaromme.dk ✅ STABLE (temporary unsafe-inline CSP)
 
 ---
 
-## 🚨 Root Cause
+## ✅ Completed Work
 
-**CSP Level 2 Spec**: When `nonce-source` is present, `'unsafe-inline'` is **IGNORED**
+### 1. PR #203 Merged (Issue #202 Resolved)
+- **Problem**: FCP test race condition causing 30s timeouts
+- **Root Cause**: PerformanceObserver set up after FCP event fires
+- **Fix**: Switch to synchronous `performance.getEntriesByName()` API
+- **Result**: 100% test reliability, FCP measurements 276-568ms
+- **Merged**: 2025-11-16T10:23:30Z (commit db1f267)
 
-**The Chain**:
-1. PR #201 added CSP nonces → `script-src 'self' 'nonce-ABC123'`
-2. Next.js framework scripts don't have nonces
-3. CSP blocks all → White screen
+### 2. Issue #193 Updated
+- **Added**: Emergency CSP findings from production white screen
+- **Explained**: Why nonce-based CSP failed (incomplete implementation)
+- **Linked**: To hash-based CSP research (Issue #200)
+- **Comment**: https://github.com/maxrantil/textile-showcase/issues/193#issuecomment-3538490326
 
-**Fix**: Removed nonces entirely (commit e6a9bae → merged 37705eb)
-**Security Impact**: ⚠️ Weaker CSP (unsafe-inline allowed temporarily)
+### 3. Hash-Based CSP Research (Option B - /motto Approach)
+- **Duration**: 2+ hours (thorough, low time-preference research)
+- **Agent**: general-purpose-agent (comprehensive web research)
+- **Conclusion**: ⚠️ **NOT RECOMMENDED** for Pages Router architecture
+
+**Key Findings**:
+- Hash-based CSP requires App Router OR unmaintained community packages
+- Next.js framework scripts aren't deterministic enough for stable hashes
+- Maintenance burden: Re-hash on every build/dependency update
+- Effort: 15-80 hours vs 8-10 hours for nonce-based approach
+- **Security outcome**: Identical to properly implemented nonces
+
+**Critical Discovery**:
+Our nonce implementation was **90% correct** - just missing `pages/_document.tsx` to inject nonces into Next.js framework scripts.
+
+### 4. Issue #204 Created - Proper Nonce-Based CSP
+- **Type**: Comprehensive implementation guide (not simple bug report)
+- **Scope**: Full implementation plan with phases, testing, rollout strategy
+- **Effort Estimate**: 8-10 hours + 1 week monitoring
+- **Risk Level**: LOW (report-only mode first)
+- **URL**: https://github.com/maxrantil/textile-showcase/issues/204
+
+**Issue Contents**:
+- ✅ Phase-by-phase implementation plan
+- ✅ Complete `_document.tsx` code example
+- ✅ Safe rollout strategy (CSP report-only mode)
+- ✅ Comprehensive test plan (unit + E2E)
+- ✅ Agent validation checklist
+- ✅ Success criteria
+- ✅ Timeline breakdown
+- ✅ Reference documentation
+
+---
+
+## 🎯 Current Project State
+
+**Tests**: ✅ All passing (post-PR #203 merge)
+**Branch**: master (commit db1f267)
+**CI/CD**: ✅ All checks green
+**Production**: ✅ Stable with temporary unsafe-inline CSP
+
+### CSP Status
+**Current (Temporary)**:
+```
+script-src 'self' 'unsafe-inline'
+style-src 'self' 'unsafe-inline' https://fonts.googleapis.com
+```
+
+**Target (Issue #204)**:
+```
+script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https:
+style-src 'self' 'nonce-${nonce}' 'unsafe-inline' https://fonts.googleapis.com
+```
+
+**Security Gap**: Permissive CSP allows inline script injection (XSS risk)
+**Mitigation**: Input sanitization, no user-generated content, low-risk portfolio site
+**Timeline to Fix**: 8-10 hours implementation + 1 week monitoring
+
+---
+
+## 📊 Session Statistics
+
+**Time Investment**: ~4 hours
+- PR #203 debugging & rebase: 1 hour
+- Issue #193 update: 30 minutes
+- Hash-based CSP research: 2 hours
+- Issue #204 creation: 30 minutes
+- Session handoff: 30 minutes
+
+**Issues Closed**: #202 (FCP test race condition)
+**PRs Merged**: #203 (fix/issue-202-fcp-test-race-condition)
+**Issues Created**: #204 (Nonce-based CSP implementation)
+**Issues Updated**: #193 (Cloudflare/CSP investigation)
+
+**Files Modified**:
+- `tests/unit/middleware/csp-analytics.test.ts` (updated for unsafe-inline)
+- `tests/e2e/analytics-integration.spec.ts` (FCP test fix - merged)
+- `SESSION_HANDOVER.md` (this file)
+
+**Knowledge Artifacts**:
+- ✅ Comprehensive hash-based CSP research report (in Issue #204 thread)
+- ✅ Next.js CSP compatibility analysis
+- ✅ Nonce vs hash tradeoff documentation
+- ✅ Implementation roadmap for Issue #204
+
+---
+
+## 🚀 Next Session Priorities
+
+**Immediate Priority**: Issue #204 - Proper Nonce-Based CSP Implementation
+
+**Implementation Phases** (per Issue #204):
+1. Create `pages/_document.tsx` with nonce support (2-3 hours)
+2. Restore nonce-based CSP directives in middleware (30 min)
+3. Add `'strict-dynamic'` for third-party scripts (1-2 hours)
+4. Deploy in CSP report-only mode (1 hour setup + 1 week monitoring)
+5. Comprehensive testing (unit + E2E) (2-3 hours)
+6. Documentation updates (1-2 hours)
+7. Switch to enforcing mode (30 minutes)
+
+**Total Effort**: 8-10 hours active work + 1 week passive monitoring
+
+**Alternative**: Defer CSP work and focus on features/performance (acceptable for portfolio site)
+
+---
+
+## 📚 Key Technical Learnings
+
+### 1. Why Our Nonce Implementation Failed
+
+**What We Had** (✅ Correct):
+- Nonce generation in middleware
+- Nonce in CSP header
+- Nonce in `x-nonce` response header
+
+**What We Missed** (❌ The 10%):
+- `pages/_document.tsx` to inject nonces into `<Head>` and `<NextScript>`
+- Result: Framework scripts had NO nonce attribute → CSP blocked them → white screen
+
+**Lesson**: Next.js Pages Router requires explicit nonce injection via `_document.tsx` - it's not automatic like App Router.
+
+### 2. Hash-Based CSP Limitations for Next.js
+
+**Fundamental Issues**:
+- Next.js framework scripts (`__next_f.push`, hydration) aren't deterministic
+- Build timestamps, chunk IDs, dynamic imports cause hash changes
+- Requires App Router for experimental SRI feature (we're on Pages Router)
+- Community packages exist but add complexity vs fixing nonce approach
+
+**Industry Standard**: Vercel (Next.js creators) use **nonce-based CSP**, not hashes.
+
+### 3. CSP Rollout Best Practice
+
+**NEVER deploy enforcing CSP directly** - use phased rollout:
+
+1. **Report-Only Mode** (1 week):
+   ```
+   Content-Security-Policy-Report-Only: script-src 'self' 'nonce-${nonce}'...
+   ```
+   - Monitors violations without blocking
+   - Identifies issues before they break production
+
+2. **Violation Analysis**:
+   - Review CSP violation logs
+   - Fix missing nonces
+   - Adjust third-party script handling
+
+3. **Enforcing Mode** (after zero violations):
+   ```
+   Content-Security-Policy: script-src 'self' 'nonce-${nonce}'...
+   ```
+   - Switch only when confident
+   - Keep monitoring enabled
+
+**Lesson**: "Slow is smooth, smooth is fast" - 1 week monitoring prevents production emergencies.
+
+### 4. Agent-Driven Research Methodology
+
+**Following /motto and /vibe**:
+- ✅ Used `general-purpose-agent` for comprehensive CSP research
+- ✅ Low time-preference: Thorough investigation (2+ hours) vs quick scan
+- ✅ Systematic analysis: Evaluated all options with evidence
+- ✅ Clear recommendation: Nonce-based approach with detailed justification
+
+**Result**: High-confidence decision backed by authoritative sources, real-world examples, and technical analysis.
+
+---
 
 ## 📝 Startup Prompt for Next Session
 
 ```
-Read CLAUDE.md, continue from production emergency RESOLVED.
+Read CLAUDE.md to understand our workflow, then continue from CSP research completion (✅ Issue #204 created).
 
-**Status**: Site working at https://idaromme.dk. Uses unsafe-inline (security regression).
+**Immediate priority**: Issue #204 - Implement Proper Nonce-Based CSP (8-10 hours + 1 week monitoring)
 
-**Priorities**:
-1. Update Issue #193 with CSP findings
-2. PR #203 (Issue #202) ready when CI passes
-3. Decide: Hash-based CSP OR other work
+**Context**: Hash-based CSP research concluded that nonce-based approach is superior for Pages Router. Our original nonce implementation was 90% correct - just missing `_document.tsx` integration.
 
-**State**: Master 6 commits ahead, production functional, temporary CSP
+**Issue Details**:
+- Issue: #204 (Proper Nonce-Based CSP Implementation)
+- URL: https://github.com/maxrantil/textile-showcase/issues/204
+- Scope: Complete implementation guide with phases, tests, rollout strategy
+- Risk: LOW (report-only mode first)
+
+**Reference docs**:
+- SESSION_HANDOVER.md: Complete CSP research findings
+- Issue #204: Full implementation plan
+- Issue #193: Emergency CSP context and findings
+
+**Ready state**:
+- Master branch clean (commit db1f267)
+- All tests passing
+- Production stable with temporary unsafe-inline CSP
+- Clear path forward documented
+
+**Expected scope**:
+Phase 1: Create `pages/_document.tsx` with nonce support
+Phase 2: Restore nonce CSP directives in middleware
+Phase 3: Add `'strict-dynamic'` for third-party scripts
+Phase 4: Deploy in report-only mode for monitoring
+Then: Testing, documentation, enforcing mode rollout
+
+**Agent requirements** (per CLAUDE.md):
+- security-validator: Validate nonce implementation
+- test-automation-qa: Review test coverage
+- code-quality-analyzer: Review code quality
+- documentation-knowledge-manager: Update docs
 ```
 
 ---
