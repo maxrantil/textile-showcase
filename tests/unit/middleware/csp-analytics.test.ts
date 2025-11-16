@@ -80,7 +80,7 @@ describe('CSP Middleware - Analytics Configuration', () => {
   })
 
   describe('CSP Header Analytics Domain Inclusion', () => {
-    it('should include analytics.idaromme.dk in script-src directive', async () => {
+    it('should allow analytics via strict-dynamic in script-src directive', async () => {
       Object.defineProperty(process.env, 'NODE_ENV', {
         writable: true,
         value: 'production',
@@ -101,8 +101,10 @@ describe('CSP Middleware - Analytics Configuration', () => {
 
       const scriptSrcDirective = scriptSrcMatch?.[0] || ''
 
-      // Verify analytics domain is included
-      expect(scriptSrcDirective).toContain(ANALYTICS_DOMAIN)
+      // Issue #204: With strict-dynamic, scripts are trusted dynamically
+      // No need to explicitly list analytics domain in script-src
+      expect(scriptSrcDirective).toContain("'strict-dynamic'")
+      expect(scriptSrcDirective).toMatch(/'nonce-[A-Za-z0-9+/=]+'/)
     })
 
     it('should include analytics.idaromme.dk in connect-src directive', async () => {
@@ -130,7 +132,7 @@ describe('CSP Middleware - Analytics Configuration', () => {
       expect(connectSrcDirective).toContain(ANALYTICS_DOMAIN)
     })
 
-    it('should maintain analytics domain in CSP for all routes', async () => {
+    it('should maintain strict-dynamic CSP for all routes', async () => {
       Object.defineProperty(process.env, 'NODE_ENV', {
         writable: true,
         value: 'production',
@@ -150,18 +152,20 @@ describe('CSP Middleware - Analytics Configuration', () => {
         const cspHeader = mockResponse.headers.get('Content-Security-Policy')
         expect(cspHeader).toBeDefined()
 
-        // Verify analytics domain in both directives
+        // Verify analytics domain in connect-src (required for XHR/fetch)
         expect(cspHeader).toContain(ANALYTICS_DOMAIN)
 
         const scriptSrcMatch = cspHeader?.match(/script-src[^;]+/)
         const connectSrcMatch = cspHeader?.match(/connect-src[^;]+/)
 
-        expect(scriptSrcMatch?.[0]).toContain(ANALYTICS_DOMAIN)
+        // script-src uses strict-dynamic (no explicit domains needed)
+        expect(scriptSrcMatch?.[0]).toContain("'strict-dynamic'")
+        // connect-src needs explicit analytics domain
         expect(connectSrcMatch?.[0]).toContain(ANALYTICS_DOMAIN)
       }
     })
 
-    it('should include analytics domain in development mode', async () => {
+    it('should use strict-dynamic CSP in development mode', async () => {
       Object.defineProperty(process.env, 'NODE_ENV', {
         writable: true,
         value: 'development',
@@ -175,13 +179,15 @@ describe('CSP Middleware - Analytics Configuration', () => {
       const cspHeader = mockResponse.headers.get('Content-Security-Policy')
       expect(cspHeader).toBeDefined()
 
-      // Analytics should be in CSP even in development
+      // Analytics should be in connect-src even in development
       expect(cspHeader).toContain(ANALYTICS_DOMAIN)
 
       const scriptSrcMatch = cspHeader?.match(/script-src[^;]+/)
       const connectSrcMatch = cspHeader?.match(/connect-src[^;]+/)
 
-      expect(scriptSrcMatch?.[0]).toContain(ANALYTICS_DOMAIN)
+      // script-src uses strict-dynamic
+      expect(scriptSrcMatch?.[0]).toContain("'strict-dynamic'")
+      // connect-src needs explicit analytics domain
       expect(connectSrcMatch?.[0]).toContain(ANALYTICS_DOMAIN)
     })
   })
@@ -212,7 +218,7 @@ describe('CSP Middleware - Analytics Configuration', () => {
       expect(directiveNames).toContain('default-src')
     })
 
-    it('should include unsafe-inline in script-src alongside analytics domain', async () => {
+    it('should include nonce and strict-dynamic in script-src', async () => {
       Object.defineProperty(process.env, 'NODE_ENV', {
         writable: true,
         value: 'production',
@@ -224,20 +230,21 @@ describe('CSP Middleware - Analytics Configuration', () => {
       await middleware(request as unknown as NextRequest)
 
       const cspHeader = mockResponse.headers.get('Content-Security-Policy')
+      const nonce = mockResponse.headers.get('x-nonce')
       const scriptSrcMatch = cspHeader?.match(/script-src[^;]+/)
       const scriptSrcDirective = scriptSrcMatch?.[0] || ''
 
-      // TEMPORARY: Using 'unsafe-inline' instead of nonces due to Next.js incompatibility
-      // (Emergency fix 2025-11-15: Nonces break Next.js framework scripts)
-      // TODO: Research hash-based CSP as alternative (Issue #200)
-      expect(scriptSrcDirective).toContain("'unsafe-inline'")
-      expect(scriptSrcDirective).toContain(ANALYTICS_DOMAIN)
+      // Issue #204: Using nonce-based CSP with strict-dynamic for App Router (validated 2025-11-16)
+      expect(scriptSrcDirective).toMatch(/'nonce-[A-Za-z0-9+/=]+'/)
+      expect(scriptSrcDirective).toContain(`'nonce-${nonce}'`)
       expect(scriptSrcDirective).toContain("'self'")
+      expect(scriptSrcDirective).toContain("'strict-dynamic'")
+      // strict-dynamic eliminates need for explicit domains in script-src
     })
   })
 
   describe('Regression Prevention Tests', () => {
-    it('should fail if analytics domain is removed from script-src', async () => {
+    it('should fail if strict-dynamic is removed from script-src', async () => {
       Object.defineProperty(process.env, 'NODE_ENV', {
         writable: true,
         value: 'production',
@@ -252,14 +259,14 @@ describe('CSP Middleware - Analytics Configuration', () => {
       const scriptSrcMatch = cspHeader?.match(/script-src[^;]+/)
       const scriptSrcDirective = scriptSrcMatch?.[0] || ''
 
-      // This test will fail if someone removes analytics.idaromme.dk
-      const hasAnalyticsDomain = scriptSrcDirective.includes(ANALYTICS_DOMAIN)
-      expect(hasAnalyticsDomain).toBe(true)
+      // This test will fail if someone removes strict-dynamic
+      const hasStrictDynamic = scriptSrcDirective.includes("'strict-dynamic'")
+      expect(hasStrictDynamic).toBe(true)
 
-      if (!hasAnalyticsDomain) {
+      if (!hasStrictDynamic) {
         throw new Error(
-          `CRITICAL: Analytics domain ${ANALYTICS_DOMAIN} is missing from script-src CSP directive! ` +
-            `This will break Umami analytics. Current script-src: ${scriptSrcDirective}`
+          `CRITICAL: 'strict-dynamic' is missing from script-src CSP directive! ` +
+            `This will break Next.js chunk loading and analytics. Current script-src: ${scriptSrcDirective}`
         )
       }
     })
@@ -291,7 +298,7 @@ describe('CSP Middleware - Analytics Configuration', () => {
       }
     })
 
-    it('should maintain analytics domain with other CSP modifications', async () => {
+    it('should maintain strict-dynamic CSP with other CSP modifications', async () => {
       Object.defineProperty(process.env, 'NODE_ENV', {
         writable: true,
         value: 'production',
@@ -308,20 +315,22 @@ describe('CSP Middleware - Analytics Configuration', () => {
 
       const cspHeader = mockResponse.headers.get('Content-Security-Policy')
 
-      // Even with CSP modifications (like report-uri), analytics should remain
-      expect(cspHeader).toContain(ANALYTICS_DOMAIN)
+      // Even with CSP modifications (like report-uri), strict-dynamic should remain
+      expect(cspHeader).toContain("'strict-dynamic'")
       expect(cspHeader).toContain('report-uri')
 
       const scriptSrcMatch = cspHeader?.match(/script-src[^;]+/)
       const connectSrcMatch = cspHeader?.match(/connect-src[^;]+/)
 
-      expect(scriptSrcMatch?.[0]).toContain(ANALYTICS_DOMAIN)
+      // script-src uses strict-dynamic
+      expect(scriptSrcMatch?.[0]).toContain("'strict-dynamic'")
+      // connect-src needs explicit analytics domain
       expect(connectSrcMatch?.[0]).toContain(ANALYTICS_DOMAIN)
     })
   })
 
   describe('Security Validation', () => {
-    it('should not allow wildcard origins with analytics domain', async () => {
+    it('should use strict-dynamic without wildcard domains', async () => {
       Object.defineProperty(process.env, 'NODE_ENV', {
         writable: true,
         value: 'production',
@@ -336,15 +345,17 @@ describe('CSP Middleware - Analytics Configuration', () => {
       const scriptSrcMatch = cspHeader?.match(/script-src[^;]+/)
       const scriptSrcDirective = scriptSrcMatch?.[0] || ''
 
-      // Should NOT have wildcard with analytics
+      // Should NOT have wildcard domain patterns
       expect(scriptSrcDirective).not.toContain('https://*')
       expect(scriptSrcDirective).not.toContain('http://*')
 
-      // Should have specific analytics domain
-      expect(scriptSrcDirective).toContain(ANALYTICS_DOMAIN)
+      // Should have strict-dynamic with scheme fallbacks
+      expect(scriptSrcDirective).toContain("'strict-dynamic'")
+      expect(scriptSrcDirective).toContain('https:')
+      expect(scriptSrcDirective).toContain('http:')
     })
 
-    it('should maintain strict CSP while allowing analytics', async () => {
+    it('should maintain strict CSP with nonce and strict-dynamic', async () => {
       Object.defineProperty(process.env, 'NODE_ENV', {
         writable: true,
         value: 'production',
@@ -362,7 +373,11 @@ describe('CSP Middleware - Analytics Configuration', () => {
       expect(cspHeader).toContain("object-src 'none'")
       expect(cspHeader).toContain("frame-ancestors 'none'")
 
-      // But should still allow analytics
+      // Should use nonce + strict-dynamic
+      expect(cspHeader).toMatch(/'nonce-[A-Za-z0-9+/=]+'/)
+      expect(cspHeader).toContain("'strict-dynamic'")
+
+      // Analytics domain in connect-src
       expect(cspHeader).toContain(ANALYTICS_DOMAIN)
     })
   })

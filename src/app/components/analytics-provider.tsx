@@ -4,9 +4,10 @@ import { useEffect } from 'react'
 
 interface AnalyticsProviderProps {
   children: React.ReactNode
+  nonce?: string | null
 }
 
-export function AnalyticsProvider({ children }: AnalyticsProviderProps) {
+export function AnalyticsProvider({ children, nonce }: AnalyticsProviderProps) {
   // Defer analytics loading to improve TTI
   useEffect(() => {
     if (
@@ -21,6 +22,12 @@ export function AnalyticsProvider({ children }: AnalyticsProviderProps) {
       const script = document.createElement('script')
       script.defer = true
       script.src = `${process.env.NEXT_PUBLIC_UMAMI_URL}/script.js`
+
+      // Apply nonce for CSP compliance (Issue #204)
+      if (nonce) {
+        script.setAttribute('nonce', nonce)
+      }
+
       script.setAttribute(
         'data-website-id',
         process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID || ''
@@ -34,7 +41,7 @@ export function AnalyticsProvider({ children }: AnalyticsProviderProps) {
       // Fallback for browsers without requestIdleCallback
       setTimeout(loadAnalytics, 1000)
     }
-  }, [])
+  }, [nonce])
 
   return <>{children}</>
 }

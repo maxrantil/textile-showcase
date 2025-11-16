@@ -23,7 +23,8 @@ describe('FCP Performance Validation - Critical CSS Integration', () => {
       expect(layoutContent).toContain(
         "import { CriticalCSS } from './components/critical-css'"
       )
-      expect(layoutContent).toContain('<CriticalCSS>')
+      // Check for CriticalCSS component usage (with or without nonce prop - Issue #204)
+      expect(layoutContent).toMatch(/<CriticalCSS[\s>]/)
     })
 
     it('should have critical CSS properly sized for inlining', () => {
