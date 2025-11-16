@@ -1,6 +1,6 @@
 // ABOUTME: Server-side critical CSS provider for inlining above-fold styles
 // Implements Phase 2A Day 3-4 FCP optimization through strategic CSS loading
-// Note: CSP nonce support requires framework-level solution (See Issue #200)
+// Issue #204: CSP nonce support fully implemented for App Router
 
 import { readFileSync } from 'fs'
 import { join } from 'path'
@@ -24,15 +24,13 @@ interface CriticalCSSProviderProps {
   children?: React.ReactNode
 }
 
-export function CriticalCSSProvider({
-  children,
-}: CriticalCSSProviderProps) {
+export function CriticalCSSProvider({ children }: CriticalCSSProviderProps) {
   const criticalCSS = getCriticalCSS()
 
   return (
     <>
       {/* Inline critical CSS for fastest FCP */}
-      {/* Note: CSP nonce would cause hydration mismatch - requires framework solution */}
+      {/* Note: style-src uses 'unsafe-inline' (nonce not needed for styles) */}
       {criticalCSS && (
         <style
           dangerouslySetInnerHTML={{

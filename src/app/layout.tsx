@@ -1,4 +1,6 @@
 import type { Metadata } from 'next'
+import { headers } from 'next/headers'
+import { connection } from 'next/server'
 import './globals.css'
 
 // Fonts are loaded via optimized-fonts.css and FontPreloader instead
@@ -35,7 +37,13 @@ interface RootLayoutProps {
   children: React.ReactNode
 }
 
-export default function RootLayout({ children }: RootLayoutProps) {
+export default async function RootLayout({ children }: RootLayoutProps) {
+  // Force dynamic rendering (required for per-request nonces - Issue #204)
+  await connection()
+
+  // Retrieve nonce from middleware for CSP compliance
+  const headersList = await headers()
+  const nonce = headersList.get('x-nonce')
   return (
     <html lang="en">
       <head>
@@ -99,16 +107,16 @@ export default function RootLayout({ children }: RootLayoutProps) {
         {/* Security headers */}
         <meta httpEquiv="X-Content-Type-Options" content="nosniff" />
 
-        {/* Structured data */}
-        {generateStructuredDataScript(organizationStructuredData)}
-        {generateStructuredDataScript(artistStructuredData)}
-        {generateStructuredDataScript(websiteStructuredData)}
+        {/* Structured data with CSP nonce (Issue #204) */}
+        {generateStructuredDataScript(organizationStructuredData, nonce)}
+        {generateStructuredDataScript(artistStructuredData, nonce)}
+        {generateStructuredDataScript(websiteStructuredData, nonce)}
       </head>
 
       <body className="bg-white font-sans antialiased">
         <CriticalCSS>
           <FontPreloader />
-          <AnalyticsProvider>
+          <AnalyticsProvider nonce={nonce}>
             <SkipNavigation />
 
             <ErrorBoundary>
