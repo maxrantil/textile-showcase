@@ -86,12 +86,17 @@ test.describe('Smoke Tests - Basic Application Health', () => {
         !error.includes('Failed to load resource')
     )
 
-    expect(criticalErrors.length).toBe(0)
-
+    // Log errors BEFORE assertion so they appear in CI output
     if (criticalErrors.length > 0) {
-      console.log('❌ JavaScript errors found:', criticalErrors)
+      console.log('❌ JavaScript errors found:')
+      criticalErrors.forEach((error, index) => {
+        console.log(`  ${index + 1}. ${error}`)
+      })
+      console.log(`Total critical errors: ${criticalErrors.length}`)
     } else {
       console.log('✅ No critical JavaScript errors')
     }
+
+    expect(criticalErrors.length).toBe(0)
   })
 })
