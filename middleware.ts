@@ -207,7 +207,7 @@ function addSecurityHeaders(
   //       Script-src uses nonce (strict XSS protection) - this is the critical security win
   const cspDirectives: string[] = [
     `default-src 'self'`,
-    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' ${isDevelopment ? "'unsafe-eval'" : ''} https: http:`,
+    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https://analytics.idaromme.dk ${isDevelopment ? "'unsafe-eval'" : ''} https: http:`,
     `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`,
     `img-src 'self' data: blob: https://cdn.sanity.io https://*.googleusercontent.com https://www.google-analytics.com`,
     `font-src 'self' data: https://fonts.gstatic.com`,
