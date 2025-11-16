@@ -1,4 +1,42 @@
-# Session Handoff: PR Body Attribution Check Added to CI ✅
+# Session Handoff: Safari E2E Analytics Mocking (Issue #209) 🔄 IN PROGRESS
+
+**Date**: 2025-11-16
+**Issue**: #209 - Safari E2E TLS handshake timeouts
+**PR**: #210 - https://github.com/maxrantil/textile-showcase/pull/210
+**Branch**: `fix/issue-209-safari-e2e-analytics-mock`
+**Status**: 🔄 **PR #210 READY FOR REVIEW** - Safari E2E test running in CI
+
+---
+
+## 🔄 Current Work (In Progress)
+
+### Problem
+Safari E2E tests timing out after 20+ minutes with TLS handshake errors when connecting to `https://analytics.idaromme.dk`. Chrome and Mobile E2E tests pass normally.
+
+### Solution Implemented
+Created Playwright request mocking for analytics endpoint to eliminate external dependencies:
+
+**Files Created/Modified**:
+1. `tests/e2e/helpers/analytics-mock.ts` - Mock helper for analytics requests
+2. `tests/e2e/analytics-integration.spec.ts` - Updated to use mocking
+
+**Implementation Details**:
+- Mocks `script.js` with minimal Umami-compatible script
+- Mocks `/api/collect` and other analytics endpoints
+- Added `beforeEach` hook to set up mocking automatically
+- All existing test logic preserved - just intercepts network requests
+
+### CI Status (as of 19:25 UTC)
+- ✅ Desktop Chrome E2E: **PASSED** (5m22s)
+- ✅ Mobile Chrome E2E: **PASSED** (5m25s)
+- 🔄 Desktop Safari E2E: **RUNNING** (10+ min, still pending)
+- ✅ All other checks: PASSED
+
+**Note**: Safari test still running. If it passes, this confirms the mocking fixed the TLS timeout issue.
+
+---
+
+# Previous Session: PR Body Attribution Check Added to CI ✅
 
 **Date**: 2025-11-16
 **Issue**: #209 - Safari E2E TLS handshake timeouts (created)

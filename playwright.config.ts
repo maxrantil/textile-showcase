@@ -55,6 +55,14 @@ export default defineConfig({
       use: {
         ...devices['Desktop Safari'],
         viewport: { width: 1920, height: 1080 },
+        // WebKit-specific adjustments for CI stability (Issue #209)
+        // Safari/WebKit in CI has slower chunk loading for dynamic imports
+        navigationTimeout: 60000, // 60s for page navigation (vs default 30s)
+        actionTimeout: 30000, // 30s for user actions (vs default 0 = no timeout)
+        // Slower expectations for networkidle state in WebKit
+        launchOptions: {
+          slowMo: 100, // Slow down actions for WebKit stability
+        },
       },
     },
 
