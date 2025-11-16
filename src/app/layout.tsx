@@ -116,7 +116,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
       <body className="bg-white font-sans antialiased">
         <CriticalCSS nonce={nonce}>
           <FontPreloader />
-          <AnalyticsProvider>
+          <AnalyticsProvider nonce={nonce}>
             <SkipNavigation />
 
             <ErrorBoundary>

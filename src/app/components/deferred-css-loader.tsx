@@ -1,11 +1,16 @@
 // ABOUTME: Client-side deferred CSS loader for non-critical styles
 // Loads below-fold CSS asynchronously after critical rendering
+// Issue #204: Added CSP nonce support for loading indicator
 
 'use client'
 
 import { useEffect, useState } from 'react'
 
-export function DeferredCSSLoader() {
+interface DeferredCSSLoaderProps {
+  nonce?: string | null
+}
+
+export function DeferredCSSLoader({ nonce }: DeferredCSSLoaderProps) {
   const [isLoaded, setIsLoaded] = useState(false)
 
   useEffect(() => {
@@ -42,10 +47,11 @@ export function DeferredCSSLoader() {
     loadDeferredCSS()
   }, [])
 
-  // Loading indicator (optional)
+  // Loading indicator (optional) with CSP nonce for inline styles
   if (!isLoaded) {
     return (
       <style
+        nonce={nonce || undefined}
         dangerouslySetInnerHTML={{
           __html: `
             .loading-indicator {

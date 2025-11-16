@@ -13,7 +13,7 @@ interface CriticalCSSProps {
 export function CriticalCSS({ children, nonce }: CriticalCSSProps) {
   return (
     <CriticalCSSProvider nonce={nonce}>
-      <DeferredCSSLoader />
+      <DeferredCSSLoader nonce={nonce} />
       {children}
     </CriticalCSSProvider>
   )
