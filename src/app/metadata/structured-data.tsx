@@ -162,10 +162,15 @@ export const createTextileWorkSchema = (project: {
   },
 })
 
-export function generateStructuredDataScript(data: object) {
+export function generateStructuredDataScript(
+  data: object,
+  nonce?: string | null
+) {
   return (
     <script
       type="application/ld+json"
+      nonce={nonce || undefined}
+      suppressHydrationWarning
       dangerouslySetInnerHTML={{
         __html: JSON.stringify(data),
       }}
