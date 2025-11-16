@@ -37,6 +37,7 @@ export function CriticalCSSProvider({
       {criticalCSS && (
         <style
           nonce={nonce || undefined}
+          suppressHydrationWarning
           dangerouslySetInnerHTML={{
             __html: criticalCSS,
           }}

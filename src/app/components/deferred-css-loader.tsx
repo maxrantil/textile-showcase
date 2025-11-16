@@ -52,6 +52,7 @@ export function DeferredCSSLoader({ nonce }: DeferredCSSLoaderProps) {
     return (
       <style
         nonce={nonce || undefined}
+        suppressHydrationWarning
         dangerouslySetInnerHTML={{
           __html: `
             .loading-indicator {

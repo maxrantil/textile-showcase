@@ -170,6 +170,7 @@ export function generateStructuredDataScript(
     <script
       type="application/ld+json"
       nonce={nonce || undefined}
+      suppressHydrationWarning
       dangerouslySetInnerHTML={{
         __html: JSON.stringify(data),
       }}
