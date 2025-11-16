@@ -202,12 +202,13 @@ function addSecurityHeaders(
 
   // Build CSP directives with nonce-based strict CSP (Issue #204)
   // Nonce approach validated for Next.js App Router (research 2025-11-16)
-  // NOTE: 'unsafe-inline' in style-src is acceptable (CSS injection cannot execute JS)
-  //       Next.js framework injects inline styles that cannot be nonce-tagged
+  // NOTE: Per CSP spec, when nonce is present, 'unsafe-inline' is IGNORED
+  //       Therefore style-src uses 'unsafe-inline' WITHOUT nonce (allows Next.js framework styles)
+  //       Script-src uses nonce (strict XSS protection) - this is the critical security win
   const cspDirectives: string[] = [
     `default-src 'self'`,
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' ${isDevelopment ? "'unsafe-eval'" : ''} https: http:`,
-    `style-src 'self' 'nonce-${nonce}' 'unsafe-inline' https://fonts.googleapis.com`,
+    `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`,
     `img-src 'self' data: blob: https://cdn.sanity.io https://*.googleusercontent.com https://www.google-analytics.com`,
     `font-src 'self' data: https://fonts.gstatic.com`,
     `connect-src 'self' https://cdn.sanity.io https://www.google-analytics.com https://analytics.google.com https://analytics.idaromme.dk ${isDevelopment ? 'ws://localhost:*' : ''}`,

@@ -22,22 +22,17 @@ function getCriticalCSS(): string {
 
 interface CriticalCSSProviderProps {
   children?: React.ReactNode
-  nonce?: string | null
 }
 
-export function CriticalCSSProvider({
-  children,
-  nonce,
-}: CriticalCSSProviderProps) {
+export function CriticalCSSProvider({ children }: CriticalCSSProviderProps) {
   const criticalCSS = getCriticalCSS()
 
   return (
     <>
-      {/* Inline critical CSS with CSP nonce for fastest FCP */}
+      {/* Inline critical CSS for fastest FCP */}
+      {/* Note: style-src uses 'unsafe-inline' (nonce not needed for styles) */}
       {criticalCSS && (
         <style
-          nonce={nonce || undefined}
-          suppressHydrationWarning
           dangerouslySetInnerHTML={{
             __html: criticalCSS,
           }}

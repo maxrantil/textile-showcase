@@ -6,11 +6,7 @@
 
 import { useEffect, useState } from 'react'
 
-interface DeferredCSSLoaderProps {
-  nonce?: string | null
-}
-
-export function DeferredCSSLoader({ nonce }: DeferredCSSLoaderProps) {
+export function DeferredCSSLoader() {
   const [isLoaded, setIsLoaded] = useState(false)
 
   useEffect(() => {
@@ -47,12 +43,11 @@ export function DeferredCSSLoader({ nonce }: DeferredCSSLoaderProps) {
     loadDeferredCSS()
   }, [])
 
-  // Loading indicator (optional) with CSP nonce for inline styles
+  // Loading indicator (optional)
+  // Note: style-src uses 'unsafe-inline' (nonce not needed for styles)
   if (!isLoaded) {
     return (
       <style
-        nonce={nonce || undefined}
-        suppressHydrationWarning
         dangerouslySetInnerHTML={{
           __html: `
             .loading-indicator {

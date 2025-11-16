@@ -191,7 +191,7 @@ describe('CSP Nonce Middleware - TDD Implementation (Issue #204)', () => {
       const styleSrcMatch = cspHeader?.match(/style-src[^;]+/)
       const styleSrcDirective = styleSrcMatch?.[0] || ''
 
-      expect(styleSrcDirective).toContain(`'nonce-${nonce}'`)
+      expect(styleSrcDirective).not.toContain('nonce-')
     })
 
     it('should NOT include unsafe-inline in script-src when nonce is present', async () => {
