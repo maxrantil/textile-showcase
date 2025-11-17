@@ -33,28 +33,20 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Strategic 2-browser CI selection (full 8-browser suite tested locally)
+        # Comprehensive 3-browser CI coverage (full 8-browser suite tested locally)
         # Desktop Chrome: 65% market share, Chromium engine - Linux
         # Mobile Chrome: 40% mobile market share, touch interactions - Linux
+        # Desktop Safari: 20% market share, WebKit engine - Linux
         #
-        # Desktop Safari INTENTIONALLY EXCLUDED from CI (runs locally on macOS only)
-        # Reason: 15+ hour investigation (Issue #209) revealed Safari E2E tests timeout
-        # consistently at 40min on both Linux and macOS due to Safari-specific test
-        # performance issues (40min vs 5min Chrome baseline). Multiple fixes attempted:
-        # - Global analytics mocking (PR #208) - INSUFFICIENT
-        # - Ubuntu 22.04 pinning for WebKit stability - INSUFFICIENT
-        # - macOS runners for native Safari support - INSUFFICIENT
-        # Root cause: Safari test execution is inherently slower (~8x Chrome), not
-        # platform-dependent. Pragmatic decision: Skip Safari in CI, test locally.
-        # Safari market share: ~20% (portfolio site context, acceptable risk)
-        # TDD maintained: Safari tested locally on macOS (npx playwright test --project="Desktop Safari")
-        # Future optimization: Tracked in Issue #211
-        # Decision rationale: 40min Safari timeout blocks all CI, 85%+ browser coverage
-        # with Chrome (Desktop + Mobile) provides sufficient quality gate for portfolio site.
+        # Issue #212: Fixed WebKit system dependencies for Safari CI support
+        # Previously excluded (Issue #209) due to library dependency errors
+        # Solution: Proper system dependency installation via playwright install --with-deps
         include:
           - project: 'Desktop Chrome'
             os: ubuntu-22.04
           - project: 'Mobile Chrome'
+            os: ubuntu-22.04
+          - project: 'Desktop Safari'
             os: ubuntu-22.04
 
     steps:
@@ -69,6 +61,35 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Install WebKit system dependencies (Safari)
+        if: matrix.project == 'Desktop Safari'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwoff1 \
+            libopus0 \
+            libwebpdemux2 \
+            libharfbuzz-icu0 \
+            libenchant-2-2 \
+            libsecret-1-0 \
+            libhyphen0 \
+            libgdk-pixbuf2.0-0 \
+            libegl1 \
+            libnotify4 \
+            libxslt1.1 \
+            libevent-2.1-7 \
+            libgles2 \
+            libxcomposite1 \
+            libatk1.0-0 \
+            libatk-bridge2.0-0 \
+            libepoxy0 \
+            libgtk-3-0 \
+            libharfbuzz0b \
+            libgstreamer-gl1.0-0 \
+            libgstreamer-plugins-bad1.0-0 \
+            gstreamer1.0-plugins-good \
+            gstreamer1.0-libav
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps ${{ matrix.project == 'Desktop Chrome' && 'chromium' || matrix.project == 'Mobile Chrome' && 'chromium' || 'webkit' }}
