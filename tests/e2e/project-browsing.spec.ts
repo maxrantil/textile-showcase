@@ -3,12 +3,14 @@ import { test, expect } from '@playwright/test'
 import { HomePage } from './pages/HomePage'
 import { ProjectPage } from './pages/ProjectPage'
 import { expectUrlToContain } from './helpers/assertions'
+import { setupTestPage } from './helpers/test-setup'
 
 test.describe('Project Browsing', () => {
   let homePage: HomePage
   let projectPage: ProjectPage
 
   test.beforeEach(async ({ page }) => {
+    await setupTestPage(page)
     homePage = new HomePage(page)
     projectPage = new ProjectPage(page)
   })

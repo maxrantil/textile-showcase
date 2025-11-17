@@ -2,12 +2,14 @@
 // Tests real-world performance improvements from Phase 2A+2B+2C optimizations
 
 import { test, expect, Page } from '@playwright/test'
+import { setupTestPage } from '../helpers/test-setup'
 
 test.describe('Gallery Performance Optimization E2E Tests', () => {
   let page: Page
 
   test.beforeEach(async ({ page: testPage }) => {
     page = testPage
+    await setupTestPage(page)
 
     // Set realistic network conditions
     await page.route('**/*', async (route) => {

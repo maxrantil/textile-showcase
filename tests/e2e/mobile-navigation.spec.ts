@@ -3,12 +3,14 @@ import { test, expect } from '@playwright/test'
 import { MobileMenu } from './pages/MobileMenu'
 import { HomePage } from './pages/HomePage'
 import { expectUrlToContain } from './helpers/assertions'
+import { setupTestPage } from './helpers/test-setup'
 
 test.describe('Mobile Navigation', () => {
   let mobileMenu: MobileMenu
   let homePage: HomePage
 
   test.beforeEach(async ({ page }) => {
+    await setupTestPage(page)
     // Set mobile viewport for all tests
     await page.setViewportSize({ width: 375, height: 667 })
     mobileMenu = new MobileMenu(page)

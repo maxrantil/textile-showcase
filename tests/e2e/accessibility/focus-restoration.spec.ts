@@ -1,8 +1,13 @@
 // ABOUTME: E2E tests for gallery focus restoration when navigating back from project pages
 
 import { test, expect } from '@playwright/test'
+import { setupTestPage } from '../helpers/test-setup'
 
 test.describe('Gallery Focus Restoration - WCAG 2.4.3', () => {
+  test.beforeEach(async ({ page }) => {
+    await setupTestPage(page)
+  })
+
   test('focus restored when returning to gallery via back navigation', async ({ page }, testInfo) => {
     // Focus restoration now implemented for both Desktop and Mobile galleries
     // Navigate to homepage

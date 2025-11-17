@@ -2,9 +2,11 @@
 
 import { test, expect } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
+import { setupTestPage } from './helpers/test-setup'
 
 test.describe('OptimizedImage Accessibility', () => {
   test.beforeEach(async ({ page }) => {
+    await setupTestPage(page)
     // Setup error logging
     page.on('console', (msg) => {
       if (msg.type() === 'error') {

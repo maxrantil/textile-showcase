@@ -1,7 +1,12 @@
 // ABOUTME: E2E tests to verify bundle optimization in real browser environment
 import { test, expect } from '@playwright/test'
+import { setupTestPage } from './helpers/test-setup'
 
 test.describe('Bundle Optimization E2E', () => {
+  test.beforeEach(async ({ page }) => {
+    await setupTestPage(page)
+  })
+
   test.describe('Route-Specific Bundle Loading', () => {
     test('should load minimal chunks for about page', async ({ page }) => {
       // RED: About page should not load Sanity chunks

@@ -1,7 +1,12 @@
 // ABOUTME: E2E tests for gallery performance, dynamic imports, and error handling
 import { test, expect } from '@playwright/test'
+import { setupTestPage } from '../helpers/test-setup'
 
 test.describe('Gallery Performance & Error Handling', () => {
+  test.beforeEach(async ({ page }) => {
+    await setupTestPage(page)
+  })
+
   test.describe('Dynamic Import Error Recovery', () => {
     test('should handle dynamic import failures gracefully', async ({ page, context }) => {
       // Simulate network failure by blocking Gallery component imports
