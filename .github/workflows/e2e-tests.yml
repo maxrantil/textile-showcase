@@ -14,8 +14,8 @@ concurrency:
 
 jobs:
   e2e-tests:
-    name: Run Playwright E2E Tests
-    runs-on: ubuntu-22.04  # Pin to 22.04 for Playwright WebKit stability (Issue #209)
+    name: Run Playwright E2E Tests (${{ matrix.project }})
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 40
     # Temporary: Non-blocking while Issue #132 implements missing features
     # Some tests validate unimplemented features (/projects page, advanced scenarios)
@@ -34,10 +34,16 @@ jobs:
       fail-fast: false
       matrix:
         # Strategic 3-browser CI selection (full 8-browser suite tested locally)
-        # Desktop Chrome: 65% market share, Chromium engine
-        # Mobile Chrome: 40% mobile market share, touch interactions
-        # Desktop Safari: 20% market share, WebKit engine, iOS compatibility
-        project: ['Desktop Chrome', 'Mobile Chrome', 'Desktop Safari']
+        # Desktop Chrome: 65% market share, Chromium engine - Linux
+        # Mobile Chrome: 40% mobile market share, touch interactions - Linux
+        # Desktop Safari: 20% market share, WebKit engine - macOS (native Safari/WebKit)
+        include:
+          - project: 'Desktop Chrome'
+            os: ubuntu-22.04
+          - project: 'Mobile Chrome'
+            os: ubuntu-22.04
+          - project: 'Desktop Safari'
+            os: macos-latest  # macOS required for native Safari/WebKit support (Issue #209)
 
     steps:
       - name: Checkout code
