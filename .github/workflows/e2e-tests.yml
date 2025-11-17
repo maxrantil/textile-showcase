@@ -15,7 +15,7 @@ concurrency:
 jobs:
   e2e-tests:
     name: Run Playwright E2E Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04  # Pin to 22.04 for Playwright WebKit stability (Issue #209)
     timeout-minutes: 40
     # Temporary: Non-blocking while Issue #132 implements missing features
     # Some tests validate unimplemented features (/projects page, advanced scenarios)
