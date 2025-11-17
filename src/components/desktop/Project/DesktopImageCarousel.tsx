@@ -400,35 +400,53 @@ export function DesktopImageCarousel({
                       }
                     }}
                   />
-                  {/* Preload next and previous images for instant navigation */}
-                  {allImages[currentIndex + 1] && (
-                    <link
-                      rel="preload"
-                      as="image"
-                      href={getOptimizedImageUrl(
-                        allImages[currentIndex + 1].asset,
-                        {
-                          height: 800,
-                          quality: 80,
-                          format: 'auto',
-                        }
-                      )}
-                    />
-                  )}
-                  {allImages[currentIndex - 1] && (
-                    <link
-                      rel="preload"
-                      as="image"
-                      href={getOptimizedImageUrl(
-                        allImages[currentIndex - 1].asset,
-                        {
-                          height: 800,
-                          quality: 80,
-                          format: 'auto',
-                        }
-                      )}
-                    />
-                  )}
+                  {/* Prefetch next and previous images using hidden Image components */}
+                  {/* This actually works unlike <link rel="preload"> in body */}
+                  <div
+                    style={{
+                      position: 'absolute',
+                      width: 0,
+                      height: 0,
+                      overflow: 'hidden',
+                      opacity: 0,
+                      pointerEvents: 'none',
+                    }}
+                  >
+                    {allImages[currentIndex + 1] && (
+                      <Image
+                        src={getOptimizedImageUrl(
+                          allImages[currentIndex + 1].asset,
+                          {
+                            height: 800,
+                            quality: 80,
+                            format: 'auto',
+                          }
+                        )}
+                        alt="Next image prefetch"
+                        width={800}
+                        height={600}
+                        priority={true}
+                        loading="eager"
+                      />
+                    )}
+                    {allImages[currentIndex - 1] && (
+                      <Image
+                        src={getOptimizedImageUrl(
+                          allImages[currentIndex - 1].asset,
+                          {
+                            height: 800,
+                            quality: 80,
+                            format: 'auto',
+                          }
+                        )}
+                        alt="Previous image prefetch"
+                        width={800}
+                        height={600}
+                        priority={true}
+                        loading="eager"
+                      />
+                    )}
+                  </div>
                 </>
               )
             )}
