@@ -1,11 +1,18 @@
 // ABOUTME: E2E tests for Umami Analytics integration in production build
 // Validates script loading, CSP compliance, and network requests
+// Uses mocked analytics responses to avoid external dependencies (Issue #209)
 
 import { test, expect } from '@playwright/test'
+import { setupTestPage } from './helpers/test-setup'
 
 test.describe('Umami Analytics Integration E2E', () => {
   const ANALYTICS_URL = 'https://analytics.idaromme.dk'
   const WEBSITE_ID = 'caa54504-d542-4ccc-893f-70b6eb054036'
+
+  // Apply global test setup (analytics mocking, etc.)
+  test.beforeEach(async ({ page }) => {
+    await setupTestPage(page)
+  })
 
   test.describe('Analytics Script Loading - Production Build', () => {
     test('should load Umami script in production mode', async ({ page }) => {

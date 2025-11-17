@@ -1,7 +1,12 @@
 // ABOUTME: Enhanced CSP diagnostic test to identify inline style sources
 import { test, expect } from '@playwright/test'
+import { setupTestPage } from '../helpers/test-setup'
 
 test.describe('CSP Violation Diagnostic', () => {
+  test.beforeEach(async ({ page }) => {
+    await setupTestPage(page)
+  })
+
   test('Identify inline style sources with MutationObserver', async ({
     page,
   }) => {

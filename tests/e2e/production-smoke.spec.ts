@@ -5,6 +5,7 @@
  */
 
 import { test, expect } from '@playwright/test'
+import { setupTestPage } from './helpers/test-setup'
 
 const PRODUCTION_URL = 'https://idaromme.dk'
 const ANALYTICS_DOMAIN = 'https://analytics.idaromme.dk'
@@ -19,6 +20,10 @@ const shouldRunProductionTests =
 
 test.describe('Production Smoke Tests', () => {
   test.skip(!shouldRunProductionTests, 'Production tests disabled in CI')
+
+  test.beforeEach(async ({ page }) => {
+    await setupTestPage(page)
+  })
 
   test.describe('Production CSP Headers Validation', () => {
     test('should have correct CSP header on production', async ({ request }) => {

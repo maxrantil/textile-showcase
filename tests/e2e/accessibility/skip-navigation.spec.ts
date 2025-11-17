@@ -1,7 +1,12 @@
 // ABOUTME: E2E tests for skip navigation link - WCAG 2.4.1 compliance
 import { test, expect } from '@playwright/test'
+import { setupTestPage } from '../helpers/test-setup'
 
 test.describe('Skip Navigation - WCAG 2.4.1', () => {
+  test.beforeEach(async ({ page }) => {
+    await setupTestPage(page)
+  })
+
   test('skip link is first focusable element and bypasses navigation', async ({
     page,
   }) => {

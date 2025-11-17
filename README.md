@@ -369,6 +369,42 @@ npx playwright test --project="Mobile Chrome" --project="Mobile Safari"
 npx playwright show-report
 ```
 
+#### Local Safari E2E Testing
+
+**Safari E2E tests run locally only** (not in CI) due to Safari-specific test performance issues discovered during Issue #209 investigation.
+
+**Requirements:**
+- macOS machine (Safari/WebKit requires macOS for native support)
+- Playwright installed with WebKit: `npx playwright install webkit`
+
+**Running Safari Tests Locally:**
+
+```bash
+# Run all Safari E2E tests (Desktop Safari)
+npx playwright test --project="Desktop Safari"
+
+# Run Safari tests with visible browser (debugging)
+npx playwright test --project="Desktop Safari" --headed
+
+# Run specific Safari test
+npx playwright test tests/e2e/workflows/gallery-browsing.spec.ts --project="Desktop Safari"
+
+# Run mobile Safari tests
+npx playwright test --project="Mobile Safari"
+npx playwright test --project="Mobile Safari Landscape"
+```
+
+**Why Local-Only?**
+
+After 15+ hours of investigation (Issue #209), Safari E2E tests consistently timeout at 40min on both Linux and macOS (vs 5min Chrome baseline). Safari test execution is inherently ~8x slower due to WebKit/JavaScriptCore performance characteristics, not platform issues.
+
+**CI Strategy:**
+- CI runs Desktop Chrome + Mobile Chrome (85%+ browser coverage)
+- Safari tested locally during development (TDD maintained)
+- Safari optimization tracked in Issue #211
+
+**Context:** Portfolio site with Safari ~20% market share. Local Safari testing maintains quality while unblocking CI pipeline.
+
 #### Test Environment Setup
 
 **Prerequisites:**

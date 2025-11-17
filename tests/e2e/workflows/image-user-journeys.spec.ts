@@ -1,9 +1,11 @@
 // ABOUTME: E2E user journey tests for OptimizedImage across critical user workflows
 
 import { test, expect } from '@playwright/test'
+import { setupTestPage } from '../helpers/test-setup'
 
 test.describe('OptimizedImage User Journeys', () => {
   test.beforeEach(async ({ page }) => {
+    await setupTestPage(page)
     // Setup error logging
     page.on('console', (msg) => {
       if (msg.type() === 'error') {

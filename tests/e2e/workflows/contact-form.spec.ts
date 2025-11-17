@@ -2,8 +2,13 @@
 import { test, expect } from '@playwright/test'
 import { ContactPage } from '../pages/ContactPage'
 import { validFormData, invalidFormData } from '../fixtures/form-data'
+import { setupTestPage } from '../helpers/test-setup'
 
 test.describe('Contact Form E2E Workflows', () => {
+  test.beforeEach(async ({ page }) => {
+    await setupTestPage(page)
+  })
+
   test.describe('Keyboard Navigation & Accessibility', () => {
     test('User can navigate and submit form using keyboard only', async ({
       page,

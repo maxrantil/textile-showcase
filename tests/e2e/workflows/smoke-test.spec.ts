@@ -1,7 +1,12 @@
 // ABOUTME: Smoke test to validate basic E2E test functionality and application health
 import { test, expect } from '@playwright/test'
+import { setupTestPage } from '../helpers/test-setup'
 
 test.describe('Smoke Tests - Basic Application Health', () => {
+  test.beforeEach(async ({ page }) => {
+    await setupTestPage(page)
+  })
+
   test('Homepage loads successfully', async ({ page }) => {
     await page.goto('/')
 

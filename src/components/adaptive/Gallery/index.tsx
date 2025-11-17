@@ -74,8 +74,8 @@ export default function AdaptiveGallery({ designs }: AdaptiveGalleryProps) {
 
     const loadComponent = async () => {
       try {
-        // Use shorter timeout for retries (5s instead of 10s)
-        const timeout = retryCount > 0 ? 5000 : 10000
+        // Dynamic import with timeout for robustness
+        const timeout = retryCount > 0 ? 5000 : 10000 // 10s initial, 5s retries
         const importedModule = isMobile
           ? await withTimeout(
               import('@/components/mobile/Gallery/MobileGallery'),

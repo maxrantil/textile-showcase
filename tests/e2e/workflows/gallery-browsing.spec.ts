@@ -1,11 +1,13 @@
 // ABOUTME: Comprehensive E2E tests for gallery browsing workflows across devices and interaction methods
 import { test, expect } from '@playwright/test'
 import { GalleryPage } from '../utils/page-objects/gallery-page'
+import { setupTestPage } from '../helpers/test-setup'
 
 test.describe('Gallery Browsing Complete Workflows', () => {
   let galleryPage: GalleryPage
 
   test.beforeEach(async ({ page }) => {
+    await setupTestPage(page)
     galleryPage = new GalleryPage(page)
     await galleryPage.goto()
   })
