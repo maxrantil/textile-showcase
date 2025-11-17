@@ -59,7 +59,7 @@
     "@types/webpack": "^5.28.5",
     "eslint": "^9",
     "eslint-config-next": "15.3.2",
-    "glob": "^11.0.2",
+    "glob": "^11.1.0",
     "jest": "^30.0.0",
     "jest-axe": "^10.0.0",
     "jest-environment-jsdom": "^30.0.0",
