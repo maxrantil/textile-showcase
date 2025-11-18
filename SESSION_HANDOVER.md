@@ -1,258 +1,281 @@
-# Session Handoff: Issue #136 - Systematic Visibility Pattern ✅ RESOLVED
+# Session Handoff: Issue #136 - Mobile Visibility Fix Required
 
-**Date**: 2025-11-18
-**Issue**: #136 - Investigate systematic visibility pattern in E2E tests ✅ CLOSED
-**PR**: #226 - https://github.com/maxrantil/textile-showcase/pull/226 ⏳ DRAFT
+**Date**: 2025-11-18 (Session 11)
+**Issue**: #136 - Investigate systematic visibility pattern in E2E tests ⚠️ PARTIAL FIX
+**PR**: #226 - https://github.com/maxrantil/textile-showcase/pull/226 🔄 DRAFT (converted back)
 **Branch**: fix/issue-136-visibility-pattern (pushed to origin)
-**Status**: ✅ **RESOLVED** - Visibility pattern fixed, PR ready for review
+**Status**: ⚠️ **DESKTOP FIXED, MOBILE BROKEN** - Requires mobile CSS investigation
 
 ---
 
-## ✅ Completed Work
+## 🚨 Current Situation (Session 11 Update)
 
-### Problem Addressed
-Multiple E2E tests failing with systematic "Expected: visible, Received: hidden" pattern. Three tests affected:
-1. Gallery browsing (image-user-journeys.spec.ts:23) ✅ NOW PASSING
-2. Menu button hydration (gallery-performance.spec.ts:459) ✅ ALREADY PASSING
-3. Slow 3G visibility (image-user-journeys.spec.ts:226) ✅ VISIBILITY CHECK PASSING
+### What Happened This Session
 
-### Investigation Methodology (By the Book)
+1. ✅ **Fixed ESLint Error**: Changed `@ts-ignore` to `@ts-expect-error` in Gallery.tsx:107
+2. ✅ **All Draft CI Checks Passed**: Bundle Size, Jest, Lighthouse, all validations ✅
+3. ✅ **Marked PR Ready for Review**: Triggered full E2E test suite
+4. ❌ **E2E Tests Failed**: Mobile visibility issue discovered
+5. ✅ **Converted PR Back to Draft**: Following "do it by the book" motto
 
-**Systematic Debugging Approach:**
-1. ✅ Ran affected tests to observe actual failures
-2. ✅ Added debug logging for CSS computed styles
-3. ✅ Identified CSS conflicts through debug output
-4. ✅ Consulted performance-optimizer agent for timing guidance
-5. ✅ Implemented evidence-based fixes
-6. ✅ Validated with browser console log capture
+### E2E Test Results Analysis
 
-**Total Investigation**: ~160K tokens, methodical root cause analysis
+**Desktop Chrome (101/118 tests passing):**
+- ✅ **Visibility Test PASSES** (line 247: FirstImage visible)
+- ❌ **Loading Test FAILS** (line 263: Image loading timeout - Issue #225, NOT related to visibility)
+- ✅ **Desktop viewport fix WORKS**
 
-### Fixes Implemented
+**Mobile Chrome (FAILED):**
+- ❌ **Visibility Test FAILS** (line 247: FirstImage hidden when should be visible)
+- **Root Cause**: Mobile CSS still hiding FirstImage despite media query fix
+- **Element State**: `Expected: visible, Received: hidden`
+- **Viewport**: 375x667 (Mobile Chrome simulation)
 
-**1. CSS Position Conflict** ✅
-- **File**: `src/components/server/FirstImage.module.css`
-- **Issue**: `position: absolute` (module CSS) overrode `position: fixed` (global CSS)
-- **Fix**: Removed position declaration from module CSS
-- **Impact**: FirstImage now properly fixed-positioned
+### Decision Made: Option C - Complete Fix Before Merge
 
-**2. Mobile CSS Bleeding into Desktop** ✅ (ROOT CAUSE)
-- **File**: `src/styles/mobile/gallery.css:362-390`
-- **Issue**: `display: none !important` applied globally, hiding FirstImage on desktop
-- **Fix**: Wrapped mobile-specific styles in `@media (max-width: 768px)`
-- **Impact**: Desktop viewport no longer affected by mobile CSS
-- **Evidence**: Debug output showed `display: none` before fix, `display: flex` after
+**Rationale (per /motto):**
+- ✅ Maintains quality standards (no failing tests)
+- ✅ Complete solution (fixes all viewports)
+- ✅ Follows CLAUDE.md ("complete the task")
+- ✅ Would pass all agent validations
+- ✅ "Low time-preference" - quality over speed
+- ✅ "Slow is smooth, smooth is fast" - fix right once
 
-**3. Network-Aware MIN_DISPLAY_TIME** ✅
-- **File**: `src/components/desktop/Gallery/Gallery.tsx:105-131`
-- **Issue**: Fixed 300ms too short for slow networks (Gallery.tsx:105-131)
-- **Fix**: Network-aware timing via Navigator.connection API:
-  - slow-2g: 2000ms
-  - 2g: 1500ms
-  - 3g: 1000ms
-  - 4g: 800ms (increased from 300ms)
-  - default: 1000ms (conservative)
-- **Agent**: performance-optimizer validated approach
-- **Impact**: FirstImage visible longer on slow networks
+**Rejected Options:**
+- ❌ Option A (Fix mobile now, no analysis): Complex, timeline uncertain
+- ❌ Option B (Merge desktop only): Violates TDD, creates technical debt, would fail agents
 
-**4. Proper Image Load Detection** ✅
-- **File**: `src/components/desktop/Gallery/Gallery.tsx:160-163`
-- **Issue**: Only checked `complete`, not actual image dimensions
-- **Fix**: Added `naturalWidth > 0 && naturalHeight > 0` checks
-- **Impact**: Prevents hiding before image truly loaded
-- **Polling**: 100ms intervals with cleanup after 20s fallback
+---
 
-**5. Corrected Test Expectations** ✅ (CRITICAL FIX)
-- **File**: `tests/e2e/workflows/image-user-journeys.spec.ts:242-247`
-- **Issue**: Test checked at T+3000ms, but FirstImage correctly hides at T+800ms
-- **Root Cause Discovery**: Browser console logs showed:
-  ```
-  [FirstImage] Gallery image loaded event fired
-  [FirstImage] Hiding after 494 ms (elapsed: 306 ms)
-  [FirstImage] Hidden after gallery image loaded
-  ```
-  - Gallery image loads from cache at T+306ms
-  - MIN_DISPLAY_TIME (800ms) - elapsed (306ms) = 494ms remaining
-  - **Total hide time**: T+800ms
-  - **Test was checking**: T+3000ms (2200ms AFTER hiding!)
-- **Fix**: Check FirstImage visibility immediately (T+500ms) not late (T+3000ms)
-- **Rationale**: Test should verify FirstImage IS visible initially (SSR), not that it stays visible forever
-- **Impact**: Test now validates correct behavior
+## 🔍 Mobile Visibility Issue - Investigation Needed
 
-### Test Results
+### Known Facts
 
-✅ **FirstImage visibility assertion PASSES**
-```typescript
-await expect(firstImageContainer).toBeVisible({ timeout: 500 })
+1. **Desktop Viewport**: ✅ FirstImage visible and working correctly
+2. **Mobile Viewport**: ❌ FirstImage hidden (should be visible)
+3. **Test Location**: `tests/e2e/workflows/image-user-journeys.spec.ts:247`
+4. **Element**: `<div data-first-image="true" class="first-image-container FirstImage-module__IQkVPW__container">`
+
+### Current Mobile CSS Fix (Not Working)
+
+**File**: `src/styles/mobile/gallery.css:362-390`
+
+```css
+@media (max-width: 768px) {
+  /* Mobile-specific styles that should NOT affect FirstImage */
+  .first-image-container {
+    display: none !important; /* ← This may still be applying */
+  }
+}
 ```
 
-✅ **Test progresses successfully** past visibility check
+### Hypotheses for Mobile Failure
 
-⏳ **Remaining failure**: Different assertion (image loading completion) - tracked in Issue #225
+1. **CSS Specificity**: Mobile `display: none !important` has higher specificity than expected
+2. **Media Query Threshold**: 768px breakpoint not matching Mobile Chrome viewport (375px)
+3. **CSS Cascade Order**: Mobile CSS loading after FirstImage module CSS
+4. **Missing Override**: Need explicit mobile visibility rule for FirstImage
+5. **Class Name Conflict**: FirstImage-module CSS not overriding mobile styles
 
-### Files Changed (4 production + 1 test)
+### Files to Investigate
 
-**Production Code:**
-1. `src/components/server/FirstImage.module.css` - Removed position conflict
-2. `src/styles/mobile/gallery.css` - Wrapped mobile CSS in media query
-3. `src/components/desktop/Gallery/Gallery.tsx` - Network-aware timing + proper load detection
-4. `tests/e2e/workflows/image-user-journeys.spec.ts` - Corrected test timing
+1. `src/styles/mobile/gallery.css` - Mobile CSS rules
+2. `src/components/server/FirstImage.module.css` - FirstImage component CSS
+3. `src/styles/global.css` - Global CSS rules
+4. Build output - Check CSS bundling order
 
-**Commit**: 1b40b75 "fix: resolve systematic visibility pattern in E2E tests"
-**Pre-commit hooks**: ✅ All passed
+---
+
+## ✅ Completed Work (Sessions 9-11)
+
+### Session 9-10: Desktop Visibility Fix
+
+**Fixed 5 Critical Issues:**
+1. ✅ CSS position conflict (FirstImage.module.css)
+2. ⚠️ Mobile CSS bleeding (PARTIAL - desktop works, mobile broken)
+3. ✅ Network-aware MIN_DISPLAY_TIME
+4. ✅ Proper image load detection
+5. ✅ Corrected test timing expectations
+
+**Commits:**
+1. `1b40b75` - "fix: resolve systematic visibility pattern in E2E tests"
+2. `251cd36` - "fix: use @ts-expect-error instead of @ts-ignore for ESLint compliance"
+
+### Session 11: CI Validation & Mobile Discovery
+
+**Actions Taken:**
+1. ✅ Fixed ESLint compliance issue
+2. ✅ Pushed ESLint fix to remote
+3. ✅ Verified all draft CI checks pass
+4. ✅ Marked PR ready for review
+5. ✅ Full E2E suite ran in CI
+6. ✅ Analyzed E2E failures
+7. ✅ Performed systematic option analysis
+8. ✅ Converted PR back to draft
+
+**CI Results:**
+- Bundle Size Validation: ✅ PASS
+- Jest Unit Tests: ✅ PASS
+- Lighthouse Performance: ✅ PASS
+- E2E Desktop Chrome: ⚠️ 101/118 PASS (visibility ✅, loading ❌ Issue #225)
+- E2E Mobile Chrome: ❌ FAIL (visibility issue)
 
 ---
 
 ## 🎯 Current Project State
 
-**Branch**: `fix/issue-136-visibility-pattern` (pushed to origin)
-**PR**: #226 (draft) - https://github.com/maxrantil/textile-showcase/pull/226
-**Working Directory**: ⚠️ 1 uncommitted file (playwright-report - test artifact, safe to ignore)
-**Tests**: ✅ Visibility check passing, ⏳ Image loading assertion pending (Issue #225)
+**Branch**: `fix/issue-136-visibility-pattern` (pushed to origin, 2 commits)
+**PR**: #226 (DRAFT) - https://github.com/maxrantil/textile-showcase/pull/226
+**Working Directory**: Clean (playwright-report is test artifact)
+**Tests**: Desktop ✅ Visibility passing, Mobile ❌ Visibility failing
 
 **Issue Status:**
-- Issue #136: ✅ RESOLVED (visibility pattern fixed)
-- Issue #225: ⏳ OPEN (follow-up for image loading assertion)
+- Issue #136: ⚠️ PARTIAL (desktop fixed, mobile broken)
+- Issue #225: ⏳ OPEN (image loading timeout - separate concern)
 
-**Latest Commit on Branch:**
-- 1b40b75 "fix: resolve systematic visibility pattern in E2E tests"
+**Latest Commits:**
+1. `1b40b75` - Original visibility fixes
+2. `251cd36` - ESLint compliance fix
+
+**PR Status**: DRAFT (converted back from ready)
 
 ---
 
-## 🚀 Next Session Priorities
+## 🚀 Next Session Action Plan
 
-### Immediate Next Steps
+### Immediate Priority: Fix Mobile Visibility
 
-**Option A: Merge PR #226 (Recommended)**
-1. Review PR #226 for code quality
-2. Wait for CI checks to complete
-3. Address any CI failures
-4. Mark PR ready for review
-5. Merge to master
+**Step 1: Investigate Mobile CSS Cascade** (30-60 min)
+1. Read `src/styles/mobile/gallery.css` - Examine all FirstImage-related rules
+2. Read `src/components/server/FirstImage.module.css` - Check specificity
+3. Read `src/styles/global.css` - Look for conflicting rules
+4. Check CSS bundling order in build output
 
-**Option B: Continue with Issue #225**
-1. Investigate image loading timeout on slow 3G
-2. Determine appropriate timeout for 200ms RTT simulation
-3. Fix remaining test assertion
-4. Could be done after merging #226
+**Step 2: Run Local Mobile Test** (15 min)
+```bash
+npx playwright test tests/e2e/workflows/image-user-journeys.spec.ts \
+  -g "slow 3G" --project="Mobile Chrome" --debug
+```
+- Inspect element in DevTools
+- Check computed styles
+- Identify which CSS rule is hiding FirstImage
 
-### Recommended: Option A First
-- Issue #136 is RESOLVED (visibility pattern fixed)
-- PR #226 contains complete, tested fixes
-- Separates concerns: visibility (done) vs image loading (Issue #225)
-- Allows progress on #136 while #225 investigated separately
+**Step 3: Implement Fix** (30-60 min)
+- Based on investigation findings
+- Likely need to add explicit mobile override for FirstImage
+- May need to adjust media query or specificity
+
+**Step 4: Validate Fix** (30 min)
+```bash
+# Test mobile viewport
+npx playwright test tests/e2e/workflows/image-user-journeys.spec.ts \
+  -g "slow 3G" --project="Mobile Chrome"
+
+# Test desktop still works
+npx playwright test tests/e2e/workflows/image-user-journeys.spec.ts \
+  -g "slow 3G" --project="Desktop Chrome"
+```
+
+**Step 5: Commit, Push, Mark Ready** (15 min)
+```bash
+git add [fixed files]
+git commit -m "fix: resolve mobile FirstImage visibility issue"
+git push
+gh pr ready 226
+```
+
+### Expected Outcome
+
+- ✅ Desktop viewport: FirstImage visible (already working)
+- ✅ Mobile viewport: FirstImage visible (fixed)
+- ✅ All E2E visibility tests pass
+- ⏳ Image loading tests still fail (Issue #225 - separate)
+
+### Agent Consultations Required
+
+Before finalizing mobile fix:
+- **`test-automation-qa`**: Validate mobile test coverage
+- **`code-quality-analyzer`**: Review CSS fix quality
+- **`ux-accessibility-i18n-agent`**: Ensure mobile UX not compromised
 
 ---
 
 ## 📝 Startup Prompt for Next Session
 
-Read CLAUDE.md to understand our workflow, then review PR #226 for Issue #136 visibility pattern fixes.
+Read CLAUDE.md to understand our workflow, then fix mobile FirstImage visibility issue for PR #226.
 
-**Immediate priority**: Review and merge PR #226 (1-2 hours)
-**Context**: Issue #136 resolved - systematic visibility pattern fixed with 5 targeted fixes
-**Reference docs**:
-- PR #226: https://github.com/maxrantil/textile-showcase/pull/226
-- Issue #136: https://github.com/maxrantil/textile-showcase/issues/136
-- Issue #225: https://github.com/maxrantil/textile-showcase/issues/225 (follow-up)
-- SESSION_HANDOVER.md: This file
-**Ready state**: Branch pushed, PR created (draft), pre-commit hooks passed, visibility fix validated
+**Immediate priority**: Fix Mobile Visibility (2-3 hours)
+**Context**: Desktop visibility ✅ works, Mobile visibility ❌ broken - FirstImage hidden on 375px viewport when should be visible
+**Root Cause**: Mobile CSS in `src/styles/mobile/gallery.css` still hiding FirstImage despite media query fix
+**Test Failing**: `tests/e2e/workflows/image-user-journeys.spec.ts:247` on Mobile Chrome (375x667 viewport)
+**Reference docs**: SESSION_HANDOVER.md, PR #226, mobile/gallery.css, FirstImage.module.css
+**Ready state**: PR #226 in DRAFT, 2 commits on branch, all non-E2E CI checks passing
 
-**Expected scope**: Review PR, wait for CI, address any failures, merge to master
+**Expected scope**:
+1. Investigate mobile CSS cascade (read files)
+2. Run local mobile test with debugger
+3. Fix mobile CSS specificity/cascade issue
+4. Validate both desktop and mobile viewports pass
+5. Commit, push, mark PR ready for final review
 
----
-
-## 📚 Key Learnings & Methodology
-
-### What Worked (By the Book)
-
-**1. Systematic Debugging:**
-- Added debug logging instead of guessing
-- Captured browser console logs to see actual execution
-- Evidence-based fixes, not assumptions
-
-**2. Agent Consultation:**
-- performance-optimizer provided root cause analysis
-- Validated network-aware MIN_DISPLAY_TIME approach
-- Confirmed test expectations needed adjustment
-
-**3. Separating Concerns:**
-- Fixed visibility pattern (Issue #136)
-- Created separate issue for image loading (Issue #225)
-- Clean PR scope
-
-**4. Test Expectations Analysis:**
-- Discovered test was checking at wrong time (T+3s vs T+0.5s)
-- Console logs revealed actual timing: hiding at T+800ms
-- Fixed test to match correct behavior, not wrong expectations
-
-### Critical Insight
-
-**The test expectation was wrong, not the code.**
-
-Browser console logs showed FirstImage was behaving CORRECTLY:
-1. Visible immediately (SSR)
-2. Gallery image loads from cache (T+306ms)
-3. Wait for MIN_DISPLAY_TIME (800ms total)
-4. Hide FirstImage (T+800ms)
-
-Test was checking at T+3000ms (2200ms after hiding!) and expecting visibility.
-
-**Fix**: Check visibility immediately (T+500ms) when FirstImage SHOULD be visible.
-
-### Methodology for Similar Issues
-
-1. **Add debug logging first** - Don't guess, measure
-2. **Capture browser console** - Playwright can show actual execution
-3. **Consult agents** - performance-optimizer for timing issues
-4. **Fix test expectations** - Sometimes test is wrong, not code
-5. **Separate concerns** - Create follow-up issues for distinct problems
+**Success criteria**: Both desktop AND mobile E2E visibility tests pass in CI
 
 ---
 
-## 🔍 Agent Consultation Summary
+## 📚 Key Files Reference
 
-### performance-optimizer Agent
+### CSS Files (Investigation Priority)
+1. `src/styles/mobile/gallery.css:362-390` - Mobile styles (suspected culprit)
+2. `src/components/server/FirstImage.module.css` - FirstImage component styles
+3. `src/styles/global.css` - Global CSS rules
 
-**Consultation**: https://github.com/maxrantil/textile-showcase/issues/136#issuecomment-3548993172
+### Test Files
+1. `tests/e2e/workflows/image-user-journeys.spec.ts:247` - Failing mobile test
 
-**Key Recommendations Implemented:**
-1. ✅ Network-aware MIN_DISPLAY_TIME (800ms for 4G, 1000ms for 3G)
-2. ✅ Wait for naturalWidth/naturalHeight > 0
-3. ✅ Adjust test expectations (check early, not late)
-4. ✅ Increase fallback timer to 20s (from 15s)
-
-**Root Cause Identified:**
-- Gallery image loads from cache quickly (~300ms)
-- Load event fires within MIN_DISPLAY_TIME window
-- FirstImage correctly hides at T+800ms
-- Test was checking at wrong time (T+3000ms)
+### Component Files
+1. `src/components/desktop/Gallery/Gallery.tsx:105-131` - Network-aware timing (working)
+2. `src/components/server/FirstImage.tsx` - FirstImage component
 
 ---
 
-## 🎯 Success Criteria Met
+## 🔧 Debugging Commands for Next Session
 
-- [x] FirstImage visibility assertion passes
-- [x] Systematic visibility pattern resolved
-- [x] Test validates correct behavior (visible on load, hidden after gallery loads)
-- [x] All production files updated with evidence-based fixes
-- [x] Pre-commit hooks pass
-- [x] Agent consultation completed
-- [x] Follow-up issue created (#225)
-- [x] PR created in draft mode (#226)
-- [x] Session handoff documentation complete
+```bash
+# Run failing mobile test with debug
+npx playwright test tests/e2e/workflows/image-user-journeys.spec.ts \
+  -g "slow 3G" --project="Mobile Chrome" --debug
 
----
+# Check CSS specificity in mobile styles
+grep -A 10 "first-image" src/styles/mobile/gallery.css
 
-# Previous Session: E2E Performance Baseline Investigation (Issue #222) ✅ COMPLETE
+# Verify media query breakpoint
+grep "max-width" src/styles/mobile/gallery.css | grep -E "(768|767)"
 
-**Date**: 2025-11-18 (Session 9 - Final Update)
-**Issue**: #222 - Improve E2E test performance baselines and fix Safari environment ✅ CLOSED
-**PR**: #223 - https://github.com/maxrantil/textile-showcase/pull/223 ✅ MERGED
-**Status**: ✅ **COMPLETE** - Investigation documented, PR merged, Issue closed
-
-[Previous session details truncated for brevity - see git history]
+# Check mobile viewport config
+grep -A 5 "Mobile Chrome" playwright.config.ts
+```
 
 ---
 
-**Last Updated**: 2025-11-18 (Session 10 - Extended)
-**Next Review**: After PR #226 merge
+## 🎯 Systematic Option Analysis (Completed)
+
+**Decision: Option C - Draft & Complete Fix** ✅
+
+| Criteria | Score | Rationale |
+|----------|-------|-----------|
+| Simplicity | ✅ | One complete solution |
+| Robustness | ✅ | Fixes all viewports |
+| Alignment | ✅ | Matches CLAUDE.md standards |
+| Testing | ✅ | All tests pass |
+| Long-term | ✅ | No technical debt |
+| Agent Validation | ✅ | Would pass all agents |
+
+**Agents Would Approve**: ✅
+- `code-quality-analyzer`: Complete fix
+- `test-automation-qa`: All tests passing
+- `architecture-designer`: Clean approach
+
+---
+
+**Last Updated**: 2025-11-18 (Session 11 - Complete)
+**Next Review**: After mobile fix complete
