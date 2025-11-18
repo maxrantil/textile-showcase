@@ -104,7 +104,7 @@ export default function Gallery({ designs }: GalleryProps) {
   useEffect(() => {
     // Network-aware minimum display time (Issue #136 - performance-optimizer recommendation)
     const getNetworkAwareMinDisplayTime = (): number => {
-      // @ts-ignore - effectiveType is experimental but widely supported
+      // @ts-expect-error - effectiveType is experimental but widely supported
       const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection
 
       if (connection) {
