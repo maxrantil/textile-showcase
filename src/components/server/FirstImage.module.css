@@ -1,6 +1,7 @@
 /* Container for server-rendered first image */
+/* Note: position is set by global .first-image-container in gallery.css (fixed positioning) */
 .container {
-  position: absolute;
+  /* position: removed - handled by global .first-image-container (position: fixed) */
   width: 100%;
   height: 60vh;
   display: flex;

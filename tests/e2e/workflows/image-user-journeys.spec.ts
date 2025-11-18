@@ -223,7 +223,7 @@ test.describe('OptimizedImage User Journeys', () => {
     //
     // GitHub Issue: [To be created]
     // Documentation: SESSION_HANDOVER.md, ISSUE-132-E2E-FEATURE-IMPLEMENTATION.md
-    test.skip('Images load correctly on slow 3G connection', async ({
+    test('Images load correctly on slow 3G connection', async ({
       page,
       context,
     }) => {
@@ -238,7 +238,13 @@ test.describe('OptimizedImage User Journeys', () => {
 
       // Phase 1: Verify SSR content appears immediately (critical for UX)
       const firstImageContainer = page.locator('[data-first-image="true"]')
-      await expect(firstImageContainer).toBeVisible({ timeout: 5000 })
+
+      // Issue #136: Test should verify FirstImage IS visible initially (SSR), then gets hidden after gallery loads
+      // The FirstImage should be visible immediately (SSR content), NOT after waiting 3 seconds
+      // Testing visibility at T+3s is WRONG because FirstImage should be hidden by then (after gallery loads)
+
+      // Verify FirstImage is visible IMMEDIATELY after SSR (within 500ms of page load)
+      await expect(firstImageContainer).toBeVisible({ timeout: 500 })
 
       const firstImage = firstImageContainer.locator('img')
 
