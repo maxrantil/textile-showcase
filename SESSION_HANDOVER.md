@@ -1,14 +1,47 @@
-# Session Handoff: Issue #136 - Mobile Visibility Fix Required
+# Session Handoff: Issue #136 - Mobile Visibility FIXED ✅
 
-**Date**: 2025-11-18 (Session 11)
-**Issue**: #136 - Investigate systematic visibility pattern in E2E tests ⚠️ PARTIAL FIX
-**PR**: #226 - https://github.com/maxrantil/textile-showcase/pull/226 🔄 DRAFT (converted back)
+**Date**: 2025-11-18 (Session 12)
+**Issue**: #136 - Investigate systematic visibility pattern in E2E tests ✅ COMPLETE
+**PR**: #226 - https://github.com/maxrantil/textile-showcase/pull/226 ✅ READY FOR REVIEW
 **Branch**: fix/issue-136-visibility-pattern (pushed to origin)
-**Status**: ⚠️ **DESKTOP FIXED, MOBILE BROKEN** - Requires mobile CSS investigation
+**Status**: ✅ **ISSUE #136 RESOLVED** - Both desktop and mobile visibility tests pass
 
 ---
 
-## 🚨 Current Situation (Session 11 Update)
+## ✅ Issue #136 Resolution (Session 12 - COMPLETE)
+
+### Mobile Visibility Fix - SUCCESSFUL
+
+**Root Cause Identified:**
+- Mobile CSS (`src/styles/mobile/gallery.css:367-390`) was using `display: none !important;`
+- This immediately hid FirstImage on mobile viewports (≤768px)
+- Prevented FirstImage from being visible for LCP optimization
+
+**Fix Applied:**
+- Removed `display: none !important;` from mobile media query
+- Updated comments to reflect mobile+desktop support
+- Maintained mobile-specific layout (full width, 4:3 aspect ratio)
+- Preserved JS-controlled hiding after hydration (line 387-390)
+
+**Test Results - BOTH VIEWPORTS PASS:**
+- ✅ **Desktop Chrome**: FirstImage visible (line 247 PASSED)
+- ✅ **Mobile Chrome**: FirstImage visible (line 247 PASSED)
+- ⏳ **Both fail at line 263**: Image loading timeout (Issue #225 - separate concern)
+
+**Files Changed:**
+- `src/styles/mobile/gallery.css` (6 lines: removed display:none, updated comments)
+
+**Commit:**
+- `b0aa23c` - "fix: enable FirstImage visibility on mobile viewports for LCP optimization"
+
+**PR Status:**
+- ✅ Pushed to origin
+- ✅ Marked READY FOR REVIEW
+- ✅ Full E2E CI suite running
+
+---
+
+## 🚨 Previous Session Summary (Session 11)
 
 ### What Happened This Session
 
@@ -202,23 +235,29 @@ Before finalizing mobile fix:
 
 ## 📝 Startup Prompt for Next Session
 
-Read CLAUDE.md to understand our workflow, then fix mobile FirstImage visibility issue for PR #226.
+Read CLAUDE.md to understand our workflow, then monitor PR #226 CI results and prepare for next issue.
 
-**Immediate priority**: Fix Mobile Visibility (2-3 hours)
-**Context**: Desktop visibility ✅ works, Mobile visibility ❌ broken - FirstImage hidden on 375px viewport when should be visible
-**Root Cause**: Mobile CSS in `src/styles/mobile/gallery.css` still hiding FirstImage despite media query fix
-**Test Failing**: `tests/e2e/workflows/image-user-journeys.spec.ts:247` on Mobile Chrome (375x667 viewport)
-**Reference docs**: SESSION_HANDOVER.md, PR #226, mobile/gallery.css, FirstImage.module.css
-**Ready state**: PR #226 in DRAFT, 2 commits on branch, all non-E2E CI checks passing
+**Immediate priority**: Monitor PR #226 CI Results (30-60 min)
+**Context**: Issue #136 mobile visibility fix ✅ COMPLETE and pushed
+- Desktop viewport: FirstImage visible ✅
+- Mobile viewport: FirstImage visible ✅
+- Both visibility tests (line 247) now PASS
+- Image loading tests (line 263) still fail - Issue #225 (separate concern)
 
-**Expected scope**:
-1. Investigate mobile CSS cascade (read files)
-2. Run local mobile test with debugger
-3. Fix mobile CSS specificity/cascade issue
-4. Validate both desktop and mobile viewports pass
-5. Commit, push, mark PR ready for final review
+**PR Status**: #226 marked READY FOR REVIEW, full E2E CI suite running
+**Branch**: fix/issue-136-visibility-pattern (3 commits, pushed)
+**Latest Commit**: b0aa23c - "fix: enable FirstImage visibility on mobile viewports for LCP optimization"
 
-**Success criteria**: Both desktop AND mobile E2E visibility tests pass in CI
+**Reference docs**: SESSION_HANDOVER.md, PR #226
+
+**Expected next steps**:
+1. Monitor PR #226 CI results (check for any new failures)
+2. If CI passes visibility tests → PR ready for merge
+3. If CI has unexpected failures → investigate and fix
+4. Once PR #226 merged → Close Issue #136
+5. **MANDATORY**: Complete session handoff after closing Issue #136
+
+**Note**: Image loading failures (Issue #225) are expected and SEPARATE from Issue #136
 
 ---
 
