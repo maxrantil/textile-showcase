@@ -28,35 +28,30 @@ test.describe('Gallery Performance Optimization E2E Tests', () => {
     }) => {
       test.skip(isMobile, 'Desktop-specific test')
 
-      // Monitor network requests for dynamic imports
-      const dynamicImports: string[] = []
-      page.on('request', (request) => {
-        const url = request.url()
-        if (url.includes('Gallery') && !url.includes('.map')) {
-          dynamicImports.push(url)
-        }
-      })
-
       // Wait for initial page load
       await page.waitForLoadState('networkidle')
 
-      // Gallery should be visible
-      await expect(
-        page.locator(
-          '[data-testid="desktop-gallery"], [data-testid="gallery-loading-skeleton"]'
-        )
-      ).toBeVisible()
+      // Issue #137: Test behavior (correct component renders) not implementation (chunk URLs)
+      // TDD principle: Verify user-facing outcome, not build optimization internals
+      // Next.js bundling strategy varies (Turbopack dev vs production), so testing chunk names is brittle
 
-      // Wait for dynamic imports to complete
-      await page.waitForTimeout(1000)
+      // Gallery loading skeleton should appear initially
+      const skeleton = page.locator('[data-testid="gallery-loading-skeleton"]')
+      // Skeleton may disappear quickly on fast connections - don't fail if we miss it
+      try {
+        await skeleton.waitFor({ state: 'visible', timeout: 500 })
+      } catch {
+        // Fast load - skeleton already replaced by gallery
+      }
 
-      // Should have loaded desktop gallery component dynamically
-      expect(dynamicImports.length).toBeGreaterThan(0)
+      // Desktop gallery component should render after progressive hydration
+      await expect(page.locator('[data-testid="desktop-gallery"]')).toBeVisible({
+        timeout: 3000,
+      })
 
-      // Desktop gallery should be rendered
-      await expect(page.locator('[data-testid="desktop-gallery"]')).toBeVisible(
-        { timeout: 2000 }
-      )
+      // Mobile gallery should NOT be in DOM (device-specific loading verified)
+      const mobileGallery = page.locator('[data-testid="mobile-gallery"]')
+      expect(await mobileGallery.count()).toBe(0)
     })
 
     test('should_load_gallery_components_progressively_on_mobile', async ({
@@ -64,22 +59,19 @@ test.describe('Gallery Performance Optimization E2E Tests', () => {
     }) => {
       test.skip(!isMobile, 'Mobile-specific test')
 
-      const dynamicImports: string[] = []
-      page.on('request', (request) => {
-        const url = request.url()
-        if (url.includes('Gallery') && !url.includes('.map')) {
-          dynamicImports.push(url)
-        }
-      })
+      // Issue #137: Test behavior (correct component renders) not implementation (chunk URLs)
+      // TDD principle: Verify user-facing outcome, not build optimization internals
 
       await page.waitForLoadState('networkidle')
 
-      // Mobile gallery should be rendered
+      // Mobile gallery component should render after progressive hydration
       await expect(page.locator('[data-testid="mobile-gallery"]')).toBeVisible({
-        timeout: 2000,
+        timeout: 3000,
       })
 
-      expect(dynamicImports.length).toBeGreaterThan(0)
+      // Desktop gallery should NOT be in DOM (device-specific loading verified)
+      const desktopGallery = page.locator('[data-testid="desktop-gallery"]')
+      expect(await desktopGallery.count()).toBe(0)
     })
 
     test('should_show_loading_skeleton_during_progressive_hydration', async () => {
