@@ -93,6 +93,70 @@ For detailed security implementation and deployment guidelines:
 - Automated vulnerability scanning via GitHub
 - Regular security updates for dependencies
 
+### Content Security Policy (CSP)
+
+**Implementation:** Nonce-based strict CSP for scripts, permissive CSP for styles
+**Location:** `middleware.ts:203-230`
+**Security Risk Score:** 7.5/10 (Good - Industry Standard)
+
+#### CSP Directives
+
+**script-src (STRICT - XSS Protection):**
+- Nonce-based strict CSP prevents all inline script execution without nonce
+- Blocks XSS attacks (CRITICAL threat - CVSS 8.8-9.0)
+- Industry best practice for Next.js App Router
+- Configuration: `'self' 'nonce-${nonce}' 'strict-dynamic'`
+
+**style-src (PERMISSIVE - Framework Compatibility):**
+- Allows inline styles for Next.js framework compatibility
+- CSS injection risk is LOW-MEDIUM (CVSS 5.3-6.1)
+- Acceptable trade-off because:
+  - No user-generated content (admin-curated portfolio only)
+  - No sensitive data in HTML attributes
+  - No authentication or transactional flows
+- Configuration: `'self' 'unsafe-inline' https://fonts.googleapis.com`
+
+**Other Directives:**
+- `default-src 'self'` - Restrict all other resources to same-origin
+- `img-src` - Allow images from Sanity CDN and analytics
+- `font-src` - Allow fonts from Google Fonts CDN
+- `connect-src` - Allow API connections to Sanity and analytics
+- `object-src 'none'` - Block plugins (Flash, Java, etc.)
+- `frame-ancestors 'none'` - Prevent clickjacking
+
+#### Security Trade-off Rationale
+
+This CSP approach follows **OWASP CSP guidelines** and **2025 Next.js best practices**: prioritize critical threats (XSS via script injection) with strict controls, accept low-risk trade-offs (CSS visual manipulation) for framework compatibility.
+
+**Why permissive style-src is acceptable:**
+1. ✅ **No user-generated content** - Admin-curated portfolio eliminates injection attack surface
+2. ✅ **No sensitive data exposure** - No CSRF tokens, session IDs, or credentials in HTML
+3. ✅ **Framework requirements** - Next.js critical CSS optimization requires inline styles
+4. ✅ **CSP specification** - Nonces cannot be applied to @font-face rules
+5. ✅ **Compensating controls** - Strict script-src prevents JavaScript execution (primary threat)
+
+**Decision Record:** Full security analysis and alternative evaluation documented in [`docs/guides/SECURITY-CSP-DECISION-2025-11-19.md`](docs/guides/SECURITY-CSP-DECISION-2025-11-19.md)
+
+#### CSP Monitoring
+
+- CSP violations logged via `CSP_REPORT_URI` environment variable (if configured)
+- Framework-generated violations are expected and allowed by policy
+- Unexpected violations may indicate potential attacks or framework changes
+
+#### Security Review Schedule
+
+- **Annual Review:** 2026-11-19 (1 year from decision date)
+- **Immediate Review Triggers:**
+  - User-generated content added (comments, forums)
+  - Authentication system implemented
+  - Payment processing or sensitive data collection
+  - Regulatory compliance requirements (PCI-DSS, HIPAA, SOC2)
+
+**References:**
+- [OWASP CSP Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Content_Security_Policy_Cheat_Sheet.html)
+- [Next.js CSP Guide](https://nextjs.org/docs/pages/guides/content-security-policy)
+- Security Decision Record: `docs/guides/SECURITY-CSP-DECISION-2025-11-19.md`
+
 ---
 
 ## Vulnerability Disclosure Policy

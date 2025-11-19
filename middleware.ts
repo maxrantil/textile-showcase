@@ -200,11 +200,30 @@ function addSecurityHeaders(
   // Content Security Policy with nonce for inline scripts
   const isDevelopment = process.env.NODE_ENV === 'development'
 
-  // Build CSP directives with nonce-based strict CSP (Issue #204)
-  // Nonce approach validated for Next.js App Router (research 2025-11-16)
-  // NOTE: Per CSP spec, when nonce is present, 'unsafe-inline' is IGNORED
-  //       Therefore style-src uses 'unsafe-inline' WITHOUT nonce (allows Next.js framework styles)
-  //       Script-src uses nonce (strict XSS protection) - this is the critical security win
+  // Build CSP directives with nonce-based strict CSP (Issue #204, #200)
+  // Nonce approach validated for Next.js App Router (research 2025-11-16, 2025-11-19)
+  //
+  // SECURITY TRADE-OFF RATIONALE (Validated 2025-11-19, Security Risk Score: 7.5/10):
+  //
+  // script-src: STRICT nonce-based CSP ('nonce-${nonce}' + 'strict-dynamic')
+  //   → Prevents XSS attacks (CRITICAL threat - CVSS 8.8-9.0)
+  //   → Industry best practice for Next.js App Router
+  //
+  // style-src: PERMISSIVE ('unsafe-inline' without nonce)
+  //   → Allows Next.js framework styles, critical CSS, @font-face rules
+  //   → CSS injection risk is LOW-MEDIUM (CVSS 5.3-6.1) for this architecture because:
+  //     • No user-generated content (admin-curated portfolio only)
+  //     • No sensitive data in HTML attributes (no CSRF tokens, sessions)
+  //     • No authentication or transactional flows
+  //   → Per CSP spec: nonces CANNOT be applied to @font-face rules
+  //   → Framework constraint: nonces disable static optimization/ISR (performance impact)
+  //
+  // This approach follows OWASP CSP guidelines and 2025 Next.js best practices:
+  // prioritize critical threats (XSS) with strict controls, accept low-risk
+  // trade-offs (CSS visual manipulation) for framework compatibility.
+  //
+  // Refs: https://nextjs.org/docs/pages/guides/content-security-policy
+  //       docs/guides/SECURITY-CSP-DECISION-2025-11-19.md
   const cspDirectives: string[] = [
     `default-src 'self'`,
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https://analytics.idaromme.dk ${isDevelopment ? "'unsafe-eval'" : ''} https: http:`,
