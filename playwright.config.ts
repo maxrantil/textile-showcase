@@ -57,6 +57,30 @@ export default defineConfig({
         viewport: { width: 1920, height: 1080 },
       },
     },
+    // Safari Smoke Tests - Optimized subset for CI (<15min target)
+    // Issue #211: Safari E2E tests timeout at 40min (8x slower than Chrome)
+    // Strategy: Run critical Safari-specific tests only in CI
+    // - Basic smoke tests (app health)
+    // - Gallery browsing (WebKit rendering critical)
+    // - Mobile navigation (Safari touch events)
+    // - Accessibility (Safari a11y tree differences)
+    // - Project browsing (navigation flows)
+    // Full Safari suite remains available for local testing
+    {
+      name: 'Safari Smoke',
+      testMatch: [
+        '**/workflows/smoke-test.spec.ts',
+        '**/workflows/gallery-browsing.spec.ts',
+        '**/mobile-navigation.spec.ts',
+        '**/accessibility/skip-navigation.spec.ts',
+        '**/project-browsing.spec.ts',
+      ],
+      retries: process.env.CI ? 1 : 0, // Reduced retries for Safari (1 vs 2)
+      use: {
+        ...devices['Desktop Safari'],
+        viewport: { width: 1920, height: 1080 },
+      },
+    },
 
     // Mobile devices
     {
