@@ -1,4 +1,184 @@
-# Session Handoff: Issue #132 - Enable Blocking E2E Tests in CI ✅ COMPLETE
+# Session Handoff: Issue #211 - Safari E2E Test Performance Optimization 🔄 IN PROGRESS
+
+**Date**: 2025-11-19 (Session 19)
+**Issue**: #211 - Safari E2E Test Performance Optimization
+**PR**: #235 - https://github.com/maxrantil/textile-showcase/pull/235 🔄 CI RUNNING
+**Branch**: feat/issue-211-safari-smoke-tests
+**Status**: 🔄 **PHASE 1 IMPLEMENTATION COMPLETE** - Awaiting CI validation
+
+---
+
+## 🎯 Issue #211 - Phase 1: Safari Smoke Test Suite (Session 19)
+
+### Problem Context
+
+**Background (from Issue #209/PR #210)**:
+- 15+ hour investigation revealed Safari E2E tests timeout at 40min (8x slower than Chrome's 5min baseline)
+- Fixes attempted: analytics mocking, Ubuntu 22.04 pinning, macOS runners - **ALL INSUFFICIENT**
+- Root cause: Safari/WebKit inherently slower due to JavaScriptCore performance characteristics
+- Previous solution: Exclude Safari from CI entirely (local-only testing)
+
+**Issue #211 Goal**: Re-enable Safari testing in CI with optimized approach
+
+### Solution Implemented: Safari Smoke Test Suite
+
+**Phase 1 Strategy**:
+- **23 tests** across **5 critical files** (~16% of full suite)
+- **Target**: <15 minutes execution time
+- **Coverage**: Safari-specific areas (WebKit rendering, touch events, accessibility)
+- **Retry optimization**: 1 retry (vs 2 for Chrome)
+
+**Test Files Selected**:
+1. `workflows/smoke-test.spec.ts` - Basic application health (5 tests)
+2. `workflows/gallery-browsing.spec.ts` - WebKit rendering critical (4 tests)
+3. `mobile-navigation.spec.ts` - Safari touch events (4 tests)
+4. `accessibility/skip-navigation.spec.ts` - Safari a11y tree (4 tests)
+5. `project-browsing.spec.ts` - Navigation flows (6 tests)
+
+### Changes Made
+
+**1. playwright.config.ts**
+- Added "Safari Smoke" project configuration (lines 60-83)
+- `testMatch` filter for 5 critical test files
+- Reduced retry count: 1 (vs 2 for Chrome)
+- Maintains "Desktop Safari" project for full local testing
+
+**2. .github/workflows/e2e-tests.yml**
+- Added "Safari Smoke" to CI matrix (line 52)
+- Updated documentation explaining optimization strategy (lines 32-46)
+- WebKit browser installation logic updated (line 69)
+- **CI now runs**: Desktop Chrome + Mobile Chrome + Safari Smoke
+
+**3. README.md**
+- Updated "Safari E2E Testing" section (lines 372-417)
+- Documented Safari Smoke vs full Safari suite strategy
+- Browser coverage breakdown: 85%+ with Safari validation
+- Clear local testing instructions
+
+### Session Timeline
+
+**Time Investment**: ~2 hours (analysis + implementation + documentation)
+**Complexity**: Medium (CI optimization, test selection strategy)
+**Impact**: HIGH (re-enables Safari CI validation without 40min timeout blocking)
+
+**What Went Well:**
+- ✅ Quick analysis of Issue #211 scope and requirements
+- ✅ Strategic test selection (critical Safari-specific areas)
+- ✅ Clean Playwright configuration (testMatch filter)
+- ✅ Comprehensive documentation (README, workflow comments, PR description)
+- ✅ TodoWrite tool tracked progress effectively
+
+### Current Status
+
+**✅ Completed**:
+- Safari Smoke test configuration created and verified (23 tests identified)
+- CI workflow updated to include Safari Smoke
+- README documentation updated with testing strategy
+- Commit created: `9efe4d6` - "feat: add Safari Smoke test suite for CI (Issue #211)"
+- PR #235 created with comprehensive description
+- All pre-commit hooks passed
+
+**🔄 In Progress**:
+- CI running Safari Smoke tests for first time
+- Monitoring execution time (<15min target)
+- Tracking for flakiness/false positives
+
+**⏳ Pending**:
+- Verify Safari Smoke tests pass in CI
+- Confirm execution time meets <15min target
+- Address any test failures if they occur
+- Session handoff after CI validation
+
+### CI Status (PR #235)
+
+**Last checked**: Initial run started
+- Desktop Chrome: Pending
+- Mobile Chrome: Pending
+- **Safari Smoke**: Pending (NEW - first CI run)
+- Session Handoff: Failing (expected - this file needs commit)
+
+### Expected Outcomes
+
+**Phase 1 Success Criteria**:
+- [ ] Safari Smoke tests pass in CI
+- [ ] Execution time <15 minutes
+- [ ] No false positives/flaky tests
+- [ ] Safari validation in CI without blocking pipeline
+
+**If successful**:
+- Mark Issue #211 Phase 1 complete
+- Monitor for 5-10 CI runs to confirm stability
+- Consider Phase 2 expansion if execution time allows
+
+**If execution time >15min or tests flaky**:
+- Iterate on test selection (reduce scope further)
+- Investigate per-test timeout tuning
+- Document findings and adjust strategy
+
+### Key Decisions Made
+
+**Test Selection Rationale**:
+- Focused on Safari-specific concerns (not Chrome-redundant tests)
+- Prioritized WebKit rendering (gallery), touch events (mobile), accessibility
+- Avoided heavy performance tests (already tested in Chrome)
+- Total: ~644 lines of test code vs ~3,956 lines full suite
+
+**Retry Strategy**:
+- Reduced from 2 → 1 retry for Safari to minimize execution time
+- Risk acceptable: Smoke tests are critical paths with lower flakiness
+- Can adjust if false positives occur
+
+**Platform Choice**:
+- Ubuntu 22.04 + WebKit (not macOS)
+- Cost-effective (macOS runners ~10x more expensive)
+- Previous investigation (Issue #209) showed platform-agnostic slowness
+- WebKit on Linux sufficient for validation
+
+### Agent Consultations
+
+**None required** (straightforward CI optimization)
+- Would benefit from `test-automation-qa` validation post-CI run
+- Would benefit from `performance-optimizer` if execution time >15min
+
+### Next Steps
+
+**Immediate (This Session)**:
+1. Wait for CI to complete first Safari Smoke run
+2. Check execution time and pass/fail status
+3. Address any failures if they occur
+4. Complete session handoff
+
+**After CI Validation**:
+1. If pass + <15min: Mark Issue #211 Phase 1 complete
+2. If pass + >15min: Iterate on test selection
+3. If fail: Debug failures, adjust configuration
+4. Monitor for stability over 5-10 CI runs
+
+**Phase 2 (Future, If Needed)**:
+- Expand Safari smoke test scope if execution time allows
+- Investigate per-test timeout tuning
+- Consider full Safari suite optimization (<20min target)
+
+### Blockers
+
+**NONE** - clean execution, awaiting CI results
+
+### Files Changed
+
+1. `playwright.config.ts` - Safari Smoke project configuration (+24 lines)
+2. `.github/workflows/e2e-tests.yml` - CI matrix update (+15 lines, -31 lines)
+3. `README.md` - Safari testing strategy documentation (+30 lines, -24 lines)
+
+### Commit Details
+
+- Commit: `9efe4d6` - "feat: add Safari Smoke test suite for CI (Issue #211)"
+- Passed all pre-commit hooks (no bypasses)
+- No attribution, proper conventional commit format
+- 3 files changed, 65 insertions(+), 31 deletions(-)
+
+---
+
+# Previous Session: Issue #132 - Enable Blocking E2E Tests in CI ✅ COMPLETE
 
 **Date**: 2025-11-19 (Session 16)
 **Issue**: #132 - Implement features required by E2E test suite ✅ CLOSED
