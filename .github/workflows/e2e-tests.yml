@@ -17,10 +17,6 @@ jobs:
     name: Run Playwright E2E Tests (${{ matrix.project }})
     runs-on: ${{ matrix.os }}
     timeout-minutes: 40
-    # Temporary: Non-blocking while Issue #132 implements missing features
-    # Some tests validate unimplemented features (/projects page, advanced scenarios)
-    # Remove this when all features are built and tests pass
-    continue-on-error: true
     # Skip draft PRs unless explicitly requested
     # Skip Dependabot PRs - they don't get repository secrets (GitHub security restriction)
     # Dependabot PRs are dependency-only changes that don't affect E2E behavior
