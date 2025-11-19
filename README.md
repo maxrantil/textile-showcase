@@ -377,10 +377,11 @@ npx playwright show-report
 
 After 15+ hours of investigation (Issue #209), full Safari E2E suite consistently times out at 40min (vs 5min Chrome baseline). Safari test execution is inherently ~8x slower due to WebKit/JavaScriptCore performance characteristics.
 
-**Solution: Safari Smoke Test Subset**
-- **In CI**: Safari Smoke tests (~16% of full suite, 23 tests, <15min target)
-- **Coverage**: Critical Safari-specific areas (WebKit rendering, touch events, accessibility)
-- **Test files**: smoke-test, gallery-browsing, mobile-navigation, skip-navigation, project-browsing
+**Solution: Safari Smoke Test Subset (Ultra-Minimal)**
+- **In CI**: Safari Smoke tests (8 tests from smoke-test.spec.ts only, ~5-7min target)
+- **Coverage**: Basic app health validation (no gallery tests due to Safari timeout issues)
+- **Test files**: smoke-test.spec.ts (homepage, contact, navigation, JS errors)
+- **Gallery limitation**: Safari/WebKit takes >30s to load gallery (Issue #236 tracks optimization)
 - **Retry optimization**: 1 retry (vs 2 for Chrome) to reduce execution time
 - **Platform**: Ubuntu 22.04 with WebKit (cost-effective, stable)
 
@@ -405,10 +406,10 @@ npx playwright test --project="Mobile Safari Landscape"
 ```
 
 **Browser Coverage:**
-- Desktop Chrome: 65% market share (CI)
-- Mobile Chrome: 40% mobile market share (CI)
-- Safari Smoke: 20% market share (CI - optimized subset)
-- **Total CI coverage: 85%+ with Safari validation**
+- Desktop Chrome: 65% market share (CI - full E2E suite)
+- Mobile Chrome: 40% mobile market share (CI - full E2E suite)
+- Safari Smoke: 20% market share (CI - ultra-minimal: basic health only)
+- **Total CI coverage: 85%+ browsers (Safari has limited test coverage due to gallery timeout issue)**
 
 **Requirements for Full Local Safari Testing:**
 - macOS machine (native Safari/WebKit support)

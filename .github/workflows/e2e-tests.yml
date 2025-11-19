@@ -34,16 +34,18 @@ jobs:
         # Mobile Chrome: 40% mobile market share, touch interactions - Linux
         # Safari Smoke: 20% market share, WebKit rendering - Ubuntu (WebKit) - OPTIMIZED SUBSET
         #
-        # Safari Smoke Tests (Issue #211 optimization):
+        # Safari Smoke Tests (Issue #211 optimization - Ultra-Minimal):
         # - Previous state: Full Safari suite excluded from CI (40min timeout, 8x slower than Chrome)
         # - Investigation: Issue #209 (15+ hours) - analytics mocking, platform fixes insufficient
-        # - New strategy: Safari smoke test subset (~16% of full suite, <15min target)
-        # - Coverage: Critical Safari-specific areas (WebKit rendering, touch events, a11y)
-        # - Test files: smoke-test, gallery-browsing, mobile-navigation, skip-navigation, project-browsing
+        # - PR #235 Discovery: Gallery loading takes >30s on Safari/WebKit (15/23 tests failed with timeouts)
+        # - Root cause: Gallery dynamic import/hydration too slow for Safari (Issue #236 tracks optimization)
+        # - Current strategy: Ultra-minimal smoke tests (8 tests, NO gallery, ~5-7min target)
+        # - Coverage: Basic app health only (homepage, contact, navigation, JS errors)
+        # - Test files: smoke-test.spec.ts ONLY (gallery tests excluded due to Safari timeout limitation)
         # - Retry optimization: 1 retry (vs 2 for Chrome) to reduce execution time
         # - Platform: Ubuntu 22.04 with WebKit (cost-effective, stable)
         # - Full Safari suite: Available for local testing on macOS (npx playwright test --project="Desktop Safari")
-        # - Market coverage: 85%+ with Chrome + Safari smoke tests
+        # - Market coverage: 85%+ browsers (Safari has limited test coverage - basic health only)
         include:
           - project: 'Desktop Chrome'
             os: ubuntu-22.04
