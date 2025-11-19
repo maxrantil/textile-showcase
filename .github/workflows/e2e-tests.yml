@@ -29,28 +29,29 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Strategic 2-browser CI selection (full 8-browser suite tested locally)
+        # Strategic 3-browser CI selection (full 8-browser suite tested locally)
         # Desktop Chrome: 65% market share, Chromium engine - Linux
         # Mobile Chrome: 40% mobile market share, touch interactions - Linux
+        # Safari Smoke: 20% market share, WebKit rendering - Ubuntu (WebKit) - OPTIMIZED SUBSET
         #
-        # Desktop Safari INTENTIONALLY EXCLUDED from CI (runs locally on macOS only)
-        # Reason: 15+ hour investigation (Issue #209) revealed Safari E2E tests timeout
-        # consistently at 40min on both Linux and macOS due to Safari-specific test
-        # performance issues (40min vs 5min Chrome baseline). Multiple fixes attempted:
-        # - Global analytics mocking (PR #208) - INSUFFICIENT
-        # - Ubuntu 22.04 pinning for WebKit stability - INSUFFICIENT
-        # - macOS runners for native Safari support - INSUFFICIENT
-        # Root cause: Safari test execution is inherently slower (~8x Chrome), not
-        # platform-dependent. Pragmatic decision: Skip Safari in CI, test locally.
-        # Safari market share: ~20% (portfolio site context, acceptable risk)
-        # TDD maintained: Safari tested locally on macOS (npx playwright test --project="Desktop Safari")
-        # Future optimization: Tracked in Issue #211
-        # Decision rationale: 40min Safari timeout blocks all CI, 85%+ browser coverage
-        # with Chrome (Desktop + Mobile) provides sufficient quality gate for portfolio site.
+        # Safari Smoke Tests (Issue #211 optimization - Ultra-Minimal):
+        # - Previous state: Full Safari suite excluded from CI (40min timeout, 8x slower than Chrome)
+        # - Investigation: Issue #209 (15+ hours) - analytics mocking, platform fixes insufficient
+        # - PR #235 Discovery: Gallery loading takes >30s on Safari/WebKit (15/23 tests failed with timeouts)
+        # - Root cause: Gallery dynamic import/hydration too slow for Safari (Issue #236 tracks optimization)
+        # - Current strategy: Ultra-minimal smoke tests (8 tests, NO gallery, ~5-7min target)
+        # - Coverage: Basic app health only (homepage, contact, navigation, JS errors)
+        # - Test files: smoke-test.spec.ts ONLY (gallery tests excluded due to Safari timeout limitation)
+        # - Retry optimization: 1 retry (vs 2 for Chrome) to reduce execution time
+        # - Platform: Ubuntu 22.04 with WebKit (cost-effective, stable)
+        # - Full Safari suite: Available for local testing on macOS (npx playwright test --project="Desktop Safari")
+        # - Market coverage: 85%+ browsers (Safari has limited test coverage - basic health only)
         include:
           - project: 'Desktop Chrome'
             os: ubuntu-22.04
           - project: 'Mobile Chrome'
+            os: ubuntu-22.04
+          - project: 'Safari Smoke'
             os: ubuntu-22.04
 
     steps:
@@ -67,7 +68,7 @@ jobs:
         run: npm ci
 
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps ${{ matrix.project == 'Desktop Chrome' && 'chromium' || matrix.project == 'Mobile Chrome' && 'chromium' || 'webkit' }}
+        run: npx playwright install --with-deps ${{ matrix.project == 'Desktop Chrome' && 'chromium' || matrix.project == 'Mobile Chrome' && 'chromium' || matrix.project == 'Safari Smoke' && 'webkit' || 'webkit' }}
 
       - name: Setup Environment Variables
         run: |

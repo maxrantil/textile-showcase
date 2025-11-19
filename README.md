@@ -369,18 +369,29 @@ npx playwright test --project="Mobile Chrome" --project="Mobile Safari"
 npx playwright show-report
 ```
 
-#### Local Safari E2E Testing
+#### Safari E2E Testing
 
-**Safari E2E tests run locally only** (not in CI) due to Safari-specific test performance issues discovered during Issue #209 investigation.
+**Safari Smoke Tests** run in CI (optimized subset), **Full Safari Suite** available locally.
 
-**Requirements:**
-- macOS machine (Safari/WebKit requires macOS for native support)
-- Playwright installed with WebKit: `npx playwright install webkit`
+**CI Strategy (Issue #211 Optimization):**
+
+After 15+ hours of investigation (Issue #209), full Safari E2E suite consistently times out at 40min (vs 5min Chrome baseline). Safari test execution is inherently ~8x slower due to WebKit/JavaScriptCore performance characteristics.
+
+**Solution: Safari Smoke Test Subset (Ultra-Minimal)**
+- **In CI**: Safari Smoke tests (8 tests from smoke-test.spec.ts only, ~5-7min target)
+- **Coverage**: Basic app health validation (no gallery tests due to Safari timeout issues)
+- **Test files**: smoke-test.spec.ts (homepage, contact, navigation, JS errors)
+- **Gallery limitation**: Safari/WebKit takes >30s to load gallery (Issue #236 tracks optimization)
+- **Retry optimization**: 1 retry (vs 2 for Chrome) to reduce execution time
+- **Platform**: Ubuntu 22.04 with WebKit (cost-effective, stable)
 
 **Running Safari Tests Locally:**
 
 ```bash
-# Run all Safari E2E tests (Desktop Safari)
+# Run Safari Smoke tests (same as CI)
+npx playwright test --project="Safari Smoke"
+
+# Run FULL Safari E2E suite (local only, ~40min)
 npx playwright test --project="Desktop Safari"
 
 # Run Safari tests with visible browser (debugging)
@@ -389,21 +400,22 @@ npx playwright test --project="Desktop Safari" --headed
 # Run specific Safari test
 npx playwright test tests/e2e/workflows/gallery-browsing.spec.ts --project="Desktop Safari"
 
-# Run mobile Safari tests
+# Run mobile Safari tests (local only)
 npx playwright test --project="Mobile Safari"
 npx playwright test --project="Mobile Safari Landscape"
 ```
 
-**Why Local-Only?**
+**Browser Coverage:**
+- Desktop Chrome: 65% market share (CI - full E2E suite)
+- Mobile Chrome: 40% mobile market share (CI - full E2E suite)
+- Safari Smoke: 20% market share (CI - ultra-minimal: basic health only)
+- **Total CI coverage: 85%+ browsers (Safari has limited test coverage due to gallery timeout issue)**
 
-After 15+ hours of investigation (Issue #209), Safari E2E tests consistently timeout at 40min on both Linux and macOS (vs 5min Chrome baseline). Safari test execution is inherently ~8x slower due to WebKit/JavaScriptCore performance characteristics, not platform issues.
+**Requirements for Full Local Safari Testing:**
+- macOS machine (native Safari/WebKit support)
+- Playwright installed with WebKit: `npx playwright install webkit`
 
-**CI Strategy:**
-- CI runs Desktop Chrome + Mobile Chrome (85%+ browser coverage)
-- Safari tested locally during development (TDD maintained)
-- Safari optimization tracked in Issue #211
-
-**Context:** Portfolio site with Safari ~20% market share. Local Safari testing maintains quality while unblocking CI pipeline.
+**Context:** Portfolio site with Safari ~20% market share. Safari Smoke tests in CI provide Safari validation while maintaining fast CI pipeline. Full Safari suite available locally for comprehensive testing.
 
 #### Test Environment Setup
 
