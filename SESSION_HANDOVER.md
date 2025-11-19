@@ -1,10 +1,88 @@
-# Session Handoff: Issue #211 - Safari E2E Test Performance Optimization ✅ COMPLETE
+# Session Handoff: PR #235 Merge & Issue #87 Selection ✅ COMPLETE
+
+**Date**: 2025-11-19 (Session 20)
+**Issue**: #211 ✅ CLOSED (PR #235 merged)
+**PR**: #235 ✅ MERGED to master at 2025-11-19T17:14:27Z
+**Branch**: master (feat/issue-211-safari-smoke-tests deleted)
+**Status**: ✅ **ISSUE #211 CLOSED** - Safari Smoke tests merged and running in production CI
+
+---
+
+## ✅ Completed Work (Session 20)
+
+**Merge Workflow:**
+1. ✅ Verified all CI checks passing (17/17) including Safari Smoke (1m46s, 5/5 tests)
+2. ✅ Merged PR #235 using squash merge
+3. ✅ Switched to master branch and pulled latest changes
+4. ✅ Deleted feat/issue-211-safari-smoke-tests branch (squashed, safe to force delete)
+5. ✅ Added completion comment to Issue #211 (already auto-closed by PR merge)
+6. ✅ Selected next priority: **Issue #87 - Centralized Logging Infrastructure**
+
+**Files Changed in Master (from PR #235 merge):**
+- `.github/workflows/e2e-tests.yml` - Safari Smoke CI integration
+- `playwright.config.ts` - Safari Smoke project configuration
+- `README.md` - Safari testing strategy documentation
+- `SESSION_HANDOVER.md` - Session 19 handoff documentation
+
+## 🎯 Current Project State
+
+**Tests**: ✅ All passing (Safari Smoke: 5/5 in 1m46s, Chrome suites: 5m+)
+**Branch**: ✅ master (clean working directory except playwright-report/index.html)
+**CI/CD**: ✅ All checks passing on master
+
+### Next Session Focus: Issue #87
+
+**Selected Priority**: Issue #87 - Implement Centralized Logging Infrastructure
+**Estimated Scope**: 4-6 hours (medium complexity)
+**Required Agents**:
+- `devops-deployment-agent` - Infrastructure setup and deployment strategy
+- `architecture-designer` - Logging architecture design
+- `security-validator` - Log security and PII handling
+- `performance-optimizer` - Logging overhead impact
+- `documentation-knowledge-manager` - Logging documentation
+
+**Why Issue #87?**
+- Critical for production observability (site is live at idaromme.dk)
+- Enables debugging production issues without SSH access
+- Foundation for monitoring and alerting infrastructure
+- Higher impact than accessibility (Issue #86) or rate limiting (Issue #84)
+
+## 📝 Startup Prompt for Next Session
+
+Read CLAUDE.md to understand our workflow, then tackle Issue #87 (Centralized Logging Infrastructure).
+
+**Immediate priority**: Issue #87 - Centralized Logging Infrastructure (4-6 hours)
+**Context**: Issue #211 ✅ CLOSED, PR #235 merged to master, Safari Smoke tests now in production CI
+**Reference docs**:
+- Issue #87: https://github.com/maxrantil/textile-showcase/issues/87
+- Current logging: src/utils/logger.ts (if exists), check codebase for existing patterns
+- CLAUDE.md Section 2 - Agent Integration (mandatory devops-deployment-agent consultation)
+
+**Ready state**:
+- Clean master branch (only uncommitted playwright-report/index.html)
+- All tests passing in CI
+- No blockers
+
+**Expected scope**:
+1. Analyze Issue #87 requirements (read issue body)
+2. Consult devops-deployment-agent for logging infrastructure strategy
+3. Consult architecture-designer for logging architecture design
+4. Create feature branch: `feat/issue-87-centralized-logging`
+5. Implement logging solution (Winston/Pino/other, transport configuration)
+6. Add tests for logging infrastructure
+7. Update documentation
+8. Create PR with agent validations
+9. Session handoff
+
+---
+
+# Previous Session: Issue #211 - Safari E2E Test Performance Optimization ✅ COMPLETE
 
 **Date**: 2025-11-19 (Session 19)
 **Issue**: #211 - Safari E2E Test Performance Optimization
-**PR**: #235 - https://github.com/maxrantil/textile-showcase/pull/235 ✅ ALL TESTS PASSING (17/17)
-**Branch**: feat/issue-211-safari-smoke-tests (ready to merge)
-**Status**: ✅ **PHASE 1 COMPLETE** - Ultra-minimal Safari Smoke (5 tests, 1m46s, 100% pass rate)
+**PR**: #235 - https://github.com/maxrantil/textile-showcase/pull/235 ✅ MERGED
+**Branch**: feat/issue-211-safari-smoke-tests ✅ DELETED
+**Status**: ✅ **ISSUE #211 CLOSED** - Ultra-minimal Safari Smoke (5 tests, 1m46s, 100% pass rate)
 
 ---
 
