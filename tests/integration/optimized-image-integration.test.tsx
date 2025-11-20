@@ -125,11 +125,11 @@ describe('OptimizedImage Integration Tests', () => {
     it('renders correctly within Gallery component with real Sanity ImageSource', () => {
       render(<Gallery designs={realTestDesigns} />)
 
-      // Verify images are rendered with correct alt text (uses design title)
+      // Verify images are rendered with correct alt text (descriptive for WCAG AA compliance)
       const images = screen.getAllByRole('img')
-      expect(images[0]).toHaveAttribute('alt', 'Sustainable Cotton Weave')
-      expect(images[1]).toHaveAttribute('alt', 'Organic Hemp Fiber')
-      expect(images[2]).toHaveAttribute('alt', 'Recycled Wool Blend')
+      expect(images[0]).toHaveAttribute('alt', 'Textile design artwork: Sustainable Cotton Weave')
+      expect(images[1]).toHaveAttribute('alt', 'Textile design artwork: Organic Hemp Fiber')
+      expect(images[2]).toHaveAttribute('alt', 'Textile design artwork: Recycled Wool Blend')
 
       // Verify images have src attributes (image processing working)
       images.forEach((img) => {

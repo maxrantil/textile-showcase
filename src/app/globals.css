@@ -3,8 +3,8 @@
 /* CSS Custom Properties for consistent design system */
 :root {
   --color-primary: #333;
-  --color-secondary: #666;
-  --color-tertiary: #999;
+  --color-secondary: #595959;
+  --color-tertiary: #5a5a5a;
   --color-background: #fafafa;
   --color-surface: #ffffff;
   --color-border: #e5e5e5;
@@ -157,14 +157,14 @@ img {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #888;
+  background: #5a5a5a;
   border-radius: 7px;
   border: 2px solid #f1f1f1;
   transition: background var(--transition-fast);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background: #333;
 }
 
 /* High contrast mode support */

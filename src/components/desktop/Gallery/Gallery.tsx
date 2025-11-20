@@ -68,7 +68,7 @@ const GalleryItem = memo(function GalleryItem({
       <div className="desktop-gallery-image">
         <ImageNoStyle
           src={displayImageUrl}
-          alt={design.title}
+          alt={`Textile design artwork: ${design.title}${design.year ? ` (${design.year})` : ''}`}
           height={600}
           width={800}
           sizes="(max-width: 1024px) 90vw, (max-width: 1440px) 800px, 900px"
@@ -79,7 +79,7 @@ const GalleryItem = memo(function GalleryItem({
       </div>
 
       <div className="desktop-gallery-info">
-        <h3>{design.title}</h3>
+        <h2>{design.title}</h2>
       </div>
     </div>
   )
