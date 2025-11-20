@@ -1,10 +1,45 @@
-# Session Handoff: Session 26B - WCAG 2.1 AA Implementation Complete ✅
+# Session Handoff: Session 26C - E2E Accessibility Debugging
 
-**Date**: 2025-11-20 (Session 26 - Implementation Phase)
-**Issue**: #86 ✅ - WCAG 2.1 AA Accessibility Violations
+**Date**: 2025-11-20 (Session 26C - Debugging Phase)
+**Issue**: #86 🔄 - WCAG 2.1 AA Accessibility Violations (E2E tests failing)
 **PR**: #244 🔄 READY (feat/issue-86-wcag-aa-accessibility)
 **Branch**: feat/issue-86-wcag-aa-accessibility (pushed, clean)
-**Status**: ✅ **ISSUE #86 COMPLETE** - Full WCAG 2.1 AA compliance achieved
+**Status**: 🔄 **IN PROGRESS** - Additional accessibility issues found in E2E tests
+
+---
+
+## 🔄 Session 26C Work - E2E Debugging (INCOMPLETE)
+
+**Skeleton Loader Fixes (2 attempts):**
+
+1. ❌ **First fix attempt** (commit 478119f)
+   - Changed `.skeletonText` color from #999 to #5a5a5a
+   - Added opacity: 0.8
+   - Result: Effective color #7b7b7b = **4.23:1 contrast** (FAIL - needs 4.5:1)
+
+2. ❌ **Second fix attempt** (commit 3482eb7)
+   - Changed `.skeletonText` color to #6a6a6a
+   - Removed opacity (no opacity layer)
+   - Expected: **5.74:1 contrast** (should PASS)
+   - Result: **Different accessibility issue discovered** - `.nordic-caption` class
+
+**NEW BLOCKER DISCOVERED:**
+
+E2E tests now failing on **`.nordic-caption`** class:
+- Element: `<p class="nordic-caption">3daysofdesign, Group Exhibition, Copenhagen, Denmark 2025</p>`
+- Issue: `fgColor: #888888`, `bgColor: #ffffff`
+- Contrast ratio: **3.54:1** (FAIL - needs 4.5:1)
+- Font size: 12px normal weight
+- Location: Unknown CSS file (needs investigation)
+
+**Files Modified in Session 26C:**
+- `src/components/adaptive/Gallery/index.module.css` (2 commits)
+
+**Session 26C Status:**
+- ⚠️ E2E tests still failing (Desktop Chrome, Mobile Chrome)
+- ✅ All other CI checks passing (17/19)
+- ✅ Unit tests passing (961 tests)
+- ✅ Working directory clean
 
 ---
 
@@ -87,12 +122,27 @@
 
 ## 🚀 Next Session Priorities
 
-**Immediate Next Steps:**
-1. Monitor PR #244 CI checks (expected to pass)
-2. Merge PR #244 to master
-3. Close Issue #86
+**CRITICAL BLOCKER - Issue #86 PR #244:**
 
-**Recommended next work (priority order):**
+1. **Fix `.nordic-caption` color contrast** (URGENT)
+   - Search for `.nordic-caption` class definition (likely in `src/styles/utilities/nordic-layout.css`)
+   - Current: `color: #888888` (3.54:1 contrast) ❌
+   - Required: ≥4.5:1 contrast for 12px font
+   - Solution: Change to #6a6a6a or darker (5.74:1+ contrast)
+
+2. **Verify E2E tests pass** after fix
+   - Desktop Chrome E2E (was failing)
+   - Mobile Chrome E2E (was failing)
+
+3. **Merge PR #244** once all CI passes
+
+4. **Close Issue #86**
+
+**Investigation needed:**
+- Search entire codebase for any other #888 or #888888 colors
+- Check if there are more elements with insufficient contrast
+
+**After Issue #86:**
 1. **Issue #87** - Centralized Logging Infrastructure (22-30 hours, agent-approved)
 2. **Issue #84** - Redis-Based Rate Limiting (security)
 3. **Issue #200** - CSP violation reporting (already documented)
@@ -101,18 +151,20 @@
 
 ## 📝 Startup Prompt for Next Session
 
-Read CLAUDE.md to understand our workflow, then merge PR #244 and close Issue #86.
+Read CLAUDE.md to understand our workflow, then fix the `.nordic-caption` color contrast blocker on PR #244.
 
-**Immediate priority**: Merge PR #244 when CI passes, close Issue #86
-**Context**: Session 26B complete - Full WCAG 2.1 AA compliance achieved, 17 new accessibility tests, all 961 tests passing
-**Reference docs**: PR #244 description, Issue #86 (ready to close)
-**Ready state**: PR #244 ready for merge, all tests passing
+**Immediate priority**: Fix `.nordic-caption` class color contrast (30 minutes)
+**Context**: Session 26C - E2E tests failing on `.nordic-caption` with #888888 color (3.54:1 contrast, needs 4.5:1)
+**Reference docs**: SESSION_HANDOVER.md (Session 26C section), PR #244, E2E test logs
+**Ready state**: Branch feat/issue-86-wcag-aa-accessibility, working directory clean, 2 skeleton loader fixes already committed
 
 **Expected scope**:
-- Verify PR #244 CI passes
-- Merge PR #244 to master
-- Close Issue #86 with completion comment
-- Ready for next priority issue (Issue #87 or Issue #84)
+- Search for `.nordic-caption` CSS definition (likely `src/styles/utilities/nordic-layout.css`)
+- Change color from #888888 to #6a6a6a or darker
+- Commit fix: "fix: Nordic caption color contrast for WCAG AA"
+- Push and wait for E2E tests to pass
+- Merge PR #244 when all CI passes
+- Close Issue #86
 
 ---
 
