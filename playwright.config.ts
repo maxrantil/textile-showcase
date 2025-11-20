@@ -57,6 +57,27 @@ export default defineConfig({
         viewport: { width: 1920, height: 1080 },
       },
     },
+    // Safari Smoke Tests - Ultra-minimal subset for CI (~5-7min target)
+    // Issue #211: Safari E2E tests timeout at 40min (8x slower than Chrome)
+    // PR #235 Discovery: Gallery loading takes >30s on Safari/WebKit (15/23 tests failed)
+    // Root cause: Gallery dynamic import/hydration fails within timeout
+    // Future: Issue #236 tracks long-term Safari gallery performance optimization
+    //
+    // Current Strategy: Ultra-minimal smoke tests (no gallery dependency)
+    // - Only workflows/smoke-test.spec.ts (8 tests, all passed in PR #235)
+    // - Basic app health validation (homepage, contact, navigation, JS errors)
+    // - NO gallery tests (gallery loads too slowly on Safari/WebKit)
+    //
+    // Full Safari suite with gallery remains available for local testing
+    {
+      name: 'Safari Smoke',
+      testMatch: ['**/workflows/smoke-test.spec.ts'],
+      retries: process.env.CI ? 1 : 0, // Reduced retries for Safari (1 vs 2)
+      use: {
+        ...devices['Desktop Safari'],
+        viewport: { width: 1920, height: 1080 },
+      },
+    },
 
     // Mobile devices
     {
