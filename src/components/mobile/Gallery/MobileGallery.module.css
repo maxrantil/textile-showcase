@@ -1,0 +1,7 @@
+/* ABOUTME: CSS Module for mobile Gallery component - CSP compliance for FirstImage hiding */
+
+/* Hidden state for first image (CSP compliant) */
+.firstImageHidden {
+  visibility: hidden;
+  pointer-events: none;
+}
