@@ -106,9 +106,9 @@ Read CLAUDE.md to understand our workflow, then decide on next priority.
 - Uncommitted: playwright-report/index.html (can be discarded)
 - All tests passing locally
 
-**Options for next session:**
+**Options for next session**:
 
-### Option A: Proceed with Issue #87 implementation
+**Option A: Proceed with Issue #87 implementation**
 ```bash
 # Create feature branch
 git checkout master
@@ -119,19 +119,21 @@ git checkout -b feat/issue-87-centralized-logging
 # Follow implementation plan in Issue #87 comment
 ```
 
-### Alternative: Select Different Issue
+**Option B: Work on different issue**
 ```bash
-# List all open issues
-gh issue list --state open --limit 10
+# Check issue backlog
+gh issue list --state open
 
-# View specific issue
-gh issue view <number>
+# Select priority issue (e.g., #86, #84, #200)
+gh issue view <issue-number>
 
-# Create branch for different work
+# Create feature branch
+git checkout master
+git pull origin master
 git checkout -b <branch-name>
 ```
 
-### Alternative: Clean Up First
+**Option C: Clean up and review**
 ```bash
 # Check PR #237 status
 gh pr checks 237
@@ -144,59 +146,77 @@ gh pr merge 237 --squash
 # Review open issues: gh issue list --state open
 ```
 
----
-
-## 📊 Background Process Management
-
-### Listing Active Processes
-```bash
-# List all background processes
-# Use /tasks command or check shell history
-```
-
-### Cleaning Up Stale Watchers
-```bash
-# Kill stale watchers (if needed)
-# Note: Process IDs from previous session may not be valid
-```
-
-**Recommendation**: Clean up before starting new work to avoid resource contention
+**Expected scope**: Doctor Hubert to decide on next priority
 
 ---
 
 ## 📚 Key Reference Documents
 
-### For Issue #87 (if proceeding):
-- Issue #87 comprehensive implementation plan (GitHub issue comment)
-- Agent consultation summaries (in issue)
-- `docs/implementation/8-AGENT-AUDIT-2025-10-08.md` (original DevOps audit)
+**Issue #87 Analysis**:
+- Issue #87 comment: https://github.com/maxrantil/textile-showcase/issues/87#issuecomment-3553951018
+- DevOps analysis: Better Stack + pino strategy, PM2 log rotation, dual logging
+- Architecture design: Client-server logger split, bundle size <5KB, tree-shakeable
+- Test strategy: 95% unit coverage, phased migration validation
+- Code quality: 8 PRs over 3 weeks, order by risk (tests → API → performance → gallery)
 
-### For Alternative Work:
-- Issue #86: WCAG accessibility violations (UX priority)
-- Issue #84: Rate limiting (security priority)
-- Issue #200: CSP violations (security hardening)
+**Session 20 Work**:
+- PR #235 merged to master (Safari Smoke tests)
+- Issue #211 closed (Safari E2E optimization complete)
+- Session 20 handoff: PR #237 (pending merge)
+
+**Open PRs**:
+- #237: Session 20 handoff (this session's branch)
+- #234: Session 14 handoff (Issue #200 CSP validation)
+- #230: Session 13 handoff (older session documentation)
 
 ---
 
-## 🤔 Strategic Considerations
+## 🔧 Quick Commands for Next Session
 
-**Why Issue #87 is High Value:**
-- Infrastructure investment with long-term ROI
-- Reduces debugging friction immediately
-- Enables better production monitoring
-- 410+ console.* statements = high technical debt
-- Agents all approved approach (unanimous consensus)
+### Clean Up Background Processes
+```bash
+# List all background processes
+jobs
 
-**Why It Might Wait:**
-- 22-30 hour investment (3-week timeline)
-- No immediate production issue
-- Other priorities may have higher user impact (accessibility, performance)
-- Timing preference matters ("don't want to get into that right now")
+# Kill stale watchers (if needed)
+# Note: Process IDs from previous session may not be valid
+```
 
-**Decision Framework:**
-- Doctor Hubert has final say on timing
-- All options documented and ready
-- Next session can start immediately on chosen path
+### Check PR #237 Status
+```bash
+# View PR details
+gh pr view 237
+
+# Check CI status
+gh pr checks 237
+
+# Merge when ready
+gh pr merge 237 --squash
+```
+
+### Start Issue #87 (if approved)
+```bash
+# Switch to master
+git checkout master
+git pull origin master
+
+# Create feature branch
+git checkout -b feat/issue-87-centralized-logging
+
+# Start implementation (follow Issue #87 plan)
+```
+
+### Alternative: Select Different Issue
+```bash
+# List open issues
+gh issue list --state open --limit 10
+
+# View specific issue
+gh issue view <number>
+
+# Create branch for different work
+git checkout -b <branch-name>
+```
 
 ---
 
@@ -475,404 +495,89 @@ const cspDirectives: string[] = [
 
 ---
 
-# Previous Session: Issue #132 - Enable Blocking E2E Tests in CI ✅ COMPLETE
+# Previous Session: Issue #225 - Slow 3G Image Loading Fix ✅ COMPLETE
 
-**Date**: 2025-11-19 (Session 16)
-**Issue**: #132 - Enable blocking E2E tests in CI workflow ✅ CLOSED
-**PR**: #233 - https://github.com/maxrantil/textile-showcase/pull/233 ✅ MERGED to master at 2025-11-19T14:28:33Z
-**Branch**: master (feat/issue-132-blocking-e2e-tests deleted after merge)
-**Status**: ✅ **ISSUE #132 COMPLETE & IN PRODUCTION** - E2E tests are now BLOCKING in CI (removed `continue-on-error: true`)
+**Date**: 2025-11-19 (Session 13)
+**Issue**: #225 - Slow 3G Image Loading Timeout in E2E Test ✅ CLOSED
+**PR**: #228 - https://github.com/maxrantil/textile-showcase/pull/228 ✅ MERGED
+**Commit**: `642e6ce` - "fix: resolve slow 3G image loading timeout in E2E test (Issue #225)"
+**Status**: ✅ **COMPLETE & IN PRODUCTION**
 
 ---
 
-## ✅ Issue #132 Complete Summary
+## ✅ Issue #225 Complete Summary
 
 ### Problem
-E2E tests were set to `continue-on-error: true` in CI workflow, allowing merges even when tests failed. This defeated the purpose of E2E testing as a quality gate.
+E2E test "Images load correctly on slow 3G connection" was timing out at line 263 because it checked if FirstImage image file fully loads, but FirstImage gets hidden by Gallery (by design) before the image finishes loading on slow 3G with 200ms delay.
 
 ### Root Cause
-- Legacy configuration from Issue #209 Safari E2E debugging (when tests were flaky)
-- Safari tests stabilized after Issue #211 (Safari Smoke tests), but `continue-on-error` never removed
-- No formal tracking to revisit this setting after stabilization
+Test was checking the WRONG thing - FirstImage is a placeholder for LCP optimization that gets hidden when Gallery loads. The real user journey is Gallery images loading on slow 3G.
 
 ### Solution
-**Removed `continue-on-error: true` from `.github/workflows/e2e-tests.yml`** (lines 53, 76, 99)
+Refactored test to check Gallery image loading (the actual user journey):
+1. ✅ Gallery skeleton appears and disappears (loading state works)
+2. ✅ Gallery images become visible on slow 3G
+3. ✅ Gallery images fully load (`complete && naturalWidth > 0`)
+4. ✅ Multiple gallery items present (gallery loaded properly)
 
-**Result**: E2E test failures now BLOCK CI/CD pipeline (PR merges fail if E2E tests fail)
-
-### Validation
+### Results
 
 **Local Testing:**
-- Desktop Chrome E2E: ✅ PASS (all 23 tests)
-- Mobile Chrome E2E: ✅ PASS (all 23 tests)
-- Safari Smoke: ✅ PASS (5 critical tests)
-
-**CI Testing (PR #233 full suite):**
-- Desktop Chrome E2E: ✅ PASS (5m18s, 23/23 tests)
-- Mobile Chrome E2E: ✅ PASS (5m38s, 23/23 tests)
-- Safari Smoke: ✅ PASS (1m52s, 5/5 tests)
-- Bundle Size: ✅ PASS (1m35s)
-- Lighthouse Desktop: ✅ PASS (3m17s)
-- Lighthouse Mobile: ✅ PASS (3m15s)
-- Jest Unit Tests: ✅ PASS (1m18s)
-- All Quality/Security Checks: ✅ PASS
-
-**Merged**: 2025-11-19 14:28:33 UTC
-**Total CI Duration**: 18m53s (within <25min budget)
-
-### Files Changed
-- `.github/workflows/e2e-tests.yml` (3 deletions, lines 53, 76, 99)
-  - Removed `continue-on-error: true` from Desktop Chrome job
-  - Removed `continue-on-error: true` from Mobile Chrome job
-  - Removed `continue-on-error: true` from Safari Smoke job
-
-### Impact
-
-**Before Change:**
-- ❌ E2E test failures allowed (merges proceed despite failures)
-- ❌ False confidence in "passing" CI (green checkmark, but tests red)
-- ❌ Quality gate ineffective
-
-**After Change:**
-- ✅ E2E test failures BLOCK merges (PRs cannot merge until tests pass)
-- ✅ True CI validation (green checkmark = all tests actually passed)
-- ✅ Quality gate enforced
-
----
-
-## 📚 Session 16 Notes
-
-### Key Achievements
-1. ✅ Created feature branch `feat/issue-132-blocking-e2e-tests`
-2. ✅ Removed `continue-on-error: true` from all E2E test jobs (3 removals)
-3. ✅ Validated changes locally (all tests passing)
-4. ✅ Created draft PR #233 with detailed description
-5. ✅ Marked PR ready for review (triggered full CI suite)
-6. ✅ All CI checks passed (18m53s total duration)
-7. ✅ Merged PR #233 to master (squash merge)
-8. ✅ Issue #132 auto-closed by merge
-9. ✅ Branch deleted automatically
-10. ✅ Session handoff completed
-
-### Technical Decisions
-- **No gradual rollout needed**: All E2E tests reliably passing
-  - Desktop Chrome: 23/23 (100%)
-  - Mobile Chrome: 23/23 (100%)
-  - Safari Smoke: 5/5 (100%)
-- **Immediate enforcement**: No risk of false CI failures
-- **Clean implementation**: Simple 3-line deletion, no complex logic
-
-### Lessons Learned
-- ✅ TDD works - comprehensive E2E test suite caught issues early (none found, but coverage validated)
-- ✅ Issue #211 Safari Smoke strategy successful (stabilized Safari without compromising coverage)
-- ✅ Small, focused changes are easy to validate and merge quickly
-- ✅ Session handoff maintains continuity across work sessions
-
-### Test-Driven Development Success Story
-
-**This issue validates our TDD approach:**
-1. **RED Phase** (Issue #209): Safari E2E tests failing, set `continue-on-error: true` temporarily
-2. **GREEN Phase** (Issue #211): Created Safari Smoke tests, stabilized Safari CI
-3. **REFACTOR Phase** (Issue #132): Removed temporary workaround, enforced blocking tests
-
-**Result**: Production-quality E2E test suite with 100% reliability
-
----
-
-## 🎯 Current Project State
-
-**Tests**: ✅ All passing (E2E, Unit, Lighthouse, Quality/Security)
-**Branch**: master (clean after PR #233 merge)
-**CI/CD**: ✅ Fully operational with BLOCKING E2E tests
-**Quality Gate**: ✅ ENFORCED (no merges without passing E2E tests)
-
-### Open Work Items
-
-**Stale PRs** (may need cleanup):
-- PR #230: Session handoff documentation (from Session 13) - can be closed
-- PR #234: Issue #200 documentation (from Session 18) - can be closed
-
-**Active Issues** (from backlog):
-- Issue #87: Centralized logging infrastructure (MEDIUM priority)
-- Issue #86: WCAG 2.1 AA accessibility violations (MEDIUM priority)
-- Issue #84: Redis-based rate limiting (MEDIUM priority)
-- Issue #82: Missing documentation (API, architecture, troubleshooting)
-- Issue #81: Simplify architecture for portfolio scale
-
----
-
-## 📝 Startup Prompt for Next Session
-
-Read CLAUDE.md to understand our workflow, then select next priority issue.
-
-**Immediate priority**: Issue #87 (Centralized Logging) OR Issue #86 (Accessibility) OR clean up stale PRs
-**Context**: Issue #132 ✅ COMPLETE (E2E tests now blocking in CI)
-- Production quality gate fully enforced
-- All tests passing reliably
-- Ready for next feature/improvement
-
-**Reference docs**:
-- Issue #132 (https://github.com/maxrantil/textile-showcase/issues/132) - ✅ CLOSED
-- `.github/workflows/e2e-tests.yml` (updated in PR #233)
-- SESSION_HANDOVER.md (this file)
-
-**Ready state**: Clean master branch, all tests passing, CI pipeline stable
-
-**Expected scope** for next work:
-- **Option A**: Issue #87 - Centralized logging (8-12 hours, infrastructure investment)
-- **Option B**: Issue #86 - Accessibility fixes (4-8 hours, UX improvement)
-- **Option C**: Clean up stale PRs #230, #234 (15-30 minutes)
-
-**Alternative work**: Issue #84 (rate limiting), #82 (documentation), or #81 (architecture simplification)
-
----
-
-## 🔄 Session Flow Summary
-
-### Session 16 Timeline
-1. **00:00** - Issue selection (Issue #132 chosen)
-2. **00:05** - Branch creation and code change (3 lines deleted)
-3. **00:10** - Local testing (Desktop + Mobile Chrome, all passing)
-4. **00:15** - PR #233 creation (draft)
-5. **00:20** - Mark PR ready for review
-6. **00:25-00:43** - CI pipeline execution (18m53s)
-7. **00:45** - PR #233 merge to master
-8. **00:50** - Session handoff documentation
-9. **01:00** - Session complete
-
-**Total Session Duration**: ~1 hour (efficient, focused work)
-
----
-
-## 📊 Session Metrics
-
-**Work Completed:**
-- 1 issue closed (Issue #132)
-- 1 PR merged (PR #233)
-- 3 lines of code changed (deletions)
-- 0 bugs introduced (all tests passing)
-- 100% CI pass rate
-
-**Test Results:**
-- Desktop Chrome E2E: 23/23 PASS
-- Mobile Chrome E2E: 23/23 PASS
-- Safari Smoke: 5/5 PASS
-- Jest Unit Tests: PASS
-- Lighthouse Desktop/Mobile: PASS
-- All Quality/Security Checks: PASS
-
-**Performance:**
-- CI Duration: 18m53s (within budget)
-- Local Test Duration: <5min
-- Total Implementation Time: <1 hour
-
----
-
-## ✅ Agent Validation Status
-
-**Not Required for This Issue** (simple configuration change):
-- No architecture changes → architecture-designer not needed
-- No security implications → security-validator not needed
-- No performance impact → performance-optimizer not needed
-- No UX changes → ux-accessibility-i18n-agent not needed
-- Tests already comprehensive → test-automation-qa not needed
-- Clean code deletion → code-quality-analyzer not needed
-
-**Implicit Validation:**
-- ✅ All CI checks passing (automated validation)
-- ✅ E2E test suite comprehensive (test strategy validated in Issue #211)
-- ✅ Documentation complete (session handoff)
-- ✅ CLAUDE.md workflow followed
-
----
-
-## 🎓 Key Learnings
-
-### What Worked Well
-1. ✅ **Simple, focused scope**: Single-purpose issue (remove `continue-on-error`)
-2. ✅ **TDD validation**: Comprehensive test suite caught any potential issues
-3. ✅ **Clean implementation**: No complex logic, just configuration cleanup
-4. ✅ **Immediate value**: Quality gate now enforced
-
-### Process Wins
-1. ✅ **Session handoff continuity**: Clear documentation for future sessions
-2. ✅ **Agent-validated approach**: (from Issue #211) Safari Smoke strategy worked
-3. ✅ **CLAUDE.md compliance**: Followed all workflow requirements
-  - ✅ Feature branch (not master)
-  - ✅ Descriptive commits (no AI attribution)
-  - ✅ Draft PR → Ready for review workflow
-  - ✅ Comprehensive testing (build + unit tests pass)
-  - ✅ Proper session handoff (CLAUDE.md compliant)
-
-### Decisions Made
-- **Removed `continue-on-error` immediately** (no gradual rollout needed)
-  - Rationale: All E2E tests reliably passing, no risk of false failures
-- **No Safari full E2E suite** (Safari Smoke sufficient)
-  - Rationale: 5 critical tests cover key functionality, full suite too slow
-- **Document TDD success** (Issue #209 → #211 → #132 progression)
-  - Rationale: Demonstrates value of RED-GREEN-REFACTOR cycle
-
-### Decisions Made
-- Chose to duplicate FirstImage hiding logic rather than extract to hook
-  - Rationale: Maintains clarity, well-tested, not DRY but simple
-  - Future: Consider extraction if pattern appears in third component
-
-### Agent Consultations
-- None required (straightforward architectural alignment)
-- Would pass all agent validations (matches existing Desktop Gallery pattern)
-
----
-
-# Previous Sessions
-
-## Session 15: Issue #229 - MobileGallery Architectural Consistency ✅ MERGED
-
-**Date**: 2025-11-19 (Sessions 14-15)
-**Issue**: #229 - MobileGallery architectural inconsistency (FirstImage not hidden after gallery loads) ✅ CLOSED
-**PR**: #231 - https://github.com/maxrantil/textile-showcase/pull/231 ✅ MERGED to master
-**Branch**: fix/issue-229-mobile-gallery-firstimage ✅ DELETED (merged)
-**Status**: ✅ **ISSUE #229 COMPLETE & MERGED** - MobileGallery now hides FirstImage after gallery loads (architectural parity with Desktop Gallery)
-
----
-
-### Problem Analysis (Issue #229)
-
-**Discovery Context**: Found during Issue #225 investigation (slow 3G E2E test)
-
-**Architectural Inconsistency:**
-- **Desktop Gallery** (Gallery.tsx:104-140): Hides FirstImage after gallery loads
-- **MobileGallery** (MobileGallery.tsx:1-71): Does NOT hide FirstImage (orphaned element)
-
-**Impact**: No user-facing bug, but architectural debt and potential confusion
-
-**Root Cause**: MobileGallery implementation diverged from Desktop Gallery pattern
-
----
-
-### Solution Implemented (PR #231)
-
-**Aligned MobileGallery with Desktop Gallery FirstImage hiding behavior:**
-
-1. **Added state tracking** (lines 6-7):
-   ```typescript
-   const [isGalleryVisible, setIsGalleryVisible] = useState(false)
-   const firstImageRef = useRef<HTMLDivElement>(null)
-   ```
-
-2. **Gallery visibility detection** (lines 51-61):
-   ```typescript
-   useEffect(() => {
-     const observer = new IntersectionObserver(
-       ([entry]) => { setIsGalleryVisible(entry.isIntersecting) },
-       { threshold: 0.1 }
-     )
-     // Observes gallery container, triggers state update
-   })
-   ```
-
-3. **FirstImage hiding logic** (lines 63-71):
-   ```typescript
-   useEffect(() => {
-     if (isGalleryVisible && firstImageRef.current) {
-       firstImageRef.current.classList.add('gallery-loaded')
-       // CSS handles opacity/visibility transition
-     }
-   }, [isGalleryVisible])
-   ```
-
-**Result**: MobileGallery now matches Desktop Gallery behavior exactly
-
----
-
-### Validation (PR #231)
-
-**Local Testing:**
-- Mobile Chrome viewport: ✅ FirstImage hides after gallery scroll
-- Lighthouse Mobile: ✅ LCP still optimal (FirstImage serves LCP optimization purpose)
-- Animation: ✅ Smooth fade-out transition
+- Desktop Chrome: ✅ PASS (15.1s) - was timing out at 30s
+- Mobile Chrome: ✅ PASS (15.1s) - was timing out at 30s
 
 **CI Testing (Full Suite):**
-- Desktop Chrome E2E: ✅ PASS (5m12s, 23/23 tests)
-- Mobile Chrome E2E: ✅ PASS (5m44s, 23/23 tests)
-- Safari Smoke: ✅ PASS (1m49s, 5/5 tests)
-- Lighthouse Desktop: ✅ PASS (3m8s, performance 0.91)
-- Lighthouse Mobile: ✅ PASS (3m12s, performance 0.72)
-- Jest Unit Tests: ✅ PASS (1m21s)
-- Bundle Size: ✅ PASS (1m37s)
+- Desktop Chrome E2E: ✅ PASS (5m45s)
+- Mobile Chrome E2E: ✅ PASS (6m9s)
+- Bundle Size: ✅ PASS (1m36s)
+- Lighthouse Desktop: ✅ PASS (3m5s)
+- Lighthouse Mobile: ✅ PASS (3m2s)
+- Jest Unit Tests: ✅ PASS (1m20s)
+- All Validation Checks: ✅ PASS
 
-**Merged**: 2025-11-19 at 11:40:29 UTC
+**Merged**: 2025-11-19 08:34:09 UTC
+**Time to Complete**: ~1.5 hours (investigation → fix → testing → merge)
 
----
+### Files Changed
+- `tests/e2e/workflows/image-user-journeys.spec.ts` (lines 226-275)
+  - Removed FirstImage image load check
+  - Added Gallery image load verification with `expect.poll()`
+  - Increased timeout to 30s for slow 3G
+  - Focused test on actual user journey
 
-### Files Changed (PR #231)
-- `src/components/mobile/MobileGallery.tsx` (14 insertions)
-  - Added state: isGalleryVisible, firstImageRef
-  - Added IntersectionObserver for gallery visibility
-  - Added FirstImage hiding useEffect
-  - Updated FirstImage div with ref
-
----
-
-### Session 14 Notes (Background)
-
-**Context**: Session 14 was a cleanup session after Issue #225 merge
-- Created Issue #229 (this architectural gap)
-- Cleaned up 23 stale background processes
-- Closed PR #227 (outdated/conflicted after #225 merge)
-
-**Decision**: Tackle Issue #229 in Session 15 (next session)
+### Discovery
+Found that `MobileGallery.tsx` (lines 1-71) does NOT hide FirstImage after loading, while Desktop `Gallery.tsx` (lines 104-140) DOES. This is an architectural inconsistency but not blocking Issue #225. Documented for future improvement.
 
 ---
 
-### Session 15 Execution
+## 📚 Session 13 Notes
 
-**Timeline:**
-1. **00:00** - Issue selection (Issue #229 from Session 14 backlog)
-2. **00:05** - Branch creation: `fix/issue-229-mobile-gallery-firstimage`
-3. **00:10-00:30** - Code implementation (reviewed Desktop Gallery, adapted for Mobile)
-4. **00:35** - Local testing (mobile viewport, LCP validation)
-5. **00:40** - PR #231 creation (draft)
-6. **00:45** - Mark PR ready for review
-7. **00:50-01:08** - CI pipeline execution (18m12s)
-8. **01:10** - PR #231 merge to master
-9. **01:15** - Session handoff documentation
-10. **01:20** - Session complete
+### Key Achievements
+1. ✅ Created feature branch `feat/issue-225-slow-3g-timeout`
+2. ✅ Identified root cause: test checking wrong thing (FirstImage vs Gallery)
+3. ✅ Refactored test to check actual user journey (Gallery loading)
+4. ✅ Validated fix locally on both Desktop and Mobile Chrome
+5. ✅ Created draft PR #228 with detailed description
+6. ✅ Marked PR ready for review (triggered full CI suite)
+7. ✅ All CI checks passed
+8. ✅ Merged PR #228 to master (squash merge)
+9. ✅ Issue #225 auto-closed by merge
+10. ✅ Branch deleted automatically
+11. ✅ Session handoff completed
 
-**Total Session Duration**: ~1.5 hours (efficient, focused architectural cleanup)
+### Technical Decisions
+- Used `expect.poll()` to wait for image loading instead of one-time check
+- Increased timeout to 30s for slow 3G (200ms delay per request)
+- Removed FirstImage-specific checks (not relevant to slow network test)
+- Focused on Gallery as the actual user-facing component
 
----
-
-### Key Decisions (Session 15)
-
-1. **Chose to duplicate logic** rather than extract to shared hook
-   - Rationale: Maintains clarity, each component self-contained
-   - Trade-off: Not DRY, but simple and well-tested
-   - Future: Consider hook extraction if pattern appears in third component
-
-2. **Used IntersectionObserver** (matches Desktop Gallery pattern)
-   - Rationale: Efficient, browser-native, well-supported
-   - Alternative: Scroll event listener (rejected - less efficient)
-
-3. **CSS-based transition** (matches Desktop Gallery)
-   - Rationale: Smooth animation, accessible, performant
-   - CSS class `.gallery-loaded` triggers opacity/visibility change
+### Lessons Learned
+- E2E tests should verify user journeys, not implementation details
+- FirstImage is a placeholder for LCP optimization, not the end goal
+- On slow 3G, FirstImage gets hidden before image loads (by design)
+- MobileGallery has architectural gap vs Desktop Gallery
 
 ---
-
-## 🔄 Previous Session Context
-
-### Session 13: Issue #225 Resolution ✅ COMPLETE
-
-**Problem**: Slow 3G E2E test timing out (30s) - FirstImage not loading on simulated slow network
-
-**Solution**: Refactored test to check Gallery loading instead of FirstImage (test was checking wrong thing)
-
-**Result**:
-- Desktop Chrome: ✅ PASS (15.1s)
-- Mobile Chrome: ✅ PASS (15.1s)
-- PR #228 created and merged
-
-**Discovery**: During Issue #225 investigation, noticed MobileGallery doesn't hide FirstImage (Desktop Gallery does) → Created Issue #229
 
 **Last Updated**: 2025-11-19 (Session 21 - Issue #87 Analysis Complete)
 **Next Review**: Doctor Hubert to decide on next priority (Issue #87 or alternative work)
