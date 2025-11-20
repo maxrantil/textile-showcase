@@ -5,23 +5,9 @@
 import { useDeviceType } from '@/hooks/shared/useDeviceType'
 import { useState, useEffect, useRef } from 'react'
 import { TextileDesign } from '@/types/textile'
+import DesktopGallery from '@/components/desktop/Gallery/Gallery'
+import MobileGallery from '@/components/mobile/Gallery/MobileGallery'
 import styles from './index.module.css'
-
-// Helper to add timeout to dynamic imports
-const withTimeout = <T,>(
-  promise: Promise<T>,
-  timeoutMs: number
-): Promise<T> => {
-  return Promise.race([
-    promise,
-    new Promise<T>((_, reject) =>
-      setTimeout(
-        () => reject(new Error(`Import timeout after ${timeoutMs}ms`)),
-        timeoutMs
-      )
-    ),
-  ])
-}
 
 interface AdaptiveGalleryProps {
   designs: TextileDesign[]
@@ -46,11 +32,7 @@ const MIN_SKELETON_DISPLAY_TIME = 300 // ms
 export default function AdaptiveGallery({ designs }: AdaptiveGalleryProps) {
   const deviceType = useDeviceType()
   const [isHydrated, setIsHydrated] = useState(false)
-  const [GalleryComponent, setGalleryComponent] = useState<React.ComponentType<{ designs: TextileDesign[] }> | null>(null)
-  const [importError, setImportError] = useState<Error | null>(null)
-  const [retryCount, setRetryCount] = useState(0)
   const skeletonStartTime = useRef(Date.now())
-  const maxRetries = 3
 
   useEffect(() => {
     // Ensure skeleton displays for minimum time to prevent CLS and allow E2E test detection
@@ -64,87 +46,17 @@ export default function AdaptiveGallery({ designs }: AdaptiveGalleryProps) {
     return () => clearTimeout(timer)
   }, [])
 
-  // Handle dynamic imports with error recovery
-  useEffect(() => {
-    if (!isHydrated) return
-
-    const isMobile = deviceType === 'mobile' || deviceType === 'tablet'
-
-    let isCancelled = false
-
-    const loadComponent = async () => {
-      try {
-        // Dynamic import with timeout for robustness
-        const timeout = retryCount > 0 ? 5000 : 10000 // 10s initial, 5s retries
-        const importedModule = isMobile
-          ? await withTimeout(
-              import('@/components/mobile/Gallery/MobileGallery'),
-              timeout
-            )
-          : await withTimeout(
-              import('@/components/desktop/Gallery/Gallery'),
-              timeout
-            )
-
-        if (!isCancelled) {
-          setGalleryComponent(() => importedModule.default)
-          setImportError(null)
-        }
-      } catch (error) {
-        console.error('Gallery import failed:', error)
-        if (!isCancelled) {
-          setImportError(error as Error)
-
-          // Auto-retry on failure (up to maxRetries)
-          if (retryCount < maxRetries) {
-            // Shorter backoff for faster recovery
-            const delay = 500 * Math.pow(1.5, retryCount) // Exponential backoff (500ms, 750ms, 1125ms)
-            setTimeout(() => {
-              setRetryCount((prev) => prev + 1)
-            }, delay)
-          }
-        }
-      }
-    }
-
-    loadComponent()
-
-    return () => {
-      isCancelled = true
-    }
-  }, [isHydrated, deviceType, retryCount])
-
-  // Phase 3: Remove opacity hiding - images must be visible while loading on slow 3G
-  // Skeleton now overlays via z-index instead of hiding content with opacity
-  const skeletonVisible = !isHydrated || !GalleryComponent
-
-  // Show error fallback if max retries exceeded
-  if (importError && retryCount >= maxRetries) {
-    return (
-      <div
-        data-testid="import-error-fallback"
-        className={styles.errorFallback}
-      >
-        <p className={styles.errorMessage}>
-          Unable to load gallery. Please check your connection.
-        </p>
-        <button
-          onClick={() => window.location.reload()}
-          className={styles.errorButton}
-        >
-          Reload Page
-        </button>
-      </div>
-    )
-  }
+  // Select the appropriate gallery component based on device type
+  const isMobile = deviceType === 'mobile' || deviceType === 'tablet'
+  const GalleryComponent = isMobile ? MobileGallery : DesktopGallery
 
   return (
     <div className={styles.container} suppressHydrationWarning>
       <div className={styles.gallery}>
-        {GalleryComponent && <GalleryComponent designs={designs} />}
+        {isHydrated && <GalleryComponent designs={designs} />}
       </div>
-      {(!isHydrated || !GalleryComponent) && (
-        <div className={`${styles.skeleton} ${skeletonVisible ? styles.visible : styles.hidden}`}>
+      {!isHydrated && (
+        <div className={`${styles.skeleton} ${styles.visible}`}>
           <GallerySkeleton />
         </div>
       )}

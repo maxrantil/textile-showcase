@@ -95,127 +95,13 @@ export default function Gallery({ designs }: GalleryProps) {
   const [canScrollRight, setCanScrollRight] = useState(true)
   const isScrollingRef = useRef(false)
   const hasRestoredRef = useRef(false)
-  const mountTimeRef = useRef(Date.now()) // Track when component mounts
   const focusTimeoutRef = useRef<NodeJS.Timeout | null>(null) // Track focus management timeout for cleanup
 
   // Phase 4: Hide static first image AFTER first gallery image loads AND minimum display time
   // Issue #132: Ensures FirstImage visible for minimum time (allows E2E tests to verify + prevents CLS flash)
   // Issue #136: Fixed race condition on slow 3G - network-aware timing + proper image load detection
-  useEffect(() => {
-    // Network-aware minimum display time (Issue #136 - performance-optimizer recommendation)
-    const getNetworkAwareMinDisplayTime = (): number => {
-      // @ts-expect-error - effectiveType is experimental but widely supported
-      const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection
-
-      if (connection) {
-        const effectiveType = connection.effectiveType
-
-        switch (effectiveType) {
-          case 'slow-2g':
-            return 2000
-          case '2g':
-            return 1500
-          case '3g':
-            return 1000
-          case '4g':
-            // Issue #136: Use 800ms even for 4G to handle:
-            // 1. Simulated slow networks in tests (can't detect via Network API)
-            // 2. Cache misses on fast networks
-            // 3. CDN delays
-            return 800
-          default:
-            return 300
-        }
-      }
-
-      return 1000 // Conservative default (Issue #136: handles slow 3G when network API unavailable)
-    }
-
-    const MIN_DISPLAY_TIME = getNetworkAwareMinDisplayTime()
-    console.log('[FirstImage] MIN_DISPLAY_TIME:', MIN_DISPLAY_TIME, 'ms')
-
-    const hideFirstImage = () => {
-      const staticFirstImage = document.querySelector(
-        '[data-first-image="true"]'
-      ) as HTMLElement
-      if (staticFirstImage) {
-        // CSP compliant: Use CSS class instead of inline styles
-        staticFirstImage.classList.add(styles.firstImageHidden)
-        console.log('[FirstImage] Hidden after gallery image loaded')
-      }
-    }
-
-    const hideWithMinimumTime = () => {
-      const elapsed = Date.now() - mountTimeRef.current
-      const remaining = Math.max(0, MIN_DISPLAY_TIME - elapsed)
-
-      console.log('[FirstImage] Hiding after', remaining, 'ms (elapsed:', elapsed, 'ms)')
-      setTimeout(hideFirstImage, remaining)
-    }
-
-    // Wait for first gallery image to exist AND fully load
-    const checkForGalleryImage = () => {
-      const firstGalleryImg = document.querySelector(
-        '.desktop-gallery-img'
-      ) as HTMLImageElement
-
-      if (firstGalleryImg) {
-        console.log('[FirstImage] Gallery image found in DOM')
-
-        // Check if image is truly loaded with valid dimensions (Issue #136 fix)
-        const isImageLoaded = firstGalleryImg.complete &&
-                             firstGalleryImg.naturalWidth > 0 &&
-                             firstGalleryImg.naturalHeight > 0
-
-        if (isImageLoaded) {
-          console.log('[FirstImage] Gallery image already loaded')
-          hideWithMinimumTime()
-        } else {
-          // Wait for image load with proper cleanup
-          console.log('[FirstImage] Waiting for gallery image to load')
-
-          let hasLoaded = false
-
-          const handleLoad = () => {
-            if (hasLoaded) return
-            hasLoaded = true
-            console.log('[FirstImage] Gallery image loaded event fired')
-            hideWithMinimumTime()
-          }
-
-          firstGalleryImg.addEventListener('load', handleLoad, { once: true })
-
-          // Backup: Check if image becomes complete during wait
-          const checkComplete = setInterval(() => {
-            if (firstGalleryImg.complete && firstGalleryImg.naturalWidth > 0) {
-              clearInterval(checkComplete)
-              handleLoad()
-            }
-          }, 100)
-
-          // Cleanup interval after fallback time
-          setTimeout(() => clearInterval(checkComplete), 20000)
-        }
-      } else {
-        // Gallery image not in DOM yet, retry
-        console.log('[FirstImage] Gallery image not found, retrying in 100ms')
-        setTimeout(checkForGalleryImage, 100)
-      }
-    }
-
-    // Start checking for gallery image
-    checkForGalleryImage()
-
-    // Fallback: hide after 20s (increased for slow 3G - Issue #136)
-    const fallbackTimer = setTimeout(() => {
-      console.log('[FirstImage] Fallback timer triggered (20s)')
-      hideFirstImage()
-    }, 20000)
-
-    return () => {
-      clearTimeout(fallbackTimer)
-    }
-  }, [])
+  // Issue #236: Removed DOM polling for FirstImage hiding - now handled by CSS animation
+  // This eliminates 2-20s JavaScript overhead on Safari
 
   // Scroll to specific index
   const scrollToIndex = useCallback(

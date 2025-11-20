@@ -8,7 +8,10 @@ test.describe('Gallery Performance & Error Handling', () => {
   })
 
   test.describe('Dynamic Import Error Recovery', () => {
-    test('should handle dynamic import failures gracefully', async ({ page, context }) => {
+    // Issue #236: Tests skipped - dynamic imports removed in favor of static imports
+    // These tests validated error handling for dynamic import failures (retries, timeouts, fallbacks)
+    // With static imports, there's no dynamic import mechanism to fail, so these tests are obsolete
+    test.skip('should handle dynamic import failures gracefully', async ({ page, context }) => {
       // Simulate network failure by blocking Gallery component imports
       let requestCount = 0
       await context.route('**/*.js', (route) => {
@@ -42,7 +45,7 @@ test.describe('Gallery Performance & Error Handling', () => {
       await expect(reloadButton).toBeVisible()
     })
 
-    test('should allow navigation even when dynamic imports fail', async ({ page, context }, testInfo) => {
+    test.skip('should allow navigation even when dynamic imports fail', async ({ page, context }, testInfo) => {
       // Skip on mobile - this tests desktop navigation fallback behavior
       // Mobile uses hamburger menu with different UX patterns
       test.skip(testInfo.project.name.includes('Mobile'), 'Desktop navigation fallback test')
@@ -75,7 +78,7 @@ test.describe('Gallery Performance & Error Handling', () => {
       await expect(contactHeading).toBeVisible()
     })
 
-    test('should show max retries message after exhausting attempts', async ({ page, context }) => {
+    test.skip('should show max retries message after exhausting attempts', async ({ page, context }) => {
       // Always fail Gallery imports
       await context.route('**/*.js', (route) => {
         const url = route.request().url()
@@ -99,7 +102,8 @@ test.describe('Gallery Performance & Error Handling', () => {
   })
 
   test.describe('Import Timeout Handling', () => {
-    test('should timeout slow dynamic imports', async ({ page, context }) => {
+    // Issue #236: Test skipped - dynamic import timeout handling removed with static imports
+    test.skip('should timeout slow dynamic imports', async ({ page, context }) => {
       // Simulate very slow Gallery loading (>10s)
       await context.route('**/*.js', async (route) => {
         const url = route.request().url()
