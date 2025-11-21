@@ -131,7 +131,7 @@
 /* Placeholder styling */
 .mobile-form-input::placeholder,
 .mobile-form-textarea::placeholder {
-  color: #999;
+  color: #5a5a5a;
   opacity: 1;
   font-style: italic;
 }

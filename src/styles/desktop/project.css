@@ -175,7 +175,7 @@
   font-family: inherit;
   font-weight: 400;
   letter-spacing: 1px;
-  color: #888;
+  color: #5a5a5a;
   text-transform: none;
   margin: 0;
   flex-shrink: 0;
@@ -307,7 +307,7 @@
 
 .desktop-project-year {
   font-size: 14px;
-  color: #888;
+  color: #5a5a5a;
   margin: 0 0 24px 0;
   font-weight: 400;
   letter-spacing: 1px;
@@ -350,7 +350,7 @@
 
 .desktop-info-item h3 {
   font-size: 11px;
-  color: #999;
+  color: #5a5a5a;
   text-transform: uppercase;
   letter-spacing: 2px;
   margin: 0 0 8px 0;
