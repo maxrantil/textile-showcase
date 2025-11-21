@@ -226,10 +226,10 @@ describe('Gallery Navigation Integration Tests', () => {
       render(<Gallery designs={realTestDesigns} />)
 
       const images = screen.getAllByRole('img')
-      // Images use the design title as alt text, not the image.alt field
-      expect(images[0]).toHaveAttribute('alt', 'Sustainable Cotton Weave')
-      expect(images[1]).toHaveAttribute('alt', 'Organic Hemp Fiber')
-      expect(images[2]).toHaveAttribute('alt', 'Recycled Wool Blend')
+      // Images use descriptive alt text with "Textile design artwork:" prefix (WCAG AA compliance)
+      expect(images[0]).toHaveAttribute('alt', 'Textile design artwork: Sustainable Cotton Weave')
+      expect(images[1]).toHaveAttribute('alt', 'Textile design artwork: Organic Hemp Fiber')
+      expect(images[2]).toHaveAttribute('alt', 'Textile design artwork: Recycled Wool Blend')
     })
 
     it('should handle real Sanity image URLs', () => {

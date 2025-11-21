@@ -148,6 +148,11 @@ export default async function Home() {
         }}
       />
 
+      {/* Issue #86: WCAG 2.1 AA - Level-one heading for proper document structure
+          Screen reader users need H1 for page identification and navigation
+          Visually hidden to maintain existing minimal gallery-first design */}
+      <h1 className="sr-only">Ida Romme - Contemporary Textile Design</h1>
+
       {/* Issue #51 Phase 2: Static HTML first image for LCP optimization
           Renders in initial HTML so browser can discover and load immediately
           Hidden after client hydration completes */}

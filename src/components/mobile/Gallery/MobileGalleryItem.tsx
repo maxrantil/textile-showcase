@@ -91,7 +91,7 @@ export default function MobileGalleryItem({
       })
     : '/images/placeholder.jpg' // Fallback
 
-  const alt = design.image?.alt || design.title
+  const alt = design.image?.alt || `Textile design artwork: ${design.title}${design.year ? ` (${design.year})` : ''}`
 
   return (
     <article
@@ -131,7 +131,7 @@ export default function MobileGalleryItem({
       )}
 
       <div className="mobile-gallery-info">
-        <h3 className="mobile-gallery-title">{design.title}</h3>
+        <h2 className="mobile-gallery-title">{design.title}</h2>
         {design.description && (
           <p className="mobile-gallery-description">{design.description}</p>
         )}

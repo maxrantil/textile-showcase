@@ -161,20 +161,24 @@ describe('ContactForm Component', () => {
     fireEvent.click(submitButton)
 
     // Wait for error message - check for the actual error message structure
-    await waitFor(() => {
-      // Check for the error title
-      expect(screen.getByText(/failed to send message/i)).toBeInTheDocument()
-      // Check for the error message
-      expect(
-        screen.getByText(
-          /network error. please check your connection and try again./i
-        )
-      ).toBeInTheDocument()
-      // Check for the retry button
-      expect(
-        screen.getByRole('button', { name: /try again/i })
-      ).toBeInTheDocument()
-    })
+    // Note: FormError now has role="alert" and aria-live="assertive" for screen readers (WCAG AA)
+    await waitFor(
+      async () => {
+        // Check for the error title
+        expect(screen.getByText(/failed to send message/i)).toBeInTheDocument()
+        // Check for the error message
+        expect(
+          screen.getByText(
+            /network error. please check your connection and try again./i
+          )
+        ).toBeInTheDocument()
+        // Check for the retry button with new aria-label
+        expect(
+          screen.getByRole('button', { name: /try submitting the form again/i })
+        ).toBeInTheDocument()
+      },
+      { timeout: 5000 }
+    )
   })
 
   it('disables submit button while form is submitting', async () => {

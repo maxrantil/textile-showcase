@@ -35,6 +35,15 @@ test.describe('Gallery Focus Restoration - WCAG 2.4.3', () => {
     // Wait for navigation back to homepage
     await page.waitForURL('/', { timeout: 10000 })
 
+    // Wait for gallery to fully re-render (important for focus restoration to complete)
+    await page.waitForSelector('[data-testid="desktop-gallery"], [data-testid="mobile-gallery"]', {
+      state: 'visible',
+      timeout: 10000
+    })
+
+    // Give focus restoration logic time to complete after gallery renders
+    await page.waitForTimeout(500)
+
     // Verify focus restored to item 3 (index 2)
     // This is the key assertion - focus should be restored to the same gallery item
     await expect(item3).toBeFocused({ timeout: 5000 })
@@ -67,6 +76,15 @@ test.describe('Gallery Focus Restoration - WCAG 2.4.3', () => {
     // Wait for navigation back to homepage
     await page.waitForURL('/', { timeout: 10000 })
 
+    // Wait for gallery to fully re-render (important for focus restoration to complete)
+    await page.waitForSelector('[data-testid="desktop-gallery"], [data-testid="mobile-gallery"]', {
+      state: 'visible',
+      timeout: 10000
+    })
+
+    // Give focus restoration logic time to complete after gallery renders
+    await page.waitForTimeout(500)
+
     // Verify focus restored to item 4 (index 3)
     await expect(item4).toBeFocused({ timeout: 5000 })
   })
@@ -96,6 +114,15 @@ test.describe('Gallery Focus Restoration - WCAG 2.4.3', () => {
     // Return to gallery
     await page.goBack()
     await page.waitForURL('/', { timeout: 10000 })
+
+    // Wait for gallery to fully re-render (important for focus restoration to complete)
+    await page.waitForSelector('[data-testid="desktop-gallery"], [data-testid="mobile-gallery"]', {
+      state: 'visible',
+      timeout: 10000
+    })
+
+    // Give focus restoration logic time to complete after gallery renders
+    await page.waitForTimeout(500)
 
     // Verify focus is restored
     await expect(item5).toBeFocused({ timeout: 5000 })
@@ -134,6 +161,15 @@ test.describe('Gallery Focus Restoration - WCAG 2.4.3', () => {
     // Return to gallery
     await page.goBack()
     await page.waitForURL('/', { timeout: 10000 })
+
+    // Wait for gallery to fully re-render (important for focus restoration to complete)
+    await page.waitForSelector('[data-testid="desktop-gallery"], [data-testid="mobile-gallery"]', {
+      state: 'visible',
+      timeout: 10000
+    })
+
+    // Give focus restoration logic time to complete after gallery renders
+    await page.waitForTimeout(500)
 
     // Verify focus restored
     await expect(item2).toBeFocused({ timeout: 5000 })

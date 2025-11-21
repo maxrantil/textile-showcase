@@ -112,6 +112,9 @@ test.describe('OptimizedImage Accessibility', () => {
       await page.goto('/')
       await page.waitForLoadState('networkidle')
 
+      // Wait for gallery items to be visible
+      await page.locator('[data-testid^="gallery-item-"]').first().waitFor({ state: 'visible' })
+
       // Find all clickable image wrappers
       const clickableWrappers = page.locator('[role="button"]')
       const clickableCount = await clickableWrappers.count()
