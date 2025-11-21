@@ -1,8 +1,21 @@
 // ABOUTME: End-to-end WCAG 2.1 AA accessibility tests using Playwright and axe-core
 // Tests real browser environment for accessibility compliance (Issue #86)
 
-import { test, expect } from '@playwright/test'
+import { test, expect, Page } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
+
+// Helper function: Get gallery selector based on viewport size
+// Mobile (<768px) uses mobile-gallery, Desktop (≥768px) uses desktop-gallery
+async function getGallerySelector(page: Page): Promise<string> {
+  const viewport = page.viewportSize()
+  if (!viewport) {
+    throw new Error('Viewport size not set')
+  }
+  const isMobile = viewport.width < 768
+  return isMobile
+    ? '[data-testid="mobile-gallery"]'
+    : '[data-testid="desktop-gallery"]'
+}
 
 test.describe('WCAG 2.1 AA E2E Accessibility Tests', () => {
   test.describe('Homepage Accessibility', () => {
@@ -11,8 +24,9 @@ test.describe('WCAG 2.1 AA E2E Accessibility Tests', () => {
     }) => {
       await page.goto('/')
 
-      // Wait for content to load
-      await page.waitForSelector('[data-testid="desktop-gallery"]', {
+      // Wait for content to load (viewport-aware: desktop-gallery or mobile-gallery)
+      const gallerySelector = await getGallerySelector(page)
+      await page.waitForSelector(gallerySelector, {
         timeout: 10000,
       })
 
@@ -72,8 +86,9 @@ test.describe('WCAG 2.1 AA E2E Accessibility Tests', () => {
     test('should have descriptive alt text on all images', async ({ page }) => {
       await page.goto('/')
 
-      // Wait for gallery to load
-      await page.waitForSelector('[data-testid="desktop-gallery"]')
+      // Wait for gallery to load (viewport-aware: desktop-gallery or mobile-gallery)
+      const gallerySelector = await getGallerySelector(page)
+      await page.waitForSelector(gallerySelector)
 
       const accessibilityScanResults = await new AxeBuilder({ page })
         .withTags(['cat.text-alternatives'])
@@ -147,8 +162,9 @@ test.describe('WCAG 2.1 AA E2E Accessibility Tests', () => {
     }) => {
       await page.goto('/')
 
-      // Wait for gallery
-      await page.waitForSelector('[data-testid="desktop-gallery"]')
+      // Wait for gallery (viewport-aware: desktop-gallery or mobile-gallery)
+      const gallerySelector = await getGallerySelector(page)
+      await page.waitForSelector(gallerySelector)
 
       // Test keyboard navigation
       const firstItem = page.locator('[data-testid="gallery-item-0"]')
@@ -169,8 +185,9 @@ test.describe('WCAG 2.1 AA E2E Accessibility Tests', () => {
     }) => {
       await page.goto('/')
 
-      // Wait for gallery
-      await page.waitForSelector('[data-testid="desktop-gallery"]')
+      // Wait for gallery (viewport-aware: desktop-gallery or mobile-gallery)
+      const gallerySelector = await getGallerySelector(page)
+      await page.waitForSelector(gallerySelector)
 
       const accessibilityScanResults = await new AxeBuilder({ page })
         .include('[data-testid^="gallery-item-"]')
