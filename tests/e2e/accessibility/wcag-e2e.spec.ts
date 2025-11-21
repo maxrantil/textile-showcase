@@ -87,8 +87,8 @@ test.describe('WCAG 2.1 AA E2E Accessibility Tests', () => {
     test('should not have accessibility violations', async ({ page }) => {
       await page.goto('/contact')
 
-      // Wait for form to load
-      await page.waitForSelector('form.contact-form')
+      // Wait for form to load (works across all viewports: desktop/mobile/contact-form variants)
+      await page.waitForSelector('form')
 
       const accessibilityScanResults = await new AxeBuilder({ page })
         .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
@@ -103,8 +103,8 @@ test.describe('WCAG 2.1 AA E2E Accessibility Tests', () => {
     }) => {
       await page.goto('/contact')
 
-      // Wait for form
-      await page.waitForSelector('form.contact-form')
+      // Wait for form (works across all viewports: desktop/mobile/contact-form variants)
+      await page.waitForSelector('form')
 
       const accessibilityScanResults = await new AxeBuilder({ page })
         .withTags(['cat.forms'])
@@ -118,8 +118,8 @@ test.describe('WCAG 2.1 AA E2E Accessibility Tests', () => {
     }) => {
       await page.goto('/contact')
 
-      // Wait for form
-      await page.waitForSelector('form.contact-form')
+      // Wait for form (works across all viewports: desktop/mobile/contact-form variants)
+      await page.waitForSelector('form')
 
       // Submit empty form to trigger errors
       await page.click('button[type="submit"]')
