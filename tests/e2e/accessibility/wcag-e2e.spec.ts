@@ -29,10 +29,10 @@ test.describe('WCAG 2.1 AA E2E Accessibility Tests', () => {
       await page.goto('/')
 
       const accessibilityScanResults = await new AxeBuilder({ page })
-        .withTags(['cat.color'])
+        .withTags(['wcag2aa'])
         .analyze()
 
-      // This will FAIL due to #888 and #999 color contrast violations
+      // Check WCAG AA color contrast compliance (4.5:1 for normal text)
       expect(accessibilityScanResults.violations).toEqual([])
     })
 
