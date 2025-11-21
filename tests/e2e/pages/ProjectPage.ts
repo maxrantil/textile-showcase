@@ -17,9 +17,9 @@ export class ProjectPage {
     this.page = page
     // Project title uses class desktop-project-title in h1
     this.projectTitle = page.locator('h1.desktop-project-title, h1')
-    // Project images - will match any img in project view
+    // Project images - match actual image classes used in components
     this.projectImages = page.locator(
-      '.desktop-project-view img, .mobile-project-view img, main img'
+      '.desktop-project-img, .mobile-project-img, .desktop-thumbnail-img, .mobile-gallery-image'
     )
     // Navigation buttons use specific classes
     this.nextButton = page.locator('.desktop-nav-next, .mobile-nav-next')
