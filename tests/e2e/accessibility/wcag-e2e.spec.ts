@@ -30,6 +30,7 @@ test.describe('WCAG 2.1 AA E2E Accessibility Tests', () => {
 
       const accessibilityScanResults = await new AxeBuilder({ page })
         .withTags(['wcag2aa'])
+        .disableRules(['color-contrast-enhanced']) // Disable AAA 7:1 check, only check AA 4.5:1
         .analyze()
 
       // Check WCAG AA color contrast compliance (4.5:1 for normal text)
