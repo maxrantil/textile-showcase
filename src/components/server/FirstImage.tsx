@@ -17,7 +17,7 @@ interface FirstImageProps {
  * Issue #78 Optimization:
  * - Added <link rel="preload"> in page.tsx head for immediate discovery
  * - Switched from WebP to AVIF (30-40% better compression)
- * - Reduced quality from 60 to 50 (aggressive LCP optimization)
+ * - Reduced quality from 60 to 40 (aggressive LCP optimization)
  *
  * Expected impact:
  * - Load Delay: 6.2s → <1s (preload eliminates discovery gap)
@@ -34,25 +34,26 @@ export function FirstImage({ design }: FirstImageProps) {
     return null
   }
 
-  // Issue #78: Generate AVIF srcset with aggressive quality for LCP optimization
+  // Issue #78/#41: Generate AVIF srcset with aggressive quality for LCP optimization
   // AVIF provides 30-40% better compression than WebP at same quality
+  // Issue #41: Quality reduced from 50 to 40, breakpoint 320w → 480w for mobile
   const avifSrcSet = `
-    ${getOptimizedImageUrl(imageSource, { width: 320, quality: 50, format: 'avif' })} 320w,
-    ${getOptimizedImageUrl(imageSource, { width: 640, quality: 50, format: 'avif' })} 640w,
-    ${getOptimizedImageUrl(imageSource, { width: 960, quality: 50, format: 'avif' })} 960w
+    ${getOptimizedImageUrl(imageSource, { width: 480, quality: 40, format: 'avif' })} 480w,
+    ${getOptimizedImageUrl(imageSource, { width: 640, quality: 40, format: 'avif' })} 640w,
+    ${getOptimizedImageUrl(imageSource, { width: 960, quality: 40, format: 'avif' })} 960w
   `.trim()
 
   // WebP fallback srcset for Safari 15 and older (7% of users)
   const webpSrcSet = `
-    ${getOptimizedImageUrl(imageSource, { width: 320, quality: 50, format: 'webp' })} 320w,
-    ${getOptimizedImageUrl(imageSource, { width: 640, quality: 50, format: 'webp' })} 640w,
-    ${getOptimizedImageUrl(imageSource, { width: 960, quality: 50, format: 'webp' })} 960w
+    ${getOptimizedImageUrl(imageSource, { width: 480, quality: 40, format: 'webp' })} 480w,
+    ${getOptimizedImageUrl(imageSource, { width: 640, quality: 40, format: 'webp' })} 640w,
+    ${getOptimizedImageUrl(imageSource, { width: 960, quality: 40, format: 'webp' })} 960w
   `.trim()
 
   // JPEG fallback URL for ancient browsers (img src attribute)
   const jpegUrl = getOptimizedImageUrl(imageSource, {
     width: 640,
-    quality: 50,
+    quality: 40,
     format: 'jpg',
   })
 

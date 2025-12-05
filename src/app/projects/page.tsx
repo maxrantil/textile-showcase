@@ -82,21 +82,22 @@ export default async function ProjectsPage() {
   // Get first design for FirstImage component
   const firstDesign = designs[0]
 
-  // Generate preload URLs for LCP image using helper
+  // Issue #41: Generate preload URLs for LCP image using helper
+  // Quality reduced from 50 to 40, breakpoint 320w → 480w for mobile
   const imageSource = firstDesign?.image || firstDesign?.images?.[0]?.asset
   const preloadUrl = imageSource
     ? getOptimizedImageUrl(imageSource, {
         width: 640,
-        quality: 50,
+        quality: 40,
         format: 'avif',
       })
     : null
 
   const preloadSrcSet = imageSource
     ? [
-        `${getOptimizedImageUrl(imageSource, { width: 320, quality: 50, format: 'avif' })} 320w`,
-        `${getOptimizedImageUrl(imageSource, { width: 640, quality: 50, format: 'avif' })} 640w`,
-        `${getOptimizedImageUrl(imageSource, { width: 960, quality: 50, format: 'avif' })} 960w`,
+        `${getOptimizedImageUrl(imageSource, { width: 480, quality: 40, format: 'avif' })} 480w`,
+        `${getOptimizedImageUrl(imageSource, { width: 640, quality: 40, format: 'avif' })} 640w`,
+        `${getOptimizedImageUrl(imageSource, { width: 960, quality: 40, format: 'avif' })} 960w`,
       ].join(', ')
     : null
 
