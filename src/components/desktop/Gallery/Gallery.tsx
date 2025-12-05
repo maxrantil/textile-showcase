@@ -73,8 +73,8 @@ const GalleryItem = memo(function GalleryItem({
           width={800}
           sizes="(max-width: 1024px) 90vw, (max-width: 1440px) 800px, 900px"
           className={`desktop-gallery-img ${styles.galleryImage}`}
-          priority={index < 2}
-          loading={index < 2 ? 'eager' : 'lazy'}
+          priority={index === 0}
+          loading={index === 0 ? 'eager' : 'lazy'}
         />
       </div>
 

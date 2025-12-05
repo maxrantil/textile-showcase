@@ -108,14 +108,14 @@ export default async function ProjectsPage() {
 
       {/* Preload LCP image for immediate browser discovery
           Critical for Core Web Vitals - reduces Load Delay
-          IMPORTANT: imageSizes MUST match FirstImage.tsx exactly to avoid double download */}
+          Issue #41: imageSizes aligned with FirstImage.tsx to avoid double download */}
       {preloadUrl && (
         <link
           rel="preload"
           as="image"
           href={preloadUrl}
           imageSrcSet={preloadSrcSet || undefined}
-          imageSizes="(max-width: 480px) 100vw, 640px"
+          imageSizes="(max-width: 480px) 100vw, (max-width: 768px) 90vw, 640px"
           type="image/avif"
           fetchPriority="high"
         />

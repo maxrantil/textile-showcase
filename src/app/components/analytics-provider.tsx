@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import { WebVitalsTracker } from '@/components/WebVitalsTracker'
 
 interface AnalyticsProviderProps {
   children: React.ReactNode
@@ -43,5 +44,11 @@ export function AnalyticsProvider({ children, nonce }: AnalyticsProviderProps) {
     }
   }, [nonce])
 
-  return <>{children}</>
+  return (
+    <>
+      {/* Issue #41: Core Web Vitals tracking for RUM */}
+      <WebVitalsTracker />
+      {children}
+    </>
+  )
 }
