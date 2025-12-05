@@ -79,7 +79,7 @@ const GalleryItem = memo(function GalleryItem({
       </div>
 
       <div className="desktop-gallery-info">
-        <h2>{design.title}</h2>
+        <h2 className="desktop-gallery-title">{design.title}</h2>
       </div>
     </div>
   )
