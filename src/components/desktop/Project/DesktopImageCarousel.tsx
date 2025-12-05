@@ -400,8 +400,8 @@ export function DesktopImageCarousel({
                       }
                     }}
                   />
-                  {/* Prefetch next and previous images using hidden Image components */}
-                  {/* This actually works unlike <link rel="preload"> in body */}
+                  {/* Issue #41: Prefetch next/previous images with lower priority
+                      Using lazy loading to avoid competing with main image LCP */}
                   <div
                     style={{
                       position: 'absolute',
@@ -425,8 +425,8 @@ export function DesktopImageCarousel({
                         alt="Next image prefetch"
                         width={800}
                         height={600}
-                        priority={true}
-                        loading="eager"
+                        priority={false}
+                        loading="lazy"
                       />
                     )}
                     {allImages[currentIndex - 1] && (
@@ -442,8 +442,8 @@ export function DesktopImageCarousel({
                         alt="Previous image prefetch"
                         width={800}
                         height={600}
-                        priority={true}
-                        loading="eager"
+                        priority={false}
+                        loading="lazy"
                       />
                     )}
                   </div>

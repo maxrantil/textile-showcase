@@ -82,21 +82,22 @@ export default async function ProjectsPage() {
   // Get first design for FirstImage component
   const firstDesign = designs[0]
 
-  // Generate preload URLs for LCP image using helper
+  // Issue #41: Generate preload URLs for LCP image using helper
+  // Quality reduced from 50 to 40, breakpoint 320w → 480w for mobile
   const imageSource = firstDesign?.image || firstDesign?.images?.[0]?.asset
   const preloadUrl = imageSource
     ? getOptimizedImageUrl(imageSource, {
         width: 640,
-        quality: 50,
+        quality: 40,
         format: 'avif',
       })
     : null
 
   const preloadSrcSet = imageSource
     ? [
-        `${getOptimizedImageUrl(imageSource, { width: 320, quality: 50, format: 'avif' })} 320w`,
-        `${getOptimizedImageUrl(imageSource, { width: 640, quality: 50, format: 'avif' })} 640w`,
-        `${getOptimizedImageUrl(imageSource, { width: 960, quality: 50, format: 'avif' })} 960w`,
+        `${getOptimizedImageUrl(imageSource, { width: 480, quality: 40, format: 'avif' })} 480w`,
+        `${getOptimizedImageUrl(imageSource, { width: 640, quality: 40, format: 'avif' })} 640w`,
+        `${getOptimizedImageUrl(imageSource, { width: 960, quality: 40, format: 'avif' })} 960w`,
       ].join(', ')
     : null
 
@@ -108,14 +109,14 @@ export default async function ProjectsPage() {
 
       {/* Preload LCP image for immediate browser discovery
           Critical for Core Web Vitals - reduces Load Delay
-          IMPORTANT: imageSizes MUST match FirstImage.tsx exactly to avoid double download */}
+          Issue #41: imageSizes aligned with FirstImage.tsx to avoid double download */}
       {preloadUrl && (
         <link
           rel="preload"
           as="image"
           href={preloadUrl}
           imageSrcSet={preloadSrcSet || undefined}
-          imageSizes="(max-width: 480px) 100vw, 640px"
+          imageSizes="(max-width: 480px) 100vw, (max-width: 768px) 90vw, 640px"
           type="image/avif"
           fetchPriority="high"
         />

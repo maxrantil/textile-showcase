@@ -19,7 +19,6 @@ import {
 import { SkipNavigation } from './components/skip-navigation'
 import { AnalyticsProvider } from './components/analytics-provider'
 import { CriticalCSS } from './components/critical-css'
-import { FontPreloader } from '@/components/fonts/FontPreloader'
 import { Header } from '@/components/Header'
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 
@@ -58,20 +57,21 @@ export default async function RootLayout({ children }: RootLayoutProps) {
         />
         <link rel="dns-prefetch" href="https://cdn.sanity.io" />
 
-        {/* Preload critical self-hosted fonts */}
+        {/* Issue #41: Preload critical self-hosted fonts with proper CORS
+            crossOrigin="anonymous" enables cache reuse between preload and @font-face */}
         <link
           rel="preload"
           href="/fonts/inter-400.woff2"
           as="font"
           type="font/woff2"
-          crossOrigin=""
+          crossOrigin="anonymous"
         />
         <link
           rel="preload"
           href="/fonts/inter-500.woff2"
           as="font"
           type="font/woff2"
-          crossOrigin=""
+          crossOrigin="anonymous"
         />
 
         {/* Performance and mobile optimization */}
@@ -115,7 +115,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
 
       <body className="bg-white font-sans antialiased">
         <CriticalCSS>
-          <FontPreloader />
+          {/* Issue #41: FontPreloader removed - server-side preload links sufficient */}
           <AnalyticsProvider nonce={nonce}>
             <SkipNavigation />
 

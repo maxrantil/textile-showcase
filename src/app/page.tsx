@@ -80,21 +80,22 @@ export default async function Home() {
   // Issue #51 Phase 1: Get first design for FirstImage component
   const firstDesign = designs[0]
 
-  // Issue #78: Generate preload URLs for LCP image using helper
+  // Issue #78/#41: Generate preload URLs for LCP image using helper
+  // Issue #41: Quality reduced from 50 to 40, breakpoint 320w → 480w for mobile
   const imageSource = firstDesign?.image || firstDesign?.images?.[0]?.asset
   const preloadUrl = imageSource
     ? getOptimizedImageUrl(imageSource, {
         width: 640,
-        quality: 50,
+        quality: 40,
         format: 'avif',
       })
     : null
 
   const preloadSrcSet = imageSource
     ? [
-        `${getOptimizedImageUrl(imageSource, { width: 320, quality: 50, format: 'avif' })} 320w`,
-        `${getOptimizedImageUrl(imageSource, { width: 640, quality: 50, format: 'avif' })} 640w`,
-        `${getOptimizedImageUrl(imageSource, { width: 960, quality: 50, format: 'avif' })} 960w`,
+        `${getOptimizedImageUrl(imageSource, { width: 480, quality: 40, format: 'avif' })} 480w`,
+        `${getOptimizedImageUrl(imageSource, { width: 640, quality: 40, format: 'avif' })} 640w`,
+        `${getOptimizedImageUrl(imageSource, { width: 960, quality: 40, format: 'avif' })} 960w`,
       ].join(', ')
     : null
 
@@ -107,14 +108,14 @@ export default async function Home() {
       {/* Issue #78: Preload LCP image for immediate browser discovery
           Critical for Core Web Vitals - reduces Load Delay from 6.2s to <1s
           IMPORTANT: imageSizes MUST match FirstImage.tsx exactly to avoid double download
-          Issue #94 Phase 2: Updated imageSizes for mobile optimization */}
+          Issue #41: Aligned sizes with FirstImage.tsx (max-width: 480px/768px) */}
       {preloadUrl && (
         <link
           rel="preload"
           as="image"
           href={preloadUrl}
           imageSrcSet={preloadSrcSet || undefined}
-          imageSizes="(max-width: 480px) 100vw, 640px"
+          imageSizes="(max-width: 480px) 100vw, (max-width: 768px) 90vw, 640px"
           type="image/avif"
           fetchPriority="high"
         />
