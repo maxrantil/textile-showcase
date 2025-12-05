@@ -49,11 +49,11 @@ describe('Critical CSS Extraction - Phase 2A Day 3-4', () => {
     })
 
     it('should contain font-display optimization in critical styles', () => {
-      // Updated: Using font-display: block for critical fonts (better than swap for above-fold content)
+      // Issue #41: Changed to font-display: swap for faster LCP (text renders immediately)
       const criticalFile = join(criticalCSSPath, 'critical.css')
       const content = readFileSync(criticalFile, 'utf-8')
 
-      expect(content).toContain('font-display: block')
+      expect(content).toContain('font-display: swap')
     })
   })
 
