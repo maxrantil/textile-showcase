@@ -98,10 +98,12 @@ export const websiteStructuredData = {
   '@type': 'WebSite',
   '@id': 'https://idaromme.dk#website',
   name: 'Ida Romme - Contemporary Nordic Textile Design',
+  alternateName: ['Ida Romme Studio', 'Ida Romme Textile Design'],
   url: 'https://idaromme.dk',
   description:
     'Portfolio of contemporary Nordic textile designs featuring sustainable hand-woven pieces and innovative color exploration.',
   inLanguage: 'en-US',
+  copyrightYear: new Date().getFullYear(),
   author: {
     '@type': 'Person',
     '@id': 'https://idaromme.dk#person',
@@ -112,14 +114,8 @@ export const websiteStructuredData = {
     '@id': 'https://idaromme.dk#organization',
     name: 'Ida Romme Studio',
   },
-  potentialAction: {
-    '@type': 'SearchAction',
-    target: {
-      '@type': 'EntryPoint',
-      urlTemplate: 'https://idaromme.dk/search?q={search_term_string}',
-    },
-    'query-input': 'required name=search_term_string',
-  },
+  // Note: SearchAction removed as site doesn't have search functionality
+  // Re-add when search is implemented: potentialAction with SearchAction
 }
 
 // Creative work schema for textile pieces

@@ -3,6 +3,7 @@ import Gallery from '@/components/adaptive/Gallery'
 import { TextileDesign } from '@/types/textile'
 import { FirstImage } from '@/components/server/FirstImage'
 import { getOptimizedImageUrl } from '@/utils/image-helpers'
+import { generateBreadcrumbSchema } from '@/app/metadata/breadcrumb-schema'
 
 // Enhanced metadata for projects page
 export const metadata: Metadata = {
@@ -122,31 +123,60 @@ export default async function ProjectsPage() {
         />
       )}
 
-      {/* Structured data for SEO */}
+      {/* Breadcrumb structured data for rich snippets */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(
+            generateBreadcrumbSchema([
+              { name: 'Home', path: '/' },
+              { name: 'Projects', path: '/projects' },
+            ])
+          ),
+        }}
+      />
+
+      {/* CollectionPage structured data for SEO */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'CollectionPage',
-            name: 'All Projects - Ida Romme',
+            name: 'Textile Design Portfolio - Ida Romme',
             description:
-              'Collection of all textile design projects by Ida Romme',
+              'Complete collection of contemporary textile design projects by Nordic artist Ida Romme, featuring sustainable hand-woven pieces.',
             url: 'https://idaromme.dk/projects',
+            mainEntity: {
+              '@type': 'ItemList',
+              numberOfItems: designs.length,
+              itemListOrder: 'https://schema.org/ItemListOrderDescending',
+              itemListElement: designs.slice(0, 10).map((design, index) => ({
+                '@type': 'ListItem',
+                position: index + 1,
+                item: {
+                  '@type': 'VisualArtwork',
+                  name: design.title,
+                  url: `https://idaromme.dk/project/${design.slug?.current || design._id}`,
+                  creator: {
+                    '@type': 'Person',
+                    name: 'Ida Romme',
+                  },
+                  artform: 'Textile Art',
+                  dateCreated: design.year ? `${design.year}` : undefined,
+                },
+              })),
+            },
             isPartOf: {
               '@type': 'WebSite',
               name: 'Ida Romme',
               url: 'https://idaromme.dk',
             },
-            about: {
+            author: {
               '@type': 'Person',
               name: 'Ida Romme',
-              jobTitle: 'Textile Designer',
-              knowsAbout: [
-                'Textile Design',
-                'Hand Weaving',
-                'Sustainable Textiles',
-              ],
+              jobTitle: 'Contemporary Textile Designer',
+              url: 'https://idaromme.dk',
             },
           }),
         }}
