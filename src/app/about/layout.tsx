@@ -1,28 +1,40 @@
 import { Metadata } from 'next'
 import { generateAboutBreadcrumbs } from '@/app/metadata/breadcrumb-schema'
 
-// SEO metadata for About page
+// SEO metadata for About page - optimized for artist discovery
 export const metadata: Metadata = {
-  title: 'Artist Statement - Color Exploration in Contemporary Nordic Textiles',
+  title:
+    'About Ida Romme - Swedish Textile Artist | Color Theory & Sustainable Weaving',
   description:
-    "Learn about Ida Romme's approach to contemporary textile art through methodical color exploration, traditional Scandinavian weaving techniques, and sustainable design practices.",
+    'Swedish textile artist Ida Romme explores color combinations through methodical precision. Swedish School of Textiles (Borås) graduate. Paul Frankenius Stiftelse Grant 2025 recipient. Based in Stockholm, exhibiting internationally.',
   keywords: [
-    'textile artist statement',
-    'color exploration methodology',
-    'traditional weaving modern aesthetics',
-    'Scandinavian design philosophy',
-    'sustainable craft practices',
-    'contemporary textile research',
-    'Nordic textile artist',
+    // Artist identity
+    'Swedish textile artist',
+    'Nordic weaving artist',
+    'Stockholm textile designer',
+    'contemporary fiber artist',
+    // Education & credentials
+    'Swedish School of Textiles',
+    'Borås textile graduate',
+    'textile design MA',
+    'Paul Frankenius Grant',
+    // Technique & approach
+    'color exploration textiles',
+    'color theory weaving',
     'methodical color combinations',
     'sustainable textile practices',
-    'traditional craftsmanship modern aesthetics',
+    'traditional Scandinavian weaving',
+    // Recognition
+    'textile art exhibitions',
+    'contemporary craft awards',
+    '3daysofdesign Copenhagen',
+    'Textilmuseet Borås',
   ],
   openGraph: {
     title:
-      'Artist Statement - Color Exploration in Contemporary Nordic Textiles | Ida Romme',
+      'About Ida Romme - Swedish Textile Artist | Color Theory & Sustainable Weaving',
     description:
-      "Learn about Ida Romme's approach to contemporary textile art through methodical color exploration and traditional Scandinavian weaving techniques.",
+      'Swedish School of Textiles graduate exploring color through hand weaving. Award-winning artist exhibiting in Copenhagen and Borås.',
     type: 'article',
     url: 'https://idaromme.dk/about',
     siteName: 'Ida Romme',
@@ -31,9 +43,9 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title:
-      'Artist Statement - Color Exploration in Contemporary Nordic Textiles',
+      'About Ida Romme - Swedish Textile Artist | Color Theory & Sustainable Weaving',
     description:
-      "Learn about Ida Romme's approach to contemporary textile art through methodical color exploration and traditional Scandinavian weaving techniques.",
+      'Swedish School of Textiles graduate exploring color through hand weaving. Award-winning artist.',
     creator: '@idaromme',
   },
   alternates: {

@@ -5,25 +5,36 @@ import { FirstImage } from '@/components/server/FirstImage'
 import { getOptimizedImageUrl } from '@/utils/image-helpers'
 import { generateBreadcrumbSchema } from '@/app/metadata/breadcrumb-schema'
 
-// Enhanced metadata for projects page
+// Enhanced metadata for projects page - optimized for portfolio discovery
 export const metadata: Metadata = {
-  title: 'All Projects - Ida Romme',
+  title: 'Textile Art Portfolio | Swedish Hand Weaving Projects - Ida Romme',
   description:
-    'Explore all textile design projects by Ida Romme, featuring sustainable hand-woven pieces that bridge traditional craftsmanship with modern aesthetics.',
+    'Browse the complete portfolio of Swedish textile artist Ida Romme. Contemporary hand-woven pieces exploring color theory, sustainable materials, and traditional Scandinavian weaving techniques.',
   keywords: [
-    'textile design',
-    'hand weaving',
-    'sustainable textiles',
+    // Portfolio discovery
+    'textile art portfolio',
+    'weaving portfolio',
+    'textile design projects',
+    'hand woven art collection',
+    // Artist identity
+    'Swedish textile art',
+    'Nordic weaving projects',
+    'Stockholm artist portfolio',
+    'Scandinavian textile design',
+    // Technique
+    'contemporary hand weaving',
+    'color exploration textiles',
+    'sustainable textile art',
+    'natural fiber weaving',
+    // Style
     'contemporary craft',
-    'Stockholm',
-    'textile art',
-    'projects',
-    'portfolio',
+    'modern textile design',
+    'traditional weaving contemporary',
   ],
   openGraph: {
-    title: 'All Projects - Ida Romme',
+    title: 'Textile Art Portfolio | Swedish Hand Weaving Projects - Ida Romme',
     description:
-      'Explore all textile design projects featuring sustainable hand-woven pieces',
+      'Complete portfolio of Swedish textile artist Ida Romme. Contemporary hand-woven pieces exploring color theory.',
     type: 'website',
     locale: 'en_US',
     url: 'https://idaromme.dk/projects',
@@ -31,9 +42,10 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'All Projects - Ida Romme',
+    title: 'Textile Art Portfolio | Swedish Hand Weaving Projects - Ida Romme',
     description:
-      'Explore all textile design projects featuring sustainable hand-woven pieces',
+      'Complete portfolio of Swedish textile artist Ida Romme. Contemporary hand-woven pieces.',
+    creator: '@idaromme',
   },
   alternates: {
     canonical: 'https://idaromme.dk/projects',

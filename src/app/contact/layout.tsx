@@ -1,29 +1,40 @@
 import { Metadata } from 'next'
 import { generateContactBreadcrumbs } from '@/app/metadata/breadcrumb-schema'
 
+// SEO metadata for Contact page - optimized for commission inquiries
 export const metadata: Metadata = {
   title:
-    'Commission Contemporary Textile Art | Collaborate with Nordic Designer',
+    'Commission Textile Art | Contact Swedish Artist Ida Romme | Stockholm',
   description:
-    'Commission custom contemporary textile artwork from Ida Romme. Specializing in sustainable hand-woven pieces, color exploration, and Scandinavian design aesthetics for galleries and collectors.',
+    'Commission custom hand-woven textile artwork from Swedish artist Ida Romme. Bespoke pieces for private collectors, galleries, and commercial projects. Based in Stockholm, serving Europe and North America.',
   keywords: [
-    'commission textile artwork',
-    'textile design collaboration',
-    'contemporary craft commission',
-    'hire textile designer',
-    'custom weaving services',
-    'Nordic textile consultant',
-    'commission contemporary textile',
-    'bespoke Nordic textile art',
-    'hire sustainable textile designer',
+    // Commission intent (high value)
+    'commission textile art',
+    'custom textile commission',
+    'bespoke textile artwork',
+    'hire textile artist',
+    'textile art for sale',
+    // Location-specific
+    'commission artist Stockholm',
+    'Swedish textile commission',
+    'Nordic artist hire',
+    'Scandinavian textile art buy',
+    // Client types
+    'textile art collectors',
+    'gallery textile commission',
+    'commercial textile art',
+    'interior textile design',
+    // Service descriptors
     'custom hand woven textiles',
-    'textile art commission Stockholm',
+    'sustainable textile commission',
+    'contemporary craft commission',
+    'bespoke weaving Sweden',
   ],
   openGraph: {
     title:
-      'Commission Contemporary Textile Art | Collaborate with Nordic Designer Ida Romme',
+      'Commission Textile Art | Contact Swedish Artist Ida Romme | Stockholm',
     description:
-      'Commission custom contemporary textile artwork from Ida Romme. Specializing in sustainable hand-woven pieces and Scandinavian design aesthetics.',
+      'Commission custom hand-woven textile artwork. Bespoke pieces for collectors and galleries. Based in Stockholm.',
     type: 'website',
     url: 'https://idaromme.dk/contact',
     siteName: 'Ida Romme',
@@ -32,9 +43,9 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title:
-      'Commission Contemporary Textile Art | Collaborate with Nordic Designer',
+      'Commission Textile Art | Contact Swedish Artist Ida Romme | Stockholm',
     description:
-      'Commission custom contemporary textile artwork from Ida Romme. Specializing in sustainable hand-woven pieces and Scandinavian design aesthetics.',
+      'Commission custom hand-woven textile artwork. Bespoke pieces for collectors and galleries.',
     creator: '@idaromme',
   },
   alternates: {
