@@ -55,6 +55,15 @@ export const baseMetadata: Metadata = {
   metadataBase: new URL('https://idaromme.dk'),
   alternates: {
     canonical: '/',
+    languages: {
+      // x-default for users without language preference (default English)
+      'x-default': 'https://idaromme.dk',
+      // Primary English version
+      en: 'https://idaromme.dk',
+      // Future language versions (prepared for i18n expansion)
+      // 'sv': 'https://idaromme.dk/sv',
+      // 'da': 'https://idaromme.dk/da',
+    },
   },
   robots: {
     index: true,

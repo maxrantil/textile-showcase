@@ -105,19 +105,57 @@ If you prefer not to connect accounts:
 
 ---
 
-## Part 3: Optional - IndexNow for Instant Indexing
+## Part 3: IndexNow for Instant Indexing (Implemented)
 
 IndexNow is a protocol for instant URL submission to Bing, Yandex, and other supporting search engines.
 
 ### How It Works
 When you publish new content, you can ping the search engines immediately instead of waiting for them to crawl.
 
-### Setup (We Can Add This to the Code Later)
-1. Generate an API key (any random string works)
-2. Create file: `public/{your-key}.txt` containing just the key
-3. Ping: `https://api.indexnow.org/indexnow?url=https://idaromme.dk/project/new-project&key={your-key}`
+### Implementation Status: COMPLETE
 
-This is optional and can be added in a future phase.
+The site now has IndexNow implemented:
+
+**Key File**: `public/indexnow-idaromme.txt`
+**API Endpoint**: `POST /api/indexnow`
+
+### Using IndexNow
+
+**Submit a single URL:**
+```bash
+curl -X POST https://idaromme.dk/api/indexnow \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://idaromme.dk/project/your-new-project"}'
+```
+
+**Submit multiple URLs:**
+```bash
+curl -X POST https://idaromme.dk/api/indexnow \
+  -H "Content-Type: application/json" \
+  -d '{"urls": ["https://idaromme.dk/project/project-1", "https://idaromme.dk/project/project-2"]}'
+```
+
+**Check IndexNow status:**
+```bash
+curl https://idaromme.dk/api/indexnow
+```
+
+### When to Use IndexNow
+- After adding new projects in Sanity CMS
+- After updating existing project content
+- After changing page metadata
+
+### Response Format
+```json
+{
+  "success": true,
+  "submitted": ["https://idaromme.dk/project/new-project"],
+  "results": [
+    {"endpoint": "https://api.indexnow.org/indexnow", "success": true, "status": 200},
+    {"endpoint": "https://www.bing.com/indexnow", "success": true, "status": 200}
+  ],
+  "message": "URLs submitted to IndexNow successfully"
+}
 
 ---
 
