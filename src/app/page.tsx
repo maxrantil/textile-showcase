@@ -3,6 +3,7 @@ import Gallery from '@/components/adaptive/Gallery'
 import { TextileDesign } from '@/types/textile'
 import { FirstImage } from '@/components/server/FirstImage'
 import { getOptimizedImageUrl } from '@/utils/image-helpers'
+import { generatePortfolioFAQSchema } from '@/app/metadata/faq-schema'
 
 // Enhanced metadata with structured data
 export const metadata: Metadata = {
@@ -121,7 +122,7 @@ export default async function Home() {
         />
       )}
 
-      {/* Structured data for SEO */}
+      {/* Structured data for SEO - Person schema */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -130,7 +131,7 @@ export default async function Home() {
             '@type': 'Person',
             name: 'Ida Romme',
             url: 'https://idaromme.dk',
-            jobTitle: 'Textile Designer',
+            jobTitle: 'Contemporary Textile Designer',
             worksFor: {
               '@type': 'Organization',
               name: 'Ida Romme Studio',
@@ -139,13 +140,30 @@ export default async function Home() {
               'Textile Design',
               'Hand Weaving',
               'Sustainable Textiles',
+              'Contemporary Craft',
+              'Nordic Design',
             ],
+            alumniOf: {
+              '@type': 'CollegeOrUniversity',
+              name: 'Swedish School of Textiles',
+              sameAs: 'https://www.hb.se/en/the-swedish-school-of-textiles/',
+            },
+            sameAs: ['https://www.instagram.com/idaromme'],
             address: {
               '@type': 'PostalAddress',
               addressLocality: 'Stockholm',
-              addressCountry: 'DK',
+              addressRegion: 'Stockholm County',
+              addressCountry: 'SE',
             },
           }),
+        }}
+      />
+
+      {/* FAQ structured data for rich snippets */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(generatePortfolioFAQSchema()),
         }}
       />
 
