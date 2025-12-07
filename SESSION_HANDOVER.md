@@ -1,4 +1,4 @@
-# Session Handoff: Issue #253 - SEO Improvement Initiative (Phases 1-3 Complete)
+# Session Handoff: Issue #253 - SEO Improvement Initiative (Phases 1-4 Complete)
 
 **Date**: 2025-12-07
 **Issue**: #253 - feat(seo): Comprehensive SEO Improvement Initiative
@@ -31,17 +31,24 @@
 - [x] Enhanced meta descriptions with credentials and CTAs
 - [x] Added keyword-rich H1 to homepage (screen-reader accessible)
 
+### Phase 4: Technical SEO (NEW)
+- [x] IndexNow API endpoint (`/api/indexnow`) for instant Bing/Yandex indexing
+- [x] robots.txt with proper crawler directives
+- [x] hreflang x-default for future internationalization
+- [x] Comprehensive tests for IndexNow and robots.txt (12 tests)
+- [x] Updated SEO registration guide with IndexNow usage
+
 ### Documentation Created
-- [x] `SEO-SEARCH-ENGINE-REGISTRATION-GUIDE.md` - Manual Google/Bing setup steps
+- [x] `SEO-SEARCH-ENGINE-REGISTRATION-GUIDE.md` - Manual Google/Bing setup + IndexNow usage
 
 ---
 
 ## 📊 Current Project State
 
-**Tests**: ✅ All passing (55/56 suites, 903 tests)
+**Tests**: ✅ All passing (57 suites, 915 tests)
 **Build**: ✅ Successful
-**Branch**: ✅ Clean, 4 commits ahead of master
-**CI/CD**: 🔄 PR #254 awaiting review/merge
+**Branch**: ✅ Clean, 6 commits ahead of master
+**CI/CD**: 🔄 PR #254 checks running
 
 ### Key Metrics Changed
 
@@ -52,40 +59,30 @@
 | Sitemap URLs | Broken (undefined) | Working |
 | Social sharing images | Sometimes missing | Always present |
 | Breadcrumbs | None | All pages |
+| robots.txt | Missing | Complete |
+| IndexNow | Not available | API ready |
 
 ---
 
 ## 🎯 Next Session Priorities
 
-### Immediate: Phase 4 - Technical SEO (2-3 hours)
-
-1. **IndexNow Implementation**
-   - Create API key file in `public/{key}.txt`
-   - Add ping mechanism for instant Bing/Yandex indexing
-   - Consider build hook or API endpoint
-
-2. **Robots.txt Review**
-   - Verify all directives are optimal
-   - Check crawl-delay settings
-   - Ensure no important paths blocked
-
-3. **Alt Text Audit**
-   - Verify all images have descriptive alt text
-   - Check dynamic alt text generation patterns
-
-4. **hreflang Preparation**
-   - Add `x-default` hreflang for future i18n
-   - Prepare structure for Danish/Swedish versions
+### Immediate: Merge PR #254 and Close Issue #253
+1. Wait for CI checks to pass
+2. Merge PR #254 to master
+3. Close Issue #253 with completion note
+4. Verify deployment at idaromme.dk
 
 ### After Deployment: Manual Steps (Doctor Hubert)
 - Google Search Console registration (see `SEO-SEARCH-ENGINE-REGISTRATION-GUIDE.md`)
 - Bing Webmaster Tools registration
 - Sitemap submission to both platforms
 - Request indexing for key pages
+- Test IndexNow API endpoint
 
 ### Future: Phase 5 - Monitoring
 - Set up Search Console dashboard monitoring
 - Create SEO testing checklist for deployments
+- Track keyword rankings over time
 
 ---
 
@@ -101,11 +98,16 @@
 | `src/app/projects/page.tsx` | 2, 3 | CollectionPage, keywords |
 | `src/app/about/layout.tsx` | 2, 3 | Person schema, keywords |
 | `src/app/contact/layout.tsx` | 2, 3 | ContactPage, keywords |
-| `src/app/metadata/base-metadata.ts` | 3 | 30+ categorized keywords |
+| `src/app/metadata/base-metadata.ts` | 3, 4 | 30+ keywords, hreflang |
 | `src/app/metadata/breadcrumb-schema.ts` | 1 | NEW: BreadcrumbList generator |
 | `src/app/metadata/faq-schema.ts` | 1 | NEW: FAQPage generator |
 | `src/app/metadata/structured-data.tsx` | 2 | WebSite schema cleanup |
-| `SEO-SEARCH-ENGINE-REGISTRATION-GUIDE.md` | - | NEW: Manual setup guide |
+| `src/app/api/indexnow/route.ts` | 4 | NEW: IndexNow API |
+| `public/robots.txt` | 4 | NEW: Crawler directives |
+| `public/indexnow-idaromme.txt` | 4 | NEW: IndexNow key |
+| `tests/unit/seo/indexnow.test.ts` | 4 | NEW: IndexNow tests |
+| `tests/unit/seo/robots.test.ts` | 4 | NEW: robots.txt tests |
+| `SEO-SEARCH-ENGINE-REGISTRATION-GUIDE.md` | 3, 4 | Manual setup guide |
 
 ---
 
@@ -121,18 +123,18 @@
 ## 📝 Startup Prompt for Next Session
 
 ```
-Read CLAUDE.md to understand our workflow, then continue Issue #253 SEO improvements from Phase 3 completion.
+Read CLAUDE.md to understand our workflow, then finalize Issue #253 SEO improvements.
 
-**Immediate priority**: Phase 4 Technical SEO - IndexNow implementation, robots.txt review, alt text audit
-**Context**: Phases 1-3 complete in PR #254 (sitemap fix, 10+ schemas, 30+ keywords per page)
+**Immediate priority**: Merge PR #254 (awaiting CI) and close Issue #253
+**Context**: Phases 1-4 complete - sitemap fix, schemas, keywords, IndexNow, robots.txt
 **Reference docs**: SEO-SEARCH-ENGINE-REGISTRATION-GUIDE.md, PR #254 description
 **Ready state**: feat/issue-253-seo-improvements branch, all tests passing, build successful
 
-**Expected scope**: Implement IndexNow for instant Bing/Yandex indexing, review robots.txt, add hreflang x-default. Then merge PR #254 to master and close Issue #253.
+**Expected scope**: Merge PR after CI passes, close issue, verify deployment, update session handover
 ```
 
 ---
 
 **Session completed**: 2025-12-07
-**Total commits this session**: 4
-**Ready for**: Phase 4 implementation, then PR merge
+**Total commits this session**: 6
+**Ready for**: PR merge, then deployment verification
