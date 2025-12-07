@@ -1,127 +1,138 @@
-# Session Handoff: Issue #41 - Performance Excellence (PR Ready)
+# Session Handoff: Issue #253 - SEO Improvement Initiative (Phases 1-3 Complete)
 
-**Date**: 2025-12-05
-**Issue**: #41 - Long-term Performance Excellence
-**PR**: #250 (Ready for Review) - https://github.com/maxrantil/textile-showcase/pull/250
-**Branch**: `feat/issue-41-performance-excellence`
+**Date**: 2025-12-07
+**Issue**: #253 - feat(seo): Comprehensive SEO Improvement Initiative
+**PR**: #254 - feat(seo): Fix sitemap bug and add comprehensive SEO improvements
+**Branch**: `feat/issue-253-seo-improvements`
 
 ---
 
 ## ✅ Completed Work
 
-### Commit 1: Core Web Vitals & LCP Image Fixes
-- Fixed desktop gallery image priority competition (`priority={index < 2}` → `priority={index === 0}`)
-- Aligned `imageSizes` across page.tsx, projects/page.tsx, and FirstImage.tsx
-- Changed DesktopImageCarousel prefetch images to lazy loading
-- Created `src/lib/web-vitals.ts` - comprehensive RUM tracking for LCP, CLS, INP, FCP, TTFB
-- Added `src/components/WebVitalsTracker.tsx` integrated into AnalyticsProvider
-- Implemented metrics queue to handle race condition with analytics loading
-- Added 10 tests for `calculatePerformanceScore` function
+### Phase 1: Critical Fixes
+- [x] Fixed sitemap bug (`/project/undefined` → correct slugs)
+- [x] Fixed country code in Person schema (DK → SE for Stockholm)
+- [x] Added BreadcrumbList schema generator (`src/app/metadata/breadcrumb-schema.ts`)
+- [x] Added FAQPage schema with 5 Q&As (`src/app/metadata/faq-schema.ts`)
+- [x] Upgraded to VisualArtwork schema for project pages
+- [x] Added fallback OG images for projects without images
 
-### Commit 2: Font Loading Optimization
-- Fixed `crossOrigin=""` → `crossOrigin="anonymous"` (prevents double font download)
-- Changed `font-display: block` → `font-display: swap` (text renders immediately)
-- Added ascent/descent/line-gap overrides (prevents CLS during font swap)
-- Removed duplicate @font-face definitions from optimized-fonts.css
-- Deleted FontPreloader client component (server preloads sufficient)
-- Updated test to expect `font-display: swap`
+### Phase 2: Page-Specific Schemas
+- [x] Projects page: CollectionPage + ItemList with first 10 projects
+- [x] About page: Person schema with awards (Paul Frankenius, Tage Vanggaard), education (SST)
+- [x] Contact page: ContactPage + Service offering (commissions)
+- [x] All pages: BreadcrumbList for navigation rich snippets
+- [x] WebSite schema cleanup (removed broken SearchAction)
 
-### Commit 3: Aggressive LCP Image Optimization
-- Reduced AVIF/WebP/JPEG quality from 50 to 40 for smaller file sizes
-- Changed srcset breakpoint from 320w to 480w for better mobile matching
-- Applied consistently to FirstImage.tsx and both page preloads (page.tsx, projects/page.tsx)
+### Phase 3: Keyword Optimization
+- [x] Researched competitor keywords and SEO best practices
+- [x] Expanded base-metadata.ts with 30+ categorized keywords
+- [x] Optimized all page titles for search visibility
+- [x] Enhanced meta descriptions with credentials and CTAs
+- [x] Added keyword-rich H1 to homepage (screen-reader accessible)
+
+### Documentation Created
+- [x] `SEO-SEARCH-ENGINE-REGISTRATION-GUIDE.md` - Manual Google/Bing setup steps
 
 ---
 
 ## 📊 Current Project State
 
-**Branch**: `feat/issue-41-performance-excellence` (3 commits ahead of master)
-**Tests**: ✅ All 903 unit tests passing
+**Tests**: ✅ All passing (55/56 suites, 903 tests)
 **Build**: ✅ Successful
-**PR**: ✅ Ready for review
+**Branch**: ✅ Clean, 4 commits ahead of master
+**CI/CD**: 🔄 PR #254 awaiting review/merge
 
-### Performance Baseline (Before Changes)
-| Metric | Value | Target | Status |
-|--------|-------|--------|--------|
-| LCP | 14.8s | <2.5s | ❌ Poor |
-| FCP | 1.5s | <1.8s | ✅ Good |
-| CLS | 0 | <0.1 | ✅ Good |
-| Score | 72% | 97%+ | ⚠️ Needs Work |
+### Key Metrics Changed
 
-### Expected Improvement from This PR
-- **Image priority fixes**: -0.5 to -2s
-- **Font optimizations**: -2.6 to -5.3s
-- **AVIF quality reduction (50→40)**: -2 to -4s on slow connections
-- **Srcset breakpoint (320w→480w)**: -0.5 to -1s on mobile
-- **Total**: -5.6 to -12.3s improvement
-- **Expected LCP**: 2.5-9.2s (significant improvement)
+| Metric | Before | After |
+|--------|--------|-------|
+| Keywords per page | ~6 | 20-30 |
+| Structured data types | 3 | 10+ |
+| Sitemap URLs | Broken (undefined) | Working |
+| Social sharing images | Sometimes missing | Always present |
+| Breadcrumbs | None | All pages |
 
 ---
 
 ## 🎯 Next Session Priorities
 
-### Post-Merge: Production Validation
-After PR #250 is merged:
-1. Deploy to production and measure real LCP improvement
-2. Compare against baseline in `.performance-baseline-production.json`
-3. If LCP still >2.5s, consider unicode-range subsetting (~10-15KB savings per font)
+### Immediate: Phase 4 - Technical SEO (2-3 hours)
 
-### Remaining Performance-Optimizer Recommendations
-- Subset unicode-range to basic Latin only (saves ~10-15KB per font)
-- Consider lazy-loading non-critical fonts
+1. **IndexNow Implementation**
+   - Create API key file in `public/{key}.txt`
+   - Add ping mechanism for instant Bing/Yandex indexing
+   - Consider build hook or API endpoint
+
+2. **Robots.txt Review**
+   - Verify all directives are optimal
+   - Check crawl-delay settings
+   - Ensure no important paths blocked
+
+3. **Alt Text Audit**
+   - Verify all images have descriptive alt text
+   - Check dynamic alt text generation patterns
+
+4. **hreflang Preparation**
+   - Add `x-default` hreflang for future i18n
+   - Prepare structure for Danish/Swedish versions
+
+### After Deployment: Manual Steps (Doctor Hubert)
+- Google Search Console registration (see `SEO-SEARCH-ENGINE-REGISTRATION-GUIDE.md`)
+- Bing Webmaster Tools registration
+- Sitemap submission to both platforms
+- Request indexing for key pages
+
+### Future: Phase 5 - Monitoring
+- Set up Search Console dashboard monitoring
+- Create SEO testing checklist for deployments
 
 ---
 
-## 📁 Files Changed in This PR
+## 📁 Files Modified in This Session
 
-### New Files
-- `src/lib/web-vitals.ts` - Core Web Vitals tracking library
-- `src/components/WebVitalsTracker.tsx` - React component for tracking
-- `tests/lib/web-vitals.test.ts` - 10 tests for scoring logic
+| File | Phase | Changes |
+|------|-------|---------|
+| `src/app/sitemap.ts` | 1 | Fixed slug extraction bug |
+| `src/app/page.tsx` | 1, 3 | FAQ schema, keywords, H1 |
+| `src/app/project/[slug]/page.tsx` | 1 | Structured data scripts |
+| `src/app/project/[slug]/components/project-metadata.tsx` | 1 | OG images, robots |
+| `src/app/project/[slug]/utils/project-helpers.ts` | 1 | VisualArtwork, fallback |
+| `src/app/projects/page.tsx` | 2, 3 | CollectionPage, keywords |
+| `src/app/about/layout.tsx` | 2, 3 | Person schema, keywords |
+| `src/app/contact/layout.tsx` | 2, 3 | ContactPage, keywords |
+| `src/app/metadata/base-metadata.ts` | 3 | 30+ categorized keywords |
+| `src/app/metadata/breadcrumb-schema.ts` | 1 | NEW: BreadcrumbList generator |
+| `src/app/metadata/faq-schema.ts` | 1 | NEW: FAQPage generator |
+| `src/app/metadata/structured-data.tsx` | 2 | WebSite schema cleanup |
+| `SEO-SEARCH-ENGINE-REGISTRATION-GUIDE.md` | - | NEW: Manual setup guide |
 
-### Modified Files
-- `src/app/layout.tsx` - Fixed crossOrigin, removed FontPreloader
-- `src/app/page.tsx` - Aligned imageSizes, quality 40, srcset 480w
-- `src/app/projects/page.tsx` - Aligned imageSizes, quality 40, srcset 480w
-- `src/app/components/analytics-provider.tsx` - Added WebVitalsTracker
-- `src/components/desktop/Gallery/Gallery.tsx` - Fixed priority competition
-- `src/components/desktop/Project/DesktopImageCarousel.tsx` - Changed prefetch to lazy
-- `src/components/server/FirstImage.tsx` - Quality 40, srcset 480w
-- `src/styles/critical/critical.css` - font-display: swap, added metrics
-- `src/styles/fonts/optimized-fonts.css` - Removed duplicate @font-face
-- `tests/performance/critical-css.test.ts` - Updated to expect swap
+---
 
-### Deleted Files
-- `src/components/fonts/FontPreloader.tsx` - Redundant with server preloads
+## 📚 Key Reference Documents
+
+- **Issue**: https://github.com/maxrantil/textile-showcase/issues/253
+- **PR**: https://github.com/maxrantil/textile-showcase/pull/254
+- **Manual Guide**: `SEO-SEARCH-ENGINE-REGISTRATION-GUIDE.md`
+- **Keyword Research**: Based on [TextileArtist.org SEO guide](https://www.textileartist.org/basic-seo-artist-websites/)
 
 ---
 
 ## 📝 Startup Prompt for Next Session
 
 ```
-Read CLAUDE.md to understand our workflow, then continue from Issue #41 PR #250 (ready for review).
+Read CLAUDE.md to understand our workflow, then continue Issue #253 SEO improvements from Phase 3 completion.
 
-**Context**: PR #250 complete with 3 commits - image priority fixes, Web Vitals RUM, font optimization, and aggressive LCP image optimization (quality 50→40, srcset 320w→480w).
+**Immediate priority**: Phase 4 Technical SEO - IndexNow implementation, robots.txt review, alt text audit
+**Context**: Phases 1-3 complete in PR #254 (sitemap fix, 10+ schemas, 30+ keywords per page)
+**Reference docs**: SEO-SEARCH-ENGINE-REGISTRATION-GUIDE.md, PR #254 description
+**Ready state**: feat/issue-253-seo-improvements branch, all tests passing, build successful
 
-**Immediate priority**: Await PR review/merge, then validate production LCP improvement
-**Branch**: feat/issue-41-performance-excellence (3 commits ahead of master)
-**PR**: #250 (Ready for Review) - https://github.com/maxrantil/textile-showcase/pull/250
-**Reference docs**: SESSION_HANDOVER.md, .performance-baseline-production.json
-
-**Ready state**: All tests passing (903), build successful, PR marked ready for review
-
-**Expected scope**: Review feedback if any, merge when approved, then validate production performance metrics
+**Expected scope**: Implement IndexNow for instant Bing/Yandex indexing, review robots.txt, add hreflang x-default. Then merge PR #254 to master and close Issue #253.
 ```
 
 ---
 
-## 📚 Key Reference Documents
-
-- **PR**: https://github.com/maxrantil/textile-showcase/pull/250
-- **Issue**: #41 - Long-term Performance Excellence
-- **Performance Baseline**: `.performance-baseline-production.json`
-- **Web Vitals Lib**: `src/lib/web-vitals.ts`
-
----
-
-**Doctor Hubert**: PR #250 is now ready for review! Contains 3 commits with comprehensive LCP optimizations. Expected total improvement: -5.6 to -12.3s (from 14.8s baseline). After merge, production validation will confirm actual improvements.
+**Session completed**: 2025-12-07
+**Total commits this session**: 4
+**Ready for**: Phase 4 implementation, then PR merge
