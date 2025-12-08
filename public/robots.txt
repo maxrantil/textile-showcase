@@ -1,0 +1,19 @@
+# Robots.txt for idaromme.dk - Ida Romme Textile Artist Portfolio
+# Last updated: 2025-12-07
+
+# Allow all crawlers to index the site
+User-agent: *
+Allow: /
+
+# Block sensitive paths from indexing
+Disallow: /api/
+Disallow: /studio
+Disallow: /studio/
+Disallow: /_next/
+Disallow: /admin
+
+# Reference sitemap for search engine discovery
+Sitemap: https://idaromme.dk/sitemap.xml
+
+# Host declaration (canonical domain)
+Host: https://idaromme.dk

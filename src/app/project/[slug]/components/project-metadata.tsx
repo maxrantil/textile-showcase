@@ -37,26 +37,38 @@ export async function generateProjectMetadata({
         description,
         type: 'article',
         url: `https://idaromme.dk/project/${slug}`,
-        images: imageUrl
-          ? [
-              {
-                url: imageUrl,
-                width: 1200,
-                height: 630,
-                alt: project.title,
-              },
-            ]
-          : [],
+        siteName: 'Ida Romme',
+        locale: 'en_US',
+        images: [
+          {
+            url: imageUrl,
+            width: 1200,
+            height: 630,
+            alt: project.title,
+            type: 'image/jpeg',
+          },
+        ],
         publishedTime: project.year ? `${project.year}-01-01` : undefined,
       },
       twitter: {
         card: 'summary_large_image',
         title,
         description,
-        images: imageUrl ? [imageUrl] : [],
+        creator: '@idaromme',
+        images: [imageUrl],
       },
       alternates: {
         canonical: `https://idaromme.dk/project/${slug}`,
+      },
+      robots: {
+        index: true,
+        follow: true,
+        googleBot: {
+          index: true,
+          follow: true,
+          'max-image-preview': 'large',
+          'max-snippet': -1,
+        },
       },
     }
   } catch (error) {

@@ -3,24 +3,38 @@ import Gallery from '@/components/adaptive/Gallery'
 import { TextileDesign } from '@/types/textile'
 import { FirstImage } from '@/components/server/FirstImage'
 import { getOptimizedImageUrl } from '@/utils/image-helpers'
+import { generatePortfolioFAQSchema } from '@/app/metadata/faq-schema'
 
-// Enhanced metadata with structured data
+// Enhanced metadata with structured data - optimized for search visibility
 export const metadata: Metadata = {
-  title: 'Ida Romme - Contemporary Textile Design',
+  title: 'Ida Romme - Swedish Textile Artist | Contemporary Hand Weaving',
   description:
-    'Explore contemporary textile designs by Ida Romme, featuring sustainable hand-woven pieces that bridge traditional craftsmanship with modern aesthetics.',
+    'Award-winning Swedish textile artist Ida Romme creates contemporary hand-woven art exploring color theory and sustainable practices. Swedish School of Textiles graduate based in Stockholm. View portfolio and commission custom textile artwork.',
   keywords: [
-    'textile design',
-    'hand weaving',
-    'sustainable textiles',
-    'contemporary craft',
-    'Stockholm',
-    'textile art',
+    // Primary
+    'Swedish textile artist',
+    'Nordic textile designer',
+    'contemporary textile art',
+    'hand woven textiles',
+    // Location
+    'Stockholm textile artist',
+    'Swedish weaving artist',
+    'Scandinavian textile design',
+    // Technique
+    'sustainable hand weaving',
+    'color exploration',
+    'contemporary weaving',
+    // Intent
+    'textile art commission',
+    'custom textile artwork',
+    // Credentials
+    'Swedish School of Textiles',
+    'award winning textile artist',
   ],
   openGraph: {
-    title: 'Ida Romme - Contemporary Textile Design',
+    title: 'Ida Romme - Swedish Textile Artist | Contemporary Hand Weaving',
     description:
-      'Contemporary textile designs featuring sustainable hand-woven pieces',
+      'Award-winning Swedish textile artist creating contemporary hand-woven art. Swedish School of Textiles graduate. Commissions welcome.',
     type: 'website',
     locale: 'en_US',
     url: 'https://idaromme.dk',
@@ -28,9 +42,10 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Ida Romme - Contemporary Textile Design',
+    title: 'Ida Romme - Swedish Textile Artist | Contemporary Hand Weaving',
     description:
-      'Contemporary textile designs featuring sustainable hand-woven pieces',
+      'Award-winning Swedish textile artist creating contemporary hand-woven art. Commissions welcome.',
+    creator: '@idaromme',
   },
   alternates: {
     canonical: 'https://idaromme.dk',
@@ -38,6 +53,12 @@ export const metadata: Metadata = {
   robots: {
     index: true,
     follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
   },
 }
 
@@ -121,7 +142,7 @@ export default async function Home() {
         />
       )}
 
-      {/* Structured data for SEO */}
+      {/* Structured data for SEO - Person schema */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -130,7 +151,7 @@ export default async function Home() {
             '@type': 'Person',
             name: 'Ida Romme',
             url: 'https://idaromme.dk',
-            jobTitle: 'Textile Designer',
+            jobTitle: 'Contemporary Textile Designer',
             worksFor: {
               '@type': 'Organization',
               name: 'Ida Romme Studio',
@@ -139,20 +160,41 @@ export default async function Home() {
               'Textile Design',
               'Hand Weaving',
               'Sustainable Textiles',
+              'Contemporary Craft',
+              'Nordic Design',
             ],
+            alumniOf: {
+              '@type': 'CollegeOrUniversity',
+              name: 'Swedish School of Textiles',
+              sameAs: 'https://www.hb.se/en/the-swedish-school-of-textiles/',
+            },
+            sameAs: ['https://www.instagram.com/idaromme'],
             address: {
               '@type': 'PostalAddress',
               addressLocality: 'Stockholm',
-              addressCountry: 'DK',
+              addressRegion: 'Stockholm County',
+              addressCountry: 'SE',
             },
           }),
         }}
       />
 
+      {/* FAQ structured data for rich snippets */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(generatePortfolioFAQSchema()),
+        }}
+      />
+
       {/* Issue #86: WCAG 2.1 AA - Level-one heading for proper document structure
           Screen reader users need H1 for page identification and navigation
-          Visually hidden to maintain existing minimal gallery-first design */}
-      <h1 className="sr-only">Ida Romme - Contemporary Textile Design</h1>
+          Visually hidden to maintain existing minimal gallery-first design
+          SEO: Keywords include location, profession, and specialty */}
+      <h1 className="sr-only">
+        Ida Romme - Swedish Textile Artist | Contemporary Hand Weaving &amp;
+        Color Exploration | Stockholm
+      </h1>
 
       {/* Issue #51 Phase 2: Static HTML first image for LCP optimization
           Renders in initial HTML so browser can discover and load immediately

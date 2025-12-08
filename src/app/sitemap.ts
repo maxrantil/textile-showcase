@@ -58,16 +58,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       import('@/sanity/dataFetcher'),
     ])
 
+    // Note: seoQueries.getAllSlugs returns { slug: string } not { slug: { current: string } }
+    // The query uses: "slug": slug.current which extracts the string directly
     const projects = await resilientFetch<
       Array<{
-        slug: { current: string }
+        slug: string
         _updatedAt: string
       }>
     >(queries.getAllSlugs, {}, { retries: 2, timeout: 5000 })
 
     const projectPages: MetadataRoute.Sitemap = projects
       ? projects.map((project) => ({
-          url: `${baseUrl}/project/${project.slug.current}`,
+          url: `${baseUrl}/project/${project.slug}`,
           lastModified: new Date(project._updatedAt),
           changeFrequency: 'monthly' as const,
           priority: 0.7,

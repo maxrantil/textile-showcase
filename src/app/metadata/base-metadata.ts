@@ -7,22 +7,47 @@ export const baseMetadata: Metadata = {
     template: '%s - Ida Romme',
   },
   description:
-    'Explore contemporary textile designs by Nordic artist Ida Romme. Sustainable hand-woven pieces featuring innovative color exploration and traditional Scandinavian craftsmanship techniques.',
+    'Contemporary textile art by Swedish designer Ida Romme. Award-winning hand-woven pieces exploring color theory and sustainable practices. Swedish School of Textiles graduate based in Stockholm. Commissions welcome.',
   keywords: [
-    'contemporary textile design',
+    // Primary keywords (high intent)
     'Nordic textile artist',
+    'Swedish textile designer',
+    'contemporary textile art',
+    'hand woven textiles Sweden',
+    'textile art commission',
+
+    // Location-based (local SEO)
+    'Stockholm textile artist',
+    'Swedish weaving artist',
+    'Scandinavian textile design',
+    'Nordic fiber artist',
+    'Sweden textile art',
+
+    // Technique-specific
     'sustainable hand weaving',
     'color exploration textiles',
-    'Scandinavian design aesthetic',
-    'Stockholm textile designer',
-    'traditional weaving techniques',
+    'contemporary weaving',
+    'hand woven art',
+    'traditional Scandinavian weaving',
+
+    // Long-tail / intent keywords
+    'commission textile artwork',
+    'custom hand woven textiles',
+    'bespoke textile art Sweden',
+    'sustainable fiber art',
+    'contemporary craft Stockholm',
+
+    // Credential-based
+    'Swedish School of Textiles',
+    'Borås textile graduate',
+    'award winning textile artist',
+
+    // Style/aesthetic
+    'Nordic design aesthetic',
+    'methodical color combinations',
     'natural fiber textiles',
     'sustainable textile practices',
-    'textile art commission',
-    'contemporary craft',
-    'Nordic contemporary craft',
-    'sustainable weaving practices',
-    'methodical color combinations',
+    'contemporary Nordic craft',
   ],
   authors: [{ name: 'Ida Romme' }],
   creator: 'Ida Romme',
@@ -30,6 +55,15 @@ export const baseMetadata: Metadata = {
   metadataBase: new URL('https://idaromme.dk'),
   alternates: {
     canonical: '/',
+    languages: {
+      // x-default for users without language preference (default English)
+      'x-default': 'https://idaromme.dk',
+      // Primary English version
+      en: 'https://idaromme.dk',
+      // Future language versions (prepared for i18n expansion)
+      // 'sv': 'https://idaromme.dk/sv',
+      // 'da': 'https://idaromme.dk/da',
+    },
   },
   robots: {
     index: true,
@@ -62,16 +96,16 @@ export const openGraphMetadata: Metadata['openGraph'] = {
   locale: 'en_US',
   url: 'https://idaromme.dk',
   siteName: 'Ida Romme',
-  title: 'Ida Romme - Contemporary Textile Design',
+  title: 'Ida Romme - Swedish Textile Artist | Contemporary Hand Weaving',
   description:
-    'Contemporary textile designs featuring sustainable hand-woven pieces',
+    'Award-winning Swedish textile artist exploring color theory through sustainable hand weaving. Swedish School of Textiles graduate. Commissions available.',
 }
 
 export const twitterMetadata: Metadata['twitter'] = {
   card: 'summary_large_image',
-  title: 'Ida Romme - Contemporary Textile Design',
+  title: 'Ida Romme - Swedish Textile Artist | Contemporary Hand Weaving',
   description:
-    'Contemporary textile designs featuring sustainable hand-woven pieces',
+    'Award-winning Swedish textile artist exploring color theory through sustainable hand weaving. Commissions available.',
   creator: '@idaromme',
 }
 
