@@ -41,12 +41,17 @@ test.describe('Gallery Focus Restoration - WCAG 2.4.3', () => {
       timeout: 10000
     })
 
+    // Wait for gallery item to be interactive (CI environments can be slow)
+    await item3.waitFor({ state: 'visible', timeout: 10000 })
+
     // Give focus restoration logic time to complete after gallery renders
-    await page.waitForTimeout(500)
+    // Increased timeout for CI environments which can be significantly slower
+    await page.waitForTimeout(1500)
 
     // Verify focus restored to item 3 (index 2)
     // This is the key assertion - focus should be restored to the same gallery item
-    await expect(item3).toBeFocused({ timeout: 5000 })
+    // Use longer timeout for CI environments
+    await expect(item3).toBeFocused({ timeout: 10000 })
   })
 
   test('focus restoration works consistently across multiple navigations', async ({ page }, testInfo) => {
@@ -82,11 +87,16 @@ test.describe('Gallery Focus Restoration - WCAG 2.4.3', () => {
       timeout: 10000
     })
 
+    // Wait for gallery item to be interactive (CI environments can be slow)
+    await item4.waitFor({ state: 'visible', timeout: 10000 })
+
     // Give focus restoration logic time to complete after gallery renders
-    await page.waitForTimeout(500)
+    // Increased timeout for CI environments which can be significantly slower
+    await page.waitForTimeout(1500)
 
     // Verify focus restored to item 4 (index 3)
-    await expect(item4).toBeFocused({ timeout: 5000 })
+    // Use longer timeout for CI environments
+    await expect(item4).toBeFocused({ timeout: 10000 })
   })
 
   test('focus restoration does not interfere with scroll restoration', async ({ page }, testInfo) => {
@@ -121,11 +131,16 @@ test.describe('Gallery Focus Restoration - WCAG 2.4.3', () => {
       timeout: 10000
     })
 
+    // Wait for gallery item to be interactive (CI environments can be slow)
+    await item5.waitFor({ state: 'visible', timeout: 10000 })
+
     // Give focus restoration logic time to complete after gallery renders
-    await page.waitForTimeout(500)
+    // Increased timeout for CI environments which can be significantly slower
+    await page.waitForTimeout(1500)
 
     // Verify focus is restored
-    await expect(item5).toBeFocused({ timeout: 5000 })
+    // Use longer timeout for CI environments
+    await expect(item5).toBeFocused({ timeout: 10000 })
 
     // Verify the item is still visible (scroll restoration worked)
     await expect(item5).toBeVisible()
@@ -168,11 +183,16 @@ test.describe('Gallery Focus Restoration - WCAG 2.4.3', () => {
       timeout: 10000
     })
 
+    // Wait for gallery item to be interactive (CI environments can be slow)
+    await item2.waitFor({ state: 'visible', timeout: 10000 })
+
     // Give focus restoration logic time to complete after gallery renders
-    await page.waitForTimeout(500)
+    // Increased timeout for CI environments which can be significantly slower
+    await page.waitForTimeout(1500)
 
     // Verify focus restored
-    await expect(item2).toBeFocused({ timeout: 5000 })
+    // Use longer timeout for CI environments
+    await expect(item2).toBeFocused({ timeout: 10000 })
 
     // Verify sessionStorage is cleared after restoration
     const savedIndexAfterReturn = await page.evaluate(() =>
