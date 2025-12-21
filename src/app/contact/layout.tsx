@@ -4,9 +4,9 @@ import { generateContactBreadcrumbs } from '@/app/metadata/breadcrumb-schema'
 // SEO metadata for Contact page - optimized for commission inquiries
 export const metadata: Metadata = {
   title:
-    'Commission Textile Art | Contact Swedish Artist Ida Romme | Stockholm',
+    'Commission Textile Art | Contact Scandinavian Artist Ida Romme | Gothenburg',
   description:
-    'Commission custom hand-woven textile artwork from Swedish artist Ida Romme. Bespoke pieces for private collectors, galleries, and commercial projects. Based in Stockholm, serving Europe and North America.',
+    'Commission custom hand-woven textile artwork from Scandinavian artist Ida Romme. Bespoke pieces for private collectors, galleries, and commercial projects. Based in Gothenburg, serving Europe and North America.',
   keywords: [
     // Commission intent (high value)
     'commission textile art',
@@ -15,8 +15,8 @@ export const metadata: Metadata = {
     'hire textile artist',
     'textile art for sale',
     // Location-specific
-    'commission artist Stockholm',
-    'Swedish textile commission',
+    'commission artist Gothenburg',
+    'Scandinavian textile commission',
     'Nordic artist hire',
     'Scandinavian textile art buy',
     // Client types
@@ -32,9 +32,9 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title:
-      'Commission Textile Art | Contact Swedish Artist Ida Romme | Stockholm',
+      'Commission Textile Art | Contact Scandinavian Artist Ida Romme | Gothenburg',
     description:
-      'Commission custom hand-woven textile artwork. Bespoke pieces for collectors and galleries. Based in Stockholm.',
+      'Commission custom hand-woven textile artwork. Bespoke pieces for collectors and galleries. Based in Gothenburg.',
     type: 'website',
     url: 'https://idaromme.dk/contact',
     siteName: 'Ida Romme',
@@ -43,7 +43,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title:
-      'Commission Textile Art | Contact Swedish Artist Ida Romme | Stockholm',
+      'Commission Textile Art | Contact Scandinavian Artist Ida Romme | Gothenburg',
     description:
       'Commission custom hand-woven textile artwork. Bespoke pieces for collectors and galleries.',
     creator: '@idaromme',
@@ -79,8 +79,8 @@ export default function ContactLayout({
       url: 'https://idaromme.dk',
       address: {
         '@type': 'PostalAddress',
-        addressLocality: 'Stockholm',
-        addressRegion: 'Stockholm County',
+        addressLocality: 'Gothenburg',
+        addressRegion: 'Västra Götaland County',
         addressCountry: 'SE',
       },
       makesOffer: {

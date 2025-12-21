@@ -55,7 +55,7 @@ export const portfolioFAQItems: FAQItem[] = [
   {
     question: 'Where is Ida Romme based?',
     answer:
-      'Ida Romme is a Nordic textile artist based in Stockholm, Sweden. She trained at the Swedish School of Textiles in Borås, known for its innovative textile education and sustainable practices.',
+      'Ida Romme is a Scandinavian textile artist based in Gothenburg, Sweden. She trained at the Swedish School of Textiles in Borås, known for its innovative textile education and sustainable practices.',
   },
   {
     question: 'What materials does Ida Romme use in her textiles?',
