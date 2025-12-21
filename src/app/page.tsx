@@ -7,18 +7,18 @@ import { generatePortfolioFAQSchema } from '@/app/metadata/faq-schema'
 
 // Enhanced metadata with structured data - optimized for search visibility
 export const metadata: Metadata = {
-  title: 'Ida Romme - Swedish Textile Artist | Contemporary Hand Weaving',
+  title: 'Ida Romme - Scandinavian Textile Artist | Contemporary Hand Weaving',
   description:
-    'Award-winning Swedish textile artist Ida Romme creates contemporary hand-woven art exploring color theory and sustainable practices. Swedish School of Textiles graduate based in Stockholm. View portfolio and commission custom textile artwork.',
+    'Award-winning Scandinavian textile artist Ida Romme creates contemporary hand-woven art exploring color theory and sustainable practices. Swedish School of Textiles graduate based in Gothenburg. View portfolio and commission custom textile artwork.',
   keywords: [
     // Primary
-    'Swedish textile artist',
-    'Nordic textile designer',
+    'Scandinavian textile artist',
+    'Nordic textile artist',
     'contemporary textile art',
     'hand woven textiles',
     // Location
-    'Stockholm textile artist',
-    'Swedish weaving artist',
+    'Gothenburg textile artist',
+    'Scandinavian weaving artist',
     'Scandinavian textile design',
     // Technique
     'sustainable hand weaving',
@@ -32,9 +32,9 @@ export const metadata: Metadata = {
     'award winning textile artist',
   ],
   openGraph: {
-    title: 'Ida Romme - Swedish Textile Artist | Contemporary Hand Weaving',
+    title: 'Ida Romme - Scandinavian Textile Artist | Contemporary Hand Weaving',
     description:
-      'Award-winning Swedish textile artist creating contemporary hand-woven art. Swedish School of Textiles graduate. Commissions welcome.',
+      'Award-winning Scandinavian textile artist creating contemporary hand-woven art. Swedish School of Textiles graduate. Commissions welcome.',
     type: 'website',
     locale: 'en_US',
     url: 'https://idaromme.dk',
@@ -42,9 +42,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Ida Romme - Swedish Textile Artist | Contemporary Hand Weaving',
+    title: 'Ida Romme - Scandinavian Textile Artist | Contemporary Hand Weaving',
     description:
-      'Award-winning Swedish textile artist creating contemporary hand-woven art. Commissions welcome.',
+      'Award-winning Scandinavian textile artist creating contemporary hand-woven art. Commissions welcome.',
     creator: '@idaromme',
   },
   alternates: {
@@ -171,8 +171,8 @@ export default async function Home() {
             sameAs: ['https://www.instagram.com/idaromme'],
             address: {
               '@type': 'PostalAddress',
-              addressLocality: 'Stockholm',
-              addressRegion: 'Stockholm County',
+              addressLocality: 'Gothenburg',
+              addressRegion: 'Västra Götaland County',
               addressCountry: 'SE',
             },
           }),
@@ -192,8 +192,8 @@ export default async function Home() {
           Visually hidden to maintain existing minimal gallery-first design
           SEO: Keywords include location, profession, and specialty */}
       <h1 className="sr-only">
-        Ida Romme - Swedish Textile Artist | Contemporary Hand Weaving &amp;
-        Color Exploration | Stockholm
+        Ida Romme - Scandinavian Textile Artist | Contemporary Hand Weaving &amp;
+        Color Exploration | Gothenburg
       </h1>
 
       {/* Issue #51 Phase 2: Static HTML first image for LCP optimization

@@ -4,14 +4,14 @@ import { generateAboutBreadcrumbs } from '@/app/metadata/breadcrumb-schema'
 // SEO metadata for About page - optimized for artist discovery
 export const metadata: Metadata = {
   title:
-    'About Ida Romme - Swedish Textile Artist | Color Theory & Sustainable Weaving',
+    'About Ida Romme - Scandinavian Textile Artist | Color Theory & Sustainable Weaving',
   description:
-    'Swedish textile artist Ida Romme explores color combinations through methodical precision. Swedish School of Textiles (Borås) graduate. Paul Frankenius Stiftelse Grant 2025 recipient. Based in Stockholm, exhibiting internationally.',
+    'Scandinavian textile artist Ida Romme explores color combinations through methodical precision. Swedish School of Textiles (Borås) graduate. Paul Frankenius Stiftelse Grant 2025 recipient. Based in Gothenburg, exhibiting internationally.',
   keywords: [
     // Artist identity
-    'Swedish textile artist',
-    'Nordic weaving artist',
-    'Stockholm textile designer',
+    'Scandinavian textile artist',
+    'Nordic textile artist',
+    'Gothenburg textile designer',
     'contemporary fiber artist',
     // Education & credentials
     'Swedish School of Textiles',
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title:
-      'About Ida Romme - Swedish Textile Artist | Color Theory & Sustainable Weaving',
+      'About Ida Romme - Scandinavian Textile Artist | Color Theory & Sustainable Weaving',
     description:
       'Swedish School of Textiles graduate exploring color through hand weaving. Award-winning artist exhibiting in Copenhagen and Borås.',
     type: 'article',
@@ -43,7 +43,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title:
-      'About Ida Romme - Swedish Textile Artist | Color Theory & Sustainable Weaving',
+      'About Ida Romme - Scandinavian Textile Artist | Color Theory & Sustainable Weaving',
     description:
       'Swedish School of Textiles graduate exploring color through hand weaving. Award-winning artist.',
     creator: '@idaromme',

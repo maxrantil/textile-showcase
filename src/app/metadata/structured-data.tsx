@@ -26,7 +26,7 @@ export const organizationStructuredData = {
   },
   address: {
     '@type': 'PostalAddress',
-    addressLocality: 'Stockholm',
+    addressLocality: 'Gothenburg',
     addressCountry: 'Sweden',
   },
   sameAs: ['https://instagram.com/idaromme'],
@@ -71,8 +71,8 @@ export const artistStructuredData = {
   },
   address: {
     '@type': 'PostalAddress',
-    addressLocality: 'Stockholm',
-    addressRegion: 'Stockholm County',
+    addressLocality: 'Gothenburg',
+    addressRegion: 'Västra Götaland County',
     addressCountry: 'Sweden',
   },
   sameAs: ['https://instagram.com/idaromme'],
@@ -81,7 +81,7 @@ export const artistStructuredData = {
     name: 'Textile Designer',
     occupationLocation: {
       '@type': 'Place',
-      name: 'Stockholm, Sweden',
+      name: 'Gothenburg, Sweden',
     },
     skills: [
       'Hand Weaving',
@@ -97,7 +97,7 @@ export const websiteStructuredData = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
   '@id': 'https://idaromme.dk#website',
-  name: 'Ida Romme - Contemporary Nordic Textile Design',
+  name: 'Ida Romme - Contemporary Scandinavian Textile Design',
   alternateName: ['Ida Romme Studio', 'Ida Romme Textile Design'],
   url: 'https://idaromme.dk',
   description:
