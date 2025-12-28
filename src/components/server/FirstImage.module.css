@@ -7,6 +7,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  /* Issue #257: Ensure pointer-events: none from start to avoid blocking clicks */
+  pointer-events: none !important;
 
   /* Issue #236: CSS animation replaces DOM polling - automatic fade out after 1s */
   animation: fadeOutAfterDelay 2s ease-in-out forwards;
@@ -21,6 +23,7 @@
 
 /* CSS animation to auto-hide FirstImage after gallery loads */
 /* Replaces 217 lines of DOM polling JavaScript */
+/* Issue #257: pointer-events: none now set on container from start */
 @keyframes fadeOutAfterDelay {
   0%, 50% {
     opacity: 1;
@@ -29,6 +32,5 @@
   100% {
     opacity: 0;
     visibility: hidden;
-    pointer-events: none;
   }
 }

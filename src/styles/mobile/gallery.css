@@ -27,6 +27,9 @@
   outline: none;
   border-radius: 0; /* Sharp corners per Doctor Hubert's request */
   overflow: hidden;
+  /* Issue #257: Ensure gallery items are above FirstImage overlay */
+  position: relative;
+  z-index: 10;
 }
 
 /* Touch/Click States (PDR Spec) */
@@ -394,13 +397,15 @@
 @media (max-width: 768px) {
   .first-image-container {
     /* Mobile-specific layout for FirstImage
-       Visible initially for LCP optimization, hidden after gallery hydration */
+       Visible initially for LCP optimization, hidden after gallery hydration
+       Issue #257: Keep in document flow (relative) to avoid overlaying gallery
+       pointer-events: none prevents any click blocking */
     width: 100%;
-    margin-bottom: 0;
-    z-index: 1;
-    pointer-events: none;
+    margin-bottom: -50px; /* Overlap slightly to save space but don't block clicks */
+    z-index: -1; /* Behind gallery items so clicks go through */
+    pointer-events: none !important; /* Force pointer-events: none on mobile */
     aspect-ratio: 4/3;
-    position: relative;
+    position: relative; /* Keep in document flow */
   }
 
   .first-image-container img {

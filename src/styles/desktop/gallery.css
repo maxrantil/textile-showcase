@@ -92,7 +92,7 @@
   width: auto;
   max-width: 90vw;
   height: 60vh;
-  pointer-events: none;
+  pointer-events: none !important; /* Issue #257: Force pointer-events to prevent interaction blocking */
   aspect-ratio: 4/3;
   display: flex;
   align-items: center;
