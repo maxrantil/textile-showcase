@@ -1,7 +1,7 @@
 // ABOUTME: Test suite for MobileGallery component - vertical scrolling mobile gallery
 
 import React from 'react'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import {
   mockDesigns,
   mockEmptyDesigns,
@@ -130,29 +130,26 @@ describe('MobileGallery', () => {
       render(<MobileGallery designs={mockDesigns} />)
 
       const firstDesign = mockDesigns[0]
-      const designElement = screen.getByText(firstDesign.title)
+      // Link component renders as <a> tag with href
+      const designLink = screen.getByRole('link', { name: new RegExp(firstDesign.title) })
 
-      fireEvent.click(designElement)
-
-      await waitFor(() => {
-        expect(mockPush).toHaveBeenCalledWith(
-          `/project/${firstDesign.slug?.current || firstDesign._id}`
-        )
-      })
+      expect(designLink).toHaveAttribute(
+        'href',
+        `/project/${firstDesign.slug?.current || firstDesign._id}`
+      )
     })
 
     it('should handle designs without slugs', async () => {
       const designWithoutSlug = { ...mockDesigns[0], slug: undefined }
       render(<MobileGallery designs={[designWithoutSlug]} />)
 
-      const designElement = screen.getByText(designWithoutSlug.title)
-      fireEvent.click(designElement)
+      // Link should use _id as fallback in href
+      const designLink = screen.getByRole('link', { name: new RegExp(designWithoutSlug.title) })
 
-      await waitFor(() => {
-        expect(mockPush).toHaveBeenCalledWith(
-          `/project/${designWithoutSlug._id}`
-        )
-      })
+      expect(designLink).toHaveAttribute(
+        'href',
+        `/project/${designWithoutSlug._id}`
+      )
     })
   })
 
@@ -185,13 +182,12 @@ describe('MobileGallery', () => {
     })
 
     it('should provide keyboard navigation support', () => {
-      const { container } = render(<MobileGallery designs={mockDesigns} />)
+      render(<MobileGallery designs={mockDesigns} />)
 
-      const articles = container.querySelectorAll('article')
-      articles.forEach((article) => {
-        // Articles should be focusable for keyboard navigation
-        expect(article).toHaveAttribute('tabIndex', '0')
-      })
+      // Links are naturally keyboard accessible (no need for explicit tabIndex)
+      // Each design should be accessible as a link
+      const links = screen.getAllByRole('link')
+      expect(links).toHaveLength(mockDesigns.length)
     })
   })
 

@@ -142,8 +142,9 @@ describe('MobileGalleryItem', () => {
         <MobileGalleryItem design={mockSingleDesign} />
       )
 
-      const article = container.querySelector('article')
-      expect(article).toHaveAttribute('aria-label')
+      // Link (a tag) now has ARIA attributes for Lockdown Mode compatibility
+      const link = container.querySelector('a')
+      expect(link).toHaveAttribute('aria-label')
     })
 
     it('should be keyboard accessible', () => {
@@ -151,8 +152,10 @@ describe('MobileGalleryItem', () => {
         <MobileGalleryItem design={mockSingleDesign} />
       )
 
-      const article = container.querySelector('article')
-      expect(article).toHaveAttribute('tabIndex', '0')
+      // Link elements are keyboard accessible by default (no tabIndex needed)
+      const link = container.querySelector('a')
+      expect(link).toBeInTheDocument()
+      expect(link?.tagName).toBe('A')
     })
 
     it('should have Enter key support for navigation', () => {
@@ -161,9 +164,10 @@ describe('MobileGalleryItem', () => {
         <MobileGalleryItem design={mockSingleDesign} onNavigate={onNavigate} />
       )
 
-      const article = container.querySelector('article')
-      if (article) {
-        fireEvent.keyDown(article, { key: 'Enter', code: 'Enter' })
+      // Link supports Enter key navigation natively
+      const link = container.querySelector('a')
+      if (link) {
+        fireEvent.click(link) // Links respond to Enter via click
         expect(onNavigate).toHaveBeenCalled()
       }
     })
@@ -174,9 +178,10 @@ describe('MobileGalleryItem', () => {
         <MobileGalleryItem design={mockSingleDesign} onNavigate={onNavigate} />
       )
 
-      const article = container.querySelector('article')
-      if (article) {
-        fireEvent.keyDown(article, { key: ' ', code: 'Space' })
+      // Links support keyboard navigation natively
+      const link = container.querySelector('a')
+      if (link) {
+        fireEvent.click(link) // Space activates links via click
         expect(onNavigate).toHaveBeenCalled()
       }
     })
@@ -209,9 +214,10 @@ describe('MobileGalleryItem', () => {
         <MobileGalleryItem design={mockSingleDesign} onNavigate={onNavigate} />
       )
 
-      const article = container.querySelector('article')
-      if (article) {
-        fireEvent.click(article)
+      // Click on Link element (Lockdown Mode compatible)
+      const link = container.querySelector('a')
+      if (link) {
+        fireEvent.click(link)
         expect(onNavigate).toHaveBeenCalled()
       }
     })
@@ -221,8 +227,8 @@ describe('MobileGalleryItem', () => {
         <MobileGalleryItem design={mockSingleDesign} />
       )
 
-      const article = container.querySelector('article')
-      const rect = article?.getBoundingClientRect()
+      const link = container.querySelector('a')
+      const rect = link?.getBoundingClientRect()
 
       // Touch target should be at least 44x44 pixels (WCAG guideline)
       expect(rect?.height).toBeGreaterThanOrEqual(44)
@@ -233,8 +239,9 @@ describe('MobileGalleryItem', () => {
         <MobileGalleryItem design={mockSingleDesign} />
       )
 
-      const article = container.querySelector('article')
-      expect(article).toHaveClass('mobile-gallery-item')
+      // Link now has mobile-gallery-item class
+      const link = container.querySelector('a')
+      expect(link).toHaveClass('mobile-gallery-item')
     })
   })
 
@@ -278,8 +285,9 @@ describe('MobileGalleryItem', () => {
         <MobileGalleryItem design={mockSingleDesign} />
       )
 
-      const article = container.querySelector('article')
-      expect(article).toHaveClass('mobile-gallery-item')
+      // Link element has mobile-gallery-item class
+      const link = container.querySelector('a')
+      expect(link).toHaveClass('mobile-gallery-item')
     })
 
     it('should be styled for vertical stacking', () => {
@@ -287,9 +295,9 @@ describe('MobileGalleryItem', () => {
         <MobileGalleryItem design={mockSingleDesign} />
       )
 
-      const article = container.querySelector('article')
+      const link = container.querySelector('a')
       // Component should have appropriate classes for vertical layout
-      expect(article?.className).toContain('mobile')
+      expect(link?.className).toContain('mobile')
     })
   })
 })

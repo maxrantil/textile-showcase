@@ -304,21 +304,25 @@ describe('OptimizedImage Integration Tests', () => {
     it('maintains correct focus during gallery navigation', () => {
       render(<Gallery designs={realTestDesigns} />)
 
-      // Find gallery items with role="button" (they are the clickable gallery divs)
-      const galleryItems = screen.getAllByRole('button')
+      // Gallery items are now Link elements (for Lockdown Mode compatibility)
+      const galleryLinks = screen.getAllByRole('link')
 
-      // Gallery has 3 designs + 2 navigation arrows = 5 buttons total
-      expect(galleryItems.length).toBeGreaterThanOrEqual(3)
+      // Navigation arrows are buttons (may be 1-2 depending on position)
+      const navigationButtons = screen.getAllByRole('button')
 
-      // Gallery design items should be focusable (have tabIndex="0")
-      const designItems = galleryItems.filter(
+      // Gallery has 3 design links
+      expect(galleryLinks.length).toBeGreaterThanOrEqual(3)
+      // At least 1 navigation button (left disabled at start, so only right shows)
+      expect(navigationButtons.length).toBeGreaterThanOrEqual(1)
+
+      // Gallery design items (links) should be focusable by default (native link behavior)
+      const designLinks = galleryLinks.filter(
         (item) =>
           item.hasAttribute('data-testid') &&
           item.getAttribute('data-testid')?.startsWith('gallery-item')
       )
-      designItems.forEach((item) => {
-        expect(item).toHaveAttribute('tabIndex', '0')
-      })
+      // Links are naturally keyboard accessible (no need for explicit tabIndex)
+      expect(designLinks.length).toBeGreaterThanOrEqual(3)
     })
   })
 

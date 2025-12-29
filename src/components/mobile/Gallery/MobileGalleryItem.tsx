@@ -4,7 +4,7 @@
 
 import { TextileDesign } from '@/types/textile'
 import Image from 'next/image'
-import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { getOptimizedImageUrl } from '@/utils/image-helpers'
 import { UmamiEvents } from '@/utils/analytics'
 import { LockdownImage } from '@/components/ui/LockdownImage'
@@ -41,7 +41,6 @@ export default function MobileGalleryItem({
   isActive = false,
   onNavigate,
 }: MobileGalleryItemProps) {
-  const router = useRouter()
   const [useLockdownMode, setUseLockdownMode] = useState(false)
 
   // Check for lockdown mode on mount
@@ -62,15 +61,6 @@ export default function MobileGalleryItem({
 
     // Track project view
     UmamiEvents.viewProject(design.title, design.year)
-
-    router.push(`/project/${design.slug?.current || design._id}`)
-  }
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault()
-      handleClick()
-    }
   }
 
   const handleImageError = () => {
@@ -93,53 +83,55 @@ export default function MobileGalleryItem({
 
   const alt = design.image?.alt || `Textile design artwork: ${design.title}${design.year ? ` (${design.year})` : ''}`
 
+  const projectUrl = `/project/${design.slug?.current || design._id}`
+
   return (
-    <article
+    <Link
+      href={projectUrl}
       className="mobile-gallery-item"
       onClick={handleClick}
-      onKeyDown={handleKeyDown}
-      role="button"
-      tabIndex={0}
       aria-label={`View ${design.title} project${design.year ? ` from ${design.year}` : ''}`}
       data-testid={`gallery-item-${index}`}
       data-active={isActive}
     >
-      {imageSource && (
-        <div className="mobile-gallery-image-container">
-          {useLockdownMode ? (
-            // Lockdown mode - use simple image for maximum compatibility
-            <LockdownImage
-              src={imageSource}
-              alt={alt}
-              className={`mobile-gallery-image ${styles.fullWidthImage}`}
-            />
-          ) : (
-            // Normal mode - use Next.js Image
-            <Image
-              src={imageUrl}
-              alt={alt}
-              width={800}
-              height={600}
-              sizes="100vw"
-              priority={isPriority}
-              loading={isPriority ? 'eager' : 'lazy'}
-              className={`mobile-gallery-image ${styles.fullWidthImage}`}
-              onError={handleImageError}
-            />
+      <article>
+        {imageSource && (
+          <div className="mobile-gallery-image-container">
+            {useLockdownMode ? (
+              // Lockdown mode - use simple image for maximum compatibility
+              <LockdownImage
+                src={imageSource}
+                alt={alt}
+                className={`mobile-gallery-image ${styles.fullWidthImage}`}
+              />
+            ) : (
+              // Normal mode - use Next.js Image
+              <Image
+                src={imageUrl}
+                alt={alt}
+                width={800}
+                height={600}
+                sizes="100vw"
+                priority={isPriority}
+                loading={isPriority ? 'eager' : 'lazy'}
+                className={`mobile-gallery-image ${styles.fullWidthImage}`}
+                onError={handleImageError}
+              />
+            )}
+          </div>
+        )}
+
+        <div className="mobile-gallery-info">
+          <h2 className="mobile-gallery-title">{design.title}</h2>
+          {design.description && (
+            <p className="mobile-gallery-description">{design.description}</p>
+          )}
+          {/* Year removed per Doctor Hubert's request - keep only title on homepage gallery */}
+          {design.category && (
+            <p className="mobile-gallery-category">{design.category}</p>
           )}
         </div>
-      )}
-
-      <div className="mobile-gallery-info">
-        <h2 className="mobile-gallery-title">{design.title}</h2>
-        {design.description && (
-          <p className="mobile-gallery-description">{design.description}</p>
-        )}
-        {/* Year removed per Doctor Hubert's request - keep only title on homepage gallery */}
-        {design.category && (
-          <p className="mobile-gallery-category">{design.category}</p>
-        )}
-      </div>
-    </article>
+      </article>
+    </Link>
   )
 }

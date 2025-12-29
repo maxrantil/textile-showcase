@@ -1,95 +1,107 @@
-# Session Handoff: Mobile Gallery Click Fix Complete
+# Session Handoff: Critical Gallery Issues Discovery
 
-**Date**: 2025-12-28
-**Status**: Issue #257 fixed, draft PR ready for review
+**Date**: 2025-12-29
+**Status**: Issue #257 merged, Issue #259 draft PR created, NEW critical bug discovered
 
 ---
 
 ## ✅ Completed Work This Session
 
-### Issue #257 - Critical: Mobile Gallery Items Not Clickable (FIXED)
-- **PR #258**: Draft created, ready for review
-  - Fixed FirstImage LCP overlay blocking mobile gallery interactions
-  - Implemented TDD approach (RED → GREEN → REFACTOR)
-  - Added comprehensive E2E test suite (`mobile-gallery-clicks.spec.ts`)
-  - Fixed z-index hierarchy: gallery items (z: 10) above FirstImage (z: -1)
-  - Ensured `pointer-events: none !important` on FirstImage
-  - All 131 Mobile Chrome E2E tests passing ✅
+### Issue #257 - Mobile Gallery Click Fix (✅ MERGED)
+- **PR #258**: Merged to master at 2025-12-28T21:38:31Z
+  - Fixed FirstImage overlay blocking mobile gallery clicks
+  - All CI checks passed
+  - Production deployment successful
+  - Site live at idaromme.dk
 
-### Root Cause Identified
-- FirstImage LCP optimization overlay had z-index issues
-- Desktop: `position: fixed, z-index: 20` (too high)
-- Mobile: `position: absolute` caused overlay on first gallery item
-- Even with `pointer-events: none`, layering blocked clicks
+### Issue #259 - iOS Lockdown Mode Fix (🔄 IN PROGRESS)
+- **PR #260**: Draft created, ready for Doctor Hubert's iPhone testing
+  - **Problem**: Mobile gallery not clickable in iOS Lockdown Mode (Safari/Brave)
+  - **Root Cause**: `onClick` on `<article>` element blocked by Lockdown Mode security
+  - **Solution**: Replaced with Next.js `<Link>` component (renders as `<a>` tag)
+  - **Status**: All 23 unit tests passing, awaiting manual iPhone testing
 
-### Solution Implemented
-1. **Mobile gallery items**: Added `position: relative, z-index: 10`
-2. **FirstImage on mobile**: Changed to `position: relative, z-index: -1`
-3. **Module CSS**: Added `pointer-events: none !important` from start
-4. **Desktop**: Added `pointer-events: none !important` for consistency
+---
 
-### Testing Strategy (TDD)
-1. ✅ **RED Phase**: Created 5 failing E2E tests
-2. ✅ **GREEN Phase**: Fixed CSS, all tests passing
-3. ✅ **REFACTOR Phase**: Verified no regressions (131 tests passing)
+## 🚨 NEW CRITICAL DISCOVERY
+
+**Desktop gallery is also not working on Doctor Hubert's laptop browser**
+
+### Immediate Concerns
+1. **Both mobile AND desktop galleries broken** = entire portfolio non-functional
+2. May be related to FirstImage overlay fix from PR #258
+3. Needs urgent investigation to determine:
+   - Is it the same FirstImage z-index issue?
+   - Different browser compatibility issue?
+   - Recent deployment regression?
+
+### Not Yet Investigated
+- Desktop gallery component (`src/components/desktop/Gallery/Gallery.tsx`)
+- Desktop gallery CSS (`src/styles/desktop/gallery.css`)
+- Which browsers affected on desktop
+- When it stopped working (before/after PR #258 merge?)
 
 ---
 
 ## 📊 Current Project State
 
-**Tests**: ✅ All passing (131 Mobile Chrome E2E, all unit tests)
-**Build**: ✅ Successful
-**Branch**: `fix/issue-257-mobile-gallery-clicks` - pushed to origin
-**PR**: #258 - Draft, awaiting review
-**CI/CD**: Not yet run (draft PR)
+**Branch**: `fix/issue-259-lockdown-mode-clicks`
+**Tests**:
+- ✅ Mobile unit tests: All passing (23/23)
+- ⚠️ Mobile E2E tests: Timing issues with Link navigation in Playwright
+- ❓ Desktop: Not yet tested
 
-### Agent Validation Status
-- ✅ test-automation-qa: Comprehensive test suite added
-- ✅ ux-accessibility-i18n-agent: Touch targets verified (WCAG 2.1)
-- ⏳ code-quality-analyzer: Pending review
-- ⏳ performance-optimizer: Need to verify LCP still optimized
-- ⏳ documentation-knowledge-manager: README update if needed
+**Environment**: Clean working directory
+
+**Production Status**:
+- PR #258 deployed (mobile z-index fix)
+- PR #260 NOT deployed (Lockdown Mode fix - still draft)
 
 ---
 
 ## 🚀 Next Session Priorities
 
-**Immediate Next Steps:**
-1. **Agent validation**: Run remaining agents before marking PR ready
-2. **PR review**: Address any feedback from Doctor Hubert
-3. **Performance verification**: Ensure LCP optimization still works
-4. **Merge to master**: Once approved
+**CRITICAL - Immediate Priority:**
+1. **Investigate desktop gallery issue** (blocking Doctor Hubert's usage)
+   - Reproduce the issue locally
+   - Identify root cause (FirstImage? Browser? Recent change?)
+   - Determine if related to PR #258 changes
+   - Create fix with TDD approach
 
-**Expected Scope**: Complete validation and merge within 1-2 hours
+**Secondary Tasks:**
+2. Doctor Hubert test PR #260 on iPhone (Lockdown Mode)
+3. Merge PR #260 if iPhone test passes
+4. Consider consolidating gallery fixes if desktop issue is related
 
 ---
 
 ## 📚 Key Reference Documents
 
-- **Issue**: #257 - Mobile gallery items not clickable
-- **PR**: #258 - Fix with comprehensive testing
-- **Test Suite**: `tests/e2e/mobile-gallery-clicks.spec.ts`
+- **Issue #257**: Mobile gallery clicks (✅ CLOSED)
+- **PR #258**: Mobile gallery z-index fix (✅ MERGED)
+- **Issue #259**: iOS Lockdown Mode compatibility (🔄 OPEN)
+- **PR #260**: Link component fix (🔄 DRAFT)
 - **Modified Files**:
-  - `src/styles/mobile/gallery.css` (z-index and positioning)
-  - `src/styles/desktop/gallery.css` (pointer-events)
-  - `src/components/server/FirstImage.module.css` (pointer-events)
+  - `src/components/mobile/Gallery/MobileGalleryItem.tsx` (Link wrapper)
+  - `src/components/mobile/Gallery/__tests__/MobileGalleryItem.test.tsx` (updated tests)
 
 ---
 
 ## 📝 Startup Prompt for Next Session
 
 ```
-Read CLAUDE.md to understand our workflow, then continue from Issue #257 completion.
+Read CLAUDE.md to understand our workflow, then investigate critical desktop gallery issue.
 
-**Immediate priority**: Agent validation for PR #258 (mobile gallery fix)
-**Context**: Critical mobile bug fixed - gallery items now clickable, all tests passing
-**Reference docs**: PR #258, Issue #257, mobile-gallery-clicks.spec.ts
-**Ready state**: fix/issue-257-mobile-gallery-clicks branch pushed, draft PR created
+**Immediate priority**: Desktop gallery not clickable (Doctor Hubert's laptop browser)
+**Context**: PR #258 merged (mobile z-index fix), but desktop gallery now broken too
+**Previous work**: Issue #257 fixed, Issue #259 draft PR created for Lockdown Mode
+**Reference docs**: PR #258, PR #260, src/components/desktop/Gallery/Gallery.tsx
+**Ready state**: fix/issue-259-lockdown-mode-clicks branch, master has PR #258 merged
 
-**Expected scope**: Run code-quality-analyzer, performance-optimizer, and documentation-knowledge-manager agents, then mark PR ready for review
+**Expected scope**: Reproduce desktop issue, identify root cause, create fix with tests, potentially combine with PR #260 if related
 ```
 
 ---
 
-**Session completed**: 2025-12-28
-**Status**: Draft PR ready, awaiting agent validation and review
+**Session completed**: 2025-12-29
+**Status**: Mobile Lockdown Mode fix ready for testing, desktop gallery needs investigation

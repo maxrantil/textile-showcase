@@ -5,6 +5,7 @@
 
 import { useEffect, useRef, useState, useCallback, memo } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
+import Link from 'next/link'
 import ImageNoStyle from '@/components/ui/ImageNoStyle'
 import { TextileDesign } from '@/types/textile'
 import { getOptimizedImageUrl } from '@/utils/image-helpers'
@@ -29,12 +30,9 @@ const GalleryItem = memo(function GalleryItem({
   isActive: boolean
   onNavigate?: (clickedIndex: number) => void
 }) {
-  const router = useRouter()
-
   const handleClick = () => {
     onNavigate?.(index)
     UmamiEvents.viewProject(design.title, design.year)
-    router.push(`/project/${design.slug?.current || design._id}`)
   }
 
   const imageSource = design.image || design.images?.[0]?.asset
@@ -48,22 +46,16 @@ const GalleryItem = memo(function GalleryItem({
     : ''
 
   const displayImageUrl = imageUrl || '/images/placeholder.jpg'
+  const projectUrl = `/project/${design.slug?.current || design._id}`
 
   return (
-    <div
+    <Link
+      href={projectUrl}
       className={`desktop-gallery-item ${isActive ? 'active' : ''}`}
       onClick={handleClick}
-      role="button"
-      tabIndex={0}
       aria-label={`View ${design.title}${design.year ? ` from ${design.year}` : ''} project details`}
       data-testid={`gallery-item-${index}`}
       data-active={isActive}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault()
-          handleClick()
-        }
-      }}
     >
       <div className="desktop-gallery-image">
         <ImageNoStyle
@@ -81,7 +73,7 @@ const GalleryItem = memo(function GalleryItem({
       <div className="desktop-gallery-info">
         <h2 className="desktop-gallery-title">{design.title}</h2>
       </div>
-    </div>
+    </Link>
   )
 })
 
