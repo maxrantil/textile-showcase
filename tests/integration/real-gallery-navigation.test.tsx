@@ -104,20 +104,13 @@ describe('Gallery Navigation Integration Tests', () => {
 
   describe('Unified Gallery Real Integration', () => {
     it('should navigate to project when design is clicked', async () => {
-      const user = userEvent.setup()
-
       render(<Gallery designs={realTestDesigns} />)
 
-      // Find and click the first design
-      const firstDesign = screen.getByText('Sustainable Cotton Weave')
-      await user.click(firstDesign)
+      // Find the link element (Link component renders as <a> tag)
+      const firstDesignLink = screen.getByRole('link', { name: /Sustainable Cotton Weave/ })
 
-      // Should navigate to project page
-      await waitFor(() => {
-        expect(mockRouterPush).toHaveBeenCalledWith(
-          '/project/sustainable-cotton-weave'
-        )
-      })
+      // Should have correct href for navigation
+      expect(firstDesignLink).toHaveAttribute('href', '/project/sustainable-cotton-weave')
     })
 
     it('should display all designs with real content', () => {
@@ -164,20 +157,13 @@ describe('Gallery Navigation Integration Tests', () => {
 
   describe('Gallery Touch Integration', () => {
     it('should handle touch interactions for navigation', async () => {
-      const user = userEvent.setup()
-
       render(<Gallery designs={realTestDesigns} />)
 
-      // Find and tap the second design
-      const secondDesign = screen.getByText('Organic Hemp Fiber')
-      await user.click(secondDesign)
+      // Find the link element for the second design
+      const secondDesignLink = screen.getByRole('link', { name: /Organic Hemp Fiber/ })
 
-      // Should navigate to project page
-      await waitFor(() => {
-        expect(mockRouterPush).toHaveBeenCalledWith(
-          '/project/organic-hemp-fiber'
-        )
-      })
+      // Should have correct href for navigation
+      expect(secondDesignLink).toHaveAttribute('href', '/project/organic-hemp-fiber')
     })
 
     it('should render responsive layout', () => {
@@ -201,7 +187,6 @@ describe('Gallery Navigation Integration Tests', () => {
     })
 
     it('should handle designs with missing slugs', async () => {
-      const user = userEvent.setup()
       const designsWithoutSlug: TextileDesign[] = [
         {
           ...realTestDesigns[0],
@@ -211,13 +196,11 @@ describe('Gallery Navigation Integration Tests', () => {
 
       render(<Gallery designs={designsWithoutSlug} />)
 
-      const design = screen.getByText('Sustainable Cotton Weave')
-      await user.click(design)
+      // Find the link element
+      const designLink = screen.getByRole('link', { name: /Sustainable Cotton Weave/ })
 
-      // Should fallback to using _id for navigation
-      await waitFor(() => {
-        expect(mockRouterPush).toHaveBeenCalledWith('/project/design-1')
-      })
+      // Should fallback to using _id for navigation in href
+      expect(designLink).toHaveAttribute('href', '/project/design-1')
     })
   })
 
