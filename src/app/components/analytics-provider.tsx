@@ -18,6 +18,11 @@ export function AnalyticsProvider({ children, nonce }: AnalyticsProviderProps) {
       return
     }
 
+    // HOTFIX Issue #262: Analytics server down (504 timeout), disable script loading
+    // to prevent JavaScript errors that break React hydration and gallery clicks
+    console.warn('⚠️ Analytics temporarily disabled - server unavailable')
+    return
+
     // Use requestIdleCallback to load analytics when browser is idle
     const loadAnalytics = () => {
       const script = document.createElement('script')
