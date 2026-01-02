@@ -50,7 +50,8 @@ describe('AnalyticsProvider Integration Tests', () => {
   })
 
   describe('Production Mode - Script Loading', () => {
-    it('should load Umami script in production mode with env vars set', async () => {
+    // HOTFIX Issue #263: Analytics disabled temporarily - skip tests
+    it.skip('should load Umami script in production mode with env vars set', async () => {
       Object.defineProperty(process.env, 'NODE_ENV', {
         writable: true,
         value: 'production',
@@ -88,7 +89,8 @@ describe('AnalyticsProvider Integration Tests', () => {
       expect(script.getAttribute('data-website-id')).toBe(WEBSITE_ID)
     })
 
-    it('should use requestIdleCallback for deferred loading in production', async () => {
+    // HOTFIX Issue #263: Analytics disabled temporarily - skip test
+    it.skip('should use requestIdleCallback for deferred loading in production', async () => {
       Object.defineProperty(process.env, 'NODE_ENV', {
         writable: true,
         value: 'production',
@@ -118,7 +120,8 @@ describe('AnalyticsProvider Integration Tests', () => {
       expect(callArgs[1]).toEqual({ timeout: 2000 })
     })
 
-    it('should fallback to setTimeout when requestIdleCallback unavailable', async () => {
+    // HOTFIX Issue #263: Analytics disabled temporarily - skip test
+    it.skip('should fallback to setTimeout when requestIdleCallback unavailable', async () => {
       Object.defineProperty(process.env, 'NODE_ENV', {
         writable: true,
         value: 'production',
@@ -368,7 +371,8 @@ describe('AnalyticsProvider Integration Tests', () => {
   })
 
   describe('Script Attributes Validation', () => {
-    it('should set defer attribute on script element', async () => {
+    // HOTFIX Issue #263: Analytics disabled temporarily - skip test
+    it.skip('should set defer attribute on script element', async () => {
       Object.defineProperty(process.env, 'NODE_ENV', {
         writable: true,
         value: 'production',
@@ -401,7 +405,8 @@ describe('AnalyticsProvider Integration Tests', () => {
       expect(script.defer).toBe(true)
     })
 
-    it('should construct correct script URL from environment variable', async () => {
+    // HOTFIX Issue #263: Analytics disabled temporarily - skip test
+    it.skip('should construct correct script URL from environment variable', async () => {
       const customURL = 'https://custom-analytics.example.com'
       Object.defineProperty(process.env, 'NODE_ENV', {
         writable: true,
@@ -435,7 +440,8 @@ describe('AnalyticsProvider Integration Tests', () => {
       expect(script.src).toBe(`${customURL}/script.js`)
     })
 
-    it('should set data-website-id attribute correctly', async () => {
+    // HOTFIX Issue #263: Analytics disabled temporarily - skip test
+    it.skip('should set data-website-id attribute correctly', async () => {
       const customWebsiteId = 'custom-website-id-12345'
       Object.defineProperty(process.env, 'NODE_ENV', {
         writable: true,
@@ -471,7 +477,8 @@ describe('AnalyticsProvider Integration Tests', () => {
   })
 
   describe('Regression Prevention', () => {
-    it('should fail if script is not deferred', async () => {
+    // HOTFIX Issue #263: Analytics disabled temporarily - skip test
+    it.skip('should fail if script is not deferred', async () => {
       Object.defineProperty(process.env, 'NODE_ENV', {
         writable: true,
         value: 'production',
