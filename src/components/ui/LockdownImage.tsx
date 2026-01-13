@@ -51,6 +51,7 @@ export function LockdownImage({
         }}
         loading="lazy"
         decoding="async"
+        crossOrigin="anonymous"
       />
     </div>
   )
