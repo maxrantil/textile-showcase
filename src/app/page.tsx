@@ -139,6 +139,7 @@ export default async function Home() {
           imageSizes="(max-width: 480px) 100vw, (max-width: 768px) 90vw, 640px"
           type="image/avif"
           fetchPriority="high"
+          crossOrigin="anonymous"
         />
       )}
 
