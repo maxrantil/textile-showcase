@@ -224,6 +224,7 @@ export function OptimizedImage({
               onError={handleImageError}
               className={`${isLoaded ? styles.fadeInLoaded : styles.fadeIn} ${getObjectFitClass()}`}
               decoding="async"
+              crossOrigin="anonymous"
               // Enhanced resource hint for performance optimization
               {...({ fetchpriority: optimizedFetchPriority } as Record<
                 string,
@@ -246,6 +247,7 @@ export function OptimizedImage({
               className={`${isLoaded ? styles.fadeInLoaded : styles.fadeIn} ${getObjectFitClass()}`}
               style={style}
               decoding="async"
+              crossOrigin="anonymous"
               // Enhanced resource hint for performance optimization
               {...({ fetchpriority: optimizedFetchPriority } as Record<
                 string,

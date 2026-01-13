@@ -944,4 +944,39 @@ describe('OptimizedImage Component - Phase 0 TDD Baseline', () => {
       expect(disconnectSpy).toHaveBeenCalled()
     })
   })
+
+  // ========================================
+  // CORS Security Tests (2 tests) - Issue #266
+  // ========================================
+
+  describe('CORS Security - crossOrigin attribute', () => {
+    it('applies crossOrigin="anonymous" to fill mode image for CDN compatibility', () => {
+      render(
+        <OptimizedImage
+          src={mockImageSource}
+          alt="Test image"
+          fill
+          priority
+        />
+      )
+
+      const img = screen.getByAltText('Test image')
+      expect(img).toHaveAttribute('crossOrigin', 'anonymous')
+    })
+
+    it('applies crossOrigin="anonymous" to fixed dimensions image for CDN compatibility', () => {
+      render(
+        <OptimizedImage
+          src={mockImageSource}
+          alt="Test image"
+          width={800}
+          height={600}
+          priority
+        />
+      )
+
+      const img = screen.getByAltText('Test image')
+      expect(img).toHaveAttribute('crossOrigin', 'anonymous')
+    })
+  })
 })

@@ -67,10 +67,20 @@ export function FirstImage({ design }: FirstImageProps) {
     >
       <picture>
         {/* AVIF for modern browsers (30-40% better compression than WebP) */}
-        <source type="image/avif" srcSet={avifSrcSet} sizes={sizes} />
+        <source
+          type="image/avif"
+          srcSet={avifSrcSet}
+          sizes={sizes}
+          crossOrigin="anonymous"
+        />
 
         {/* WebP fallback for Safari 15 and older browsers */}
-        <source type="image/webp" srcSet={webpSrcSet} sizes={sizes} />
+        <source
+          type="image/webp"
+          srcSet={webpSrcSet}
+          sizes={sizes}
+          crossOrigin="anonymous"
+        />
 
         {/* JPEG fallback for ancient browsers (final fallback) */}
         <img
@@ -79,6 +89,7 @@ export function FirstImage({ design }: FirstImageProps) {
           fetchPriority="high"
           loading="eager"
           decoding="async"
+          crossOrigin="anonymous"
           suppressHydrationWarning
           className={styles.image}
         />
