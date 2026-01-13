@@ -4,14 +4,10 @@ import { render, screen } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import { LockdownImage } from '../LockdownImage'
 import type { ImageSource } from '@/types/textile'
-import * as imageHelpers from '@/utils/image-helpers'
 
 // Mock image helpers
 jest.mock('@/utils/image-helpers', () => ({
-  getSimpleImageUrl: jest.fn(
-    (src: ImageSource | string) =>
-      `https://cdn.sanity.io/images/test/simple.jpg`
-  ),
+  getSimpleImageUrl: jest.fn(() => `https://cdn.sanity.io/images/test/simple.jpg`),
 }))
 
 const mockImageSource: ImageSource = {
