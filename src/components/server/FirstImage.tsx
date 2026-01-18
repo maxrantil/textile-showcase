@@ -71,7 +71,6 @@ export function FirstImage({ design }: FirstImageProps) {
           type="image/avif"
           srcSet={avifSrcSet}
           sizes={sizes}
-          crossOrigin="anonymous"
         />
 
         {/* WebP fallback for Safari 15 and older browsers */}
@@ -79,7 +78,6 @@ export function FirstImage({ design }: FirstImageProps) {
           type="image/webp"
           srcSet={webpSrcSet}
           sizes={sizes}
-          crossOrigin="anonymous"
         />
 
         {/* JPEG fallback for ancient browsers (final fallback) */}

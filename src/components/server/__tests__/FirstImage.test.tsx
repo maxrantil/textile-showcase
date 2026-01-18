@@ -16,9 +16,8 @@ jest.mock('@/utils/image-helpers', () => ({
 
 const mockDesign: TextileDesign = {
   _id: 'test-design-1',
-  _type: 'design',
   title: 'Test Design',
-  slug: { current: 'test-design', _type: 'slug' },
+  slug: { current: 'test-design' },
   description: 'Test description',
   dimensions: '100x100 cm',
   year: 2024,
@@ -27,7 +26,6 @@ const mockDesign: TextileDesign = {
       _ref: 'image-test-123',
       _type: 'reference',
     },
-    _type: 'image',
   },
 }
 
@@ -114,42 +112,32 @@ describe('FirstImage Server Component - Issue #266', () => {
   // ========================================
 
   describe('CORS Security - crossOrigin attribute', () => {
-    it('applies crossorigin="anonymous" to AVIF source for CDN compatibility', () => {
-      const { container } = render(<FirstImage design={mockDesign} />)
-
-      const avifSource = container.querySelector('source[type="image/avif"]')
-      expect(avifSource).toHaveAttribute('crossorigin', 'anonymous')
-    })
-
-    it('applies crossorigin="anonymous" to WebP source for CDN compatibility', () => {
-      const { container } = render(<FirstImage design={mockDesign} />)
-
-      const webpSource = container.querySelector('source[type="image/webp"]')
-      expect(webpSource).toHaveAttribute('crossorigin', 'anonymous')
-    })
-
-    it('applies crossorigin="anonymous" to JPEG img element for CDN compatibility', () => {
+    it('applies crossorigin="anonymous" to img element for CDN compatibility', () => {
       render(<FirstImage design={mockDesign} />)
 
       const img = screen.getByAltText('Test Design')
       expect(img).toHaveAttribute('crossorigin', 'anonymous')
     })
 
-    it('uses lowercase "crossorigin" attribute for HTML compliance on all elements', () => {
-      const { container } = render(<FirstImage design={mockDesign} />)
+    it('uses lowercase "crossorigin" attribute for HTML compliance', () => {
+      render(<FirstImage design={mockDesign} />)
 
-      const avifSource = container.querySelector(
-        'source[type="image/avif"]'
-      ) as HTMLSourceElement
-      const webpSource = container.querySelector(
-        'source[type="image/webp"]'
-      ) as HTMLSourceElement
       const img = screen.getByAltText('Test Design') as HTMLImageElement
 
       // Check DOM attribute (lowercase for HTML)
-      expect(avifSource?.getAttribute('crossorigin')).toBe('anonymous')
-      expect(webpSource?.getAttribute('crossorigin')).toBe('anonymous')
       expect(img.getAttribute('crossorigin')).toBe('anonymous')
+    })
+
+    it('does not apply crossorigin to source elements (inherited from img)', () => {
+      const { container } = render(<FirstImage design={mockDesign} />)
+
+      // Per HTML5 spec, <source> elements don't support crossorigin attribute
+      // CORS policy is inherited from the fallback <img> element
+      const avifSource = container.querySelector('source[type="image/avif"]')
+      const webpSource = container.querySelector('source[type="image/webp"]')
+
+      expect(avifSource).not.toHaveAttribute('crossorigin')
+      expect(webpSource).not.toHaveAttribute('crossorigin')
     })
   })
 
