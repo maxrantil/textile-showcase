@@ -11,20 +11,16 @@ interface CacheEntry<T> {
 }
 
 /**
- * In-memory cache for query results
+ * In-memory cache for query results with lazy cleanup (no event loop blocking)
+ * FIXED: Removed setInterval to prevent event loop leaks causing progressive timeouts
  */
 class QueryCache {
   private cache = new Map<string, CacheEntry<unknown>>()
-  private cleanupInterval: NodeJS.Timeout
-
-  constructor() {
-    // Clean up expired entries every 10 minutes
-    this.cleanupInterval = setInterval(() => {
-      this.cleanup()
-    }, 600000)
-  }
 
   set<T>(key: string, data: T, ttl: number = 600000): void {
+    // Lazy cleanup: Remove expired entries when setting new ones
+    this.lazyCleanup()
+
     this.cache.set(key, {
       data,
       timestamp: Date.now(),
@@ -36,6 +32,7 @@ class QueryCache {
     const entry = this.cache.get(key)
     if (!entry) return null
 
+    // Check if entry is expired
     if (Date.now() - entry.timestamp > entry.ttl) {
       this.cache.delete(key)
       return null
@@ -48,18 +45,20 @@ class QueryCache {
     this.cache.clear()
   }
 
-  private cleanup(): void {
+  /**
+   * Lazy cleanup: Only clean expired entries when called (no timers)
+   * Prevents event loop blocking by avoiding setInterval
+   */
+  private lazyCleanup(): void {
+    // Only cleanup if cache is getting large (>100 entries)
+    if (this.cache.size < 100) return
+
     const now = Date.now()
     for (const [key, entry] of this.cache.entries()) {
       if (now - entry.timestamp > entry.ttl) {
         this.cache.delete(key)
       }
     }
-  }
-
-  destroy(): void {
-    clearInterval(this.cleanupInterval)
-    this.cache.clear()
   }
 }
 
@@ -79,20 +78,25 @@ interface FetchOptions {
 
 /**
  * Helper function to add timeout to any promise
+ * FIXED: Properly clears timeout to prevent timer accumulation
  */
 function withTimeout<T>(
   promise: Promise<T>,
   timeoutMs: number = 15000
 ): Promise<T> {
-  return Promise.race([
-    promise,
-    new Promise<never>((_, reject) =>
-      setTimeout(
-        () => reject(new Error(`Operation timed out after ${timeoutMs}ms`)),
-        timeoutMs
-      )
-    ),
-  ])
+  let timeoutHandle: NodeJS.Timeout
+
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeoutHandle = setTimeout(
+      () => reject(new Error(`Operation timed out after ${timeoutMs}ms`)),
+      timeoutMs
+    )
+  })
+
+  return Promise.race([promise, timeoutPromise]).finally(() => {
+    // Always clear timeout when promise settles (resolves or rejects)
+    clearTimeout(timeoutHandle)
+  })
 }
 
 /**
@@ -271,5 +275,4 @@ export const preloadData = {
 export const cacheUtils = {
   clear: () => queryCache.clear(),
   size: () => queryCache['cache'].size,
-  destroy: () => queryCache.destroy(),
 }
