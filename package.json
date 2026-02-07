@@ -68,7 +68,7 @@
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
     "typescript": "^5",
-    "webpack": "^5.101.3",
+    "webpack": "^5.105.0",
     "webpack-bundle-analyzer": "^4.10.2"
   },
   "resolutions": {
