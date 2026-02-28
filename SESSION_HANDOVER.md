@@ -1,59 +1,71 @@
-# Session Handoff: Issue #296 — proxy.ts wrong location (CSP/HSTS missing) 🔄 IN PROGRESS
+# Session Handoff: Issue #296 — proxy.ts wrong location (CSP/HSTS missing) ✅ READY TO MERGE
 
 **Date**: 2026-02-28
 **Issue**: #296 — proxy.ts at project root not detected by Next.js 16 (CSP/HSTS headers missing)
-**PR**: #297 — fix/issue-296-proxy-location (open, CI running)
-**Branch**: `fix/issue-296-proxy-location`
+**PR**: #297 — fix/issue-296-proxy-location (open, CI green — ready to merge)
+**Branch**: `fix/issue-296-proxy-location` (rebased onto master, HEAD: `a393827`)
 
 ---
 
-## ✅ Completed This Session
-
-### Context: Starting point
-- Session started to verify PR #294 deployment and close Issue #287
-- PR #294 deploy succeeded (✅), but production-validation step revealed 22 test failures: no CSP header on idaromme.dk
-- Issue #287 was already closed
-- Discovered new bug: proxy.ts was never being executed on production
+## ✅ Completed This Session (session 1: fix + handoff)
 
 ### Root Cause Analysis (Issue #296)
 
-Next.js 16.1.6 renamed `middleware.ts` → `proxy.ts` (confirmed via official docs). The Next.js 16 upgrade (PR #291) correctly renamed the file to `proxy.ts`, BUT placed it at the project root instead of `src/proxy.ts`.
+Next.js 16.1.6 uses `proxy.ts` (renamed from `middleware.ts`). The Next.js 16 upgrade (PR #291) correctly renamed the file, BUT placed it at the project root instead of `src/proxy.ts`.
 
-**Why it broke**: Next.js computes `rootDir = path.join(appDir, '..')`. Since `app/` and `pages/` are both in `src/`, `rootDir = src/`. The build scans only immediate children of `rootDir` (non-recursive `opendir`). `proxy.ts` at the project root (`/`) was never in the scan path.
+**Why it broke**: Next.js computes `rootDir = path.join(appDir, '..')`. Since `app/` and `pages/` are in `src/`, `rootDir = src/`. The build scans only immediate children of `rootDir` (non-recursive). `proxy.ts` at the project root was never in the scan path.
 
-**Evidence**: `middleware-manifest.json` showed `"middleware": {}` — no proxy registered. No CSP/HSTS/Permissions-Policy headers in production curl output. Build output showed no `ƒ Proxy (Middleware)` line.
+**Evidence**: `middleware-manifest.json` showed `"middleware": {}` — no proxy registered. No CSP/HSTS/Permissions-Policy headers in production curl output.
 
 **Fix applied** (PR #297):
 - Moved `proxy.ts` → `src/proxy.ts` (correct location)
 - Deleted root `proxy.ts` (was dead code — never executed since Next.js 16 upgrade)
-- Fixed HSTS check: added `x-forwarded-proto` header check (nginx terminates SSL, forwards HTTP to Node.js, so `request.nextUrl.protocol` was always `http:`)
+- Fixed HSTS check: added `x-forwarded-proto` header check (nginx terminates SSL, forwards HTTP to Node.js)
 - Updated `tests/build/middleware-compilation.test.ts` to expect `src/proxy.ts`
-- Updated `tests/unit/middleware/*.test.ts` import paths: `../../../proxy` → `../../../src/proxy`
+- Updated `tests/unit/middleware/*.test.ts` import paths
 
 **Verification**:
 - Build output: `ƒ Proxy (Middleware)` ✅
 - Local server: CSP header present with `analytics.idaromme.dk` ✅
 - 948 unit tests passing ✅
-- 10/10 middleware build validation tests passing ✅
+
+### ✅ Completed This Session (session 2: CI fix)
+
+CI was failing on PR Validation ("Verify Session Handoff") because:
+1. Session handoff commits (`8ff45db`, `85838c4`) were not triggering new CI runs
+2. Root cause: `SESSION_HANDOVER.md` on master (`007c696`) conflicted with branch changes — GitHub wouldn't trigger CI due to merge conflict state
+
+**Resolution**:
+- Rebased `fix/issue-296-proxy-location` onto `origin/master` (clean, no conflicts)
+- Force-pushed rebased branch → new CI triggered on HEAD `a393827`
+- All checks now passing (PR Validation ✅, Unit Tests ✅, Lighthouse ✅, Performance Budget ✅)
 
 ---
 
 ## 🎯 Current Project State
 
 **Tests**: ✅ 948 passing (unit tests)
-**Branch**: `fix/issue-296-proxy-location` — PR #297 open
-**CI on PR #297**: Running (unit tests, E2E, Lighthouse, performance budget)
+**Branch**: `fix/issue-296-proxy-location` — HEAD `a393827`, rebased on master
+**CI on PR #297** (HEAD `a393827`):
+- Branch Protection ✅
+- Secret Scanning ✅
+- Commit Quality Check ✅
+- PR Validation ✅
+- Unit Tests ✅
+- Lighthouse ✅
+- Performance Budget ✅
+- E2E Tests ❌ pre-existing (Sanity credentials issue in CI — unrelated to this fix)
 
 **Issues**:
-- #296 — open (fix in PR #297)
-- #270 — pre-existing event loop leak in QueryCache (low priority)
+- #296 — open (fix in PR #297, ready to merge)
+- #270 — pre-existing event loop leak in QueryCache (low priority, ask Doctor Hubert)
 
 ---
 
 ## Agent Validation Status
 
 - [ ] architecture-designer: Not started
-- [ ] security-validator: Not started (CSP/HSTS fix — should validate)
+- [ ] security-validator: Not started (CSP/HSTS fix — should validate before merge)
 - [ ] code-quality-analyzer: Not started
 - [ ] test-automation-qa: Not started
 - [ ] performance-optimizer: Not started
@@ -63,25 +75,24 @@ Next.js 16.1.6 renamed `middleware.ts` → `proxy.ts` (confirmed via official do
 
 ## 🚀 Next Session Priorities
 
-1. **Verify PR #297 CI passes** — all jobs should pass including production-validation smoke tests
-2. **Merge PR #297** — once CI green
-3. **Close Issue #296** — after merge
-4. **Issue #270** — event loop leak in QueryCache (ask Doctor Hubert if this is next priority)
+1. **Merge PR #297** — all required CI green, E2E failure is pre-existing
+2. **Close Issue #296** — after merge, verify CSP/HSTS headers appear on idaromme.dk
+3. **Issue #270** — event loop leak in QueryCache (ask Doctor Hubert if priority)
 
 ---
 
 ## 📝 Startup Prompt for Next Session
 
 ```
-Read CLAUDE.md to understand our workflow, then verify PR #297 and merge if CI is green.
+Read CLAUDE.md to understand our workflow, then merge PR #297 and close Issue #296.
 
-**Last completed**: Issue #296 fix — moved proxy.ts to src/proxy.ts (CSP/HSTS headers were missing from production because Next.js 16 couldn't find proxy.ts at project root)
-**Immediate priority**: Check PR #297 CI results, merge if green, close Issue #296
-**Context**: proxy.ts was at project root but Next.js scans rootDir=src/ so it was never detected; 948 tests pass, local server confirms CSP header works
-**Reference**: SESSION_HANDOVER.md, gh pr checks 297
-**Ready state**: Branch fix/issue-296-proxy-location, PR #297 open with CI running
+**Last completed**: Issue #296 fix — moved proxy.ts to src/proxy.ts (CSP/HSTS headers were missing from production because Next.js 16 couldn't find proxy.ts at project root). CI is now green on HEAD a393827.
+**Immediate priority**: Merge PR #297 → confirm production deploy → verify CSP/HSTS headers on idaromme.dk → close Issue #296
+**Context**: All CI checks pass except E2E (pre-existing Sanity credentials issue unrelated to this fix). Branch rebased onto master, no conflicts.
+**Reference**: SESSION_HANDOVER.md, gh pr view 297, gh pr checks 297
+**Ready state**: Branch fix/issue-296-proxy-location at a393827, PR #297 open and ready to merge
 
-**Expected scope**: Merge PR #297 → close Issue #296 → assess Issue #270 (event loop leak) or other work.
+**Expected scope**: Merge PR #297, verify production headers, close Issue #296, then assess Issue #270 or other work.
 ```
 
 ---
@@ -91,8 +102,4 @@ Read CLAUDE.md to understand our workflow, then verify PR #297 and merge if CI i
 - `SESSION_HANDOVER.md` — this file
 - `src/proxy.ts` — the proxy file (moved from root)
 - `tests/build/middleware-compilation.test.ts` — build validation tests
-- Next.js 16 docs: `proxy.ts` is at `src/proxy.ts` for projects with `src/` layout
-
----
-
-**Session status**: PR #297 open — unit ✅ lighthouse ✅ perf ✅ E2E ⚠️ pre-existing (Sanity creds) PR-validation rerun triggered
+- Next.js 16 docs: `proxy.ts` at `src/proxy.ts` for projects with `src/` layout
