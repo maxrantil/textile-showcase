@@ -1,84 +1,79 @@
-# Session Handoff: Issue #287 — Next.js 16 Upgrade ✅ MERGED
+# Session Handoff: Issue #293 — CI Shell Injection + Deploy Cleanup ✅ MERGED
 
 **Date**: 2026-02-28
-**Issue**: #287 — Next.js 16 upgrade (major version migration)
-**PR**: #291 — merged to master at 20:51 UTC
-**Branch**: `master` (clean, post-merge)
+**Issue**: #293 — CI shell injection in branch-protection + node_modules cleanup in production deploy
+**PR**: #294 — merged to master at 21:05 UTC
+**Branch**: `master` (clean, post-merge at `5a4e766`)
 
 ---
 
 ## ✅ Completed This Session
 
-### Next.js 16 Upgrade (Issue #287, PR #291) — MERGED
+### CI Workflow Fixes (Issue #293, PR #294) — MERGED
 
-Fully implemented Next.js 15 → 16 migration with all breaking changes handled:
+Fixed two CI failures that appeared on the master push after PR #291 (Next.js 16 upgrade):
 
-| Change | Details |
-|--------|---------|
-| `next` version | `^15.5.7` → `^16.1.6` |
-| `eslint-config-next` | `15.3.2` → `16.1.6` |
-| `@next/bundle-analyzer` | `^15.5.2` → `^16.1.6` |
-| `next-sanity` | `^11.1.1` → `^11.6.12` (supports next@16) |
-| `@testing-library/dom` | Added as explicit devDep (peer dep CI fix) |
-| `middleware.ts` → `proxy.ts` | Renamed + export renamed to `proxy` |
-| `pages/api/health.js` moved | Root `pages/` → `src/pages/` |
-| `eslint` option removed | Removed from `next.config.ts` (dropped in v16) |
-| `--webpack` flag added | Added to `dev` + all `build` scripts |
-| `next lint` replaced | Script now `eslint .` (next lint removed in v16) |
-| `tsconfig.json` updated | `jsx: preserve` → `react-jsx` |
-| 3 middleware test files updated | Import `{ proxy: middleware }` from `'../../../proxy'` |
-| Build artifact test updated | References `proxy.js`/`proxy-manifest.json` |
+| Workflow | Problem | Fix |
+|----------|---------|-----|
+| `branch-protection.yml` | `${{ github.event.head_commit.message }}` inlined raw commit body into shell — backticks (e.g. `` `proxy` ``) were executed as bash commands, causing `proxy: command not found` | Pass via `env: COMMIT_MSG:` so bash treats the value as a plain string |
+| `production-deploy.yml` | VPS build failed with `ENOENT: polyfill-nomodule.js` — stale Next.js 15 node_modules not fully replaced during upgrade | Add explicit `rm -rf node_modules` before `npm ci` in VPS deploy step |
 
-**Security CVEs fixed**: CVE-2025-59471, CVE-2025-59472, CVE-2026-23864
-
-### CI Status on Merge
-
-- ✅ Jest Unit Tests — 959 passing
-- ✅ Bundle Size Validation
-- ✅ Lighthouse Performance Audit
-- ✅ Safari E2E Smoke Tests
-- ⚠️ Desktop/Mobile Chrome E2E — pre-existing failures (identical to PR #289, gallery tests failing due to Sanity CI credentials, not Next.js 16 related)
+**CI verification on merge**: Branch Protection ✅ immediately passed (first run post-merge confirms fix).
 
 ---
 
 ## 🎯 Current Project State
 
-**Tests**: ✅ 959 passing, 0 failing (unit tests)
-**Branch**: `master` ✅ clean, Next.js 16.1.6 live
-**VPS**: ⚠️ Still running Next.js 15 — needs deployment after Node.js version check
-**Open issues**: #287 — open, pending VPS deployment confirmation
+**Tests**: ✅ 959 passing (unit tests)
+**Branch**: `master` ✅ clean at `5a4e766`
+**CI post-PR #294 merge**:
+  - ✅ Branch Protection — passing (fix confirmed)
+  - ✅ Secret Scanning — passing
+  - ✅ Security Monitoring — passing
+  - 🔄 Unit Tests — in progress
+  - 🔄 Performance Budget — in progress
+  - 🔄 Production Deployment — in progress (first deploy with node_modules cleanup)
+
+**Open issues**:
+- #287 — still open, pending successful VPS deployment confirmation
+- #270 — pre-existing event loop leak in QueryCache (low priority, tracked separately)
+
+**Dependabot**: Two automated Dependabot runs failing (`glob`, `serialize-javascript`) — these are internal Dependabot infrastructure failures, unrelated to our code. GitHub will retry automatically.
 
 ---
 
 ## 🚀 Next Session Priorities
 
-1. **VPS Deployment** — Critical prerequisite: verify Node.js ≥ 20.9.0 first:
-   ```bash
-   ssh vps "node --version"  # Must be >= 20.9.0
-   ```
-   If ≥ 20.9: deploy normally. If < 20.9: upgrade Node.js first.
-2. **Close Issue #287** — After successful VPS deployment
-3. **Pre-existing E2E failures** — Desktop/Mobile Chrome gallery tests were failing before #287 too. Not a regression, but worth tracking separately if Doctor Hubert wants to fix them.
-4. Any new feature/content work from Doctor Hubert
+1. **Verify Production Deployment** — Check CI run for PR #294 merge completed successfully (the `rm -rf node_modules` fix should resolve the `polyfill-nomodule.js` error)
+2. **Close Issue #287** — Once VPS deployment is confirmed green, close the Next.js 16 issue
+3. **Pre-existing E2E failures** — Desktop/Mobile Chrome gallery tests failing due to Sanity CI credentials. Not a regression. Worth creating a dedicated issue if Doctor Hubert wants to track/fix
+4. **Issue #270** — Event loop leak in QueryCache (pre-existing, priority: high label — ask Doctor Hubert if this is next)
 
 ---
 
 ## 📝 Startup Prompt for Next Session
 
 ```
-Read CLAUDE.md to understand our workflow, then complete Issue #287 closure.
+Read CLAUDE.md to understand our workflow, then verify PR #294 deployment and close Issue #287.
 
-**Last completed**: PR #291 merged to master (Next.js 15 → 16, CVEs fixed, 959 tests passing)
-**Immediate priority**: VPS deployment of Next.js 16 + close issue #287
-**Pre-deploy check**: ssh vps "node --version" must be >= 20.9.0 (Next.js 16 requirement)
-**Reference**: SESSION_HANDOVER.md
-**Ready state**: master clean at Next.js 16.1.6, all unit tests passing
+**Last completed**: PR #294 merged (CI fixes — shell injection in branch-protection, node_modules cleanup in deploy)
+**Immediate priority**: Check Production Deployment CI run for PR #294 merge succeeded, then close Issue #287
+**Context**: Next.js 16.1.6 on master since PR #291; VPS deploy was failing with polyfill-nomodule.js ENOENT — fix deployed in #294
+**Reference**: SESSION_HANDOVER.md, gh run list to check latest CI
+**Ready state**: master clean at 5a4e766, Branch Protection ✅ confirmed fixed
 
-**Expected scope**: VPS node version check → deploy → verify site up → close #287.
-Note: Desktop/Mobile Chrome E2E failures are pre-existing (same as PR #289), not a regression.
+**Expected scope**: Confirm green CI → close #287 → assess Issue #270 (event loop leak) or other work.
 ```
 
 ---
 
+## 📚 Key Reference Documents
+
+- `SESSION_HANDOVER.md` — this file
+- `.github/workflows/branch-protection.yml` — shell injection fix
+- `.github/workflows/production-deploy.yml` — node_modules cleanup fix
+
+---
+
 **Session ended**: 2026-02-28
-**Status**: Next.js 16 upgrade merged to master. VPS deployment pending node version verification.
+**Status**: CI fixes merged. VPS deployment in progress. Issue #287 pending deployment confirmation.
