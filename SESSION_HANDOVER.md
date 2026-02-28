@@ -1,84 +1,88 @@
-# Session Handoff: Issue #284 — SSR Self-Referencing HTTP Fix
+# Session Handoff: Issue #288 — Batch Dependabot Security/Minor Dependency Updates
 
 **Date**: 2026-02-28
-**Issue**: #284 — getProject() makes self-referencing HTTP call during SSR
-**PR**: #285 — fix: replace self-referencing HTTP call with direct Sanity queries
+**Issue**: #288 — batch Dependabot security/minor dependency updates
+**PR**: #289 — chore: batch Dependabot security/minor dependency updates
 **Branch**: `master` (squash-merged, clean)
-**Commit**: `0c5327f`
+**Commit**: `bf16dac`
 
 ---
 
 ## ✅ Completed This Session
 
-### Architectural Bug Fixed (Issue #284)
+### Dependabot PR Batch (Issue #288, PR #289)
 
-`getProject()` and `getProjectWithNavigation()` in `src/app/project/[slug]/hooks/use-project-data.ts`
-were making HTTP fetch calls back to the app's own `/api/projects/[slug]` route during SSR.
+Consolidated 7 conflicting Dependabot PRs into a single clean update:
 
-**Root cause**: On cold start (PM2 restart or ISR cache expiry), every project page SSR render
-had to complete a full round-trip: Browser → nginx → Next.js SSR → nginx → Next.js API → Sanity.
-Also: fallback URL was `http://localhost:3000` but VPS app runs on port 3001.
+| Package | Change | Type |
+|---------|--------|------|
+| webpack | 5.101.3 → 5.105.0 | Direct dev dep |
+| lodash | 4.17.21 → 4.17.23 | Transitive security fix |
+| lodash-es | 4.17.21 → 4.17.23 | Transitive security fix |
+| rollup | 4.50.2 → 4.59.0 | Transitive |
+| minimatch | 9.0.5 → 9.0.9 | Transitive security fix |
+| tar | 6.2.1 → 7.5.9 | Transitive |
+| @isaacs/brace-expansion | 5.0.0 → 5.0.1 | Transitive security fix |
 
-**Fix**: Replaced both functions with direct `resilientFetch` calls to Sanity (same pattern
-as `getAllProjectSlugs()` and the API route handler itself).
+Individual Dependabot PRs #272, #273, #276, #277, #278, #280, #282 closed (all commented).
 
-### TDD Cycle Completed
-- RED: 6 failing tests written first (verified existing code called `fetch` not `resilientFetch`)
-- GREEN: Fix implemented, all 10 tests passing
-- Full suite: 959 passing, 0 regressions
+### Next.js 16 Upgrade — Issue #287 Created
 
-### Production Verified
-- PM2 restarted cleanly: `online`, `✓ Ready in 1765ms`
-- Cold start test post-restart: `embracing-light` → **200 in 0.56s** (was hanging indefinitely)
-- `composing-tones` → **200 in 0.07s** (warm cache)
+PR #274 (next 15→16) was closed. Issue #287 tracks the full migration with all breaking changes documented:
+- Turbopack now default for `next build` (our webpack config will fail the build)
+- `middleware.ts` → `proxy.ts` rename required
+- `eslint` option in `next.config.js` must be removed
+- `next lint` script must be updated
+- Async params/searchParams synchronous compat removed
+- `eslint-config-next` version bump needed
+
+### Remaining audit issues (13) — acceptable, not fixable without breaking changes
+- `glob` deep in `sanity` dep tree — needs upstream sanity update
+- `serialize-javascript` — npm "fix" would downgrade webpack to 4.x
+- `undici` in GitHub Actions CI packages — not runtime
 
 ---
 
 ## 🎯 Current Project State
 
 **Tests**: ✅ 959 passing, 0 failing (1 suite skipped — analytics, intentional)
-**Branch**: `master` ✅ clean at `0c5327f`
-**VPS**: ✅ Running on master, PM2 online, cold starts working
-**CI/CD**: Not checked this session (no failures expected)
-
-### Agent Validation Status
-- [ ] architecture-designer: Not run (straightforward like-for-like replacement)
-- [ ] security-validator: Not run (removed network call — attack surface reduced)
-- [ ] code-quality-analyzer: Not run
-- [ ] test-automation-qa: Not run (TDD applied manually, 10 tests added)
-- [ ] performance-optimizer: Not run (fix eliminates double network hop — clear win)
-- [ ] documentation-knowledge-manager: Not run
+**Branch**: `master` ✅ clean at `bf16dac`
+**VPS**: ✅ Running on previous master (`0c5327f`) — no deployment needed (lock file / dev deps only)
+**Open issues**: #287 (Next.js 16 upgrade — planned, not urgent today)
 
 ---
 
 ## 🚀 Next Session Priorities
 
-**No immediate blockers.** The site is production-stable with all known architectural issues resolved.
-
-**Possible next work:**
-1. Dependabot PRs visible on remote — `next-16.1.5`, `lodash`, `webpack`, `rollup` upgrades queued
-2. Run full agent validation pass (architecture, security, performance) on current codebase state
-3. Any new feature work or content updates from Doctor Hubert
+1. **Issue #287: Next.js 16 upgrade** — major version migration with breaking changes. Key work:
+   - Add `--webpack` flag to build scripts (quick unblock) or migrate to Turbopack
+   - Rename `middleware.ts` → `proxy.ts`
+   - Remove `eslint` option from `next.config.js`
+   - Fix `"lint": "next lint"` script
+   - Audit async `params`/`searchParams` usage in pages/layouts
+   - Update `eslint-config-next` to `^16.x`
+   - Security CVEs addressed: CVE-2025-59471, CVE-2025-59472, CVE-2026-23864
+2. Any new feature/content work from Doctor Hubert
 
 ---
 
 ## 📝 Startup Prompt for Next Session
 
 ```
-Read CLAUDE.md to understand our workflow, then pick up from a clean production state.
+Read CLAUDE.md to understand our workflow, then pick up from Issue #288 completion.
 
-**Last completed**: Issue #284 (✅ closed) — SSR self-referencing HTTP bug fixed & deployed
-**Commit**: 0c5327f on master
-**VPS**: Running cleanly, cold starts verified, no known outstanding bugs
-**Reference**: SESSION_HANDOVER.md
+**Last completed**: Issue #288 (✅ closed) — batch Dependabot security/minor dep updates merged to master
+**Commit**: bf16dac on master, VPS still on 0c5327f (no redeploy needed — lock file only)
+**Open work**: Issue #287 — Next.js 16 upgrade (major migration, breaking changes documented)
+**Reference**: SESSION_HANDOVER.md, Issue #287
 
-**Possible next work**: Dependabot upgrade PRs (next-16.1.5, lodash, webpack, rollup visible
-on remote), or new feature/content work — await Doctor Hubert's direction.
+**Next priority**: Issue #287 Next.js 16 upgrade — involves webpack config strategy,
+middleware.ts rename, eslint config cleanup, async params audit, security CVE fixes.
 
-**Expected scope**: Await direction; environment is clean and ready.
+**Expected scope**: Plan and implement the Next.js 16 migration carefully.
 ```
 
 ---
 
 **Session ended**: 2026-02-28
-**Status**: All known architectural issues resolved. Production stable.
+**Status**: Dependabot batch complete. Next.js 16 upgrade planned in Issue #287.
