@@ -37,14 +37,12 @@ module.exports = {
       // Process management
       kill_timeout: 5000, // Wait 5s for graceful shutdown
       listen_timeout: 10000, // Wait 10s for app to be ready
-      shutdown_with_message: true,
+      shutdown_with_message: false,
 
       // Health monitoring
       watch: false, // Don't watch files in production
       ignore_watch: ['node_modules', '.next', 'logs'],
 
-      // Graceful shutdown
-      wait_ready: true, // Wait for app to signal ready
 
       // Environment-specific settings
       env_production: {
