@@ -176,7 +176,9 @@ jobs:
             EOF
 
             # Install dependencies with correct Node version
+            # Remove node_modules explicitly to ensure clean install (prevents stale files from major version upgrades)
             echo "📦 Installing dependencies..."
+            rm -rf node_modules
             npm ci
 
             # Build application
