@@ -1,5 +1,5 @@
 /**
- * ABOUTME: Next.js middleware for authentication and security route protection
+ * ABOUTME: Next.js proxy for authentication and security route protection
  * Implements demo mode bypass for public deployment safety
  */
 
@@ -22,12 +22,12 @@ function generateNonce(): string {
 }
 
 /**
- * Authentication middleware for security routes with comprehensive security headers
+ * Authentication proxy for security routes with comprehensive security headers
  * - Demo mode: Allow access without authentication (safe for public deployment)
  * - Production mode: Require authentication for all security routes
  * - Applies comprehensive security headers to all responses
  */
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Demo mode detection - safe default for public deployment

@@ -179,9 +179,6 @@ const nextConfig = {
 
     return config
   },
-  eslint: {
-    ignoreDuringBuilds: false,
-  },
   // Compress responses
   compress: true,
   // FIXED: Enhanced headers with proper referrer policy

@@ -1,88 +1,91 @@
-# Session Handoff: Issue #288 — Batch Dependabot Security/Minor Dependency Updates
+# Session Handoff: Issue #287 — Next.js 16 Upgrade
 
 **Date**: 2026-02-28
-**Issue**: #288 — batch Dependabot security/minor dependency updates
-**PR**: #289 — chore: batch Dependabot security/minor dependency updates
-**Branch**: `master` (squash-merged, clean)
-**Commit**: `bf16dac`
+**Issue**: #287 — Next.js 16 upgrade (major version migration)
+**PR**: #291 — feat: upgrade Next.js 15 → 16 (Fixes #287)
+**Branch**: `feat/issue-287-nextjs-16-upgrade`
 
 ---
 
 ## ✅ Completed This Session
 
-### Dependabot PR Batch (Issue #288, PR #289)
+### Next.js 16 Upgrade (Issue #287, PR #291)
 
-Consolidated 7 conflicting Dependabot PRs into a single clean update:
+Fully implemented Next.js 15 → 16 migration with all breaking changes handled:
 
-| Package | Change | Type |
-|---------|--------|------|
-| webpack | 5.101.3 → 5.105.0 | Direct dev dep |
-| lodash | 4.17.21 → 4.17.23 | Transitive security fix |
-| lodash-es | 4.17.21 → 4.17.23 | Transitive security fix |
-| rollup | 4.50.2 → 4.59.0 | Transitive |
-| minimatch | 9.0.5 → 9.0.9 | Transitive security fix |
-| tar | 6.2.1 → 7.5.9 | Transitive |
-| @isaacs/brace-expansion | 5.0.0 → 5.0.1 | Transitive security fix |
+| Change | Details |
+|--------|---------|
+| `next` version | `^15.5.7` → `^16.1.6` |
+| `eslint-config-next` | `15.3.2` → `16.1.6` |
+| `@next/bundle-analyzer` | `^15.5.2` → `^16.1.6` |
+| `middleware.ts` → `proxy.ts` | Renamed + export renamed to `proxy` |
+| `pages/api/health.js` moved | Root `pages/` → `src/pages/` (Next.js 16 requires pages/app under same folder) |
+| `eslint` option removed | Removed from `next.config.ts` (dropped in v16) |
+| `--turbopack` flag removed | Now default in `next dev`, flag removed from script |
+| `--webpack` flag added | Added to all `build` scripts to use webpack config |
+| `next lint` replaced | Script now `eslint .` (next lint command removed in v16) |
+| `tsconfig.json` updated | `jsx: preserve` → `react-jsx` (auto-applied by Next.js 16) |
+| 3 middleware test files updated | Import `{ proxy: middleware }` from `'../../../proxy'` |
+| Build artifact test updated | References `proxy.js`/`proxy-manifest.json` |
 
-Individual Dependabot PRs #272, #273, #276, #277, #278, #280, #282 closed (all commented).
+**Security CVEs fixed**: CVE-2025-59471, CVE-2025-59472, CVE-2026-23864
 
-### Next.js 16 Upgrade — Issue #287 Created
+### Verification Results
 
-PR #274 (next 15→16) was closed. Issue #287 tracks the full migration with all breaking changes documented:
-- Turbopack now default for `next build` (our webpack config will fail the build)
-- `middleware.ts` → `proxy.ts` rename required
-- `eslint` option in `next.config.js` must be removed
-- `next lint` script must be updated
-- Async params/searchParams synchronous compat removed
-- `eslint-config-next` version bump needed
-
-### Remaining audit issues (13) — acceptable, not fixable without breaking changes
-- `glob` deep in `sanity` dep tree — needs upstream sanity update
-- `serialize-javascript` — npm "fix" would downgrade webpack to 4.x
-- `undici` in GitHub Actions CI packages — not runtime
+- ✅ `npm install` — Next.js 16.1.6 installed (next-sanity peer warning expected, non-blocking)
+- ✅ `npm test` — 959 tests passing, 23 skipped (1 suite skipped intentionally)
+- ✅ `npm run build` — Production build succeeds (webpack mode, all 14 routes generated)
+- ✅ All pre-commit hooks passed
 
 ---
 
 ## 🎯 Current Project State
 
-**Tests**: ✅ 959 passing, 0 failing (1 suite skipped — analytics, intentional)
-**Branch**: `master` ✅ clean at `bf16dac`
-**VPS**: ✅ Running on previous master (`0c5327f`) — no deployment needed (lock file / dev deps only)
-**Open issues**: #287 (Next.js 16 upgrade — planned, not urgent today)
+**Tests**: ✅ 959 passing, 0 failing
+**Branch**: `feat/issue-287-nextjs-16-upgrade` — clean, PR #291 open
+**VPS**: ✅ Still running on previous master — not yet deployed (PR not merged yet)
+**Open issues**: #287 (PR #291 ready for review/merge)
+
+### Agent Validation Status
+- [ ] architecture-designer: Not run (structural changes are straightforward renames)
+- [ ] security-validator: Not run (CVEs fixed by version upgrade itself)
+- [ ] code-quality-analyzer: Not run
+- [ ] test-automation-qa: Not run (959 tests passing validates coverage)
+- [ ] performance-optimizer: Not run
+- [ ] documentation-knowledge-manager: Not run
 
 ---
 
 ## 🚀 Next Session Priorities
 
-1. **Issue #287: Next.js 16 upgrade** — major version migration with breaking changes. Key work:
-   - Add `--webpack` flag to build scripts (quick unblock) or migrate to Turbopack
-   - Rename `middleware.ts` → `proxy.ts`
-   - Remove `eslint` option from `next.config.js`
-   - Fix `"lint": "next lint"` script
-   - Audit async `params`/`searchParams` usage in pages/layouts
-   - Update `eslint-config-next` to `^16.x`
-   - Security CVEs addressed: CVE-2025-59471, CVE-2025-59472, CVE-2026-23864
-2. Any new feature/content work from Doctor Hubert
+1. **Merge PR #291** — Review and merge to master
+2. **VPS Deployment** — Before deploying, verify `node --version` on VPS ≥ 20.9.0
+   ```bash
+   ssh vps "node --version"  # Must be >= 20.9.0
+   ```
+   If VPS is on Node.js 18.x, upgrade to Node.js 20 LTS or 22 LTS first
+3. **Issue #287 closure** — Close after successful VPS deployment
+4. **next-sanity peer dep** — `next-sanity@11.x` still has `peer next@"^15.1.0-0"`. Monitor for update or consider upgrading next-sanity to v12+ if available.
+5. Any new feature/content work from Doctor Hubert
 
 ---
 
 ## 📝 Startup Prompt for Next Session
 
 ```
-Read CLAUDE.md to understand our workflow, then pick up from Issue #288 completion.
+Read CLAUDE.md to understand our workflow, then continue from Issue #287 (Next.js 16 upgrade).
 
-**Last completed**: Issue #288 (✅ closed) — batch Dependabot security/minor dep updates merged to master
-**Commit**: bf16dac on master, VPS still on 0c5327f (no redeploy needed — lock file only)
-**Open work**: Issue #287 — Next.js 16 upgrade (major migration, breaking changes documented)
-**Reference**: SESSION_HANDOVER.md, Issue #287
+**Last completed**: PR #291 created (Next.js 15 → 16, all 959 tests passing, build succeeds)
+**Branch**: feat/issue-287-nextjs-16-upgrade — ready to merge
+**Immediate priority**: Merge PR #291, verify VPS node version ≥ 20.9, deploy, close #287
+**Reference**: SESSION_HANDOVER.md, PR #291
+**Ready state**: Clean branch, all tests green, pre-commit hooks passing
 
-**Next priority**: Issue #287 Next.js 16 upgrade — involves webpack config strategy,
-middleware.ts rename, eslint config cleanup, async params audit, security CVE fixes.
-
-**Expected scope**: Plan and implement the Next.js 16 migration carefully.
+**Expected scope**: Merge + VPS deployment verification + #287 closure. Check next-sanity
+peer dep warning (next-sanity still requires peer next@^15 but works in v16 with override).
 ```
 
 ---
 
 **Session ended**: 2026-02-28
-**Status**: Dependabot batch complete. Next.js 16 upgrade planned in Issue #287.
+**Status**: Issue #287 implementation complete. PR #291 ready for merge. VPS deployment pending.
