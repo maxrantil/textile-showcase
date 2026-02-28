@@ -15,12 +15,14 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     steps:
       - name: Check if push is from PR merge
+        env:
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
         run: |
           # Allow GitHub's PR merge commits (both merge and squash)
           # Merge commits: "Merge pull request #123..."
           # Squash commits: "commit message (#123)" (first line only)
           # Session handoff commits: "docs: Complete session handoff for Issue #123"
-          COMMIT_MSG="${{ github.event.head_commit.message }}"
+          # COMMIT_MSG is passed via env to prevent backtick shell injection from commit bodies
 
           # Extract first line only (GitHub includes full commit body)
           FIRST_LINE=$(echo "$COMMIT_MSG" | head -n 1)
