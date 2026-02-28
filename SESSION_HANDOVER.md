@@ -1,15 +1,15 @@
-# Session Handoff: Issue #287 — Next.js 16 Upgrade
+# Session Handoff: Issue #287 — Next.js 16 Upgrade ✅ MERGED
 
 **Date**: 2026-02-28
 **Issue**: #287 — Next.js 16 upgrade (major version migration)
-**PR**: #291 — feat: upgrade Next.js 15 → 16 (Fixes #287)
-**Branch**: `feat/issue-287-nextjs-16-upgrade`
+**PR**: #291 — merged to master at 20:51 UTC
+**Branch**: `master` (clean, post-merge)
 
 ---
 
 ## ✅ Completed This Session
 
-### Next.js 16 Upgrade (Issue #287, PR #291)
+### Next.js 16 Upgrade (Issue #287, PR #291) — MERGED
 
 Fully implemented Next.js 15 → 16 migration with all breaking changes handled:
 
@@ -18,74 +18,67 @@ Fully implemented Next.js 15 → 16 migration with all breaking changes handled:
 | `next` version | `^15.5.7` → `^16.1.6` |
 | `eslint-config-next` | `15.3.2` → `16.1.6` |
 | `@next/bundle-analyzer` | `^15.5.2` → `^16.1.6` |
+| `next-sanity` | `^11.1.1` → `^11.6.12` (supports next@16) |
+| `@testing-library/dom` | Added as explicit devDep (peer dep CI fix) |
 | `middleware.ts` → `proxy.ts` | Renamed + export renamed to `proxy` |
-| `pages/api/health.js` moved | Root `pages/` → `src/pages/` (Next.js 16 requires pages/app under same folder) |
+| `pages/api/health.js` moved | Root `pages/` → `src/pages/` |
 | `eslint` option removed | Removed from `next.config.ts` (dropped in v16) |
-| `--turbopack` flag removed | Now default in `next dev`, flag removed from script |
-| `--webpack` flag added | Added to all `build` scripts to use webpack config |
-| `next lint` replaced | Script now `eslint .` (next lint command removed in v16) |
-| `tsconfig.json` updated | `jsx: preserve` → `react-jsx` (auto-applied by Next.js 16) |
+| `--webpack` flag added | Added to `dev` + all `build` scripts |
+| `next lint` replaced | Script now `eslint .` (next lint removed in v16) |
+| `tsconfig.json` updated | `jsx: preserve` → `react-jsx` |
 | 3 middleware test files updated | Import `{ proxy: middleware }` from `'../../../proxy'` |
 | Build artifact test updated | References `proxy.js`/`proxy-manifest.json` |
 
 **Security CVEs fixed**: CVE-2025-59471, CVE-2025-59472, CVE-2026-23864
 
-### Verification Results
+### CI Status on Merge
 
-- ✅ `npm install` — Next.js 16.1.6 installed (next-sanity peer warning expected, non-blocking)
-- ✅ `npm test` — 959 tests passing, 23 skipped (1 suite skipped intentionally)
-- ✅ `npm run build` — Production build succeeds (webpack mode, all 14 routes generated)
-- ✅ All pre-commit hooks passed
+- ✅ Jest Unit Tests — 959 passing
+- ✅ Bundle Size Validation
+- ✅ Lighthouse Performance Audit
+- ✅ Safari E2E Smoke Tests
+- ⚠️ Desktop/Mobile Chrome E2E — pre-existing failures (identical to PR #289, gallery tests failing due to Sanity CI credentials, not Next.js 16 related)
 
 ---
 
 ## 🎯 Current Project State
 
-**Tests**: ✅ 959 passing, 0 failing
-**Branch**: `feat/issue-287-nextjs-16-upgrade` — clean, PR #291 open
-**VPS**: ✅ Still running on previous master — not yet deployed (PR not merged yet)
-**Open issues**: #287 (PR #291 ready for review/merge)
-
-### Agent Validation Status
-- [ ] architecture-designer: Not run (structural changes are straightforward renames)
-- [ ] security-validator: Not run (CVEs fixed by version upgrade itself)
-- [ ] code-quality-analyzer: Not run
-- [ ] test-automation-qa: Not run (959 tests passing validates coverage)
-- [ ] performance-optimizer: Not run
-- [ ] documentation-knowledge-manager: Not run
+**Tests**: ✅ 959 passing, 0 failing (unit tests)
+**Branch**: `master` ✅ clean, Next.js 16.1.6 live
+**VPS**: ⚠️ Still running Next.js 15 — needs deployment after Node.js version check
+**Open issues**: #287 — open, pending VPS deployment confirmation
 
 ---
 
 ## 🚀 Next Session Priorities
 
-1. **Merge PR #291** — Review and merge to master
-2. **VPS Deployment** — Before deploying, verify `node --version` on VPS ≥ 20.9.0
+1. **VPS Deployment** — Critical prerequisite: verify Node.js ≥ 20.9.0 first:
    ```bash
    ssh vps "node --version"  # Must be >= 20.9.0
    ```
-   If VPS is on Node.js 18.x, upgrade to Node.js 20 LTS or 22 LTS first
-3. **Issue #287 closure** — Close after successful VPS deployment
-4. **next-sanity peer dep** — `next-sanity@11.x` still has `peer next@"^15.1.0-0"`. Monitor for update or consider upgrading next-sanity to v12+ if available.
-5. Any new feature/content work from Doctor Hubert
+   If ≥ 20.9: deploy normally. If < 20.9: upgrade Node.js first.
+2. **Close Issue #287** — After successful VPS deployment
+3. **Pre-existing E2E failures** — Desktop/Mobile Chrome gallery tests were failing before #287 too. Not a regression, but worth tracking separately if Doctor Hubert wants to fix them.
+4. Any new feature/content work from Doctor Hubert
 
 ---
 
 ## 📝 Startup Prompt for Next Session
 
 ```
-Read CLAUDE.md to understand our workflow, then continue from Issue #287 (Next.js 16 upgrade).
+Read CLAUDE.md to understand our workflow, then complete Issue #287 closure.
 
-**Last completed**: PR #291 created (Next.js 15 → 16, all 959 tests passing, build succeeds)
-**Branch**: feat/issue-287-nextjs-16-upgrade — ready to merge
-**Immediate priority**: Merge PR #291, verify VPS node version ≥ 20.9, deploy, close #287
-**Reference**: SESSION_HANDOVER.md, PR #291
-**Ready state**: Clean branch, all tests green, pre-commit hooks passing
+**Last completed**: PR #291 merged to master (Next.js 15 → 16, CVEs fixed, 959 tests passing)
+**Immediate priority**: VPS deployment of Next.js 16 + close issue #287
+**Pre-deploy check**: ssh vps "node --version" must be >= 20.9.0 (Next.js 16 requirement)
+**Reference**: SESSION_HANDOVER.md
+**Ready state**: master clean at Next.js 16.1.6, all unit tests passing
 
-**Expected scope**: Merge + VPS deployment verification + #287 closure. Check next-sanity
-peer dep warning (next-sanity still requires peer next@^15 but works in v16 with override).
+**Expected scope**: VPS node version check → deploy → verify site up → close #287.
+Note: Desktop/Mobile Chrome E2E failures are pre-existing (same as PR #289), not a regression.
 ```
 
 ---
 
 **Session ended**: 2026-02-28
-**Status**: Issue #287 implementation complete. PR #291 ready for merge. VPS deployment pending.
+**Status**: Next.js 16 upgrade merged to master. VPS deployment pending node version verification.
