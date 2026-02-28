@@ -190,7 +190,11 @@ function addSecurityHeaders(
   )
 
   // Strict Transport Security (HSTS) - only on HTTPS
-  if (request.nextUrl.protocol === 'https:') {
+  // Also check x-forwarded-proto for nginx reverse proxy (nginx terminates SSL, forwards HTTP)
+  const isHttps =
+    request.nextUrl.protocol === 'https:' ||
+    request.headers.get('x-forwarded-proto') === 'https'
+  if (isHttps) {
     response.headers.set(
       'Strict-Transport-Security',
       'max-age=31536000; includeSubDomains; preload'

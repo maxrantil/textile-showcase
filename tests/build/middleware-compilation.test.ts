@@ -145,30 +145,33 @@ describe('Middleware Build Artifact Validation', () => {
   })
 
   describe('Source File Structure Validation', () => {
-    it('should have proxy.ts in root (Next.js 16+ convention)', () => {
-      const rootProxyPath = path.join(process.cwd(), 'proxy.ts')
+    it('should have proxy.ts in src/ (Next.js 16+ convention with src/ layout)', () => {
+      // Next.js computes rootDir as path.join(pagesDir || appDir, '..').
+      // Since app and pages are in src/, rootDir = src/, so proxy.ts must be in src/
+      const srcProxyPath = path.join(process.cwd(), 'src', 'proxy.ts')
 
-      const rootExists = fs.existsSync(rootProxyPath)
+      const srcExists = fs.existsSync(srcProxyPath)
 
-      // MUST exist at root
-      if (!rootExists) {
+      // MUST exist in src/
+      if (!srcExists) {
         throw new Error(
-          `CRITICAL: No proxy.ts found! Must exist at project root:\n` +
-            `- Project root: proxy.ts`
+          `CRITICAL: No proxy.ts found in src/!\n` +
+            `Next.js 16 scans rootDir = path.join(appDir, '..') = src/ for proxy.ts.\n` +
+            `proxy.ts must be at: src/proxy.ts`
         )
       }
 
-      expect(rootExists).toBe(true)
+      expect(srcExists).toBe(true)
     })
 
     it('should have correct analytics domain in proxy.ts', () => {
-      const rootProxyPath = path.join(process.cwd(), 'proxy.ts')
+      const srcProxyPath = path.join(process.cwd(), 'src', 'proxy.ts')
 
-      if (!fs.existsSync(rootProxyPath)) {
-        throw new Error('No proxy.ts found in root!')
+      if (!fs.existsSync(srcProxyPath)) {
+        throw new Error('No proxy.ts found in src/!')
       }
 
-      const content = fs.readFileSync(rootProxyPath, 'utf-8')
+      const content = fs.readFileSync(srcProxyPath, 'utf-8')
 
       const hasAnalyticsDomain = content.includes(ANALYTICS_DOMAIN)
       const hasOldDomains =
@@ -179,13 +182,13 @@ describe('Middleware Build Artifact Validation', () => {
 
       if (!hasAnalyticsDomain) {
         throw new Error(
-          `proxy.ts is missing analytics.idaromme.dk in CSP configuration!`
+          `src/proxy.ts is missing analytics.idaromme.dk in CSP configuration!`
         )
       }
 
       if (hasOldDomains) {
         throw new Error(
-          `proxy.ts contains old domains (umami.is or 70.34.205.18)! These should be removed.`
+          `src/proxy.ts contains old domains (umami.is or 70.34.205.18)! These should be removed.`
         )
       }
     })
