@@ -95,4 +95,4 @@ Read CLAUDE.md to understand our workflow, then verify PR #297 and merge if CI i
 
 ---
 
-**Session status**: PR #297 open, CI running
+**Session status**: PR #297 open, CI running (unit ✅, lighthouse ✅, perf ✅, E2E pre-existing failures)
