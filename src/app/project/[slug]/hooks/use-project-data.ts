@@ -1,35 +1,29 @@
+// ABOUTME: Server-side data fetching for project pages — queries Sanity directly (no HTTP round-trip)
+// Replaces the previous self-referencing HTTP call that caused cold-start hangs after PM2 restart
+
 import { TextileDesign } from '@/types/textile'
 
 export async function getProject(slug: string): Promise<TextileDesign | null> {
   try {
     if (process.env.NODE_ENV === 'development') {
-      console.log(`🔍 Fetching project from API: ${slug}`)
+      console.log(`🔍 Fetching project from Sanity: ${slug}`)
     }
 
-    // Fetch from our API route instead of direct Sanity queries
-    const baseUrl = process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'
-    const response = await fetch(`${baseUrl}/api/projects/${slug}`, {
-      // Enable ISR caching
-      next: { revalidate: 3600 }, // 1 hour
-    })
+    const [{ queries }, { resilientFetch }] = await Promise.all([
+      import('@/sanity/queries'),
+      import('@/sanity/dataFetcher'),
+    ])
 
-    if (!response.ok) {
-      if (response.status === 404) {
-        if (process.env.NODE_ENV === 'development') {
-          console.warn(`⚠️ Project not found: ${slug}`)
-        }
-        return null
+    const project = await resilientFetch<TextileDesign>(
+      queries.getProjectBySlug,
+      { slug },
+      {
+        retries: 3,
+        timeout: 15000,
+        cache: true,
+        cacheTTL: 600000,
       }
-      if (process.env.NODE_ENV === 'development') {
-        console.warn(
-          `⚠️ API responded with status: ${response.status} for ${slug}`
-        )
-      }
-      return null
-    }
-
-    const data = await response.json()
-    const project = data.project
+    )
 
     if (process.env.NODE_ENV === 'development') {
       if (project) {
@@ -41,7 +35,7 @@ export async function getProject(slug: string): Promise<TextileDesign | null> {
 
     return project
   } catch (error) {
-    console.error(`❌ Failed to fetch project ${slug} from API:`, error)
+    console.error(`❌ Failed to fetch project ${slug}:`, error)
     return null
   }
 }
@@ -100,54 +94,82 @@ export async function getProjectWithNavigation(slug: string): Promise<{
 }> {
   try {
     if (process.env.NODE_ENV === 'development') {
-      console.log(`🔍 Fetching project with navigation from API: ${slug}`)
+      console.log(`🔍 Fetching project with navigation from Sanity: ${slug}`)
     }
 
-    // Fetch from our API route instead of direct Sanity queries
-    const baseUrl = process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'
-    const response = await fetch(`${baseUrl}/api/projects/${slug}`, {
-      // Enable ISR caching
-      next: { revalidate: 3600 }, // 1 hour
-    })
+    const [{ queries }, { resilientFetch }] = await Promise.all([
+      import('@/sanity/queries'),
+      import('@/sanity/dataFetcher'),
+    ])
 
-    if (!response.ok) {
-      if (response.status === 404) {
-        if (process.env.NODE_ENV === 'development') {
-          console.warn(`⚠️ Project not found: ${slug}`)
+    const [project, navigation] = await Promise.all([
+      resilientFetch<TextileDesign>(
+        queries.getProjectBySlug,
+        { slug },
+        {
+          retries: 3,
+          timeout: 15000,
+          cache: true,
+          cacheTTL: 600000,
         }
-        return { project: null }
-      }
-      if (process.env.NODE_ENV === 'development') {
-        console.warn(
-          `⚠️ API responded with status: ${response.status} for ${slug}`
-        )
-      }
-      return { project: null }
-    }
+      ),
+      resilientFetch<{
+        current: {
+          _id: string
+          title: string
+          slug: { current: string }
+          order: number
+        } | null
+        previous: {
+          _id: string
+          title: string
+          slug: { current: string }
+        } | null
+        next: { _id: string; title: string; slug: { current: string } } | null
+      }>(
+        queries.getProjectNavigation,
+        { slug },
+        {
+          retries: 2,
+          timeout: 10000,
+          cache: true,
+          cacheTTL: 300000,
+        }
+      ),
+    ])
 
-    const data = await response.json()
-
-    if (!data.project) {
+    if (!project) {
       if (process.env.NODE_ENV === 'development') {
         console.warn(`⚠️ Project not found: ${slug}`)
       }
       return { project: null }
     }
 
+    const nextProject = navigation?.next
+      ? { slug: navigation.next.slug.current, title: navigation.next.title }
+      : undefined
+
+    const previousProject = navigation?.previous
+      ? {
+          slug: navigation.previous.slug.current,
+          title: navigation.previous.title,
+        }
+      : undefined
+
     if (process.env.NODE_ENV === 'development') {
       console.log(
-        `✅ Navigation data from API: previous=${data.previousProject?.title}, next=${data.nextProject?.title}`
+        `✅ Navigation data from Sanity: previous=${previousProject?.title}, next=${nextProject?.title}`
       )
     }
 
     return {
-      project: data.project,
-      nextProject: data.nextProject,
-      previousProject: data.previousProject,
+      project,
+      nextProject,
+      previousProject,
     }
   } catch (error) {
     console.error(
-      `❌ Failed to fetch project with navigation ${slug} from API:`,
+      `❌ Failed to fetch project with navigation ${slug}:`,
       error
     )
     return { project: null }
