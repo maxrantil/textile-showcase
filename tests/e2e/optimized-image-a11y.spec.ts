@@ -112,31 +112,32 @@ test.describe('OptimizedImage Accessibility', () => {
       await page.goto('/')
       await page.waitForLoadState('networkidle')
 
-      // Wait for gallery items to be visible
+      // Wait for gallery items to be visible (works for both mobile and desktop gallery)
       await page.locator('[data-testid^="gallery-item-"]').first().waitFor({ state: 'visible' })
 
-      // Find all clickable image wrappers
-      const clickableWrappers = page.locator('[role="button"]')
-      const clickableCount = await clickableWrappers.count()
+      // Gallery items are semantic <a> links (Issue #259 lockdown-mode fix)
+      // Both MobileGallery and DesktopGallery use <Link> which renders as <a>
+      const galleryLinks = page.locator('[data-testid^="gallery-item-"]')
+      const linkCount = await galleryLinks.count()
 
-      expect(clickableCount).toBeGreaterThan(0)
+      expect(linkCount).toBeGreaterThan(0)
 
-      // Check first 3 clickable wrappers for proper attributes
-      const wrappersToCheck = Math.min(clickableCount, 3)
-      for (let i = 0; i < wrappersToCheck; i++) {
-        const wrapper = clickableWrappers.nth(i)
+      // Check first 3 gallery links for proper accessibility attributes
+      const linksToCheck = Math.min(linkCount, 3)
+      for (let i = 0; i < linksToCheck; i++) {
+        const link = galleryLinks.nth(i)
 
-        // Should have role="button"
-        const role = await wrapper.getAttribute('role')
-        expect(role).toBe('button')
+        // Should be a semantic <a> tag (natively keyboard accessible, no tabIndex needed)
+        const tagName = await link.evaluate(el => el.tagName.toLowerCase())
+        expect(tagName).toBe('a')
 
-        // Should be keyboard accessible (tabindex="0")
-        const tabIndex = await wrapper.getAttribute('tabindex')
-        expect(tabIndex).toBe('0')
+        // Should have href pointing to a project page
+        const href = await link.getAttribute('href')
+        expect(href).toMatch(/^\/project\//)
 
-        // Should have aria-label or aria-labelledby
-        const ariaLabel = await wrapper.getAttribute('aria-label')
-        const ariaLabelledBy = await wrapper.getAttribute('aria-labelledby')
+        // Should have aria-label or aria-labelledby for screen readers
+        const ariaLabel = await link.getAttribute('aria-label')
+        const ariaLabelledBy = await link.getAttribute('aria-labelledby')
 
         expect(ariaLabel !== null || ariaLabelledBy !== null).toBe(true)
 
@@ -183,14 +184,15 @@ test.describe('OptimizedImage Accessibility', () => {
       await page.goto('/')
       await page.waitForLoadState('networkidle')
 
-      // Find a clickable image wrapper
-      const clickableWrapper = page.locator('[role="button"]').first()
-      await expect(clickableWrapper).toBeVisible({ timeout: 5000 })
+      // Find first gallery item link (works for both mobile and desktop gallery)
+      // Gallery items are <a> links (Issue #259 lockdown-mode fix) — natively keyboard accessible
+      const galleryLink = page.locator('[data-testid^="gallery-item-"]').first()
+      await expect(galleryLink).toBeVisible({ timeout: 5000 })
 
-      // Focus the wrapper
-      await clickableWrapper.focus()
+      // Focus the link
+      await galleryLink.focus()
 
-      // Press Enter key
+      // Press Enter key (activates <a> link navigation natively)
       await page.keyboard.press('Enter')
 
       // Wait for potential navigation

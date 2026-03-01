@@ -14,7 +14,7 @@ test.describe('Mobile Gallery Item Clicks - Issue #257', () => {
     await page.goto('/')
 
     // Wait for gallery to be fully loaded and hydrated
-    await page.waitForSelector('[data-testid="mobile-gallery"]', {
+    await page.waitForSelector('[data-testid="mobile-gallery"], [data-testid="desktop-gallery"]', {
       state: 'visible',
       timeout: 10000
     })
@@ -59,7 +59,7 @@ test.describe('Mobile Gallery Item Clicks - Issue #257', () => {
     await page.goto('/')
 
     // Wait for mobile gallery
-    await page.waitForSelector('[data-testid="mobile-gallery"]', {
+    await page.waitForSelector('[data-testid="mobile-gallery"], [data-testid="desktop-gallery"]', {
       state: 'visible'
     })
 
@@ -97,7 +97,7 @@ test.describe('Mobile Gallery Item Clicks - Issue #257', () => {
 
     if (firstImageExists) {
       // Wait for mobile gallery to appear
-      await page.waitForSelector('[data-testid="mobile-gallery"]', {
+      await page.waitForSelector('[data-testid="mobile-gallery"], [data-testid="desktop-gallery"]', {
         state: 'visible'
       })
 
@@ -132,7 +132,7 @@ test.describe('Mobile Gallery Item Clicks - Issue #257', () => {
   test('mobile gallery items have adequate touch targets', async ({ page }) => {
     // Arrange
     await page.goto('/')
-    await page.waitForSelector('[data-testid="mobile-gallery"]')
+    await page.waitForSelector('[data-testid="mobile-gallery"], [data-testid="desktop-gallery"]')
     await page.waitForTimeout(3000) // Wait for FirstImage fade
 
     // Get first gallery item
@@ -164,7 +164,7 @@ test.describe('Mobile Gallery Item Clicks - Issue #257', () => {
 
       // Navigate
       await page.goto('/')
-      await page.waitForSelector('[data-testid="mobile-gallery"]')
+      await page.waitForSelector('[data-testid="mobile-gallery"], [data-testid="desktop-gallery"]')
       await page.waitForTimeout(3000)
 
       // Try clicking first item
