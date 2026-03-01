@@ -175,6 +175,11 @@ jobs:
             SECURITY_ENABLED=false
             EOF
 
+            # Stop PM2 before removing node_modules to release file locks.
+            # Without this, rm -rf partially fails and npm ci hits ENOTEMPTY (Issue #302).
+            echo "⏹️ Stopping PM2 to release node_modules file locks..."
+            pm2 stop idaromme-website 2>/dev/null || echo "⚠️ PM2 process not running (ok for first deploy)"
+
             # Install dependencies with correct Node version
             # Remove node_modules explicitly to ensure clean install (prevents stale files from major version upgrades)
             echo "📦 Installing dependencies..."
@@ -186,8 +191,8 @@ jobs:
             if NODE_ENV=production SKIP_ENV_VALIDATION=true npm run build; then
               echo "✅ Build successful"
 
-              # Restart PM2 (use restart to clear Node module cache)
-              echo "🔄 Restarting application..."
+              # Start/restart PM2
+              echo "🔄 Starting application..."
               if pm2 list | grep -q "idaromme-website"; then
                 echo "📋 PM2 process exists, restarting..."
                 pm2 restart idaromme-website
@@ -205,6 +210,8 @@ jobs:
               echo "❌ Build failed, rolling back..."
               rm -rf .next
               mv .next.backup .next 2>/dev/null || echo "⚠️ No backup to restore"
+              # Restore service from backup if available
+              pm2 start idaromme-website 2>/dev/null || echo "⚠️ Could not restore PM2 process"
               exit 1
             fi
 
