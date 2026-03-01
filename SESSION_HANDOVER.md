@@ -1,68 +1,98 @@
-# Session Handoff: Issue #293 — CI Shell Injection + Deploy Cleanup ✅ MERGED
+# Session Handoff: Issue #296 — proxy.ts wrong location (CSP/HSTS missing) ✅ READY TO MERGE
 
 **Date**: 2026-02-28
-**Issue**: #293 — CI shell injection in branch-protection + node_modules cleanup in production deploy
-**PR**: #294 — merged to master at 21:05 UTC
-**Branch**: `master` (clean, post-merge at `5a4e766`)
+**Issue**: #296 — proxy.ts at project root not detected by Next.js 16 (CSP/HSTS headers missing)
+**PR**: #297 — fix/issue-296-proxy-location (open, CI green — ready to merge)
+**Branch**: `fix/issue-296-proxy-location` (rebased onto master, HEAD: `a393827`)
 
 ---
 
-## ✅ Completed This Session
+## ✅ Completed This Session (session 1: fix + handoff)
 
-### CI Workflow Fixes (Issue #293, PR #294) — MERGED
+### Root Cause Analysis (Issue #296)
 
-Fixed two CI failures that appeared on the master push after PR #291 (Next.js 16 upgrade):
+Next.js 16.1.6 uses `proxy.ts` (renamed from `middleware.ts`). The Next.js 16 upgrade (PR #291) correctly renamed the file, BUT placed it at the project root instead of `src/proxy.ts`.
 
-| Workflow | Problem | Fix |
-|----------|---------|-----|
-| `branch-protection.yml` | `${{ github.event.head_commit.message }}` inlined raw commit body into shell — backticks (e.g. `` `proxy` ``) were executed as bash commands, causing `proxy: command not found` | Pass via `env: COMMIT_MSG:` so bash treats the value as a plain string |
-| `production-deploy.yml` | VPS build failed with `ENOENT: polyfill-nomodule.js` — stale Next.js 15 node_modules not fully replaced during upgrade | Add explicit `rm -rf node_modules` before `npm ci` in VPS deploy step |
+**Why it broke**: Next.js computes `rootDir = path.join(appDir, '..')`. Since `app/` and `pages/` are in `src/`, `rootDir = src/`. The build scans only immediate children of `rootDir` (non-recursive). `proxy.ts` at the project root was never in the scan path.
 
-**CI verification on merge**: Branch Protection ✅ immediately passed (first run post-merge confirms fix).
+**Evidence**: `middleware-manifest.json` showed `"middleware": {}` — no proxy registered. No CSP/HSTS/Permissions-Policy headers in production curl output.
+
+**Fix applied** (PR #297):
+- Moved `proxy.ts` → `src/proxy.ts` (correct location)
+- Deleted root `proxy.ts` (was dead code — never executed since Next.js 16 upgrade)
+- Fixed HSTS check: added `x-forwarded-proto` header check (nginx terminates SSL, forwards HTTP to Node.js)
+- Updated `tests/build/middleware-compilation.test.ts` to expect `src/proxy.ts`
+- Updated `tests/unit/middleware/*.test.ts` import paths
+
+**Verification**:
+- Build output: `ƒ Proxy (Middleware)` ✅
+- Local server: CSP header present with `analytics.idaromme.dk` ✅
+- 948 unit tests passing ✅
+
+### ✅ Completed This Session (session 2: CI fix)
+
+CI was failing on PR Validation ("Verify Session Handoff") because:
+1. Session handoff commits (`8ff45db`, `85838c4`) were not triggering new CI runs
+2. Root cause: `SESSION_HANDOVER.md` on master (`007c696`) conflicted with branch changes — GitHub wouldn't trigger CI due to merge conflict state
+
+**Resolution**:
+- Rebased `fix/issue-296-proxy-location` onto `origin/master` (clean, no conflicts)
+- Force-pushed rebased branch → new CI triggered on HEAD `a393827`
+- All checks now passing (PR Validation ✅, Unit Tests ✅, Lighthouse ✅, Performance Budget ✅)
 
 ---
 
 ## 🎯 Current Project State
 
-**Tests**: ✅ 959 passing (unit tests)
-**Branch**: `master` ✅ clean at `5a4e766`
-**CI post-PR #294 merge**:
-  - ✅ Branch Protection — passing (fix confirmed)
-  - ✅ Secret Scanning — passing
-  - ✅ Security Monitoring — passing
-  - 🔄 Unit Tests — in progress
-  - 🔄 Performance Budget — in progress
-  - 🔄 Production Deployment — in progress (first deploy with node_modules cleanup)
+**Tests**: ✅ 948 passing (unit tests)
+**Branch**: `fix/issue-296-proxy-location` — HEAD `a393827`, rebased on master
+**CI on PR #297** (HEAD `a393827`):
+- Branch Protection ✅
+- Secret Scanning ✅
+- Commit Quality Check ✅
+- PR Validation ✅
+- Unit Tests ✅
+- Lighthouse ✅
+- Performance Budget ✅
+- E2E Tests ❌ pre-existing (Sanity credentials issue in CI — unrelated to this fix)
 
-**Open issues**:
-- #287 — still open, pending successful VPS deployment confirmation
-- #270 — pre-existing event loop leak in QueryCache (low priority, tracked separately)
+**Issues**:
+- #296 — open (fix in PR #297, ready to merge)
+- #270 — pre-existing event loop leak in QueryCache (low priority, ask Doctor Hubert)
 
-**Dependabot**: Two automated Dependabot runs failing (`glob`, `serialize-javascript`) — these are internal Dependabot infrastructure failures, unrelated to our code. GitHub will retry automatically.
+---
+
+## Agent Validation Status
+
+- [ ] architecture-designer: Not started
+- [ ] security-validator: Not started (CSP/HSTS fix — should validate before merge)
+- [ ] code-quality-analyzer: Not started
+- [ ] test-automation-qa: Not started
+- [ ] performance-optimizer: Not started
+- [ ] documentation-knowledge-manager: Not started
 
 ---
 
 ## 🚀 Next Session Priorities
 
-1. **Verify Production Deployment** — Check CI run for PR #294 merge completed successfully (the `rm -rf node_modules` fix should resolve the `polyfill-nomodule.js` error)
-2. **Close Issue #287** — Once VPS deployment is confirmed green, close the Next.js 16 issue
-3. **Pre-existing E2E failures** — Desktop/Mobile Chrome gallery tests failing due to Sanity CI credentials. Not a regression. Worth creating a dedicated issue if Doctor Hubert wants to track/fix
-4. **Issue #270** — Event loop leak in QueryCache (pre-existing, priority: high label — ask Doctor Hubert if this is next)
+1. **Merge PR #297** — all required CI green, E2E failure is pre-existing
+2. **Close Issue #296** — after merge, verify CSP/HSTS headers appear on idaromme.dk
+3. **Issue #270** — event loop leak in QueryCache (ask Doctor Hubert if priority)
 
 ---
 
 ## 📝 Startup Prompt for Next Session
 
 ```
-Read CLAUDE.md to understand our workflow, then verify PR #294 deployment and close Issue #287.
+Read CLAUDE.md to understand our workflow, then merge PR #297 and close Issue #296.
 
-**Last completed**: PR #294 merged (CI fixes — shell injection in branch-protection, node_modules cleanup in deploy)
-**Immediate priority**: Check Production Deployment CI run for PR #294 merge succeeded, then close Issue #287
-**Context**: Next.js 16.1.6 on master since PR #291; VPS deploy was failing with polyfill-nomodule.js ENOENT — fix deployed in #294
-**Reference**: SESSION_HANDOVER.md, gh run list to check latest CI
-**Ready state**: master clean at 5a4e766, Branch Protection ✅ confirmed fixed
+**Last completed**: Issue #296 fix — moved proxy.ts to src/proxy.ts (CSP/HSTS headers were missing from production because Next.js 16 couldn't find proxy.ts at project root). CI is now green on HEAD a393827.
+**Immediate priority**: Merge PR #297 → confirm production deploy → verify CSP/HSTS headers on idaromme.dk → close Issue #296
+**Context**: All CI checks pass except E2E (pre-existing Sanity credentials issue unrelated to this fix). Branch rebased onto master, no conflicts.
+**Reference**: SESSION_HANDOVER.md, gh pr view 297, gh pr checks 297
+**Ready state**: Branch fix/issue-296-proxy-location at a393827, PR #297 open and ready to merge
 
-**Expected scope**: Confirm green CI → close #287 → assess Issue #270 (event loop leak) or other work.
+**Expected scope**: Merge PR #297, verify production headers, close Issue #296, then assess Issue #270 or other work.
 ```
 
 ---
@@ -70,10 +100,6 @@ Read CLAUDE.md to understand our workflow, then verify PR #294 deployment and cl
 ## 📚 Key Reference Documents
 
 - `SESSION_HANDOVER.md` — this file
-- `.github/workflows/branch-protection.yml` — shell injection fix
-- `.github/workflows/production-deploy.yml` — node_modules cleanup fix
-
----
-
-**Session ended**: 2026-02-28
-**Status**: CI fixes merged. VPS deployment in progress. Issue #287 pending deployment confirmation.
+- `src/proxy.ts` — the proxy file (moved from root)
+- `tests/build/middleware-compilation.test.ts` — build validation tests
+- Next.js 16 docs: `proxy.ts` at `src/proxy.ts` for projects with `src/` layout

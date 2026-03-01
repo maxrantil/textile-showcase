@@ -86,7 +86,7 @@ describe('CSP Middleware - Analytics Configuration', () => {
         value: 'production',
       })
 
-      const { proxy: middleware } = await import('../../../proxy')
+      const { proxy: middleware } = await import('../../../src/proxy')
 
       const request = mockNextRequest('https://idaromme.dk/', 'https:')
       await middleware(request as unknown as NextRequest)
@@ -113,7 +113,7 @@ describe('CSP Middleware - Analytics Configuration', () => {
         value: 'production',
       })
 
-      const { proxy: middleware } = await import('../../../proxy')
+      const { proxy: middleware } = await import('../../../src/proxy')
 
       const request = mockNextRequest('https://idaromme.dk/', 'https:')
       await middleware(request as unknown as NextRequest)
@@ -138,7 +138,7 @@ describe('CSP Middleware - Analytics Configuration', () => {
         value: 'production',
       })
 
-      const { proxy: middleware } = await import('../../../proxy')
+      const { proxy: middleware } = await import('../../../src/proxy')
 
       const routes = ['/', '/contact', '/gallery', '/about']
 
@@ -171,7 +171,7 @@ describe('CSP Middleware - Analytics Configuration', () => {
         value: 'development',
       })
 
-      const { proxy: middleware } = await import('../../../proxy')
+      const { proxy: middleware } = await import('../../../src/proxy')
 
       const request = mockNextRequest('http://localhost:3000/', 'http:')
       await middleware(request as unknown as NextRequest)
@@ -199,7 +199,7 @@ describe('CSP Middleware - Analytics Configuration', () => {
         value: 'production',
       })
 
-      const { proxy: middleware } = await import('../../../proxy')
+      const { proxy: middleware } = await import('../../../src/proxy')
 
       const request = mockNextRequest('https://idaromme.dk/', 'https:')
       await middleware(request as unknown as NextRequest)
@@ -224,7 +224,7 @@ describe('CSP Middleware - Analytics Configuration', () => {
         value: 'production',
       })
 
-      const { proxy: middleware } = await import('../../../proxy')
+      const { proxy: middleware } = await import('../../../src/proxy')
 
       const request = mockNextRequest('https://idaromme.dk/', 'https:')
       await middleware(request as unknown as NextRequest)
@@ -250,7 +250,7 @@ describe('CSP Middleware - Analytics Configuration', () => {
         value: 'production',
       })
 
-      const { proxy: middleware } = await import('../../../proxy')
+      const { proxy: middleware } = await import('../../../src/proxy')
 
       const request = mockNextRequest('https://idaromme.dk/', 'https:')
       await middleware(request as unknown as NextRequest)
@@ -277,7 +277,7 @@ describe('CSP Middleware - Analytics Configuration', () => {
         value: 'production',
       })
 
-      const { proxy: middleware } = await import('../../../proxy')
+      const { proxy: middleware } = await import('../../../src/proxy')
 
       const request = mockNextRequest('https://idaromme.dk/', 'https:')
       await middleware(request as unknown as NextRequest)
@@ -308,7 +308,7 @@ describe('CSP Middleware - Analytics Configuration', () => {
         value: 'https://example.com/csp-report',
       })
 
-      const { proxy: middleware } = await import('../../../proxy')
+      const { proxy: middleware } = await import('../../../src/proxy')
 
       const request = mockNextRequest('https://idaromme.dk/', 'https:')
       await middleware(request as unknown as NextRequest)
@@ -336,7 +336,7 @@ describe('CSP Middleware - Analytics Configuration', () => {
         value: 'production',
       })
 
-      const { proxy: middleware } = await import('../../../proxy')
+      const { proxy: middleware } = await import('../../../src/proxy')
 
       const request = mockNextRequest('https://idaromme.dk/', 'https:')
       await middleware(request as unknown as NextRequest)
@@ -361,7 +361,7 @@ describe('CSP Middleware - Analytics Configuration', () => {
         value: 'production',
       })
 
-      const { proxy: middleware } = await import('../../../proxy')
+      const { proxy: middleware } = await import('../../../src/proxy')
 
       const request = mockNextRequest('https://idaromme.dk/', 'https:')
       await middleware(request as unknown as NextRequest)
