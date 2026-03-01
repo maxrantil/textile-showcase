@@ -74,8 +74,8 @@ test.describe('Mobile Gallery Item Clicks - Issue #257', () => {
     // Get initial URL
     const initialUrl = page.url()
 
-    // Act: Tap on second gallery item
-    await secondItem.tap()
+    // Act: Click/tap on second gallery item (.click() works across touch and non-touch contexts)
+    await secondItem.click()
 
     // Assert: Should navigate to different project page
     await page.waitForURL('/project/*', { timeout: 5000 })
