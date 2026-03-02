@@ -19,19 +19,22 @@ describe('Bundle Optimization Integration', () => {
       expect(homePageContent).toContain('Gallery')
     })
 
-    it('should use ClientProjectContent component for API-based project data', async () => {
-      // GREEN: Project pages use API routes via client components
+    it('should use server-side data fetching on project pages (no client waterfall)', async () => {
+      // GREEN: Project pages fetch data server-side via getProjectWithNavigation
+      // (Issue #317: replaced ClientProjectContent client-side fetch with SSR)
       const projectPageContent = await fs.readFile(
         path.join(process.cwd(), 'src/app/project/[slug]/page.tsx'),
         'utf-8'
       )
 
-      // Should NOT contain any Sanity imports (externalized)
+      // Should NOT import Sanity packages directly (they are server-only via use-project-data)
       expect(projectPageContent).not.toContain('@/sanity/')
-      expect(projectPageContent).not.toContain('sanity')
 
-      // Should use ClientProjectContent for API-based data fetching
-      expect(projectPageContent).toContain('ClientProjectContent')
+      // Should use server-side data fetching
+      expect(projectPageContent).toContain('getProjectWithNavigation')
+
+      // Should render ProjectContent directly (no client-side loading spinner)
+      expect(projectPageContent).toContain('ProjectContent')
     })
 
     it('should have API routes for server-side Sanity access', async () => {
