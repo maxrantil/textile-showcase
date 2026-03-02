@@ -1,56 +1,58 @@
-# Session Handoff: Issue #308 — Next.js image cache TTL fix ✅ COMPLETE
+# Session Handoff: Issue #311 — serialize-javascript security override ✅ COMPLETE
 
 **Date**: 2026-03-02
-**Issue**: #308 — First-visit images load slowly (minimumCacheTTL not configured)
-**PR**: #309 — merged to master at `b91d953`
-**Branch**: `fix/issue-308-image-cache-ttl` — deleted after merge
+**Issue**: #311 — bump serialize-javascript to >=7.0.3 via npm overrides
+**PR**: #312 — merged to master at `5c61d8a`
+**Branch**: `fix/issue-311-serialize-javascript-override` — deleted after merge
 
 ---
 
 ## ✅ Completed Work
 
 ### Root cause
-`next.config.ts` had no `minimumCacheTTL` configured, so Next.js defaulted to **60 seconds**.
-On a low-traffic portfolio site, the `/_next/image` optimization cache was effectively always
-cold — every request (or any request >60s after the previous one) triggered:
-1. Download original image from Sanity CDN
-2. Re-encode to AVIF (CPU-intensive on VPS)
-3. Re-cache to `.next/cache/images/`
+Dependabot alert #44 (high): `serialize-javascript@6.0.2` is vulnerable to
+RCE via `RegExp.flags` and `Date.prototype.toISOString()` (fixed in 7.0.3).
+
+The package is a transitive dep pulled in by:
+```
+webpack → terser-webpack-plugin@5.3.16 → serialize-javascript@6.0.2
+```
+`terser-webpack-plugin` pins `^6.0.2`, blocking a plain `npm update`.
 
 ### Fix
-One line added to the `images` block in `next.config.ts`:
+Added `overrides` section to `package.json`:
+```json
+"overrides": {
+  "serialize-javascript": ">=7.0.3"
+}
 ```
-minimumCacheTTL: 31536000, // 1 year
-```
-AVIF encoding now happens **once per unique image+size combination** and the result is
-served from disk for all subsequent requests for up to a year.
-
-### Not affected
-- **Lockdown Mode**: `LockdownImage` component bypasses `/_next/image` entirely
-  (uses plain `<img>` with direct Sanity CDN URL) — no change in behaviour
-- **AVIF format**: kept; encoding cost is now amortised over 1 year, not 60 seconds
+`npm install` resolved `serialize-javascript` to **7.0.3**. The refreshed
+`package-lock.json` will trigger a GitHub rescan and auto-dismiss the ~15
+stale Dependabot alerts whose packages are already at patched versions
+(rollup@4.59.0, tar@7.5.9, valibot@1.2.0, glob@11.1.0, next@16.1.6).
 
 ### Tests
-All 982 unit/integration tests pass (1 pre-existing skipped suite, unrelated).
+All 982 unit/integration tests pass.
 
 ---
 
 ## 🎯 Current Project State
 
-**Tests**: ✅ All passing
-**Branch**: master at `b91d953` (clean)
-**Production**: idaromme.dk ✅ (deployment triggered by PM2 auto-restart on new build)
-**CI**: All workflows green
+**Tests**: ✅ All passing (982 / 982)
+**Branch**: master at `5c61d8a` (clean)
+**Production**: idaromme.dk ✅
+**CI**: Running post-merge (expected green)
 
-### Known open items
-- 2 high-severity Dependabot alerts on master (noted in previous sessions, not yet actioned)
+### Remaining Dependabot items (not actioned)
+- `minimatch@3.1.5` via ESLint plugins (dev-only, ReDoS not exploitable at runtime or in our build pipeline, requires major-version jump of eslint ecosystem — deferred)
+- 2 high alerts reported by GitHub on the branch push may be minimatch; confirm via Dependabot dashboard after rescan
 
 ---
 
 ## 🚀 Next Session Priorities
 
-1. **Dependabot alerts** — 2 high-severity vulnerabilities: `gh api repos/maxrantil/textile-showcase/vulnerability-alerts`
-2. **Image cache warmup script** — optional follow-up to #308: pre-populate `/_next/image` cache after each deployment so even the very first visitor post-deploy sees fast loads
+1. **Confirm stale Dependabot alerts auto-dismissed** after rescan triggered by lock file push
+2. **Optional: image cache warmup script** — pre-populate `/_next/image` cache after each deployment so the very first visitor post-deploy sees fast loads (follow-up to #308)
 3. **New issues** — `gh issue list --state open`
 
 ---
@@ -58,15 +60,16 @@ All 982 unit/integration tests pass (1 pre-existing skipped suite, unrelated).
 ## 📝 Startup Prompt for Next Session
 
 ```
-Read CLAUDE.md to understand our workflow, then continue from Issue #308 completion.
+Read CLAUDE.md to understand our workflow, then continue from Issue #311 completion.
 
-**Last completed**: Issue #308 closed — PR #309 merged (b91d953). Added minimumCacheTTL: 31536000
-to next.config.ts; first-visit image slowness on idaromme.dk is resolved.
+**Last completed**: Issue #311 closed — PR #312 merged (5c61d8a). Added npm overrides
+to force serialize-javascript >= 7.0.3; Dependabot alert #44 (high RCE) resolved.
 **Production state**: idaromme.dk healthy, all CI green.
-**Reference**: SESSION_HANDOVER.md, gh issue list --state open
-**Ready state**: master at b91d953, clean working directory, all tests passing
+**Reference**: SESSION_HANDOVER.md, gh api repos/maxrantil/textile-showcase/dependabot/alerts
+**Ready state**: master at 5c61d8a, clean working directory, all tests passing
 
-**Expected scope**: Triage 2 high Dependabot alerts, or optional image cache warmup script.
+**Expected scope**: Verify stale Dependabot alerts auto-dismissed, or tackle optional
+image cache warmup script (#308 follow-up).
 ```
 
 ---
@@ -74,5 +77,5 @@ to next.config.ts; first-visit image slowness on idaromme.dk is resolved.
 ## 📚 Key Reference Documents
 
 - `SESSION_HANDOVER.md` — this file
-- `next.config.ts` — image config with new `minimumCacheTTL`
-- `src/components/ui/LockdownImage.tsx` — bypasses `/_next/image`, uses Sanity CDN directly
+- `package.json` — overrides section with serialize-javascript pin
+- `next.config.ts` — minimumCacheTTL: 31536000 (from #308)
