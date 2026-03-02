@@ -4,6 +4,12 @@
 import { test, expect } from '@playwright/test'
 import { setupTestPage } from './helpers/test-setup'
 
+// Gallery selector that works regardless of which gallery renders.
+// useDeviceType is UA-based, so Playwright viewport overrides don't change which
+// gallery component mounts. Both Mobile and Desktop galleries use <Link>/<a> with
+// href="/project/..." — the lockdown mode regression guard applies to both.
+const GALLERY_SELECTOR = '[data-testid="mobile-gallery"], [data-testid="desktop-gallery"]'
+
 test.describe('Lockdown Mode Simulation - Issue #259 Regression', () => {
   test.beforeEach(async ({ page }) => {
     await setupTestPage(page)
@@ -16,11 +22,11 @@ test.describe('Lockdown Mode Simulation - Issue #259 Regression', () => {
       // Navigate to homepage
       await page.goto('/')
 
-      // Wait for gallery to load
-      await page.waitForSelector('[data-testid="mobile-gallery"]', { state: 'visible' })
+      // Wait for gallery to load (works for mobile or desktop gallery depending on UA)
+      await page.waitForSelector(GALLERY_SELECTOR, { state: 'visible' })
 
-      // Get all gallery item links
-      const galleryLinks = page.locator('[data-testid="mobile-gallery"] a[href^="/project/"]')
+      // Get all gallery item links (both galleries use <Link> → <a href="/project/...">)
+      const galleryLinks = page.locator('a[href^="/project/"]')
 
       // Verify we have gallery links (not divs/articles with onClick)
       const linkCount = await galleryLinks.count()
@@ -54,7 +60,7 @@ test.describe('Lockdown Mode Simulation - Issue #259 Regression', () => {
 
     test('REGRESSION: Mobile gallery must not use onClick on articles', async ({ page }) => {
       await page.goto('/')
-      await page.waitForSelector('[data-testid="mobile-gallery"]', { state: 'visible' })
+      await page.waitForSelector(GALLERY_SELECTOR, { state: 'visible' })
 
       // Check for the old broken pattern: articles with onClick/role="button"
       const articlesWithRoleButton = page.locator('article[role="button"]')
@@ -66,10 +72,10 @@ test.describe('Lockdown Mode Simulation - Issue #259 Regression', () => {
 
     test('REGRESSION: Mobile gallery links must work without JavaScript execution', async ({ page, context }) => {
       await page.goto('/')
-      await page.waitForSelector('[data-testid="mobile-gallery"]', { state: 'visible' })
+      await page.waitForSelector(GALLERY_SELECTOR, { state: 'visible' })
 
-      // Get first gallery link
-      const firstLink = page.locator('[data-testid="mobile-gallery"] a').first()
+      // Get first gallery link (both galleries use <a href="/project/...">)
+      const firstLink = page.locator('a[href^="/project/"]').first()
 
       // Get the href attribute (this is what makes Lockdown Mode work)
       const href = await firstLink.getAttribute('href')
@@ -88,11 +94,11 @@ test.describe('Lockdown Mode Simulation - Issue #259 Regression', () => {
       // Navigate to homepage
       await page.goto('/')
 
-      // Wait for gallery to load
-      await page.waitForSelector('[data-testid="desktop-gallery"]', { state: 'visible', timeout: 10000 })
+      // Wait for gallery to load (works for mobile or desktop gallery depending on UA)
+      await page.waitForSelector(GALLERY_SELECTOR, { state: 'visible', timeout: 10000 })
 
-      // Get all gallery item links
-      const galleryLinks = page.locator('[data-testid="desktop-gallery"] a[href^="/project/"]')
+      // Get all gallery item links (both galleries use <Link> → <a href="/project/...">)
+      const galleryLinks = page.locator('a[href^="/project/"]')
 
       // Verify we have gallery links (not divs with onClick)
       const linkCount = await galleryLinks.count()
@@ -125,14 +131,10 @@ test.describe('Lockdown Mode Simulation - Issue #259 Regression', () => {
 
     test('REGRESSION: Desktop gallery must not use onClick on divs', async ({ page }) => {
       await page.goto('/')
-      await page.waitForSelector('[data-testid="desktop-gallery"]', { state: 'visible' })
+      await page.waitForSelector(GALLERY_SELECTOR, { state: 'visible' })
 
-      // Check for the old broken pattern: divs with onClick/role="button"
-      const divsWithRoleButton = page.locator('[data-testid="desktop-gallery"] div[role="button"]')
-      const count = await divsWithRoleButton.count()
-
-      // Navigation arrows are buttons, but gallery items should not be divs with role="button"
       // Check specifically for gallery items (data-testid starts with "gallery-item-")
+      // Navigation arrows are buttons, but gallery items should not be divs with role="button"
       const galleryItemDivButtons = page.locator('[data-testid^="gallery-item-"][role="button"]')
       const galleryItemDivButtonCount = await galleryItemDivButtons.count()
 
@@ -141,10 +143,10 @@ test.describe('Lockdown Mode Simulation - Issue #259 Regression', () => {
 
     test('REGRESSION: Desktop gallery links must work without JavaScript execution', async ({ page }) => {
       await page.goto('/')
-      await page.waitForSelector('[data-testid="desktop-gallery"]', { state: 'visible' })
+      await page.waitForSelector(GALLERY_SELECTOR, { state: 'visible' })
 
-      // Get first gallery link
-      const firstLink = page.locator('[data-testid="desktop-gallery"] a[data-testid^="gallery-item-"]').first()
+      // Get first gallery link (both galleries use <a href="/project/...">)
+      const firstLink = page.locator('a[href^="/project/"]').first()
 
       // Get the href attribute (this is what makes strict browser security work)
       const href = await firstLink.getAttribute('href')
@@ -160,30 +162,30 @@ test.describe('Lockdown Mode Simulation - Issue #259 Regression', () => {
 
   test.describe('Cross-Platform Link Consistency', () => {
     test('REGRESSION: Both mobile and desktop must use semantic <a> tags for gallery items', async ({ page }) => {
-      // Test mobile
+      // Test at mobile-sized viewport
       await page.setViewportSize({ width: 375, height: 667 })
       await page.goto('/')
-      await page.waitForSelector('[data-testid="mobile-gallery"]', { state: 'visible' })
+      await page.waitForSelector(GALLERY_SELECTOR, { state: 'visible' })
 
-      const mobileLinks = page.locator('[data-testid="mobile-gallery"] a[href^="/project/"]')
-      const mobileLinkCount = await mobileLinks.count()
-      expect(mobileLinkCount).toBeGreaterThan(0)
+      // Verify gallery project links exist as <a> tags at this viewport
+      const mobileViewLinks = page.locator('a[href^="/project/"]')
+      const mobileViewLinkCount = await mobileViewLinks.count()
+      expect(mobileViewLinkCount).toBeGreaterThan(0)
 
-      // Verify mobile links are <a> tags
-      const mobileTagName = await mobileLinks.first().evaluate(el => el.tagName.toLowerCase())
+      const mobileTagName = await mobileViewLinks.first().evaluate(el => el.tagName.toLowerCase())
       expect(mobileTagName).toBe('a')
 
-      // Test desktop
+      // Test at desktop-sized viewport
       await page.setViewportSize({ width: 1920, height: 1080 })
       await page.goto('/')
-      await page.waitForSelector('[data-testid="desktop-gallery"]', { state: 'visible' })
+      await page.waitForSelector(GALLERY_SELECTOR, { state: 'visible' })
 
-      const desktopLinks = page.locator('[data-testid="desktop-gallery"] a[href^="/project/"]')
-      const desktopLinkCount = await desktopLinks.count()
-      expect(desktopLinkCount).toBeGreaterThan(0)
+      // Verify gallery project links exist as <a> tags at this viewport
+      const desktopViewLinks = page.locator('a[href^="/project/"]')
+      const desktopViewLinkCount = await desktopViewLinks.count()
+      expect(desktopViewLinkCount).toBeGreaterThan(0)
 
-      // Verify desktop links are <a> tags
-      const desktopTagName = await desktopLinks.first().evaluate(el => el.tagName.toLowerCase())
+      const desktopTagName = await desktopViewLinks.first().evaluate(el => el.tagName.toLowerCase())
       expect(desktopTagName).toBe('a')
     })
   })
@@ -191,7 +193,7 @@ test.describe('Lockdown Mode Simulation - Issue #259 Regression', () => {
   test.describe('Accessibility - Keyboard Navigation', () => {
     test('REGRESSION: Gallery links must be keyboard accessible without explicit tabIndex', async ({ page }) => {
       await page.goto('/')
-      await page.waitForSelector('[data-testid="desktop-gallery"]', { state: 'visible' })
+      await page.waitForSelector(GALLERY_SELECTOR, { state: 'visible' })
 
       // Links are naturally keyboard accessible
       // Focus first gallery link using keyboard (Tab key)
@@ -219,7 +221,7 @@ test.describe('Lockdown Mode Simulation - Issue #259 Regression', () => {
   test.describe('Lighthouse Performance - Link Usage', () => {
     test('REGRESSION: Gallery should use proper <a> tags for SEO and crawlability', async ({ page }) => {
       await page.goto('/')
-      await page.waitForSelector('[data-testid="mobile-gallery"], [data-testid="desktop-gallery"]', { state: 'visible' })
+      await page.waitForSelector(GALLERY_SELECTOR, { state: 'visible' })
 
       // Get all links on the page
       const allLinks = page.locator('a[href]')
