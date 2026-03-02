@@ -77,7 +77,13 @@
     "**/inflight": "^1.0.6"
   },
   "overrides": {
-    "serialize-javascript": ">=7.0.3"
+    "serialize-javascript": ">=7.0.3",
+    "@architect/hydrate": {
+      "glob": "^10.5.0"
+    },
+    "@architect/utils": {
+      "glob": "^10.5.0"
+    }
   },
   "engineStrict": true
 }
