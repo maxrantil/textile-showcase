@@ -1,8 +1,10 @@
-import { ClientProjectContent } from '@/components/ClientProjectContent'
+import { notFound } from 'next/navigation'
 import { generateProjectMetadata } from './components/project-metadata'
 import { generateProjectBreadcrumbs } from '@/app/metadata/breadcrumb-schema'
 import { generateProjectStructuredData } from './utils/project-helpers'
-import { getProject } from './hooks/use-project-data'
+import { getProjectWithNavigation } from './hooks/use-project-data'
+import { ProjectContent } from './components/project-content'
+import { getOptimizedImageUrl } from '@/utils/image-helpers'
 
 interface ProjectPageProps {
   params: Promise<{
@@ -10,7 +12,7 @@ interface ProjectPageProps {
   }>
 }
 
-// Disable static generation - fully dynamic routing with client-side data fetching
+// Disable static generation - fully dynamic routing with server-side data fetching
 export const dynamic = 'force-dynamic'
 
 // Generate enhanced metadata with OG images and SEO optimization
@@ -19,44 +21,71 @@ export async function generateMetadata({ params }: ProjectPageProps) {
   return generateProjectMetadata({ slug })
 }
 
-// Main page component with structured data for SEO
+// Main page component — fetches all data server-side so images are in the initial HTML
 export default async function ProjectPage({ params }: ProjectPageProps) {
   const { slug } = await params
 
-  // Fetch project data for structured data schemas
-  const project = await getProject(slug)
+  const { project, nextProject, previousProject } =
+    await getProjectWithNavigation(slug)
+
+  if (!project) {
+    notFound()
+  }
 
   // Generate structured data schemas
-  const breadcrumbSchema = project
-    ? generateProjectBreadcrumbs(project.title, slug)
-    : null
-  const projectSchema = project
-    ? generateProjectStructuredData(project, slug)
+  const breadcrumbSchema = generateProjectBreadcrumbs(project.title, slug)
+  const projectSchema = generateProjectStructuredData(project, slug)
+
+  // Build LCP preload URL for the main project image
+  const imageSource = project.image || project.images?.[0]?.asset
+  const preloadUrl = imageSource
+    ? getOptimizedImageUrl(imageSource, {
+        width: 800,
+        quality: 80,
+        format: 'avif',
+      })
     : null
 
   return (
     <>
-      {/* Breadcrumb structured data for rich snippets */}
-      {breadcrumbSchema && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(breadcrumbSchema),
-          }}
+      {/* Preconnect to Sanity CDN for faster image loading */}
+      <link rel="preconnect" href="https://cdn.sanity.io" />
+      <link rel="dns-prefetch" href="https://cdn.sanity.io" />
+
+      {/* Preload LCP image so the browser discovers it from the initial HTML */}
+      {preloadUrl && (
+        <link
+          rel="preload"
+          as="image"
+          href={preloadUrl}
+          type="image/avif"
+          fetchPriority="high"
+          crossOrigin="anonymous"
         />
       )}
+
+      {/* Breadcrumb structured data for rich snippets */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbSchema),
+        }}
+      />
 
       {/* Project/CreativeWork structured data */}
-      {projectSchema && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(projectSchema),
-          }}
-        />
-      )}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(projectSchema),
+        }}
+      />
 
-      <ClientProjectContent slug={slug} />
+      <ProjectContent
+        project={project}
+        slug={slug}
+        nextProject={nextProject}
+        previousProject={previousProject}
+      />
     </>
   )
 }
