@@ -1,80 +1,83 @@
-# Session Handoff: Issue #317 — eliminate project page image waterfall ✅ COMPLETE
+# Session Handoff: Issue #320 — unreliable VPS production deploys
 
-**Date**: 2026-03-02
-**Issue**: #317 — fix: eliminate client-side fetch waterfall on project pages (slow images)
-**PR**: #318 — merged to master at `d49f0f2`
-**Branch**: `fix/issue-317-project-page-ssr-waterfall` — deleted after merge
+**Date**: 2026-03-03
+**Issue**: #320 — fix: unreliable VPS production deploys (OOM + no-backup-to-restore)
+**PR**: none yet — issue opened, work deferred to next session
+**Branch**: master at `d546572` (clean)
 
 ---
 
-## ✅ Completed Work
+## ✅ Completed This Session
 
-### Root cause
-`/project/[slug]` pages used `ClientProjectContent`, which fires a `useEffect`
-→ `fetch /api/projects/[slug]` → Sanity query → render. Images couldn't start
-loading until the full client-side round-trip completed. Browser saw only a
-"Loading project..." spinner in the initial HTML.
+- **Issue #317** (project page SSR waterfall) — implemented, merged, deployed ✅
+- **Issue #320** (unreliable VPS deploys) — diagnosed and opened; fix deferred
 
-Additionally, the server already called `getProject(slug)` for structured data
-schemas, meaning the same Sanity data was fetched twice per page load.
+### Issue #317 recap
+Replaced `ClientProjectContent` client-side fetch with server-side
+`getProjectWithNavigation` in `page.tsx`. Images now load from initial HTML.
+PR #318 merged, PR #319 (handoff) merged. Site serving 200s on all routes.
 
-### Fix
-- **`src/app/project/[slug]/page.tsx`**: replaced `<ClientProjectContent slug={slug} />`
-  with a single server-side `getProjectWithNavigation(slug)` call and direct
-  `<ProjectContent>` render. Added `<link rel="preload">` for the main project
-  image (LCP hint) + `preconnect`/`dns-prefetch` for `cdn.sanity.io`.
-- **`tests/integration/bundle-optimization.test.ts`**: updated the one test that
-  asserted the old `ClientProjectContent` pattern to assert the new SSR pattern.
+### Issue #320 diagnosis
+4 of the last 8 production deploy runs failed before a manual rerun succeeded.
+Two failure modes:
 
-### Result
-Full project HTML — including image URLs — is now in the initial server response.
-Browser starts fetching images in the first network batch with no waterfall.
-Single Sanity query per page load instead of two.
+1. **OOM during `npm ci`** — npm v11 (recently upgraded alongside Node v22) uses
+   significantly more memory than v10. The 964MB VPS gets OOM-killed consistently.
 
-### Tests
-All 982 unit/integration tests pass.
+2. **No backup to restore** — when a previous deploy already deleted `.next` without
+   creating a backup, rollback has nothing to restore. PM2 can't serve anything → site
+   down. This happened on the SSR fix deploy (run #22590501837).
+
+### Proposed fix (Issue #320)
+Build on the GitHub Actions runner (plenty of memory), ship the artifact to the VPS
+via rsync/scp. VPS only runs `npm ci --omit=dev` + `pm2 restart`.
+
+```
+Current:  VPS: git pull → npm ci (all deps) → npm run build → pm2 restart
+Better:   GHA: npm ci → npm run build → rsync .next + package.json to VPS
+          VPS: npm ci --omit=dev → pm2 restart
+```
+
+Also add a safeguard: abort the deploy if no `.next` exists at backup time rather
+than proceeding without a recovery path.
 
 ---
 
 ## 🎯 Current Project State
 
 **Tests**: ✅ All passing (982 / 982)
-**Branch**: master at `d49f0f2` (clean)
-**Production**: idaromme.dk — deploy needed to see improvement live
-**CI**: Running post-merge (expected green)
-
-### Dependabot alerts
-- All alerts: `fixed` ✅ (no open alerts)
+**Branch**: master at `d546572` (clean)
+**Production**: idaromme.dk ✅ live (deployed via rerun of #22590599653)
+**CI**: Deploy pipeline unreliable — see Issue #320
 
 ### Open issues
-- None
+- #320 — unreliable VPS production deploys ← **next priority**
 
 ---
 
 ## 🚀 Next Session Priorities
 
-1. **Deploy to production** — `pm2 restart` on VPS so the fix goes live
-2. **Verify improvement** — load a project page, confirm no "Loading project..."
-   spinner and images appear in first network batch
-3. **Optional: remove `ClientProjectContent`** — the file
-   `src/components/ClientProjectContent.tsx` is now unused; can be deleted in
-   a follow-up cleanup issue
+1. **Fix Issue #320** — move build to GHA runner, rsync artifact to VPS
+2. **Verify deployment reliability** — confirm 3+ consecutive deploys succeed
 
 ---
 
 ## 📝 Startup Prompt for Next Session
 
 ```
-Read CLAUDE.md to understand our workflow, then continue from Issue #317 completion.
+Read CLAUDE.md to understand our workflow, then fix Issue #320.
 
-**Last completed**: Issue #317 closed — PR #318 merged (d49f0f2). Eliminated
-client-side fetch waterfall on project pages; images now load from initial HTML.
-**Production state**: idaromme.dk needs a deploy to see the fix live.
-**Reference**: SESSION_HANDOVER.md
-**Ready state**: master at d49f0f2, clean working directory, all tests passing
+**Context**: Production deploys have been failing consistently — OOM kills npm ci
+on the 964MB VPS (npm v11 is too memory-hungry), and a missing-backup edge case
+left the site down twice. Issue #320 has full diagnosis and proposed solution.
+**Proposed fix**: build on the GHA runner, rsync .next artifact to VPS; VPS only
+runs npm ci --omit=dev + pm2 restart.
+**Reference**: SESSION_HANDOVER.md, .github/workflows/production-deploy.yml
+**Ready state**: master at d546572, clean working directory, all tests passing,
+site live at idaromme.dk
 
-**Expected scope**: Deploy to production, verify images load faster, optionally
-clean up the now-unused ClientProjectContent component.
+**Expected scope**: Rewrite the deploy job in production-deploy.yml, test by
+merging a small change and watching 3 consecutive clean deploy runs.
 ```
 
 ---
@@ -82,5 +85,5 @@ clean up the now-unused ClientProjectContent component.
 ## 📚 Key Reference Documents
 
 - `SESSION_HANDOVER.md` — this file
-- `src/app/project/[slug]/page.tsx` — the fixed server component
-- `src/components/ClientProjectContent.tsx` — now unused, candidate for removal
+- `.github/workflows/production-deploy.yml` — the deploy workflow to fix
+- `gh run list --workflow=production-deploy.yml --repo maxrantil/textile-showcase` — deploy history
