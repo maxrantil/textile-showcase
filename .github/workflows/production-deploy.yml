@@ -122,6 +122,7 @@ jobs:
           name: build-files
           path: .next/
           retention-days: 1
+          include-hidden-files: true  # .next/ starts with '.' — must opt-in (Fixes #323)
 
   deploy:
     runs-on: ubuntu-latest
