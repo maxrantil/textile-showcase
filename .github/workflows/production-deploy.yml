@@ -128,7 +128,28 @@ jobs:
     needs: [test, security-scan, build]
     if: github.ref == 'refs/heads/master'
     steps:
-      - name: Deploy to Vultr Server
+      # Build artifact is already produced and uploaded by the 'build' job.
+      # Download it here so we can rsync it to the VPS — no build on VPS (fixes OOM, Issue #320).
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: build-files
+          path: .next/
+
+      - name: Set up SSH key for rsync
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VULTR_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+
+      - name: Rsync build artifact to VPS staging area
+        run: |
+          rsync -az --delete \
+            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
+            .next/ \
+            ${{ secrets.VULTR_USERNAME }}@${{ secrets.VULTR_HOST }}:/var/www/idaromme.dk/.next.incoming/
+
+      - name: Deploy on VPS
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.VULTR_HOST }}
@@ -140,26 +161,31 @@ jobs:
             # Navigate to project directory
             cd /var/www/idaromme.dk || { echo "❌ Project directory not found"; exit 1; }
 
-            # Use Node.js v22 from NVM installation (MUST happen before npm ci)
-            echo "🔍 Setting up Node.js v22 from NVM..."
+            # Use Node.js v22 from NVM installation
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"
             nvm use 22 || nvm use default
+            echo "🔍 Node $(node --version), npm $(npm --version)"
 
-            # Verify Node.js version
-            echo "🔍 Node.js version:"
-            node --version
-            npm --version
+            # Abort early if the rsync step did not deliver the artifact.
+            # This prevents a deploy that has no rollback path (Issue #320).
+            if [ ! -d .next.incoming ]; then
+              echo "❌ Build artifact (.next.incoming) not found — aborting"
+              exit 1
+            fi
 
-            # Backup current state
-            echo "📦 Creating backup..."
-            cp -r .next .next.backup || echo "⚠️ No previous build to backup"
+            # Backup current build only if one exists.
+            # If there is no .next to back up we set HAS_BACKUP=false so that
+            # rollback paths below don't try to restore a non-existent backup.
+            if [ -d .next ]; then
+              echo "📦 Backing up current build..."
+              cp -r .next .next.backup
+              HAS_BACKUP=true
+            else
+              HAS_BACKUP=false
+            fi
 
-            # Clear Next.js build cache to prevent stale middleware
-            echo "🧹 Clearing Next.js build cache..."
-            rm -rf .next
-
-            # Pull latest changes
+            # Pull latest source (public/, config files, package.json, etc.)
             echo "📥 Pulling latest changes..."
             git fetch origin
             git reset --hard origin/master
@@ -175,43 +201,45 @@ jobs:
             SECURITY_ENABLED=false
             EOF
 
-            # Stop PM2 before removing node_modules to release file locks.
-            # Without this, rm -rf partially fails and npm ci hits ENOTEMPTY (Issue #302).
+            # Stop PM2 before removing node_modules to release file locks (Issue #302).
             echo "⏹️ Stopping PM2 to release node_modules file locks..."
             pm2 stop idaromme-website 2>/dev/null || echo "⚠️ PM2 process not running (ok for first deploy)"
 
-            # Install dependencies with correct Node version
-            # Remove node_modules explicitly to ensure clean install (prevents stale files from major version upgrades)
-            echo "📦 Installing dependencies..."
+            # Install production dependencies only — no devDependencies, no build.
+            # Build already happened on the GHA runner (fixes OOM, Issue #320).
+            echo "📦 Installing production dependencies..."
             rm -rf node_modules
-            npm ci
+            if npm ci --omit=dev; then
+              echo "✅ Production dependencies installed"
 
-            # Build application
-            echo "🔨 Building application..."
-            if NODE_ENV=production SKIP_ENV_VALIDATION=true npm run build; then
-              echo "✅ Build successful"
+              # Promote the rsync'd artifact into place
+              echo "🔁 Promoting build artifact..."
+              rm -rf .next
+              mv .next.incoming .next
 
               # Start/restart PM2
               echo "🔄 Starting application..."
               if pm2 list | grep -q "idaromme-website"; then
                 echo "📋 PM2 process exists, restarting..."
-                pm2 restart idaromme-website
+                pm2 restart idaromme-website || {
+                  echo "❌ PM2 restart failed, rolling back..."
+                  rm -rf .next
+                  [ "$HAS_BACKUP" = true ] && mv .next.backup .next || echo "⚠️ No backup to restore"
+                  pm2 start idaromme-website 2>/dev/null || echo "⚠️ Could not restore PM2 process"
+                  exit 1
+                }
               else
                 echo "🚀 PM2 process not found, starting new instance..."
                 PORT=3001 pm2 start npm --name "idaromme-website" -- start
                 pm2 save
               fi
 
-              # Cleanup old backup
+              # Cleanup
               rm -rf .next.backup
-
               echo "🎉 Deployment completed successfully!"
             else
-              echo "❌ Build failed, rolling back..."
-              rm -rf .next
-              mv .next.backup .next 2>/dev/null || echo "⚠️ No backup to restore"
-              # Restore service from backup if available
-              pm2 start idaromme-website 2>/dev/null || echo "⚠️ Could not restore PM2 process"
+              echo "❌ npm ci failed, rolling back..."
+              [ "$HAS_BACKUP" = true ] && pm2 start idaromme-website 2>/dev/null || echo "⚠️ Could not restore PM2 process"
               exit 1
             fi
 
