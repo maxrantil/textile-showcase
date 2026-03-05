@@ -1,36 +1,32 @@
-# Session Handoff: Issue #320 — VPS deploy reliability ✅ COMPLETE
+# Session Handoff: PR #330 — Escape key blank page fix ✅ COMPLETE
 
 **Date**: 2026-03-05
-**Issues closed**: #320 (OOM deploy fix), #323 (hidden artifact), #325 (bundle-analyzer require)
+**PR**: #330 — fix: navigate to /projects on Escape instead of router.back()
+**Branch**: fix/escape-blank-page → merged to master at `8ac8009`
 
 ---
 
 ## ✅ Completed This Session
 
-### Fix chain for Issue #320 (VPS deploy reliability)
+### Bug fix: Escape key → blank page on direct project URL access
 
-| PR | Issue | Fix | Status |
-|----|-------|-----|--------|
-| #322 | #320 | Build on GHA runner, rsync .next artifact to VPS | ✅ merged |
-| #324 | #323 | `include-hidden-files: true` for upload-artifact@v4 | ✅ merged |
-| #326 | #325 | Guard `@next/bundle-analyzer` require behind `ANALYZE=true` | ✅ merged |
+**Problem**: Pressing Escape on a project page opened directly via URL (no browser
+history) navigated to a blank page. `router.back()` has nowhere to go when history
+is empty.
 
-### Reliability verification — 3 consecutive clean production deploys ✅
+**Fix**: Replaced `router.back()` with `router.push('/projects')` in
+`src/components/desktop/Project/DesktopImageCarousel.tsx` (line 192).
 
-| Run | GHA Run | Deploy | Smoke Tests | Site |
-|-----|---------|--------|-------------|------|
-| 1/3 | #22705000008 | ✅ success | ✅ success | ✅ 200 |
-| 2/3 | #22705671987 | ✅ success | ✅ success | ✅ 200 |
-| 3/3 | #22732067155 | ✅ success | ✅ success | ✅ 200 |
-
-**Issue #320 reliability goal: ACHIEVED** — 3 consecutive OOM-free deploys confirmed.
+| PR | Fix | Status |
+|----|-----|--------|
+| #330 | Escape → router.push('/projects') instead of router.back() | ✅ merged |
 
 ---
 
 ## 🎯 Current Project State
 
 **Tests**: ✅ All passing
-**Branch**: master at `2b2ab8f`
+**Branch**: master at `8ac8009`
 **Production**: idaromme.dk ✅ live and stable
 **CI**: All checks green
 **Deploy pipeline**: Fully functional — GHA builds, rsyncs artifact, VPS runs `npm ci --omit=dev` + `pm2 restart`
@@ -48,10 +44,10 @@ No outstanding issues from this session. Pick from the project backlog.
 ```
 Read CLAUDE.md to understand our workflow, then continue with the next priority from the backlog.
 
-**Context**: Issue #320 VPS deploy reliability is fully resolved — 3-PR fix chain merged,
-3 consecutive clean production deploys confirmed, idaromme.dk live and stable.
-**Ready state**: master at 2b2ab8f, clean working directory, all tests passing, production healthy.
-**Reference**: SESSION_HANDOVER.md for full fix history
+**Context**: PR #330 merged — Escape key on project pages now always navigates to
+/projects gallery instead of blank page (router.back() → router.push('/projects')).
+**Ready state**: master at 8ac8009, clean working directory, production healthy at idaromme.dk.
+**Reference**: SESSION_HANDOVER.md for history.
 
 **Expected scope**: Pick next issue from backlog; standard workflow applies.
 ```
@@ -61,7 +57,5 @@ Read CLAUDE.md to understand our workflow, then continue with the next priority 
 ## 📚 Key Reference Documents
 
 - `SESSION_HANDOVER.md` — this file
-- `.github/workflows/production-deploy.yml` — the rewritten workflow
-- Issue #320: https://github.com/maxrantil/textile-showcase/issues/320 (closed)
-- Issue #323: https://github.com/maxrantil/textile-showcase/issues/323 (closed)
-- Issue #325: https://github.com/maxrantil/textile-showcase/issues/325 (closed)
+- `src/components/desktop/Project/DesktopImageCarousel.tsx` — fixed file
+- PR #330: https://github.com/maxrantil/textile-showcase/pull/330 (merged)
