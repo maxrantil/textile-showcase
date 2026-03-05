@@ -20,8 +20,8 @@
 | Run | GHA Run | Deploy | Smoke Tests | Site |
 |-----|---------|--------|-------------|------|
 | 1/3 | #22705000008 | ✅ success | ✅ success | ✅ 200 |
-| 2/3 | (this commit) | ⏳ | ⏳ | ⏳ |
-| 3/3 | (next commit) | ⏳ | ⏳ | ⏳ |
+| 2/3 | #22705671987 | ✅ success | ✅ success | ✅ 200 |
+| 3/3 | (this commit) | ⏳ | ⏳ | ⏳ |
 
 ---
 
