@@ -1,84 +1,62 @@
-# Session Handoff: Issue #323 — upload-artifact skips .next/ as hidden dir
+# Session Handoff: Issue #325 — next.config.ts unconditional bundle-analyzer require
 
-**Date**: 2026-03-04
-**Issue**: #323 — fix: upload-artifact skips .next/ as hidden dir (deploy broken after #322)
-**PR**: #324 — fix: include .next/ in upload-artifact (Fixes #323)
-**Branch**: `fix/issue-323-upload-artifact-hidden-next`
+**Date**: 2026-03-05
+**Issue**: #325 — fix: next.config.ts unconditionally requires @next/bundle-analyzer (devDep)
+**PR**: #326 (pending creation) — fix: guard bundle-analyzer require behind ANALYZE env var
+**Branch**: `fix/issue-325-bundle-analyzer-conditional-require`
 
 ---
 
 ## ✅ Completed This Session
 
 - **Issue #320** — PR #322 merged to master (squash), issue auto-closed ✅
-- **Issue #323** — follow-up bug discovered and fixed: PR #324 open, awaiting CI + merge
+- **Issue #323** — follow-up: upload-artifact skips .next/ as hidden dir; PR #324 merged ✅
+- **Issue #325** — follow-up: next.config.ts crashes next start with --omit=dev; fix branch created
 
-### Issue #320 recap
+### Root cause chain
 
-PR #322 rewrote the `deploy` job in `production-deploy.yml`:
+1. **#320**: VPS `npm ci` OOM-kills during build → fix: build on GHA, rsync artifact
+2. **#323**: `upload-artifact@v4` skips `.next/` (hidden dir) → fix: `include-hidden-files: true`
+3. **#325**: `next.config.ts` unconditionally `require('@next/bundle-analyzer')` (devDep) → `next start` crashes with `MODULE_NOT_FOUND` → 502 Bad Gateway
 
-**Before** (on-VPS build, OOM-prone):
-```
-SSH → git pull → npm ci (all deps) → npm run build → pm2 restart
-```
+`@next/bundle-analyzer` was previously installed via `npm ci` (all deps). Switching to `npm ci --omit=dev` exposed this latent bug: the package isn't available at VPS runtime.
 
-**After** (artifact deploy, no OOM):
-```
-GHA runner: build job uploads .next/ as 'build-files' artifact
-GHA runner: deploy job downloads artifact → rsync .next.incoming to VPS
-SSH → git pull → npm ci --omit=dev → promote .next.incoming → pm2 restart
-```
-
-### Issue #323 — the follow-up bug
-
-After merging #322, the first production deploy failed:
-```
-Unable to download artifact(s): Artifact not found for name: build-files
-```
-
-Root cause: `actions/upload-artifact@v4` defaults to `include-hidden-files: false`.
-The `.next/` path starts with `.` — treated as a hidden directory — so zero files
-were uploaded despite `npm run build` succeeding.
-
-Fix: add `include-hidden-files: true` to the upload step (1-line change).
+**Fix**: Guard the `require` behind `process.env.ANALYZE === 'true'`, falling back to `(config) => config` identity function.
 
 ---
 
 ## 🎯 Current Project State
 
 **Tests**: ✅ All passing
-**Branch**: `fix/issue-323-upload-artifact-hidden-next` — clean
-**Production**: idaromme.dk — still on previous build (deploy broken since #322 merge)
-**CI**: PR #324 running on GHA
-
-### Open issues / next steps
-- #323 — PR #324 awaiting CI + merge
-- After merge: confirm 3 consecutive clean production deploys to verify full reliability
+**Branch**: `fix/issue-325-bundle-analyzer-conditional-require` — clean, 1-line fix in next.config.ts
+**Production**: idaromme.dk — **502 (DOWN)** — Next.js crashing on startup due to missing bundle-analyzer
+**CI**: Fix branch not yet pushed
 
 ---
 
 ## 🚀 Next Session Priorities
 
-1. **Confirm PR #324 CI is green** and merge
-2. **Watch the post-merge production deploy** — should succeed with artifact found
-3. **Trigger 2 more deploys** (small master commits) for 3 consecutive clean runs
-4. **Close Issue #323** after verified runs (and confirm #320 still closed)
+1. **Push fix branch → create PR #326 → wait for CI → merge** (should be fast, 1-line fix)
+2. **Confirm production deploy succeeds** after merge (no more 502)
+3. **Run 3 consecutive clean deploys** to verify #320 reliability goal
+4. **Close issue #325** after confirmed clean deploy
 
 ---
 
 ## 📝 Startup Prompt for Next Session
 
 ```
-Read CLAUDE.md to understand our workflow, then verify and merge PR #324 (Issue #323).
+Read CLAUDE.md to understand our workflow, then push and merge fix for Issue #325.
 
-**Context**: PR #322 (Issue #320) merged but introduced a follow-up bug — upload-artifact
-skips .next/ as a hidden directory; PR #324 is the 1-line fix.
-**PR #324**: https://github.com/maxrantil/textile-showcase/pull/324 (awaiting CI)
-**Next step**: Check CI; if green, merge; watch production deploy succeed; then trigger
-2 more master deploys to confirm 3 consecutive clean runs (reliability verification for #320).
-**Reference**: SESSION_HANDOVER.md, .github/workflows/production-deploy.yml
-**Ready state**: master at fe0e8ee, fix branch at 55ff330, production deploy currently broken
+**Context**: 3 fix chain: #322 (build on GHA) → #324 (include-hidden-files) → #325 (guard bundle-analyzer require).
+The site is currently 502 because next.config.ts require('@next/bundle-analyzer') crashes
+next start when @next/bundle-analyzer is absent (devDep, not installed with --omit=dev).
+**Fix**: already coded in next.config.ts on branch fix/issue-325-bundle-analyzer-conditional-require.
+**Next step**: git push → gh pr create → CI green → merge → confirm production deploys clean.
+**Reference**: SESSION_HANDOVER.md, next.config.ts (lines 1-8), .github/workflows/production-deploy.yml
+**Ready state**: fix branch at local HEAD, SESSION_HANDOVER.md updated, production DOWN (502)
 
-**Expected scope**: Merge #324, confirm 3 clean deploy runs, close #323.
+**Expected scope**: Push branch, PR, CI check, merge, watch 3 consecutive production deploy runs succeed.
 ```
 
 ---
@@ -86,7 +64,8 @@ skips .next/ as a hidden directory; PR #324 is the 1-line fix.
 ## 📚 Key Reference Documents
 
 - `SESSION_HANDOVER.md` — this file
+- `next.config.ts` — the conditional require fix (lines 1-8)
 - `.github/workflows/production-deploy.yml` — the rewritten workflow
-- PR #322: https://github.com/maxrantil/textile-showcase/pull/322 (merged)
-- PR #324: https://github.com/maxrantil/textile-showcase/pull/324 (open)
-- Issue #323: https://github.com/maxrantil/textile-showcase/issues/323
+- Issue #325: https://github.com/maxrantil/textile-showcase/issues/325
+- PR #322 (merged): VPS build/rsync fix
+- PR #324 (merged): include-hidden-files fix

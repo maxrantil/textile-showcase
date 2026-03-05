@@ -1,8 +1,11 @@
 /** @type {import('next').NextConfig} */
+// Only require @next/bundle-analyzer (devDep) when ANALYZE=true so that
+// `next start` works with `npm ci --omit=dev` on the production VPS (Fixes #325).
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const withBundleAnalyzer = require('@next/bundle-analyzer')({
-  enabled: process.env.ANALYZE === 'true',
-})
+const withBundleAnalyzer =
+  process.env.ANALYZE === 'true'
+    ? require('@next/bundle-analyzer')({ enabled: true })
+    : (config: unknown) => config
 
 const nextConfig = {
   // Modern JavaScript targeting for legacy JS elimination
