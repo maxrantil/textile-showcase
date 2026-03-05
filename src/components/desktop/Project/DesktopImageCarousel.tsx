@@ -188,7 +188,7 @@ export function DesktopImageCarousel({
     }
     UmamiEvents.backToGallery()
     scrollManager.triggerNavigationStart()
-    router.back()
+    router.push('/projects')
   }, [router])
 
   // Keyboard navigation handlers for the hook
