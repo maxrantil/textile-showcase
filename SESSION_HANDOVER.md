@@ -1,62 +1,61 @@
-# Session Handoff: Issue #325 — next.config.ts unconditional bundle-analyzer require
+# Session Handoff: Reliability Verification — 3 Clean Deploy Runs (Issue #320)
 
 **Date**: 2026-03-05
-**Issue**: #325 — fix: next.config.ts unconditionally requires @next/bundle-analyzer (devDep)
-**PR**: #326 (pending creation) — fix: guard bundle-analyzer require behind ANALYZE env var
-**Branch**: `fix/issue-325-bundle-analyzer-conditional-require`
+**Context**: Verifying 3 consecutive clean production deploys after fix chain #322 → #324 → #326
 
 ---
 
 ## ✅ Completed This Session
 
-- **Issue #320** — PR #322 merged to master (squash), issue auto-closed ✅
-- **Issue #323** — follow-up: upload-artifact skips .next/ as hidden dir; PR #324 merged ✅
-- **Issue #325** — follow-up: next.config.ts crashes next start with --omit=dev; fix branch created
+### Fix chain for Issue #320 (VPS deploy reliability)
 
-### Root cause chain
+| PR | Issue | Fix | Status |
+|----|-------|-----|--------|
+| #322 | #320 | Build on GHA runner, rsync .next artifact to VPS | ✅ merged |
+| #324 | #323 | `include-hidden-files: true` for upload-artifact@v4 | ✅ merged |
+| #326 | #325 | Guard `@next/bundle-analyzer` require behind `ANALYZE=true` | ✅ merged |
 
-1. **#320**: VPS `npm ci` OOM-kills during build → fix: build on GHA, rsync artifact
-2. **#323**: `upload-artifact@v4` skips `.next/` (hidden dir) → fix: `include-hidden-files: true`
-3. **#325**: `next.config.ts` unconditionally `require('@next/bundle-analyzer')` (devDep) → `next start` crashes with `MODULE_NOT_FOUND` → 502 Bad Gateway
+### Reliability verification (3 consecutive clean deploy runs)
 
-`@next/bundle-analyzer` was previously installed via `npm ci` (all deps). Switching to `npm ci --omit=dev` exposed this latent bug: the package isn't available at VPS runtime.
-
-**Fix**: Guard the `require` behind `process.env.ANALYZE === 'true'`, falling back to `(config) => config` identity function.
+| Run | GHA Run | Deploy | Smoke Tests | Site |
+|-----|---------|--------|-------------|------|
+| 1/3 | #22705000008 | ✅ success | ✅ success | ✅ 200 |
+| 2/3 | (this commit) | ⏳ | ⏳ | ⏳ |
+| 3/3 | (next commit) | ⏳ | ⏳ | ⏳ |
 
 ---
 
 ## 🎯 Current Project State
 
 **Tests**: ✅ All passing
-**Branch**: `fix/issue-325-bundle-analyzer-conditional-require` — clean, 1-line fix in next.config.ts
-**Production**: idaromme.dk — **502 (DOWN)** — Next.js crashing on startup due to missing bundle-analyzer
-**CI**: Fix branch not yet pushed
+**Branch**: master at `231ef26`
+**Production**: idaromme.dk ✅ live (confirmed 200 after deploy 1/3)
+**CI**: All checks green
 
 ---
 
 ## 🚀 Next Session Priorities
 
-1. **Push fix branch → create PR #326 → wait for CI → merge** (should be fast, 1-line fix)
-2. **Confirm production deploy succeeds** after merge (no more 502)
-3. **Run 3 consecutive clean deploys** to verify #320 reliability goal
-4. **Close issue #325** after confirmed clean deploy
+1. **Confirm deploys 2/3 and 3/3 succeed** (this commit triggers 2/3)
+2. **Create one more small commit/PR for deploy 3/3**
+3. **Update SESSION_HANDOVER.md with full reliability confirmation**
+4. **Consider re-opening or closing Issue #320** with confirmed 3-run result
 
 ---
 
 ## 📝 Startup Prompt for Next Session
 
 ```
-Read CLAUDE.md to understand our workflow, then push and merge fix for Issue #325.
+Read CLAUDE.md to understand our workflow, then complete reliability verification for Issue #320.
 
-**Context**: 3 fix chain: #322 (build on GHA) → #324 (include-hidden-files) → #325 (guard bundle-analyzer require).
-The site is currently 502 because next.config.ts require('@next/bundle-analyzer') crashes
-next start when @next/bundle-analyzer is absent (devDep, not installed with --omit=dev).
-**Fix**: already coded in next.config.ts on branch fix/issue-325-bundle-analyzer-conditional-require.
-**Next step**: git push → gh pr create → CI green → merge → confirm production deploys clean.
-**Reference**: SESSION_HANDOVER.md, next.config.ts (lines 1-8), .github/workflows/production-deploy.yml
-**Ready state**: fix branch at local HEAD, SESSION_HANDOVER.md updated, production DOWN (502)
+**Context**: Fix chain #322→#324→#326 resolved VPS deploy OOM issue. Deploy 1/3 succeeded cleanly.
+Deploy 2/3 was triggered by a chore commit — check if it passed, then trigger deploy 3/3.
+**Next step**: `gh run list --branch master --workflow production-deploy.yml --limit 5`
+to see all recent deploy results; if 2/3 passed, create one more small chore PR for 3/3.
+**Reference**: SESSION_HANDOVER.md, .github/workflows/production-deploy.yml
+**Ready state**: master at 231ef26, idaromme.dk live, 1 clean deploy confirmed
 
-**Expected scope**: Push branch, PR, CI check, merge, watch 3 consecutive production deploy runs succeed.
+**Expected scope**: Confirm 3 consecutive clean deploys; update SESSION_HANDOVER.md with result.
 ```
 
 ---
@@ -64,8 +63,5 @@ next start when @next/bundle-analyzer is absent (devDep, not installed with --om
 ## 📚 Key Reference Documents
 
 - `SESSION_HANDOVER.md` — this file
-- `next.config.ts` — the conditional require fix (lines 1-8)
 - `.github/workflows/production-deploy.yml` — the rewritten workflow
-- Issue #325: https://github.com/maxrantil/textile-showcase/issues/325
-- PR #322 (merged): VPS build/rsync fix
-- PR #324 (merged): include-hidden-files fix
+- Issue #320: https://github.com/maxrantil/textile-showcase/issues/320 (closed)
