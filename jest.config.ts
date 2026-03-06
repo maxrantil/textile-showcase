@@ -1,6 +1,11 @@
 import type { Config } from 'jest'
 import nextJest from 'next/jest.js'
 
+// Provide fallback env vars for tests that import modules requiring them at load time
+// These are safe non-secret test values; real values in .env.local override via CI
+process.env.NEXT_PUBLIC_SANITY_PROJECT_ID ??= 'testproject'
+process.env.NEXT_PUBLIC_SANITY_DATASET ??= 'testdataset'
+
 const createJestConfig = nextJest({
   dir: './',
 })
