@@ -1,7 +1,8 @@
-// src/components/desktop/Forms/DesktopFormField.tsx
+// ABOUTME: Desktop form field component — thin wrapper around BaseFormField with desktop styling
 'use client'
 
 import { forwardRef, ForwardedRef } from 'react'
+import { BaseFormField } from '@/components/shared/Forms/BaseFormField'
 
 type DesktopFormFieldProps = {
   label: string
@@ -14,56 +15,9 @@ type DesktopFormFieldProps = {
   placeholder?: string
 }
 
-function DesktopFormFieldComponent(
+export const DesktopFormField = forwardRef(function DesktopFormFieldComponent(
   props: DesktopFormFieldProps,
   ref: ForwardedRef<HTMLInputElement | HTMLTextAreaElement>
 ) {
-  const {
-    label,
-    type,
-    value,
-    onChange,
-    required,
-    error,
-    rows = 8,
-    placeholder,
-  } = props
-  const fieldId = `field-${label.toLowerCase().replace(/\s+/g, '-')}`
-
-  return (
-    <div className="desktop-form-field">
-      <label htmlFor={fieldId} className="desktop-form-label">
-        {label}
-        {required && <span className="text-required"> *</span>}
-      </label>
-
-      {type === 'textarea' ? (
-        <textarea
-          ref={ref as React.Ref<HTMLTextAreaElement>}
-          id={fieldId}
-          className={`desktop-form-textarea ${error ? 'error' : ''}`}
-          value={value}
-          onChange={(e) => onChange?.(e.target.value)}
-          rows={rows}
-          placeholder={placeholder}
-          required={required}
-        />
-      ) : (
-        <input
-          ref={ref as React.Ref<HTMLInputElement>}
-          id={fieldId}
-          type={type}
-          className={`desktop-form-input ${error ? 'error' : ''}`}
-          value={value}
-          onChange={(e) => onChange?.(e.target.value)}
-          placeholder={placeholder}
-          required={required}
-        />
-      )}
-
-      {error && <span className="desktop-form-error">{error}</span>}
-    </div>
-  )
-}
-
-export const DesktopFormField = forwardRef(DesktopFormFieldComponent)
+  return <BaseFormField ref={ref} {...props} classPrefix="desktop" />
+})

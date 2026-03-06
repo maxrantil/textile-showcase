@@ -3,6 +3,7 @@
 
 import { forwardRef, ForwardedRef } from 'react'
 import { useTouchFeedback } from '@/hooks/mobile/useTouchFeedback'
+import { BaseFormField } from '@/components/shared/Forms/BaseFormField'
 
 interface MobileFormFieldProps {
   label: string
@@ -17,67 +18,27 @@ interface MobileFormFieldProps {
   inputMode?: 'text' | 'email' | 'tel' | 'numeric' | 'url'
 }
 
-function MobileFormFieldComponent(
-  props: MobileFormFieldProps,
-  ref: ForwardedRef<HTMLInputElement | HTMLTextAreaElement>
-) {
-  const {
-    label,
-    type,
-    value,
-    onChange,
-    required = false,
-    error,
-    placeholder = '',
-    rows = 8,
+export const MobileFormField = forwardRef(function MobileFormFieldComponent(
+  {
     autoComplete = 'off',
     inputMode,
-  } = props
-  const fieldId = `field-${label.toLowerCase().replace(/\s+/g, '-')}`
+    type,
+    ...props
+  }: MobileFormFieldProps,
+  ref: ForwardedRef<HTMLInputElement | HTMLTextAreaElement>
+) {
   const { touchProps } = useTouchFeedback()
+  const resolvedInputMode = inputMode || (type === 'email' ? 'email' : 'text')
+
   return (
-    <div className="mobile-form-field">
-      <label htmlFor={fieldId} className="mobile-form-label">
-        {label}
-        {required && <span className="text-required"> *</span>}
-      </label>
-
-      {type === 'textarea' ? (
-        <textarea
-          ref={ref as React.Ref<HTMLTextAreaElement>}
-          id={fieldId}
-          className={`mobile-form-textarea ${error ? 'error' : ''}`}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          required={required}
-          rows={rows}
-          autoComplete={autoComplete}
-          {...touchProps}
-        />
-      ) : (
-        <input
-          ref={ref as React.Ref<HTMLInputElement>}
-          id={fieldId}
-          type={type}
-          className={`mobile-form-input ${error ? 'error' : ''}`}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          required={required}
-          autoComplete={autoComplete}
-          inputMode={inputMode || (type === 'email' ? 'email' : 'text')}
-          {...touchProps}
-        />
-      )}
-
-      {error && (
-        <span className="mobile-form-error" role="alert">
-          {error}
-        </span>
-      )}
-    </div>
+    <BaseFormField
+      ref={ref}
+      {...props}
+      type={type}
+      classPrefix="mobile"
+      errorRole="alert"
+      extraInputProps={{ ...touchProps, autoComplete, inputMode: resolvedInputMode }}
+      extraTextareaProps={{ ...touchProps, autoComplete }}
+    />
   )
-}
-
-export const MobileFormField = forwardRef(MobileFormFieldComponent)
+})
