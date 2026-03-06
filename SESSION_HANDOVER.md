@@ -1,75 +1,80 @@
-# Session Handoff: Issue #332 Created — Refactoring Planning Session
+# Session Handoff: Issue #332 Phase 1 — Test Coverage Complete
 
-**Date**: 2026-03-05
+**Date**: 2026-03-06
 **Issue**: #332 — refactor: codebase cleanup — reduce duplication, improve test coverage, remove dead code
-**Branch**: master (no code changes this session — planning only)
+**PR**: #334 — test: Phase 1 — add missing test coverage (draft)
+**Branch**: feat/issue-332-refactor
 
 ---
 
 ## ✅ Completed This Session
 
-- Codebase audit via Explore agent (186 TS files, 32 test files, ~21% file coverage)
-- Identified key refactoring candidates and test gaps
-- Created Issue #332 with full scope, phased plan, and acceptance criteria
+- Created feature branch `feat/issue-332-refactor`
+- Wrote 177 new tests across 5 previously untested modules (TDD Phase 1)
+- Added `NEXT_PUBLIC_SANITY_*` fallback vars to `jest.config.ts` for test-time env
+- Full test suite passes: 1136 tests, 0 regressions
+- Committed and pushed; draft PR #334 open on GitHub
+
+### New test files
+
+| File | Tests |
+|---|---|
+| `src/utils/__tests__/image-helpers.test.ts` | 31 |
+| `src/utils/validation/__tests__/validators.test.ts` | 53 |
+| `src/utils/validation/__tests__/formValidator.test.ts` | 36 |
+| `src/components/desktop/Forms/__tests__/DesktopContactForm.test.tsx` | 32 |
+| `src/lib/__tests__/scrollManager.test.ts` | 25 |
 
 ---
 
 ## 🎯 Current Project State
 
-**Tests**: ✅ All passing
-**Branch**: master at `6afe54a` — clean, no uncommitted changes
+**Tests**: ✅ 1136 passing, 0 failing
+**Branch**: `feat/issue-332-refactor` at `e2e10ba` — clean
+**CI**: 🔄 Running (pushed to GitHub)
 **Production**: idaromme.dk ✅ live and stable
-**CI**: All checks green
 
 ---
 
-## 🔍 Audit Findings Summary
+## 🚀 Next Session Priorities — Phase 2: Deduplication
 
-### Critical test gaps (Phase 1 — write tests first)
-- `src/utils/image-helpers.ts` — zero tests, critical Sanity URL generation
-- `src/utils/validation/` — zero tests, form validation logic
-- `src/components/desktop/Forms/DesktopContactForm.tsx` — no test file
-- `src/components/desktop/Gallery/Gallery.tsx` — 417 lines, zero tests
-- `src/lib/scrollManager.ts` — scroll-position persistence, no tests
+With test coverage in place, Phase 2 can safely refactor under test.
 
-### Top duplication targets (Phase 2 — refactor under test)
-- `MobileProjectDetails` / `DesktopProjectDetails` — 95% identical (~105 lines to eliminate)
-- `MobileContactForm` / `DesktopContactForm` — 85% identical → extract `useContactForm()` hook
-- `src/components/forms/ContactForm.tsx` — 256 lines, appears unused → verify & delete
-- `MobileFormField` / `DesktopFormField` — 80% identical → extract `BaseFormField`
-- Button variant/size class logic — repeated in 3 files → extract utility
+### Priority order:
 
-### UX inconsistency (Phase 3)
-- `MobileButton` loading text: `'Loading...'` vs `'Sending...'` in BaseButton/DesktopButton
+1. **Extract `useContactForm()` hook** — `MobileContactForm` + `DesktopContactForm` are 85% identical
+   - Both have identical state, validation, submit logic, API call pattern
+   - Extract to `src/hooks/useContactForm.ts`
+   - Update both components to use the hook
+   - Tests already cover both components — they should stay green
 
----
+2. **Verify + delete `src/components/forms/ContactForm.tsx`** (256 lines, appears unused)
+   - Search all imports of `ContactForm` to confirm nothing uses it
+   - Delete if confirmed unused
 
-## 🚀 Next Session Priorities
+3. **Extract `BaseFormField`** — `MobileFormField` + `DesktopFormField` are 80% identical
+   - Create `src/components/shared/Forms/BaseFormField.tsx`
+   - Mobile/desktop versions become thin wrappers
 
-**Immediate**: Start Issue #332 — Phase 1 (tests first, per TDD)
+4. **Merge `MobileProjectDetails` / `DesktopProjectDetails`** (~105 lines to eliminate)
+   - 95% identical — extract shared component
 
-1. Write tests for `image-helpers.ts`
-2. Write tests for `validation/` utilities
-3. Write tests for `DesktopContactForm.tsx`
-4. Write tests for `Gallery.tsx`
-5. Write tests for `scrollManager.ts`
-6. Then Phase 2 refactoring with confidence
+5. **Fix UX inconsistency**: `MobileButton` loading text `'Loading...'` vs `'Sending...'`
 
 ---
 
 ## 📝 Startup Prompt for Next Session
 
 ```
-Read CLAUDE.md to understand our workflow, then tackle Issue #332 — codebase refactoring.
+Read CLAUDE.md to understand our workflow, then continue Issue #332 Phase 2 — deduplication.
 
-**Immediate priority**: Phase 1 — write missing tests before any refactoring (TDD RED phase)
-**Context**: Audit complete; Issue #332 has full scope. No code changed yet — master is clean at 6afe54a.
-**Reference docs**: SESSION_HANDOVER.md (audit findings), Issue #332 on GitHub
-**Ready state**: master branch clean, all tests passing, production stable at idaromme.dk
+**Immediate priority**: Extract useContactForm() hook from MobileContactForm + DesktopContactForm (85% identical)
+**Context**: Phase 1 complete — 177 tests added, all green, draft PR #334 open. Now refactor under test.
+**Reference docs**: SESSION_HANDOVER.md (this file), PR #334, Issue #332
+**Ready state**: feat/issue-332-refactor branch, 1136 tests passing, production stable
 
-**Expected scope**: Create feature branch feat/issue-332-refactor, write failing/new tests for
-image-helpers.ts, validation utilities, DesktopContactForm, Gallery.tsx, scrollManager.ts —
-then begin Phase 2 deduplication once test coverage is in place.
+**Expected scope**: Extract useContactForm hook, verify/delete unused ContactForm.tsx,
+begin BaseFormField extraction — all changes must keep existing test suite green.
 ```
 
 ---
@@ -78,4 +83,12 @@ then begin Phase 2 deduplication once test coverage is in place.
 
 - `SESSION_HANDOVER.md` — this file
 - Issue #332: https://github.com/maxrantil/textile-showcase/issues/332
-- Key files to touch: `src/utils/image-helpers.ts`, `src/utils/validation/`, `src/components/desktop/Forms/DesktopContactForm.tsx`, `src/components/desktop/Gallery/Gallery.tsx`, `src/lib/scrollManager.ts`
+- PR #334: https://github.com/maxrantil/textile-showcase/pull/334
+- Key files for Phase 2:
+  - `src/components/mobile/Forms/MobileContactForm.tsx`
+  - `src/components/desktop/Forms/DesktopContactForm.tsx`
+  - `src/components/forms/ContactForm.tsx` (candidate for deletion)
+  - `src/components/mobile/Forms/MobileFormField.tsx`
+  - `src/components/desktop/Forms/DesktopFormField.tsx`
+  - `src/components/mobile/Project/MobileProjectDetails.tsx`
+  - `src/components/desktop/Project/DesktopProjectDetails.tsx`
