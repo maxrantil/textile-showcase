@@ -1,49 +1,48 @@
-# Session Handoff: Issue #332 Phase 2 — Deduplication Complete
+# Session Handoff: Issue #332 — PR #334 Ready for Review
 
 **Date**: 2026-03-07
 **Issue**: #332 — refactor: codebase cleanup — reduce duplication, improve test coverage, remove dead code
-**PR**: #334 — feat/issue-332-refactor (draft — ready to mark ready for review)
+**PR**: #334 — marked ready for review (was draft)
 **Branch**: feat/issue-332-refactor
 
 ---
 
-## ✅ Completed This Session (Phase 2)
+## ✅ Completed This Session
 
-All Phase 2 deduplication tasks from previous handoff completed:
+Agent validation (code-quality-analyzer, test-automation-qa) on PR #334 — two issues found and fixed:
 
-### Extractions
+| Commit | Work |
+|--------|------|
+| `3b9a307` | Stabilise `FormValidator` in `useContactForm` with `useRef`; add `ABOUTME` to `DesktopContactForm.tsx` |
 
-| Commit | Work | Result |
-|--------|------|--------|
-| `71cdbf4` | Extract `useContactForm` hook | `MobileContactForm` 163→83 lines, `DesktopContactForm` 128→59 lines |
-| `352816d` | Extract `BaseFormField` shared component | `MobileFormField` 83→46 lines, `DesktopFormField` 69→23 lines |
-| `d3802ba` | Extract `ProjectDetails` shared component | `MobileProjectDetails` 105→13 lines, `DesktopProjectDetails` 104→13 lines |
-| `8b943c5` | Fix `MobileButton` loading text inconsistency | Added `loadingText` prop (default `'Loading...'`); contact form passes `'Sending...'` |
+### Issues found and resolved
+- **Medium**: `FormValidator` re-instantiated every render in `useContactForm` → `isFormValid()` read stale class-internal state. Fixed with `useRef`.
+- **Low**: `DesktopContactForm.tsx` missing mandatory `ABOUTME` header. Added.
 
-### New shared files created
-- `src/hooks/shared/useContactForm.ts`
-- `src/components/shared/Forms/BaseFormField.tsx`
-- `src/components/shared/Project/ProjectDetails.tsx`
+### Issues noted but deferred (not blocking)
+- `DesktopButton` still hardcodes `'Sending...'` (asymmetric with MobileButton after this PR). Separate issue candidate.
+- No direct unit tests for `useContactForm`, `BaseFormField`, `ProjectDetails` shared components. Test-agent said coverage is adequate via consumers. Separate issue candidate.
+- `p` alias in `ProjectDetails.tsx` reduces readability. Minor, can be addressed if desired.
 
-### Bug fixed (side effect)
-- `DesktopProjectDetails` rendered `materials` array directly → `"WoolLinen"` (no separators). Now uses `.join(', ')` via shared component.
-
-### ContactForm.tsx audit
-- `src/components/forms/ContactForm.tsx` is **NOT dead code** — imported by `tests/accessibility/wcag-compliance.test.tsx` and `tests/integration/real-contact-form.test.tsx`. Has its own test suite and Safari-specific handling. Leave as-is.
+### PR updated
+- Title changed from "test: Phase 1" to "refactor: reduce duplication and improve test coverage"
+- Description updated to cover all phases (Phase 1 tests + Phase 2 deduplication + post-agent fixes)
+- Marked ready for review
 
 ---
 
 ## 🎯 Current Project State
 
 **Tests**: ✅ 1136 passing, 0 failing (23 skipped, pre-existing)
-**Branch**: `feat/issue-332-refactor` at `8b943c5` — clean, pushed
-**CI**: 🔄 Running (just pushed)
+**Branch**: `feat/issue-332-refactor` at `3b9a307` — clean, pushed
+**PR #334**: Ready for review — 8 commits ahead of master
 **Production**: idaromme.dk ✅ live and stable
-**PR #334**: Draft — 6 commits ahead of master
 
-### Commits on branch (newest first)
+### All commits on branch (newest first)
 ```
-8b943c5 fix: align MobileButton loading text (#332)
+3b9a307 fix: stabilize FormValidator instance in useContactForm, add ABOUTME to DesktopContactForm (#332)
+1d8430b docs: session handoff 2026-03-07 — Phase 2 deduplication complete
+8b943c5 fix: align MobileButton loading text with DesktopButton (#332)
 d3802ba refactor: extract ProjectDetails shared component (#332)
 352816d refactor: extract BaseFormField shared structure (#332)
 71cdbf4 refactor: extract useContactForm hook (#332)
@@ -55,32 +54,27 @@ e2e10ba test: Phase 1 — add missing tests for issue #332 refactoring
 
 ## 🚀 Next Session Priorities
 
-### Immediate: Mark PR #334 ready for review
-Phase 1 (test coverage) + Phase 2 (deduplication) are done. The PR is ready.
+### Immediate: Merge PR #334 to master
+PR is ready for review and merge. After merge, Issue #332 closes automatically.
 
-**Before marking ready:**
-1. Run agent validation (code-quality-analyzer, test-automation-qa)
-2. Update PR description to reflect Phase 2 work
-3. Mark draft → ready
-
-### Optional Phase 3 items (lower priority, can be separate issue)
-- Further dead code investigation (any other unused components?)
-- Consider whether `LazyContactForm.tsx` (stub implementation) needs attention
-- Consider extracting `MobileProjectGallery` / `DesktopProjectGallery` if they're similarly duplicated
+### Optional follow-up (separate issues)
+1. Add `loadingText` prop to `DesktopButton` for symmetry with `MobileButton`
+2. Add direct unit tests for `useContactForm` hook and `BaseFormField`/`ProjectDetails` desktop paths
+3. Any further deduplication (e.g., `MobileProjectGallery` / `DesktopProjectGallery`)
 
 ---
 
 ## 📝 Startup Prompt for Next Session
 
 ```
-Read CLAUDE.md to understand our workflow, then wrap up Issue #332 by marking PR #334 ready for review.
+Read CLAUDE.md to understand our workflow, then merge PR #334 and close Issue #332.
 
-**Immediate priority**: Run agent validation on PR #334, update PR description, mark draft → ready
-**Context**: Phase 1 (177 tests) + Phase 2 (4 extractions, 1 bug fix) complete — 6 commits on branch, all 1136 tests green
-**Reference docs**: SESSION_HANDOVER.md (this file), PR #334, Issue #332
-**Ready state**: feat/issue-332-refactor branch, clean, pushed to origin
+**Immediate priority**: Merge PR #334 (feat/issue-332-refactor → master), verify Issue #332 closes
+**Context**: PR is ready for review — 8 commits, Phase 1 tests (177) + Phase 2 deduplication + agent-flagged fixes, 1136 tests green
+**Reference docs**: SESSION_HANDOVER.md, PR #334, Issue #332
+**Ready state**: feat/issue-332-refactor clean, PR marked ready
 
-**Expected scope**: Agent validation pass, PR description update, mark ready — then session handoff to close Issue #332.
+**Expected scope**: Merge PR, confirm issue closure, session handoff.
 ```
 
 ---
@@ -90,7 +84,7 @@ Read CLAUDE.md to understand our workflow, then wrap up Issue #332 by marking PR
 - `SESSION_HANDOVER.md` — this file
 - Issue #332: https://github.com/maxrantil/textile-showcase/issues/332
 - PR #334: https://github.com/maxrantil/textile-showcase/pull/334
-- New shared components created this session:
+- New shared components:
   - `src/hooks/shared/useContactForm.ts`
   - `src/components/shared/Forms/BaseFormField.tsx`
   - `src/components/shared/Project/ProjectDetails.tsx`
