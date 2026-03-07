@@ -1,3 +1,4 @@
+// ABOUTME: Desktop contact form — renders form fields and submit button using useContactForm hook
 'use client'
 import { DesktopFormField } from './DesktopFormField'
 import { DesktopButton } from '../UI/DesktopButton'

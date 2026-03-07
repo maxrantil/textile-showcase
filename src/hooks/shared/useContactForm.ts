@@ -1,7 +1,7 @@
 // ABOUTME: Shared contact form logic — state management, validation, API submission, analytics
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { FormValidator } from '@/utils/validation/formValidator'
 import { commonValidationRules } from '@/utils/validation/validators'
 import { UmamiEvents } from '@/utils/analytics'
@@ -31,7 +31,8 @@ export function useContactForm({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
 
-  const validator = new FormValidator<ContactFormData>(commonValidationRules)
+  const validatorRef = useRef(new FormValidator<ContactFormData>(commonValidationRules))
+  const validator = validatorRef.current
 
   const handleFieldChange = (field: keyof ContactFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
