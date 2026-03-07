@@ -6,6 +6,7 @@ interface MobileButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'ghost' | 'submit'
   size?: 'small' | 'medium' | 'large'
   loading?: boolean
+  loadingText?: string
   fullWidth?: boolean
   hapticFeedback?: boolean
   children: React.ReactNode
@@ -17,6 +18,7 @@ export const MobileButton = forwardRef<HTMLButtonElement, MobileButtonProps>(
       variant = 'primary',
       size = 'medium',
       loading = false,
+      loadingText = 'Loading...',
       fullWidth = false,
       hapticFeedback = true,
       disabled,
@@ -101,7 +103,7 @@ export const MobileButton = forwardRef<HTMLButtonElement, MobileButtonProps>(
         onClick={handleClick}
         {...props}
       >
-        {loading ? 'Loading...' : children}
+        {loading ? loadingText : children}
       </button>
     )
   }

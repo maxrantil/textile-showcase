@@ -83,6 +83,7 @@ export function MobileContactForm({
           fullWidth
           disabled={isSubmitting || !isFormValid()}
           loading={isSubmitting}
+          loadingText="Sending..."
         >
           Send Message
         </MobileButton>
