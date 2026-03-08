@@ -1,80 +1,68 @@
-# Session Handoff: Issue #332 — PR #334 Ready for Review
+# Session Handoff: Issue #332 — MERGED to master
 
-**Date**: 2026-03-07
+**Date**: 2026-03-08
 **Issue**: #332 — refactor: codebase cleanup — reduce duplication, improve test coverage, remove dead code
-**PR**: #334 — marked ready for review (was draft)
-**Branch**: feat/issue-332-refactor
+**PR**: #334 — merged to master (squash commit `49ffe30`)
+**Branch**: feat/issue-332-refactor (merged, can be deleted)
 
 ---
 
 ## ✅ Completed This Session
 
-Agent validation (code-quality-analyzer, test-automation-qa) on PR #334 — two issues found and fixed:
+### What was done to get to merge
+
+Two CI failures were found and fixed after the previous handoff pushed the PR:
 
 | Commit | Work |
 |--------|------|
-| `3b9a307` | Stabilise `FormValidator` in `useContactForm` with `useRef`; add `ABOUTME` to `DesktopContactForm.tsx` |
+| `6cb166d` | Force deterministic Sanity env vars in jest.config.ts — CI's real project ID (masked as `***`) was overriding the `??=` fallbacks, breaking URL-matching assertions in image-helpers tests. Changed to unconditional `=`. |
+| `a0dc114` | Fix E2E test `User sees validation error for invalid email` — submit button correctly disabled for invalid form; test was trying to click it. Updated to assert `toBeDisabled()` and read `validationMessage` via DOM API directly. |
+| `b13f4de` | Fix E2E test `Validation errors are announced to screen readers` — same root cause. |
 
-### Issues found and resolved
-- **Medium**: `FormValidator` re-instantiated every render in `useContactForm` → `isFormValid()` read stale class-internal state. Fixed with `useRef`.
-- **Low**: `DesktopContactForm.tsx` missing mandatory `ABOUTME` header. Added.
+### Full PR scope (all 11 commits squashed to master)
 
-### Issues noted but deferred (not blocking)
-- `DesktopButton` still hardcodes `'Sending...'` (asymmetric with MobileButton after this PR). Separate issue candidate.
-- No direct unit tests for `useContactForm`, `BaseFormField`, `ProjectDetails` shared components. Test-agent said coverage is adequate via consumers. Separate issue candidate.
-- `p` alias in `ProjectDetails.tsx` reduces readability. Minor, can be addressed if desired.
-
-### PR updated
-- Title changed from "test: Phase 1" to "refactor: reduce duplication and improve test coverage"
-- Description updated to cover all phases (Phase 1 tests + Phase 2 deduplication + post-agent fixes)
-- Marked ready for review
+- Phase 1: Added 177 missing unit tests
+- Phase 2: Extracted shared components (`useContactForm`, `BaseFormField`, `ProjectDetails`)
+- Fixed `FormValidator` re-instantiation bug (useRef stabilisation)
+- Fixed MobileButton loading text alignment
+- Added ABOUTME header to DesktopContactForm
+- Fixed jest.config.ts env var isolation
+- Fixed 2 E2E tests to reflect correct disabled-button behaviour
 
 ---
 
 ## 🎯 Current Project State
 
-**Tests**: ✅ 1136 passing, 0 failing (23 skipped, pre-existing)
-**Branch**: `feat/issue-332-refactor` at `3b9a307` — clean, pushed
-**PR #334**: Ready for review — 8 commits ahead of master
-**Production**: idaromme.dk ✅ live and stable
-
-### All commits on branch (newest first)
-```
-3b9a307 fix: stabilize FormValidator instance in useContactForm, add ABOUTME to DesktopContactForm (#332)
-1d8430b docs: session handoff 2026-03-07 — Phase 2 deduplication complete
-8b943c5 fix: align MobileButton loading text with DesktopButton (#332)
-d3802ba refactor: extract ProjectDetails shared component (#332)
-352816d refactor: extract BaseFormField shared structure (#332)
-71cdbf4 refactor: extract useContactForm hook (#332)
-7e312b4 docs: session handoff 2026-03-06 — Phase 1 tests complete
-e2e10ba test: Phase 1 — add missing tests for issue #332 refactoring
-```
+**Tests**: ✅ All passing — Jest + Playwright (Desktop/Mobile/Safari) + Lighthouse + Bundle Size
+**Branch**: `master` at `49ffe30` — clean
+**Issue #332**: ✅ Closed (auto-closed by PR merge at 2026-03-08T07:29:10Z)
+**PR #334**: ✅ Merged
+**Production**: idaromme.dk — stable (no deploy changes in this PR)
 
 ---
 
 ## 🚀 Next Session Priorities
 
-### Immediate: Merge PR #334 to master
-PR is ready for review and merge. After merge, Issue #332 closes automatically.
+### Optional follow-up (separate issues if desired)
 
-### Optional follow-up (separate issues)
 1. Add `loadingText` prop to `DesktopButton` for symmetry with `MobileButton`
 2. Add direct unit tests for `useContactForm` hook and `BaseFormField`/`ProjectDetails` desktop paths
 3. Any further deduplication (e.g., `MobileProjectGallery` / `DesktopProjectGallery`)
+4. Dependabot PR #335 for `tar` vulnerability (1 high, 1 moderate on default branch — worth reviewing)
 
 ---
 
 ## 📝 Startup Prompt for Next Session
 
 ```
-Read CLAUDE.md to understand our workflow, then merge PR #334 and close Issue #332.
+Read CLAUDE.md to understand our workflow, then pick up after Issue #332 merge.
 
-**Immediate priority**: Merge PR #334 (feat/issue-332-refactor → master), verify Issue #332 closes
-**Context**: PR is ready for review — 8 commits, Phase 1 tests (177) + Phase 2 deduplication + agent-flagged fixes, 1136 tests green
-**Reference docs**: SESSION_HANDOVER.md, PR #334, Issue #332
-**Ready state**: feat/issue-332-refactor clean, PR marked ready
+**Immediate priority**: Review open issues for next task, or address Dependabot PR #335 (tar vulnerability)
+**Context**: Issue #332 fully merged — 11 commits squashed, all CI green, master clean at 49ffe30
+**Reference docs**: SESSION_HANDOVER.md
+**Ready state**: master clean, all tests passing, no uncommitted changes
 
-**Expected scope**: Merge PR, confirm issue closure, session handoff.
+**Expected scope**: New issue triage or Dependabot security PR review/merge
 ```
 
 ---
@@ -82,9 +70,9 @@ Read CLAUDE.md to understand our workflow, then merge PR #334 and close Issue #3
 ## 📚 Key Reference Documents
 
 - `SESSION_HANDOVER.md` — this file
-- Issue #332: https://github.com/maxrantil/textile-showcase/issues/332
-- PR #334: https://github.com/maxrantil/textile-showcase/pull/334
-- New shared components:
+- Issue #332: https://github.com/maxrantil/textile-showcase/issues/332 (closed)
+- PR #334: https://github.com/maxrantil/textile-showcase/pull/334 (merged)
+- Shared components added:
   - `src/hooks/shared/useContactForm.ts`
   - `src/components/shared/Forms/BaseFormField.tsx`
   - `src/components/shared/Project/ProjectDetails.tsx`
