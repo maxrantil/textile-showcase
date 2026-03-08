@@ -109,10 +109,10 @@ test.describe('Contact Form E2E Workflows', () => {
       // Fill form with invalid email
       await contactPage.fillForm(invalidFormData.invalidEmail)
 
-      // Try to submit
-      await contactPage.submit()
+      // Submit button must be disabled when form is invalid — do not attempt to click it.
+      await expect(contactPage.submitButton).toBeDisabled()
 
-      // HTML5 email validation should trigger
+      // HTML5 constraint validation API reflects the type mismatch without submit
       const emailValidationMessage = await contactPage.emailInput.evaluate(
         (el: HTMLInputElement) => el.validationMessage
       )
