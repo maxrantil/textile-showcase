@@ -1,4 +1,4 @@
-// src/components/desktop/UI/DesktopButton.tsx
+// ABOUTME: Reusable desktop button with variants, loading states, and configurable loading text
 'use client'
 import { forwardRef, ButtonHTMLAttributes } from 'react'
 
@@ -6,6 +6,7 @@ interface DesktopButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'ghost' | 'submit'
   size?: 'small' | 'medium' | 'large'
   loading?: boolean
+  loadingText?: string
   fullWidth?: boolean
   children: React.ReactNode
 }
@@ -16,6 +17,7 @@ const DesktopButton = forwardRef<HTMLButtonElement, DesktopButtonProps>(
       variant = 'primary',
       size = 'medium',
       loading = false,
+      loadingText = 'Sending...',
       fullWidth = false,
       disabled,
       children,
@@ -79,7 +81,7 @@ const DesktopButton = forwardRef<HTMLButtonElement, DesktopButtonProps>(
         disabled={disabled || loading}
         {...props}
       >
-        {loading ? 'Sending...' : children}
+        {loading ? loadingText : children}
       </button>
     )
   }
