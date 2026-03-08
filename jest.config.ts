@@ -1,6 +1,12 @@
 import type { Config } from 'jest'
 import nextJest from 'next/jest.js'
 
+// Force deterministic test values — unit tests must not depend on real Sanity
+// credentials. CI sets the real project ID as a secret (masked as ***), which
+// would cause URL-matching assertions to fail if we only used ??= fallbacks.
+process.env.NEXT_PUBLIC_SANITY_PROJECT_ID = 'testproject'
+process.env.NEXT_PUBLIC_SANITY_DATASET = 'testdataset'
+
 const createJestConfig = nextJest({
   dir: './',
 })

@@ -1,55 +1,80 @@
-# Session Handoff: PR #330 — Escape key blank page fix ✅ COMPLETE
+# Session Handoff: Issue #332 — PR #334 Ready for Review
 
-**Date**: 2026-03-05
-**PR**: #330 — fix: navigate to /projects on Escape instead of router.back()
-**Branch**: fix/escape-blank-page → merged to master at `8ac8009`
+**Date**: 2026-03-07
+**Issue**: #332 — refactor: codebase cleanup — reduce duplication, improve test coverage, remove dead code
+**PR**: #334 — marked ready for review (was draft)
+**Branch**: feat/issue-332-refactor
 
 ---
 
 ## ✅ Completed This Session
 
-### Bug fix: Escape key → blank page on direct project URL access
+Agent validation (code-quality-analyzer, test-automation-qa) on PR #334 — two issues found and fixed:
 
-**Problem**: Pressing Escape on a project page opened directly via URL (no browser
-history) navigated to a blank page. `router.back()` has nowhere to go when history
-is empty.
+| Commit | Work |
+|--------|------|
+| `3b9a307` | Stabilise `FormValidator` in `useContactForm` with `useRef`; add `ABOUTME` to `DesktopContactForm.tsx` |
 
-**Fix**: Replaced `router.back()` with `router.push('/projects')` in
-`src/components/desktop/Project/DesktopImageCarousel.tsx` (line 192).
+### Issues found and resolved
+- **Medium**: `FormValidator` re-instantiated every render in `useContactForm` → `isFormValid()` read stale class-internal state. Fixed with `useRef`.
+- **Low**: `DesktopContactForm.tsx` missing mandatory `ABOUTME` header. Added.
 
-| PR | Fix | Status |
-|----|-----|--------|
-| #330 | Escape → router.push('/projects') instead of router.back() | ✅ merged |
+### Issues noted but deferred (not blocking)
+- `DesktopButton` still hardcodes `'Sending...'` (asymmetric with MobileButton after this PR). Separate issue candidate.
+- No direct unit tests for `useContactForm`, `BaseFormField`, `ProjectDetails` shared components. Test-agent said coverage is adequate via consumers. Separate issue candidate.
+- `p` alias in `ProjectDetails.tsx` reduces readability. Minor, can be addressed if desired.
+
+### PR updated
+- Title changed from "test: Phase 1" to "refactor: reduce duplication and improve test coverage"
+- Description updated to cover all phases (Phase 1 tests + Phase 2 deduplication + post-agent fixes)
+- Marked ready for review
 
 ---
 
 ## 🎯 Current Project State
 
-**Tests**: ✅ All passing
-**Branch**: master at `8ac8009`
+**Tests**: ✅ 1136 passing, 0 failing (23 skipped, pre-existing)
+**Branch**: `feat/issue-332-refactor` at `3b9a307` — clean, pushed
+**PR #334**: Ready for review — 8 commits ahead of master
 **Production**: idaromme.dk ✅ live and stable
-**CI**: All checks green
-**Deploy pipeline**: Fully functional — GHA builds, rsyncs artifact, VPS runs `npm ci --omit=dev` + `pm2 restart`
+
+### All commits on branch (newest first)
+```
+3b9a307 fix: stabilize FormValidator instance in useContactForm, add ABOUTME to DesktopContactForm (#332)
+1d8430b docs: session handoff 2026-03-07 — Phase 2 deduplication complete
+8b943c5 fix: align MobileButton loading text with DesktopButton (#332)
+d3802ba refactor: extract ProjectDetails shared component (#332)
+352816d refactor: extract BaseFormField shared structure (#332)
+71cdbf4 refactor: extract useContactForm hook (#332)
+7e312b4 docs: session handoff 2026-03-06 — Phase 1 tests complete
+e2e10ba test: Phase 1 — add missing tests for issue #332 refactoring
+```
 
 ---
 
 ## 🚀 Next Session Priorities
 
-No outstanding issues from this session. Pick from the project backlog.
+### Immediate: Merge PR #334 to master
+PR is ready for review and merge. After merge, Issue #332 closes automatically.
+
+### Optional follow-up (separate issues)
+1. Add `loadingText` prop to `DesktopButton` for symmetry with `MobileButton`
+2. Add direct unit tests for `useContactForm` hook and `BaseFormField`/`ProjectDetails` desktop paths
+3. Any further deduplication (e.g., `MobileProjectGallery` / `DesktopProjectGallery`)
 
 ---
 
 ## 📝 Startup Prompt for Next Session
 
 ```
-Read CLAUDE.md to understand our workflow, then continue with the next priority from the backlog.
+Read CLAUDE.md to understand our workflow, then merge PR #334 and close Issue #332.
 
-**Context**: PR #330 merged — Escape key on project pages now always navigates to
-/projects gallery instead of blank page (router.back() → router.push('/projects')).
-**Ready state**: master at 8ac8009, clean working directory, production healthy at idaromme.dk.
-**Reference**: SESSION_HANDOVER.md for history.
+**Immediate priority**: Merge PR #334 (feat/issue-332-refactor → master), verify Issue #332 closes
+**Context**: PR is ready for review — 8 commits, Phase 1 tests (177) + Phase 2 deduplication + agent-flagged fixes, 1136 tests green
+**Reference docs**: SESSION_HANDOVER.md, PR #334, Issue #332
+**Ready state**: feat/issue-332-refactor clean, PR marked ready
 
-**Expected scope**: Pick next issue from backlog; standard workflow applies.
+**Expected scope**: Merge PR, confirm issue closure, session handoff.
 ```
 
 ---
@@ -57,5 +82,9 @@ Read CLAUDE.md to understand our workflow, then continue with the next priority 
 ## 📚 Key Reference Documents
 
 - `SESSION_HANDOVER.md` — this file
-- `src/components/desktop/Project/DesktopImageCarousel.tsx` — fixed file
-- PR #330: https://github.com/maxrantil/textile-showcase/pull/330 (merged)
+- Issue #332: https://github.com/maxrantil/textile-showcase/issues/332
+- PR #334: https://github.com/maxrantil/textile-showcase/pull/334
+- New shared components:
+  - `src/hooks/shared/useContactForm.ts`
+  - `src/components/shared/Forms/BaseFormField.tsx`
+  - `src/components/shared/Project/ProjectDetails.tsx`

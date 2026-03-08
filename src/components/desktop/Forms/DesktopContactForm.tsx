@@ -1,18 +1,9 @@
+// ABOUTME: Desktop contact form — renders form fields and submit button using useContactForm hook
 'use client'
-import { useState } from 'react'
 import { DesktopFormField } from './DesktopFormField'
 import { DesktopButton } from '../UI/DesktopButton'
-import { FormValidator } from '@/utils/validation/formValidator'
-import { commonValidationRules } from '@/utils/validation/validators'
-import { UmamiEvents } from '@/utils/analytics'
 import { EmailRevealButton } from '@/components/shared/EmailReveal/EmailRevealButton'
-
-interface ContactFormData {
-  name: string
-  email: string
-  message: string
-  [key: string]: string // Add index signature
-}
+import { useContactForm } from '@/hooks/shared/useContactForm'
 
 interface DesktopContactFormProps {
   onSuccess?: () => void
@@ -23,63 +14,14 @@ export function DesktopContactForm({
   onSuccess,
   onError,
 }: DesktopContactFormProps) {
-  const [formData, setFormData] = useState<ContactFormData>({
-    name: '',
-    email: '',
-    message: '',
-  })
-  const [errors, setErrors] = useState<Partial<ContactFormData>>({})
-  const [isSubmitting, setIsSubmitting] = useState(false)
-
-  const validator = new FormValidator<ContactFormData>(commonValidationRules)
-
-  const handleFieldChange = (field: keyof ContactFormData, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
-
-
-    // Validate field
-    const result = validator.validateField(field as string, value)
-    setErrors((prev) => ({
-      ...prev,
-      [field]: result.error,
-    }))
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    const validation = validator.validateForm(formData)
-    if (!validation.isValid) {
-      setErrors(validation.errors)
-      return
-    }
-
-    setIsSubmitting(true)
-    UmamiEvents.contactFormSubmit()
-
-    try {
-      const response = await fetch('/api/contact', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      })
-
-      if (response.ok) {
-        UmamiEvents.contactFormSuccess()
-        setFormData({ name: '', email: '', message: '' })
-        onSuccess?.()
-      } else {
-        throw new Error('Failed to send message')
-      }
-    } catch (error) {
-      UmamiEvents.contactFormError()
-      onError?.(
-        error instanceof Error ? error.message : 'Failed to send message'
-      )
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
+  const {
+    formData,
+    errors,
+    isSubmitting,
+    handleFieldChange,
+    handleSubmit,
+    isFormValid,
+  } = useContactForm({ onSuccess, onError })
 
   return (
     <form className="desktop-contact-form" onSubmit={handleSubmit}>
@@ -116,7 +58,7 @@ export function DesktopContactForm({
           variant="secondary"
           size="small"
           loading={isSubmitting}
-          disabled={isSubmitting || !validator.isFormValid()}
+          disabled={isSubmitting || !isFormValid()}
         >
           Send Message
         </DesktopButton>
