@@ -134,8 +134,8 @@ test.describe('Contact Form E2E Workflows', () => {
       await contactPage.emailInput.fill('invalid-email')
       await contactPage.messageTextarea.fill('x') // Too short
 
-      // Try to submit
-      await contactPage.submit()
+      // Submit button is disabled when form is invalid — check validity via DOM API directly
+      await expect(contactPage.submitButton).toBeDisabled()
 
       // Check that validation occurs (at least one field should be invalid)
       const nameValidity = await contactPage.nameInput.evaluate(
