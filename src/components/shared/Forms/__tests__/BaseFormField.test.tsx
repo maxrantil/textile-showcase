@@ -335,7 +335,7 @@ describe('BaseFormField', () => {
           label="Name"
           type="text"
           classPrefix="desktop"
-          extraInputProps={{ autoComplete: 'name', 'data-testid': 'name-input' }}
+          extraInputProps={{ autoComplete: 'name', 'data-testid': 'name-input' } as React.InputHTMLAttributes<HTMLInputElement>}
         />
       )
 
@@ -349,7 +349,7 @@ describe('BaseFormField', () => {
           label="Message"
           type="textarea"
           classPrefix="desktop"
-          extraTextareaProps={{ 'data-testid': 'msg-textarea' }}
+          extraTextareaProps={{ 'data-testid': 'msg-textarea' } as React.TextareaHTMLAttributes<HTMLTextAreaElement>}
         />
       )
 
