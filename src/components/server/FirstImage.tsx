@@ -14,16 +14,8 @@ interface FirstImageProps {
  * Critical for performance - enables browser to discover and start loading
  * the LCP image immediately without waiting for React hydration (~6-10s delay)
  *
- * Issue #78 Optimization:
- * - Added <link rel="preload"> in page.tsx head for immediate discovery
- * - Switched from WebP to AVIF (30-40% better compression)
- * - Reduced quality from 60 to 40 (aggressive LCP optimization)
- *
- * Expected impact:
- * - Load Delay: 6.2s → <1s (preload eliminates discovery gap)
- * - Load Time: 3.1s → 1.5-2s (AVIF compression)
- * - Render Delay: 4.7s → 1-1.5s (faster download)
- * - LCP: 14.9s → 2-2.5s (85% improvement)
+ * Uses WebP (avif removed - Sanity CDN returns 400 for ?fm=avif)
+ * Quality 40, sizes 480/640/960w for LCP optimization
  *
  * This component will be hidden after client hydration via CSS
  */
@@ -34,16 +26,7 @@ export function FirstImage({ design }: FirstImageProps) {
     return null
   }
 
-  // Issue #78/#41: Generate AVIF srcset with aggressive quality for LCP optimization
-  // AVIF provides 30-40% better compression than WebP at same quality
-  // Issue #41: Quality reduced from 50 to 40, breakpoint 320w → 480w for mobile
-  const avifSrcSet = `
-    ${getOptimizedImageUrl(imageSource, { width: 480, quality: 40, format: 'avif' })} 480w,
-    ${getOptimizedImageUrl(imageSource, { width: 640, quality: 40, format: 'avif' })} 640w,
-    ${getOptimizedImageUrl(imageSource, { width: 960, quality: 40, format: 'avif' })} 960w
-  `.trim()
-
-  // WebP fallback srcset for Safari 15 and older (7% of users)
+  // WebP srcset - avif removed (Sanity CDN returns 400 for ?fm=avif, encoding on VPS adds 5s to LCP)
   const webpSrcSet = `
     ${getOptimizedImageUrl(imageSource, { width: 480, quality: 40, format: 'webp' })} 480w,
     ${getOptimizedImageUrl(imageSource, { width: 640, quality: 40, format: 'webp' })} 640w,
@@ -66,14 +49,7 @@ export function FirstImage({ design }: FirstImageProps) {
       suppressHydrationWarning
     >
       <picture>
-        {/* AVIF for modern browsers (30-40% better compression than WebP) */}
-        <source
-          type="image/avif"
-          srcSet={avifSrcSet}
-          sizes={sizes}
-        />
-
-        {/* WebP fallback for Safari 15 and older browsers */}
+        {/* WebP for modern browsers - avif removed (Sanity 400s on ?fm=avif) */}
         <source
           type="image/webp"
           srcSet={webpSrcSet}

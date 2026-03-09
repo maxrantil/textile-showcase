@@ -26,7 +26,7 @@ const nextConfig = {
         pathname: '/images/**',
       },
     ],
-    formats: ['image/avif', 'image/webp'], // AVIF first for better compression, WebP fallback
+    formats: ['image/webp'], // WebP only - avif encoding too slow on VPS (5+ second LCP overhead)
     minimumCacheTTL: 31536000, // Cache optimized images for 1 year (fixes Issue #308 cold-start slowness)
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
