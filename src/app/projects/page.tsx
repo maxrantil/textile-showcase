@@ -95,22 +95,21 @@ export default async function ProjectsPage() {
   // Get first design for FirstImage component
   const firstDesign = designs[0]
 
-  // Issue #41: Generate preload URLs for LCP image using helper
-  // Quality reduced from 50 to 40, breakpoint 320w → 480w for mobile
+  // Generate preload URLs for LCP image using helper (webp - avif removed, Sanity 400s on ?fm=avif)
   const imageSource = firstDesign?.image || firstDesign?.images?.[0]?.asset
   const preloadUrl = imageSource
     ? getOptimizedImageUrl(imageSource, {
         width: 640,
         quality: 40,
-        format: 'avif',
+        format: 'webp',
       })
     : null
 
   const preloadSrcSet = imageSource
     ? [
-        `${getOptimizedImageUrl(imageSource, { width: 480, quality: 40, format: 'avif' })} 480w`,
-        `${getOptimizedImageUrl(imageSource, { width: 640, quality: 40, format: 'avif' })} 640w`,
-        `${getOptimizedImageUrl(imageSource, { width: 960, quality: 40, format: 'avif' })} 960w`,
+        `${getOptimizedImageUrl(imageSource, { width: 480, quality: 40, format: 'webp' })} 480w`,
+        `${getOptimizedImageUrl(imageSource, { width: 640, quality: 40, format: 'webp' })} 640w`,
+        `${getOptimizedImageUrl(imageSource, { width: 960, quality: 40, format: 'webp' })} 960w`,
       ].join(', ')
     : null
 
@@ -130,7 +129,7 @@ export default async function ProjectsPage() {
           href={preloadUrl}
           imageSrcSet={preloadSrcSet || undefined}
           imageSizes="(max-width: 480px) 100vw, (max-width: 768px) 90vw, 640px"
-          type="image/avif"
+          type="image/webp"
           fetchPriority="high"
           crossOrigin="anonymous"
         />

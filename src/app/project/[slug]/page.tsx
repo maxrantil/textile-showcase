@@ -42,7 +42,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
     ? getOptimizedImageUrl(imageSource, {
         width: 800,
         quality: 80,
-        format: 'avif',
+        format: 'webp',
       })
     : null
 
@@ -58,7 +58,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
           rel="preload"
           as="image"
           href={preloadUrl}
-          type="image/avif"
+          type="image/webp"
           fetchPriority="high"
           crossOrigin="anonymous"
         />

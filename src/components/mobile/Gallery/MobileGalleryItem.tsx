@@ -109,8 +109,8 @@ export default function MobileGalleryItem({
               <Image
                 src={imageUrl}
                 alt={alt}
-                width={800}
-                height={600}
+                width={600}
+                height={800}
                 sizes="100vw"
                 priority={isPriority}
                 loading={isPriority ? 'eager' : 'lazy'}

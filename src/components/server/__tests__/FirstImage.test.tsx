@@ -60,16 +60,16 @@ describe('FirstImage Server Component - Issue #266', () => {
       expect(picture).toBeInTheDocument()
     })
 
-    it('includes AVIF source for modern browsers', () => {
-      const { container } = render(<FirstImage design={mockDesign} />)
-      const avifSource = container.querySelector('source[type="image/avif"]')
-      expect(avifSource).toBeInTheDocument()
-    })
-
-    it('includes WebP source for Safari 15 fallback', () => {
+    it('includes WebP source for modern browsers', () => {
       const { container } = render(<FirstImage design={mockDesign} />)
       const webpSource = container.querySelector('source[type="image/webp"]')
       expect(webpSource).toBeInTheDocument()
+    })
+
+    it('does not include AVIF source (Sanity CDN returns 400 for ?fm=avif)', () => {
+      const { container } = render(<FirstImage design={mockDesign} />)
+      const avifSource = container.querySelector('source[type="image/avif"]')
+      expect(avifSource).not.toBeInTheDocument()
     })
 
     it('includes JPEG img element as final fallback', () => {
@@ -133,10 +133,8 @@ describe('FirstImage Server Component - Issue #266', () => {
 
       // Per HTML5 spec, <source> elements don't support crossorigin attribute
       // CORS policy is inherited from the fallback <img> element
-      const avifSource = container.querySelector('source[type="image/avif"]')
       const webpSource = container.querySelector('source[type="image/webp"]')
 
-      expect(avifSource).not.toHaveAttribute('crossorigin')
       expect(webpSource).not.toHaveAttribute('crossorigin')
     })
   })
@@ -146,18 +144,6 @@ describe('FirstImage Server Component - Issue #266', () => {
   // ========================================
 
   describe('Image URL Generation', () => {
-    it('generates AVIF srcset with correct widths (480w, 640w, 960w)', () => {
-      const { container } = render(<FirstImage design={mockDesign} />)
-
-      const avifSource = container.querySelector('source[type="image/avif"]')
-      const srcset = avifSource?.getAttribute('srcset')
-
-      expect(srcset).toContain('480w')
-      expect(srcset).toContain('640w')
-      expect(srcset).toContain('960w')
-      expect(srcset).toContain('avif')
-    })
-
     it('generates WebP srcset with correct widths (480w, 640w, 960w)', () => {
       const { container } = render(<FirstImage design={mockDesign} />)
 
@@ -187,8 +173,8 @@ describe('FirstImage Server Component - Issue #266', () => {
     it('applies responsive sizes attribute', () => {
       const { container } = render(<FirstImage design={mockDesign} />)
 
-      const avifSource = container.querySelector('source[type="image/avif"]')
-      const sizes = avifSource?.getAttribute('sizes')
+      const webpSource = container.querySelector('source[type="image/webp"]')
+      const sizes = webpSource?.getAttribute('sizes')
 
       expect(sizes).toContain('max-width: 480px')
       expect(sizes).toContain('max-width: 768px')
