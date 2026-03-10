@@ -1,58 +1,44 @@
-# Session Handoff: Issue #342 — Performance Audit + Fixes (MERGED)
+# Session Handoff: Issue #345 — Preload /_next/image URL for LCP
 
-**Date**: 2026-03-09
-**Issue**: #342 — closed ✅
-**PRs**: #343 (avif→webp), #344 (TS fix) — both merged to master ✅
-**Branch**: `master` (clean)
-**Next Issue**: #345 — open, ready to implement
+**Date**: 2026-03-10
+**Issue**: #345 — open, PR #347 created, awaiting merge
+**PR**: #347 — `perf: preload /_next/image URL for LCP — eliminates 2.7s load delay`
+**Branch**: `feat/issue-345-preload-next-image`
 
 ---
 
 ## ✅ Completed This Session
 
-### Performance Audit (Lighthouse mobile, idaromme.dk)
-- Ran full Lighthouse audit: Performance 54, LCP 6.5s, TBT 380ms, CLS 0.127, Speed Index 11.4s
-- Root causes identified:
-  1. avif encoding on VPS via `sharp` was taking 5+ seconds per image (LCP bottleneck)
-  2. Sanity CDN returning 400 for `?fm=avif` (console errors, browser retry cascade)
-  3. Aspect ratio hint mismatch in `MobileGalleryItem` (landscape 4:3 vs actual portrait images → CLS)
+### Root Cause Diagnosed (Issue #345)
+- Previous `<link rel="preload">` in `page.tsx` pointed to **Sanity CDN URLs** (`cdn.sanity.io/...?fm=webp`)
+- Actual LCP element (`MobileGalleryItem`) serves images via `/_next/image` proxy — a completely different URL
+- `MobileGalleryItem` is `'use client'` → browser waits ~2.7s for JS hydration to discover the image URL
+- No preload for `/_next/image` = browser can't start fetching until after full React hydration
 
-### Fixes — PR #343
-- `next.config.ts`: `formats: ['image/webp']` — removed avif (encoding too slow on VPS)
-- `FirstImage.tsx`: removed avif `<source>`, webp-only `<picture>`, updated JSDoc
-- `page.tsx`, `projects/page.tsx`, `project/[slug]/page.tsx`: preload type `image/avif` → `image/webp`
-- `MobileGalleryItem.tsx`: `width=800 height=600` → `width=600 height=800` (portrait 3:4 aspect ratio)
-- `FirstImage.test.tsx`: updated tests — assert avif absent, webp present
+### Fix — PR #347
+- `page.tsx`: Replaced Sanity CDN preload with `/_next/image` srcset preload
+- Generates `/_next/image?url=${encodeURIComponent(baseImageUrl)}&w=${w}&q=75 ${w}w` for breakpoints 750w, 828w, 1080w, 1200w
+- Base URL matches `MobileGalleryItem`: `getOptimizedImageUrl(imageSource, { width: 800, quality: 80 })`
+- `q=75` matches Next.js Image default quality
 
-### TypeScript Fix — PR #344
-- `BaseFormField.test.tsx`: type assertions for `data-testid` in `extraInputProps`/`extraTextareaProps`
-  (TS2353 excess property check blocked CI deployment)
-
-### Lighthouse Re-run (after deploy)
-| Metric | Before | After |
-|---|---|---|
-| Performance | 54 | 57 |
-| Best Practices | 96 | **100** ✅ |
-| LCP load time (image phase) | 5,509ms | **339ms** ✅ |
-| Speed Index | 11.4s | **3.6s** ✅ |
-| CLS | 0.127 | **0** ✅ |
-| Console 400 errors | avif 400 | **None** ✅ |
-| LCP total | 6.5s | 7.1s ⚠️ (bottleneck shifted) |
-
-### Why LCP total didn't improve (new bottleneck discovered)
-- The avif fix exposed a pre-existing problem: **no `/_next/image` preload in initial HTML**
-- Preloads in `<head>` point to Sanity CDN URLs (`FirstImage`), but `MobileGalleryItem` uses `/_next/image`
-- Browser must wait for React hydration (~2.7s) to discover the real LCP image URL
-- Render delay (3.3s) = main thread blocked by JS execution (~3s of script eval + parsing)
+### Tests Added — `src/app/__tests__/page.test.tsx` (9 new tests)
+- Preload link exists in SSR HTML
+- `imageSrcSet` uses `/_next/image` proxy URLs (not Sanity CDN directly)
+- Sanity CDN URL is encoded inside `/_next/image?url=...`
+- Breakpoints 750w, 828w (mobile), 1080w, 1200w (desktop)
+- `q=75` quality
+- `imageSizes="100vw"` matching `MobileGalleryItem`
+- `fetchPriority="high"`
+- No preload when no designs (graceful empty state)
 
 ---
 
 ## 🎯 Current Project State
 
-**Tests**: ✅ 1211 passing (23 skipped)
-**Branch**: `master` — clean, up to date with origin
-**Open Issues**: #345 (ready to implement)
-**Production**: idaromme.dk — stable, Best Practices 100, console errors clean
+**Tests**: ✅ 1220 passing (23 skipped) — up from 1211
+**Branch**: `feat/issue-345-preload-next-image` — clean, pushed, PR #347 open
+**Production**: idaromme.dk — stable (PR not yet merged)
+**Open Issues**: #345 open pending PR merge + Lighthouse verification
 
 ---
 
@@ -69,30 +55,29 @@
 
 ## 🚀 Next Session Priorities
 
-1. **Issue #345** — Preload `/_next/image` URL in `page.tsx` to eliminate 2.7s LCP load delay
-2. **JS code splitting** (separate future issue) — reduce Render Delay from 3.3s
+1. **Merge PR #347** — merge `feat/issue-345-preload-next-image` to master, close Issue #345
+2. **Lighthouse verification** — run Lighthouse on idaromme.dk after deploy, verify LCP Load Delay drops from 2.7s → ~200ms, LCP total from 7.1s → 3–4s, Performance score ~70+
+3. **JS code splitting** (separate issue) — reduce Render Delay from 3.3s (main thread blocked by script eval 1.3s + compile 0.6s + other 1s)
 
-### Issue #345 Implementation Notes
-- In `page.tsx` (server component), generate `/_next/image` srcset URLs for first gallery image
-- Add `<link rel="preload" as="image" imageSrcSet="..." imageSizes="100vw" fetchPriority="high">`
-- Sizes to preload: 750w, 828w, 1080w, 1200w (covers mobile DPR 1–3)
-- Quality: 75 (Next.js default)
-- Base URL formula: `/_next/image?url=${encodeURIComponent(getOptimizedImageUrl(imageSource, { width: 800, quality: 80 }))}&w=BREAKPOINT&q=75`
-- Expected: Load Delay 2,771ms → ~200ms, LCP 7.1s → ~3–4s, Performance score ~70+
+### What to verify after merge
+- LCP Load Delay: was 2,771ms → target ~200ms
+- LCP Total: was 7.1s → target 3–4s
+- Performance score: was 55–57 → target 70+
+- No regression on other metrics (Best Practices 100, CLS 0, Speed Index 3.6s)
 
 ---
 
 ## 📝 Startup Prompt for Next Session
 
 ```
-Read CLAUDE.md to understand our workflow, then implement Issue #345 — preload /_next/image URL for LCP.
+Read CLAUDE.md to understand our workflow, then verify Issue #345 and plan next performance work.
 
-**Immediate priority**: Issue #345 — add /_next/image preload to page.tsx (quick fix, ~1–2 hours)
-**Context**: avif→webp (PR #343) fixed LCP load time (5.5s→0.3s) but exposed a missing preload — browser waits 2.7s for JS hydration to discover the LCP image URL; preloading /_next/image srcset in SSR HTML should cut that to ~200ms
-**Reference docs**: SESSION_HANDOVER.md (has implementation notes), Issue #345 (has full spec)
-**Ready state**: master branch clean, 1211 tests passing, idaromme.dk stable
+**Immediate priority**: Merge PR #347, deploy, run Lighthouse on idaromme.dk to verify LCP improvement
+**Context**: PR #347 adds /_next/image preload to eliminate 2.7s LCP load delay; before=7.1s LCP, expected after=3–4s
+**Reference docs**: SESSION_HANDOVER.md, PR #347, Issue #345
+**Ready state**: feat/issue-345-preload-next-image pushed, PR #347 open, 1220 tests passing, master clean
 
-**Expected scope**: Add /_next/image preload link to page.tsx, possibly projects/page.tsx; run Lighthouse to verify LCP improvement
+**Expected scope**: Merge + deploy + Lighthouse run; if LCP improved, close #345 and open next issue for JS render delay (3.3s)
 ```
 
 ---
@@ -100,7 +85,6 @@ Read CLAUDE.md to understand our workflow, then implement Issue #345 — preload
 ## 📚 Key Reference Documents
 
 - `SESSION_HANDOVER.md` — this file
-- `src/app/page.tsx` — add /_next/image preload here (server component)
-- `src/components/mobile/Gallery/MobileGalleryItem.tsx` — LCP element source
-- `src/components/server/FirstImage.tsx` — server-rendered image (not the LCP element)
-- `next.config.ts` — image config (webp only, deviceSizes, minimumCacheTTL)
+- `src/app/page.tsx` — modified (/_next/image preload, lines 104–143)
+- `src/app/__tests__/page.test.tsx` — new test file (9 tests)
+- `src/components/mobile/Gallery/MobileGalleryItem.tsx` — LCP element source (uses next/image → /_next/image)
