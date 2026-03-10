@@ -101,22 +101,26 @@ export default async function Home() {
   // Issue #51 Phase 1: Get first design for FirstImage component
   const firstDesign = designs[0]
 
-  // Generate preload URLs for LCP image using helper (webp - avif removed, Sanity 400s on ?fm=avif)
+  // Generate /_next/image preload URLs for the LCP element (MobileGalleryItem)
+  // Issue #345: Previous preload pointed to Sanity CDN URLs which don't match the LCP image URL.
+  // MobileGalleryItem uses next/image which proxies through /_next/image, so the browser
+  // must wait for JS hydration (~2.7s) to discover the image. Preloading /_next/image URLs
+  // here (SSR) lets the browser start fetching before any JS runs.
   const imageSource = firstDesign?.image || firstDesign?.images?.[0]?.asset
-  const preloadUrl = imageSource
-    ? getOptimizedImageUrl(imageSource, {
-        width: 640,
-        quality: 40,
-        format: 'webp',
-      })
+  // Match MobileGalleryItem: getOptimizedImageUrl(imageSource, { width: 800, quality: 80 })
+  const baseImageUrl = imageSource
+    ? getOptimizedImageUrl(imageSource, { width: 800, quality: 80 })
     : null
 
-  const preloadSrcSet = imageSource
-    ? [
-        `${getOptimizedImageUrl(imageSource, { width: 480, quality: 40, format: 'webp' })} 480w`,
-        `${getOptimizedImageUrl(imageSource, { width: 640, quality: 40, format: 'webp' })} 640w`,
-        `${getOptimizedImageUrl(imageSource, { width: 960, quality: 40, format: 'webp' })} 960w`,
-      ].join(', ')
+  // Breakpoints: 750w, 828w cover mobile DPR 1–2; 1080w, 1200w cover larger screens
+  // q=75 matches Next.js Image default quality
+  const nextImageSrcSet = baseImageUrl
+    ? [750, 828, 1080, 1200]
+        .map(
+          (w) =>
+            `/_next/image?url=${encodeURIComponent(baseImageUrl)}&w=${w}&q=75 ${w}w`
+        )
+        .join(', ')
     : null
 
   return (
@@ -125,20 +129,17 @@ export default async function Home() {
       <link rel="preconnect" href="https://cdn.sanity.io" />
       <link rel="dns-prefetch" href="https://cdn.sanity.io" />
 
-      {/* Issue #78: Preload LCP image for immediate browser discovery
-          Critical for Core Web Vitals - reduces Load Delay from 6.2s to <1s
-          IMPORTANT: imageSizes MUST match FirstImage.tsx exactly to avoid double download
-          Issue #41: Aligned sizes with FirstImage.tsx (max-width: 480px/768px) */}
-      {preloadUrl && (
+      {/* Issue #345: Preload /_next/image URL for LCP element (MobileGalleryItem)
+          MobileGalleryItem is 'use client' — without this, browser waits 2.7s for JS
+          hydration to discover the LCP image. Preloading /_next/image srcset here
+          (SSR HTML) lets the browser start fetching before any JavaScript executes. */}
+      {nextImageSrcSet && (
         <link
           rel="preload"
           as="image"
-          href={preloadUrl}
-          imageSrcSet={preloadSrcSet || undefined}
-          imageSizes="(max-width: 480px) 100vw, (max-width: 768px) 90vw, 640px"
-          type="image/webp"
+          imageSrcSet={nextImageSrcSet}
+          imageSizes="100vw"
           fetchPriority="high"
-          crossOrigin="anonymous"
         />
       )}
 
