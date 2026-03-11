@@ -33,10 +33,16 @@ jest.mock('@/utils/image-helpers', () => ({
   }),
 }))
 
+// Mock analytics
+jest.mock('@/utils/analytics', () => ({
+  UmamiEvents: {
+    viewProject: jest.fn(),
+  },
+}))
+
 describe('MobileGalleryItem', () => {
   let MobileGalleryItem: React.ComponentType<{
     design: TextileDesign
-    onNavigate?: () => void
   }>
 
   beforeAll(async () => {
@@ -108,7 +114,7 @@ describe('MobileGalleryItem', () => {
       expect(imageHelpers.getOptimizedImageUrl).toHaveBeenCalledWith(
         expect.any(Object),
         expect.objectContaining({
-          format: 'auto', // Changed from 'webp' to 'auto' for lockdown mode compatibility
+          format: 'auto', // Keep 'auto' to match preload URL in page.tsx
           quality: expect.any(Number),
         })
       )
@@ -142,7 +148,7 @@ describe('MobileGalleryItem', () => {
         <MobileGalleryItem design={mockSingleDesign} />
       )
 
-      // Link (a tag) now has ARIA attributes for Lockdown Mode compatibility
+      // Link (a tag) has ARIA attributes
       const link = container.querySelector('a')
       expect(link).toHaveAttribute('aria-label')
     })
@@ -159,30 +165,31 @@ describe('MobileGalleryItem', () => {
     })
 
     it('should have Enter key support for navigation', () => {
-      const onNavigate = jest.fn()
       const { container } = render(
-        <MobileGalleryItem design={mockSingleDesign} onNavigate={onNavigate} />
+        <MobileGalleryItem design={mockSingleDesign} />
       )
 
       // Link supports Enter key navigation natively
       const link = container.querySelector('a')
       if (link) {
         fireEvent.click(link) // Links respond to Enter via click
-        expect(onNavigate).toHaveBeenCalled()
+        // Verify analytics was tracked
+        const { UmamiEvents } = require('@/utils/analytics')
+        expect(UmamiEvents.viewProject).toHaveBeenCalled()
       }
     })
 
     it('should have Space key support for navigation', () => {
-      const onNavigate = jest.fn()
       const { container } = render(
-        <MobileGalleryItem design={mockSingleDesign} onNavigate={onNavigate} />
+        <MobileGalleryItem design={mockSingleDesign} />
       )
 
       // Links support keyboard navigation natively
       const link = container.querySelector('a')
       if (link) {
         fireEvent.click(link) // Space activates links via click
-        expect(onNavigate).toHaveBeenCalled()
+        const { UmamiEvents } = require('@/utils/analytics')
+        expect(UmamiEvents.viewProject).toHaveBeenCalled()
       }
     })
 
@@ -208,17 +215,19 @@ describe('MobileGalleryItem', () => {
   })
 
   describe('Touch Interactions', () => {
-    it('should handle touch/click events', () => {
-      const onNavigate = jest.fn()
+    it('should handle touch/click events and track analytics', () => {
       const { container } = render(
-        <MobileGalleryItem design={mockSingleDesign} onNavigate={onNavigate} />
+        <MobileGalleryItem design={mockSingleDesign} />
       )
 
-      // Click on Link element (Lockdown Mode compatible)
       const link = container.querySelector('a')
       if (link) {
         fireEvent.click(link)
-        expect(onNavigate).toHaveBeenCalled()
+        const { UmamiEvents } = require('@/utils/analytics')
+        expect(UmamiEvents.viewProject).toHaveBeenCalledWith(
+          mockSingleDesign.title,
+          mockSingleDesign.year
+        )
       }
     })
 

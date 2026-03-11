@@ -1,28 +1,9 @@
-// ABOUTME: Test suite for AdaptiveGallery component - device detection and dynamic loading
+// ABOUTME: Test suite for AdaptiveGallery component - CSS media query based rendering
 
 import React from 'react'
-import { render, screen, waitFor } from '@testing-library/react'
-import { useDeviceType } from '@/hooks/shared/useDeviceType'
+import { render, screen } from '@testing-library/react'
 import { mockDesigns } from '../../../../../tests/fixtures/designs'
 import { TextileDesign } from '@/types/textile'
-
-// Mock the hook before importing the component
-jest.mock('@/hooks/shared/useDeviceType')
-
-// Mock dynamic imports
-jest.mock('next/dynamic', () => ({
-  __esModule: true,
-  default: (importFn: () => Promise<{ default: React.ComponentType }>) => {
-    const Component = React.lazy(importFn)
-    const LazyComponent = (props: unknown) => (
-      <React.Suspense fallback={<div>Loading...</div>}>
-        <Component {...(props as Record<string, unknown>)} />
-      </React.Suspense>
-    )
-    LazyComponent.displayName = 'DynamicComponent'
-    return LazyComponent
-  },
-}))
 
 // Mock the gallery components
 jest.mock('@/components/desktop/Gallery/Gallery', () => ({
@@ -44,7 +25,6 @@ jest.mock('@/components/mobile/Gallery/MobileGallery', () => ({
 }))
 
 describe('AdaptiveGallery', () => {
-  // This will be imported after mocks are set up
   let AdaptiveGallery: React.ComponentType<{ designs: TextileDesign[] }>
 
   beforeAll(async () => {
@@ -57,119 +37,65 @@ describe('AdaptiveGallery', () => {
     jest.clearAllMocks()
   })
 
-  describe('Device Detection', () => {
-    it('should render desktop gallery when device type is desktop', async () => {
-      ;(useDeviceType as jest.Mock).mockReturnValue('desktop')
-
+  describe('SSR Rendering (CSS media query approach)', () => {
+    it('should render both mobile and desktop galleries in the DOM', () => {
       render(<AdaptiveGallery designs={mockDesigns} />)
 
-      await waitFor(() => {
-        expect(screen.getByTestId('desktop-gallery')).toBeInTheDocument()
-      })
-
-      expect(screen.queryByTestId('mobile-gallery')).not.toBeInTheDocument()
+      expect(screen.getByTestId('mobile-gallery')).toBeInTheDocument()
+      expect(screen.getByTestId('desktop-gallery')).toBeInTheDocument()
     })
 
-    it('should render mobile gallery when device type is mobile', async () => {
-      ;(useDeviceType as jest.Mock).mockReturnValue('mobile')
-
+    it('should pass designs to mobile gallery', () => {
       render(<AdaptiveGallery designs={mockDesigns} />)
 
-      await waitFor(() => {
-        expect(screen.getByTestId('mobile-gallery')).toBeInTheDocument()
-      })
-
-      expect(screen.queryByTestId('desktop-gallery')).not.toBeInTheDocument()
+      const mobileGallery = screen.getByTestId('mobile-gallery')
+      expect(mobileGallery).toHaveTextContent(`${mockDesigns.length} items`)
     })
 
-    it('should render mobile gallery when device type is tablet', async () => {
-      ;(useDeviceType as jest.Mock).mockReturnValue('tablet')
-
+    it('should pass designs to desktop gallery', () => {
       render(<AdaptiveGallery designs={mockDesigns} />)
 
-      await waitFor(() => {
-        expect(screen.getByTestId('mobile-gallery')).toBeInTheDocument()
-      })
+      const desktopGallery = screen.getByTestId('desktop-gallery')
+      expect(desktopGallery).toHaveTextContent(`${mockDesigns.length} items`)
+    })
 
-      expect(screen.queryByTestId('desktop-gallery')).not.toBeInTheDocument()
+    it('should handle empty designs array', () => {
+      render(<AdaptiveGallery designs={[]} />)
+
+      const mobileGallery = screen.getByTestId('mobile-gallery')
+      const desktopGallery = screen.getByTestId('desktop-gallery')
+      expect(mobileGallery).toHaveTextContent('0 items')
+      expect(desktopGallery).toHaveTextContent('0 items')
     })
   })
 
-  describe('Hydration Strategy', () => {
-    it('should show loading state during component loading', async () => {
-      ;(useDeviceType as jest.Mock).mockReturnValue('mobile')
-
+  describe('CSS visibility wrappers', () => {
+    it('should wrap mobile gallery in mobileOnly container', () => {
       const { container } = render(<AdaptiveGallery designs={mockDesigns} />)
 
-      // Either loading state is shown briefly, or component hydrates immediately
-      // Both are acceptable - we just verify no crash occurs
-      expect(container).toBeInTheDocument()
-
-      // Eventually should render the gallery
-      await waitFor(() => {
-        expect(
-          screen.queryByTestId('mobile-gallery') ||
-            screen.queryByTestId('desktop-gallery')
-        ).toBeInTheDocument()
-      })
+      const mobileGallery = screen.getByTestId('mobile-gallery')
+      // Mobile gallery should be inside a wrapper div (for CSS display control)
+      expect(mobileGallery.parentElement?.tagName).toBe('DIV')
     })
 
-    it('should handle SSR gracefully with default device type', async () => {
-      ;(useDeviceType as jest.Mock).mockReturnValue('desktop')
-
+    it('should wrap desktop gallery in desktopOnly container', () => {
       render(<AdaptiveGallery designs={mockDesigns} />)
 
-      // Should eventually render the correct component
-      await waitFor(() => {
-        expect(
-          screen.getByTestId('desktop-gallery') ||
-            screen.getByTestId('mobile-gallery')
-        ).toBeInTheDocument()
-      })
+      const desktopGallery = screen.getByTestId('desktop-gallery')
+      expect(desktopGallery.parentElement?.tagName).toBe('DIV')
     })
   })
 
   describe('Props Passing', () => {
-    it('should pass designs prop to desktop gallery', async () => {
-      ;(useDeviceType as jest.Mock).mockReturnValue('desktop')
-
+    it('should pass designs prop to both galleries', () => {
       render(<AdaptiveGallery designs={mockDesigns} />)
 
-      await waitFor(() => {
-        const gallery = screen.getByTestId('desktop-gallery')
-        expect(gallery).toHaveTextContent(`${mockDesigns.length} items`)
-      })
-    })
-
-    it('should pass designs prop to mobile gallery', async () => {
-      ;(useDeviceType as jest.Mock).mockReturnValue('mobile')
-
-      render(<AdaptiveGallery designs={mockDesigns} />)
-
-      await waitFor(() => {
-        const gallery = screen.getByTestId('mobile-gallery')
-        expect(gallery).toHaveTextContent(`${mockDesigns.length} items`)
-      })
-    })
-
-    it('should handle empty designs array', async () => {
-      ;(useDeviceType as jest.Mock).mockReturnValue('mobile')
-
-      render(<AdaptiveGallery designs={[]} />)
-
-      await waitFor(() => {
-        const gallery = screen.getByTestId('mobile-gallery')
-        expect(gallery).toHaveTextContent('0 items')
-      })
-    })
-  })
-
-  describe('Dynamic Import Optimization', () => {
-    it('should use dynamic imports for code splitting', async () => {
-      // This test verifies that next/dynamic is used
-      // The actual implementation should use dynamic imports
-      const nextDynamic = await import('next/dynamic')
-      expect(nextDynamic.default).toBeDefined()
+      expect(screen.getByTestId('mobile-gallery')).toHaveTextContent(
+        `${mockDesigns.length} items`
+      )
+      expect(screen.getByTestId('desktop-gallery')).toHaveTextContent(
+        `${mockDesigns.length} items`
+      )
     })
   })
 })
