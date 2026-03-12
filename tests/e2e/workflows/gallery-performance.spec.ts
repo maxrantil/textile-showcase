@@ -139,8 +139,10 @@ test.describe('Gallery Performance & Error Handling', () => {
       }
 
       // Gallery should eventually load
-      const gallery = page.locator('[data-testid="desktop-gallery"], [data-testid="mobile-gallery"]')
-      await expect(gallery).toBeVisible({ timeout: 10000 })
+      // Use viewport-aware selector — both galleries are in SSR HTML but only one is visible via CSS (Issue #348)
+      const isMobile = (page.viewportSize()?.width ?? 1920) < 768
+      const galleryTestId = isMobile ? 'mobile-gallery' : 'desktop-gallery'
+      await expect(page.locator(`[data-testid="${galleryTestId}"]`)).toBeVisible({ timeout: 10000 })
     })
   })
 })

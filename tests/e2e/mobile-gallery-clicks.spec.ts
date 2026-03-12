@@ -14,7 +14,8 @@ test.describe('Mobile Gallery Item Clicks - Issue #257', () => {
     await page.goto('/')
 
     // Wait for gallery to be fully loaded and hydrated
-    await page.waitForSelector('[data-testid="mobile-gallery"], [data-testid="desktop-gallery"]', {
+    // At 375px mobile-gallery is visible; wait for it specifically to avoid hidden desktop gallery
+    await page.waitForSelector('[data-testid="mobile-gallery"]', {
       state: 'visible',
       timeout: 10000
     })
@@ -33,8 +34,9 @@ test.describe('Mobile Gallery Item Clicks - Issue #257', () => {
     // Issue #257: FirstImage overlay was blocking clicks with z-index: 20
     await page.waitForTimeout(3000) // 2s animation + 1s buffer
 
-    // Get the first gallery item
-    const firstItem = page.locator('[data-testid="gallery-item-0"]')
+    // Get the first gallery item scoped to mobile gallery
+    // Both galleries are in SSR HTML; CSS hides desktop at 375px — scope prevents strict mode violation
+    const firstItem = page.locator('[data-testid="mobile-gallery"] [data-testid="gallery-item-0"]')
     await firstItem.waitFor({ state: 'visible' })
 
     // Verify the item is actually clickable (not blocked by overlay)
@@ -58,16 +60,16 @@ test.describe('Mobile Gallery Item Clicks - Issue #257', () => {
     // Arrange: Navigate to homepage
     await page.goto('/')
 
-    // Wait for mobile gallery
-    await page.waitForSelector('[data-testid="mobile-gallery"], [data-testid="desktop-gallery"]', {
+    // Wait for mobile gallery (at 375px mobile-gallery is visible)
+    await page.waitForSelector('[data-testid="mobile-gallery"]', {
       state: 'visible'
     })
 
     // Wait for hydration complete
     await page.waitForTimeout(3000)
 
-    // Scroll to second item to ensure it's in viewport
-    const secondItem = page.locator('[data-testid="gallery-item-1"]')
+    // Scroll to second item — scoped to mobile gallery to avoid strict mode violation
+    const secondItem = page.locator('[data-testid="mobile-gallery"] [data-testid="gallery-item-1"]')
     await secondItem.scrollIntoViewIfNeeded()
     await secondItem.waitFor({ state: 'visible' })
 
@@ -96,8 +98,8 @@ test.describe('Mobile Gallery Item Clicks - Issue #257', () => {
     const firstImageExists = await firstImage.count() > 0
 
     if (firstImageExists) {
-      // Wait for mobile gallery to appear
-      await page.waitForSelector('[data-testid="mobile-gallery"], [data-testid="desktop-gallery"]', {
+      // Wait for mobile gallery to appear (at 375px mobile-gallery is visible)
+      await page.waitForSelector('[data-testid="mobile-gallery"]', {
         state: 'visible'
       })
 
@@ -120,8 +122,8 @@ test.describe('Mobile Gallery Item Clicks - Issue #257', () => {
       expect(isVisible).toBe(false)
     }
 
-    // Gallery items should be clickable
-    const firstItem = page.locator('[data-testid="gallery-item-0"]')
+    // Gallery items should be clickable — scoped to mobile gallery
+    const firstItem = page.locator('[data-testid="mobile-gallery"] [data-testid="gallery-item-0"]')
     await expect(firstItem).toBeVisible()
 
     // Should be able to click through to project
@@ -132,11 +134,11 @@ test.describe('Mobile Gallery Item Clicks - Issue #257', () => {
   test('mobile gallery items have adequate touch targets', async ({ page }) => {
     // Arrange
     await page.goto('/')
-    await page.waitForSelector('[data-testid="mobile-gallery"], [data-testid="desktop-gallery"]')
+    await page.waitForSelector('[data-testid="mobile-gallery"]')
     await page.waitForTimeout(3000) // Wait for FirstImage fade
 
-    // Get first gallery item
-    const firstItem = page.locator('[data-testid="gallery-item-0"]')
+    // Get first gallery item scoped to mobile gallery
+    const firstItem = page.locator('[data-testid="mobile-gallery"] [data-testid="gallery-item-0"]')
     await firstItem.waitFor({ state: 'visible' })
 
     // Get bounding box
@@ -164,11 +166,11 @@ test.describe('Mobile Gallery Item Clicks - Issue #257', () => {
 
       // Navigate
       await page.goto('/')
-      await page.waitForSelector('[data-testid="mobile-gallery"], [data-testid="desktop-gallery"]')
+      await page.waitForSelector('[data-testid="mobile-gallery"]')
       await page.waitForTimeout(3000)
 
-      // Try clicking first item
-      const firstItem = page.locator('[data-testid="gallery-item-0"]')
+      // Try clicking first item — scoped to mobile gallery to avoid strict mode violation
+      const firstItem = page.locator('[data-testid="mobile-gallery"] [data-testid="gallery-item-0"]')
       await firstItem.waitFor({ state: 'visible' })
 
       const initialUrl = page.url()

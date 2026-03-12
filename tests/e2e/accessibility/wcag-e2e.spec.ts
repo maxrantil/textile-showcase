@@ -166,8 +166,9 @@ test.describe('WCAG 2.1 AA E2E Accessibility Tests', () => {
       const gallerySelector = await getGallerySelector(page)
       await page.waitForSelector(gallerySelector)
 
-      // Test keyboard navigation
-      const firstItem = page.locator('[data-testid="gallery-item-0"]')
+      // Test keyboard navigation — scoped to visible gallery to avoid strict mode violation
+      // Both galleries are in the SSR HTML; CSS media queries control visibility (Issue #348)
+      const firstItem = page.locator(`${gallerySelector} [data-testid="gallery-item-0"]`)
       await firstItem.focus()
 
       // Check focus is on first item

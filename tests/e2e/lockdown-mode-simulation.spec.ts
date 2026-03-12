@@ -1,7 +1,7 @@
 // ABOUTME: E2E regression tests for Issue #259 - Lockdown Mode gallery compatibility
 // Simulates JavaScript-disabled environments to catch Lockdown Mode regressions
 
-import { test, expect } from '@playwright/test'
+import { test, expect, Page } from '@playwright/test'
 import { setupTestPage } from './helpers/test-setup'
 
 // Gallery selector that works regardless of which gallery renders.
@@ -9,6 +9,19 @@ import { setupTestPage } from './helpers/test-setup'
 // gallery component mounts. Both Mobile and Desktop galleries use <Link>/<a> with
 // href="/project/..." — the lockdown mode regression guard applies to both.
 const GALLERY_SELECTOR = '[data-testid="mobile-gallery"], [data-testid="desktop-gallery"]'
+
+// Helper function: Get gallery selector based on viewport size
+// Mobile (<768px) uses mobile-gallery, Desktop (>=768px) uses desktop-gallery
+// Both galleries are in the SSR HTML simultaneously; CSS media queries control visibility (Issue #348)
+async function getGallerySelector(page: Page): Promise<string> {
+  const viewport = page.viewportSize()
+  if (!viewport) {
+    throw new Error('Viewport size not set')
+  }
+  return viewport.width < 768
+    ? '[data-testid="mobile-gallery"]'
+    : '[data-testid="desktop-gallery"]'
+}
 
 test.describe('Lockdown Mode Simulation - Issue #259 Regression', () => {
   test.beforeEach(async ({ page }) => {
@@ -25,8 +38,10 @@ test.describe('Lockdown Mode Simulation - Issue #259 Regression', () => {
       // Wait for gallery to load (works for mobile or desktop gallery depending on UA)
       await page.waitForSelector(GALLERY_SELECTOR, { state: 'visible' })
 
-      // Get all gallery item links (both galleries use <Link> → <a href="/project/...">)
-      const galleryLinks = page.locator('a[href^="/project/"]')
+      // Get all gallery item links scoped to the visible gallery
+      // At 375px the mobile gallery is visible; scope to it to avoid picking hidden desktop links
+      const gallerySelector = await getGallerySelector(page)
+      const galleryLinks = page.locator(gallerySelector).locator('a[href^="/project/"]')
 
       // Verify we have gallery links (not divs/articles with onClick)
       const linkCount = await galleryLinks.count()
@@ -74,8 +89,9 @@ test.describe('Lockdown Mode Simulation - Issue #259 Regression', () => {
       await page.goto('/')
       await page.waitForSelector(GALLERY_SELECTOR, { state: 'visible' })
 
-      // Get first gallery link (both galleries use <a href="/project/...">)
-      const firstLink = page.locator('a[href^="/project/"]').first()
+      // Get first gallery link scoped to visible gallery (avoids hidden desktop links)
+      const gallerySelector = await getGallerySelector(page)
+      const firstLink = page.locator(gallerySelector).locator('a[href^="/project/"]').first()
 
       // Get the href attribute (this is what makes Lockdown Mode work)
       const href = await firstLink.getAttribute('href')
@@ -97,8 +113,10 @@ test.describe('Lockdown Mode Simulation - Issue #259 Regression', () => {
       // Wait for gallery to load (works for mobile or desktop gallery depending on UA)
       await page.waitForSelector(GALLERY_SELECTOR, { state: 'visible', timeout: 10000 })
 
-      // Get all gallery item links (both galleries use <Link> → <a href="/project/...">)
-      const galleryLinks = page.locator('a[href^="/project/"]')
+      // Get all gallery item links scoped to the visible gallery
+      // At desktop viewport the desktop gallery is visible; scope to it to avoid hidden mobile links
+      const gallerySelector = await getGallerySelector(page)
+      const galleryLinks = page.locator(gallerySelector).locator('a[href^="/project/"]')
 
       // Verify we have gallery links (not divs with onClick)
       const linkCount = await galleryLinks.count()
@@ -145,8 +163,9 @@ test.describe('Lockdown Mode Simulation - Issue #259 Regression', () => {
       await page.goto('/')
       await page.waitForSelector(GALLERY_SELECTOR, { state: 'visible' })
 
-      // Get first gallery link (both galleries use <a href="/project/...">)
-      const firstLink = page.locator('a[href^="/project/"]').first()
+      // Get first gallery link scoped to visible gallery (avoids hidden mobile links)
+      const gallerySelector = await getGallerySelector(page)
+      const firstLink = page.locator(gallerySelector).locator('a[href^="/project/"]').first()
 
       // Get the href attribute (this is what makes strict browser security work)
       const href = await firstLink.getAttribute('href')
@@ -167,8 +186,9 @@ test.describe('Lockdown Mode Simulation - Issue #259 Regression', () => {
       await page.goto('/')
       await page.waitForSelector(GALLERY_SELECTOR, { state: 'visible' })
 
-      // Verify gallery project links exist as <a> tags at this viewport
-      const mobileViewLinks = page.locator('a[href^="/project/"]')
+      // Verify gallery project links exist as <a> tags scoped to visible gallery at this viewport
+      const mobileGallerySelector = await getGallerySelector(page)
+      const mobileViewLinks = page.locator(mobileGallerySelector).locator('a[href^="/project/"]')
       const mobileViewLinkCount = await mobileViewLinks.count()
       expect(mobileViewLinkCount).toBeGreaterThan(0)
 
@@ -180,8 +200,9 @@ test.describe('Lockdown Mode Simulation - Issue #259 Regression', () => {
       await page.goto('/')
       await page.waitForSelector(GALLERY_SELECTOR, { state: 'visible' })
 
-      // Verify gallery project links exist as <a> tags at this viewport
-      const desktopViewLinks = page.locator('a[href^="/project/"]')
+      // Verify gallery project links exist as <a> tags scoped to visible gallery at this viewport
+      const desktopGallerySelector = await getGallerySelector(page)
+      const desktopViewLinks = page.locator(desktopGallerySelector).locator('a[href^="/project/"]')
       const desktopViewLinkCount = await desktopViewLinks.count()
       expect(desktopViewLinkCount).toBeGreaterThan(0)
 
@@ -228,15 +249,19 @@ test.describe('Lockdown Mode Simulation - Issue #259 Regression', () => {
       const linkCount = await allLinks.count()
 
       // Verify gallery items contribute to discoverable links
+      // Count links across both galleries (both present in SSR HTML for SEO/crawlers)
       const galleryLinks = page.locator('a[href^="/project/"]')
       const galleryLinkCount = await galleryLinks.count()
 
       expect(galleryLinkCount).toBeGreaterThan(0)
       expect(galleryLinkCount).toBeLessThanOrEqual(linkCount)
 
-      // Verify links have valid href attributes (good for SEO and crawlers)
-      for (let i = 0; i < Math.min(3, galleryLinkCount); i++) {
-        const link = galleryLinks.nth(i)
+      // Verify links in the visible gallery have valid href attributes (good for SEO and crawlers)
+      const gallerySelector = await getGallerySelector(page)
+      const visibleGalleryLinks = page.locator(gallerySelector).locator('a[href^="/project/"]')
+      const visibleLinkCount = await visibleGalleryLinks.count()
+      for (let i = 0; i < Math.min(3, visibleLinkCount); i++) {
+        const link = visibleGalleryLinks.nth(i)
         const href = await link.getAttribute('href')
         expect(href).toMatch(/^\/project\/[a-zA-Z0-9-]+$/)
       }

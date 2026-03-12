@@ -291,8 +291,12 @@ describe('OptimizedImage Integration Tests', () => {
     it('handles gallery navigation with keyboard', async () => {
       render(<Gallery designs={realTestDesigns} />)
 
-      // Press Enter key to navigate to first project
-      fireEvent.keyDown(document, { key: 'Enter' })
+      // Press Enter key on an element inside the scroll container.
+      // Gallery.tsx checks scrollContainerRef.current?.contains(e.target) before
+      // handling Enter/Space, so the event must originate from within the container.
+      const scrollContainer = document.querySelector('[data-scroll-container="true"]')
+      expect(scrollContainer).toBeInTheDocument()
+      fireEvent.keyDown(scrollContainer!, { key: 'Enter' })
 
       await waitFor(() => {
         expect(mockRouterPush).toHaveBeenCalledWith(

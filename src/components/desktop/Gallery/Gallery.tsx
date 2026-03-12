@@ -355,7 +355,10 @@ export default function Gallery({ designs }: GalleryProps) {
         }, 600)
       }
       // Enter or Space to open project
+      // Only intercept when focus is within the gallery scroll container
+      // Prevents interference with skip navigation and other interactive elements
       else if ((e.key === 'Enter' || e.key === ' ') && designs[currentIndex]) {
+        if (!scrollContainerRef.current?.contains(target)) return
         e.preventDefault()
         // Save current scroll position before navigating
         handleNavigate()
