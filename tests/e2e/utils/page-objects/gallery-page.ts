@@ -3,15 +3,11 @@ import { Page, Locator, expect } from '@playwright/test'
 
 export class GalleryPage {
   readonly page: Page
-  readonly galleryItems: Locator
-  readonly activeItem: Locator
   readonly navigationArrows: Locator
   readonly loadingSpinner: Locator
 
   constructor(page: Page) {
     this.page = page
-    this.galleryItems = page.locator('[data-testid^="gallery-item-"]')
-    this.activeItem = page.locator('[data-active="true"]')
     this.navigationArrows = page.locator('[data-testid="navigation-arrows"]')
     this.loadingSpinner = page.locator('[data-testid="loading-spinner"]')
   }
@@ -24,6 +20,16 @@ export class GalleryPage {
       ? '[data-testid="mobile-gallery"]'
       : '[data-testid="desktop-gallery"]'
     return this.page.locator(selector)
+  }
+
+  // Scoped to visible gallery so first() is never a hidden element from the other gallery
+  get galleryItems(): Locator {
+    return this.galleryContainer.locator('[data-testid^="gallery-item-"]')
+  }
+
+  // Scoped to visible gallery to avoid strict mode violation (both galleries have data-active items)
+  get activeItem(): Locator {
+    return this.galleryContainer.locator('[data-active="true"]')
   }
 
   async goto() {
