@@ -198,7 +198,7 @@ test.describe('Lockdown Mode Simulation - Issue #259 Regression', () => {
       // Test at desktop-sized viewport
       await page.setViewportSize({ width: 1920, height: 1080 })
       await page.goto('/')
-      await page.waitForSelector(GALLERY_SELECTOR, { state: 'visible' })
+      await page.waitForSelector(await getGallerySelector(page), { state: 'visible' })
 
       // Verify gallery project links exist as <a> tags scoped to visible gallery at this viewport
       const desktopGallerySelector = await getGallerySelector(page)

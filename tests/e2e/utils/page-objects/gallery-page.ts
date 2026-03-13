@@ -3,7 +3,6 @@ import { Page, Locator, expect } from '@playwright/test'
 
 export class GalleryPage {
   readonly page: Page
-  readonly galleryContainer: Locator
   readonly galleryItems: Locator
   readonly activeItem: Locator
   readonly navigationArrows: Locator
@@ -11,12 +10,20 @@ export class GalleryPage {
 
   constructor(page: Page) {
     this.page = page
-    // Accept either desktop or mobile gallery container
-    this.galleryContainer = page.locator('[data-testid="desktop-gallery"], [data-testid="mobile-gallery"]')
     this.galleryItems = page.locator('[data-testid^="gallery-item-"]')
     this.activeItem = page.locator('[data-active="true"]')
     this.navigationArrows = page.locator('[data-testid="navigation-arrows"]')
     this.loadingSpinner = page.locator('[data-testid="loading-spinner"]')
+  }
+
+  // Viewport-aware getter: returns the visible gallery at the current viewport size
+  // Both galleries are in the SSR DOM simultaneously; CSS media queries control visibility (Issue #348)
+  get galleryContainer(): Locator {
+    const viewport = this.page.viewportSize()
+    const selector = !viewport || viewport.width < 768
+      ? '[data-testid="mobile-gallery"]'
+      : '[data-testid="desktop-gallery"]'
+    return this.page.locator(selector)
   }
 
   async goto() {

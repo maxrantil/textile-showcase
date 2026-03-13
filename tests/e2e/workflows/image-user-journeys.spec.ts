@@ -115,10 +115,10 @@ test.describe('OptimizedImage User Journeys', () => {
       const skeleton = page.locator('[data-testid="gallery-loading-skeleton"]')
       await skeleton.waitFor({ state: 'hidden', timeout: 10000 })
 
-      // Verify gallery is present (viewport-aware selector)
-      const gallery = page.locator(
-        '[data-testid="desktop-gallery"], [data-testid="mobile-gallery"], .desktop-gallery, .mobile-gallery'
-      )
+      // Verify gallery is present (viewport-aware: both galleries are in SSR DOM, CSS controls visibility)
+      const vp = page.viewportSize()
+      const galleryTestId = !vp || vp.width < 768 ? 'mobile-gallery' : 'desktop-gallery'
+      const gallery = page.locator(`[data-testid="${galleryTestId}"]`)
       await expect(gallery).toBeVisible({ timeout: 5000 })
 
       // Wait for gallery items to be visible and clickable (viewport-aware selector)
