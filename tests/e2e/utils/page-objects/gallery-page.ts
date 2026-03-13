@@ -63,12 +63,18 @@ export class GalleryPage {
     // Get the current active item's index before navigation
     const initialIndex = await this.getActiveItemIndex()
 
+    // Determine which gallery is visible to scope the active-item check
+    const vp = this.page.viewportSize()
+    const galleryTestId = !vp || vp.width < 768 ? 'mobile-gallery' : 'desktop-gallery'
+
     await this.page.keyboard.press('ArrowRight')
 
-    // Wait for the active item index to actually change
+    // Wait for the active item index to actually change in the visible gallery
     await this.page.waitForFunction(
-      (expectedNewIndex) => {
-        const activeElement = document.querySelector('[data-active="true"]')
+      ({ expectedNewIndex, gallery }) => {
+        const activeElement = document.querySelector(
+          `[data-testid="${gallery}"] [data-active="true"]`
+        )
         if (!activeElement) return false
 
         const testId = activeElement.getAttribute('data-testid')
@@ -77,7 +83,7 @@ export class GalleryPage {
         const currentIndex = parseInt(testId.replace('gallery-item-', ''), 10)
         return currentIndex === expectedNewIndex
       },
-      initialIndex + 1,
+      { expectedNewIndex: initialIndex + 1, gallery: galleryTestId },
       { timeout: 2000 }
     )
 
@@ -89,12 +95,18 @@ export class GalleryPage {
     // Get the current active item's index before navigation
     const initialIndex = await this.getActiveItemIndex()
 
+    // Determine which gallery is visible to scope the active-item check
+    const vp = this.page.viewportSize()
+    const galleryTestId = !vp || vp.width < 768 ? 'mobile-gallery' : 'desktop-gallery'
+
     await this.page.keyboard.press('ArrowLeft')
 
-    // Wait for the active item index to actually change
+    // Wait for the active item index to actually change in the visible gallery
     await this.page.waitForFunction(
-      (expectedNewIndex) => {
-        const activeElement = document.querySelector('[data-active="true"]')
+      ({ expectedNewIndex, gallery }) => {
+        const activeElement = document.querySelector(
+          `[data-testid="${gallery}"] [data-active="true"]`
+        )
         if (!activeElement) return false
 
         const testId = activeElement.getAttribute('data-testid')
@@ -103,7 +115,7 @@ export class GalleryPage {
         const currentIndex = parseInt(testId.replace('gallery-item-', ''), 10)
         return currentIndex === expectedNewIndex
       },
-      initialIndex - 1,
+      { expectedNewIndex: initialIndex - 1, gallery: galleryTestId },
       { timeout: 2000 }
     )
 
@@ -160,7 +172,8 @@ export class GalleryPage {
   }
 
   async getActiveItemIndex(): Promise<number> {
-    const activeItems = await this.page.locator('[data-active="true"]').all()
+    // Use viewport-aware activeItem getter to avoid matching hidden gallery's active items
+    const activeItems = await this.activeItem.all()
     if (activeItems.length === 0) return -1
 
     // Find index of active item within all gallery items

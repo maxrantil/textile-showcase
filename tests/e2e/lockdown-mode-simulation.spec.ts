@@ -110,8 +110,8 @@ test.describe('Lockdown Mode Simulation - Issue #259 Regression', () => {
       // Navigate to homepage
       await page.goto('/')
 
-      // Wait for gallery to load (works for mobile or desktop gallery depending on UA)
-      await page.waitForSelector(GALLERY_SELECTOR, { state: 'visible', timeout: 10000 })
+      // Wait for gallery to load (viewport-aware: avoids waiting on hidden gallery)
+      await page.waitForSelector(await getGallerySelector(page), { state: 'visible', timeout: 10000 })
 
       // Get all gallery item links scoped to the visible gallery
       // At desktop viewport the desktop gallery is visible; scope to it to avoid hidden mobile links
@@ -149,7 +149,7 @@ test.describe('Lockdown Mode Simulation - Issue #259 Regression', () => {
 
     test('REGRESSION: Desktop gallery must not use onClick on divs', async ({ page }) => {
       await page.goto('/')
-      await page.waitForSelector(GALLERY_SELECTOR, { state: 'visible' })
+      await page.waitForSelector(await getGallerySelector(page), { state: 'visible' })
 
       // Check specifically for gallery items (data-testid starts with "gallery-item-")
       // Navigation arrows are buttons, but gallery items should not be divs with role="button"
@@ -161,7 +161,7 @@ test.describe('Lockdown Mode Simulation - Issue #259 Regression', () => {
 
     test('REGRESSION: Desktop gallery links must work without JavaScript execution', async ({ page }) => {
       await page.goto('/')
-      await page.waitForSelector(GALLERY_SELECTOR, { state: 'visible' })
+      await page.waitForSelector(await getGallerySelector(page), { state: 'visible' })
 
       // Get first gallery link scoped to visible gallery (avoids hidden mobile links)
       const gallerySelector = await getGallerySelector(page)
@@ -214,7 +214,7 @@ test.describe('Lockdown Mode Simulation - Issue #259 Regression', () => {
   test.describe('Accessibility - Keyboard Navigation', () => {
     test('REGRESSION: Gallery links must be keyboard accessible without explicit tabIndex', async ({ page }) => {
       await page.goto('/')
-      await page.waitForSelector(GALLERY_SELECTOR, { state: 'visible' })
+      await page.waitForSelector(await getGallerySelector(page), { state: 'visible' })
 
       // Links are naturally keyboard accessible
       // Focus first gallery link using keyboard (Tab key)
@@ -242,7 +242,7 @@ test.describe('Lockdown Mode Simulation - Issue #259 Regression', () => {
   test.describe('Lighthouse Performance - Link Usage', () => {
     test('REGRESSION: Gallery should use proper <a> tags for SEO and crawlability', async ({ page }) => {
       await page.goto('/')
-      await page.waitForSelector(GALLERY_SELECTOR, { state: 'visible' })
+      await page.waitForSelector(await getGallerySelector(page), { state: 'visible' })
 
       // Get all links on the page
       const allLinks = page.locator('a[href]')

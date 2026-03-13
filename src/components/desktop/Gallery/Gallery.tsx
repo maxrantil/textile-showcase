@@ -236,10 +236,11 @@ export default function Gallery({ designs }: GalleryProps) {
               const focusIndex = parseInt(savedFocusIndex, 10)
 
               // Additional delay to ensure DOM is ready
+              // Scope to scrollContainerRef to avoid focusing hidden mobile gallery items (Issue #348)
               setTimeout(() => {
-                const galleryItem = document.querySelector(
+                const galleryItem = scrollContainerRef.current?.querySelector(
                   `[data-testid="gallery-item-${focusIndex}"]`
-                ) as HTMLElement
+                ) as HTMLElement | null
 
                 if (galleryItem) {
                   galleryItem.focus()
@@ -257,10 +258,11 @@ export default function Gallery({ designs }: GalleryProps) {
           if (savedFocusIndex !== null && pathname === '/') {
             const focusIndex = parseInt(savedFocusIndex, 10)
 
+            // Scope to scrollContainerRef to avoid focusing hidden mobile gallery items (Issue #348)
             setTimeout(() => {
-              const galleryItem = document.querySelector(
+              const galleryItem = scrollContainerRef.current?.querySelector(
                 `[data-testid="gallery-item-${focusIndex}"]`
-              ) as HTMLElement
+              ) as HTMLElement | null
 
               if (galleryItem) {
                 galleryItem.focus()
@@ -315,10 +317,11 @@ export default function Gallery({ designs }: GalleryProps) {
 
         // Move focus to newly centered item after scroll animation completes
         // Delay matches scroll animation duration (600ms from line 182-184)
+        // Scope to scrollContainerRef to avoid focusing hidden mobile gallery items (Issue #348)
         focusTimeoutRef.current = setTimeout(() => {
-          const newItem = document.querySelector(
+          const newItem = scrollContainerRef.current?.querySelector(
             `[data-testid="gallery-item-${newIndex}"]`
-          ) as HTMLElement
+          ) as HTMLElement | null
 
           if (newItem) {
             // Use preventScroll to avoid triggering additional scroll
@@ -341,10 +344,11 @@ export default function Gallery({ designs }: GalleryProps) {
 
         // Move focus to newly centered item after scroll animation completes
         // Delay matches scroll animation duration (600ms from line 182-184)
+        // Scope to scrollContainerRef to avoid focusing hidden mobile gallery items (Issue #348)
         focusTimeoutRef.current = setTimeout(() => {
-          const newItem = document.querySelector(
+          const newItem = scrollContainerRef.current?.querySelector(
             `[data-testid="gallery-item-${newIndex}"]`
-          ) as HTMLElement
+          ) as HTMLElement | null
 
           if (newItem) {
             // Use preventScroll to avoid triggering additional scroll
