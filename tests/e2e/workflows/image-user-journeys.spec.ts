@@ -29,16 +29,14 @@ test.describe('OptimizedImage User Journeys', () => {
       await page.waitForLoadState('networkidle')
 
       // Issue #132 Phase 4: Check for gallery images specifically, not FirstImage
-      // FirstImage is hidden after 300ms minimum display time, so check gallery instead
-      const galleryContainer = page.locator(
-        '[data-testid="desktop-gallery"], [data-testid="mobile-gallery"]'
-      ).first()
+      // Both galleries are in SSR DOM (Issue #348); use viewport-aware selector
+      const vp1 = page.viewportSize()
+      const galleryTestId1 = !vp1 || vp1.width < 768 ? 'mobile-gallery' : 'desktop-gallery'
+      const galleryContainer = page.locator(`[data-testid="${galleryTestId1}"]`)
       await expect(galleryContainer).toBeVisible({ timeout: 3000 })
 
-      // Find gallery images (not FirstImage which is hidden during hydration)
-      const galleryImages = page.locator(
-        '[data-testid="gallery-item"] img, .desktop-gallery-item img, .mobile-gallery-item img'
-      )
+      // Find gallery images scoped to visible gallery
+      const galleryImages = galleryContainer.locator('img')
       const galleryImageCount = await galleryImages.count()
       expect(galleryImageCount).toBeGreaterThan(0)
 
@@ -115,14 +113,14 @@ test.describe('OptimizedImage User Journeys', () => {
       const skeleton = page.locator('[data-testid="gallery-loading-skeleton"]')
       await skeleton.waitFor({ state: 'hidden', timeout: 10000 })
 
-      // Verify gallery is present (viewport-aware selector)
-      const gallery = page.locator(
-        '[data-testid="desktop-gallery"], [data-testid="mobile-gallery"], .desktop-gallery, .mobile-gallery'
-      )
+      // Verify gallery is present (viewport-aware: both galleries are in SSR DOM, CSS controls visibility)
+      const vp = page.viewportSize()
+      const galleryTestId = !vp || vp.width < 768 ? 'mobile-gallery' : 'desktop-gallery'
+      const gallery = page.locator(`[data-testid="${galleryTestId}"]`)
       await expect(gallery).toBeVisible({ timeout: 5000 })
 
-      // Wait for gallery items to be visible and clickable (viewport-aware selector)
-      const galleryItems = page.locator('.desktop-gallery-item, .mobile-gallery-item')
+      // Wait for gallery items to be visible and clickable (scoped to visible gallery)
+      const galleryItems = gallery.locator('[data-testid^="gallery-item-"]')
       await expect(galleryItems.first()).toBeVisible({ timeout: 5000 })
 
       // Get initial URL
@@ -242,9 +240,11 @@ test.describe('OptimizedImage User Journeys', () => {
       await expect(skeleton).toBeHidden({ timeout: 30000 })
 
       // Phase 2: Verify Gallery images load correctly on slow 3G
-      // This is the core test for Issue #225 - ensuring Gallery works on slow networks
+      // Scope to visible gallery (both galleries in SSR DOM after Issue #348)
+      const vp4 = page.viewportSize()
+      const galleryTestId4 = !vp4 || vp4.width < 768 ? 'mobile-gallery' : 'desktop-gallery'
       const galleryImages = page.locator(
-        '[data-testid^="gallery-item"] img'
+        `[data-testid="${galleryTestId4}"] [data-testid^="gallery-item"] img`
       )
       await expect(galleryImages.first()).toBeVisible({ timeout: 30000 })
 

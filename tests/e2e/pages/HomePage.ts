@@ -8,15 +8,21 @@ import { Page, Locator } from '@playwright/test'
 export class HomePage {
   readonly page: Page
   readonly header: Locator
-  readonly projectCards: Locator
-  readonly firstProject: Locator
 
   constructor(page: Page) {
     this.page = page
     this.header = page.locator('header')
-    // Gallery items use data-testid="gallery-item-0", "gallery-item-1", etc.
-    this.projectCards = page.locator('[data-testid^="gallery-item-"]')
-    this.firstProject = this.projectCards.first()
+  }
+
+  // Viewport-aware: scoped to visible gallery (both galleries in SSR DOM after Issue #348)
+  get projectCards(): Locator {
+    const viewport = this.page.viewportSize()
+    const galleryTestId = !viewport || viewport.width < 768 ? 'mobile-gallery' : 'desktop-gallery'
+    return this.page.locator(`[data-testid="${galleryTestId}"] [data-testid^="gallery-item-"]`)
+  }
+
+  get firstProject(): Locator {
+    return this.projectCards.first()
   }
 
   /**

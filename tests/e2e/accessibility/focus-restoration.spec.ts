@@ -1,7 +1,20 @@
 // ABOUTME: E2E tests for gallery focus restoration when navigating back from project pages
 
-import { test, expect } from '@playwright/test'
+import { test, expect, Page } from '@playwright/test'
 import { setupTestPage } from '../helpers/test-setup'
+
+// Helper function: Get gallery selector based on viewport size
+// Mobile (<768px) uses mobile-gallery, Desktop (>=768px) uses desktop-gallery
+// Both galleries are in the SSR HTML simultaneously; CSS media queries control visibility
+async function getGallerySelector(page: Page): Promise<string> {
+  const viewport = page.viewportSize()
+  if (!viewport) {
+    throw new Error('Viewport size not set')
+  }
+  return viewport.width < 768
+    ? '[data-testid="mobile-gallery"]'
+    : '[data-testid="desktop-gallery"]'
+}
 
 test.describe('Gallery Focus Restoration - WCAG 2.4.3', () => {
   test.beforeEach(async ({ page }) => {
@@ -13,8 +26,9 @@ test.describe('Gallery Focus Restoration - WCAG 2.4.3', () => {
     // Navigate to homepage
     await page.goto('/')
 
-    // Wait for gallery to be visible
-    await page.waitForSelector('[data-testid="desktop-gallery"], [data-testid="mobile-gallery"]', {
+    // Wait for the visible gallery (viewport-aware: avoids hidden gallery timeout)
+    const gallerySelector = await getGallerySelector(page)
+    await page.waitForSelector(gallerySelector, {
       state: 'visible',
       timeout: 10000
     })
@@ -22,8 +36,8 @@ test.describe('Gallery Focus Restoration - WCAG 2.4.3', () => {
     // Wait for gallery to fully load (skeleton to disappear)
     await page.waitForSelector('[data-testid="gallery-loading-skeleton"]', { state: 'detached', timeout: 10000 })
 
-    // Click on item 3 (index 2) to focus it
-    const item3 = page.locator('[data-testid="gallery-item-2"]')
+    // Click on item 3 (index 2) — scoped to visible gallery to avoid strict mode violation
+    const item3 = page.locator(`${gallerySelector} [data-testid="gallery-item-2"]`)
     await item3.click()
 
     // Wait for navigation to project page
@@ -36,7 +50,7 @@ test.describe('Gallery Focus Restoration - WCAG 2.4.3', () => {
     await page.waitForURL('/', { timeout: 10000 })
 
     // Wait for gallery to fully re-render (important for focus restoration to complete)
-    await page.waitForSelector('[data-testid="desktop-gallery"], [data-testid="mobile-gallery"]', {
+    await page.waitForSelector(gallerySelector, {
       state: 'visible',
       timeout: 10000
     })
@@ -59,8 +73,9 @@ test.describe('Gallery Focus Restoration - WCAG 2.4.3', () => {
     // Navigate to homepage
     await page.goto('/')
 
-    // Wait for gallery to be visible
-    await page.waitForSelector('[data-testid="desktop-gallery"], [data-testid="mobile-gallery"]', {
+    // Wait for the visible gallery (viewport-aware: avoids hidden gallery timeout)
+    const gallerySelector = await getGallerySelector(page)
+    await page.waitForSelector(gallerySelector, {
       state: 'visible',
       timeout: 10000
     })
@@ -68,8 +83,8 @@ test.describe('Gallery Focus Restoration - WCAG 2.4.3', () => {
     // Wait for gallery to fully load (skeleton to disappear)
     await page.waitForSelector('[data-testid="gallery-loading-skeleton"]', { state: 'detached', timeout: 10000 })
 
-    // Click on item 4 (index 3) to focus it
-    const item4 = page.locator('[data-testid="gallery-item-3"]')
+    // Click on item 4 (index 3) — scoped to visible gallery to avoid strict mode violation
+    const item4 = page.locator(`${gallerySelector} [data-testid="gallery-item-3"]`)
     await item4.click()
 
     // Wait for navigation to project page
@@ -82,7 +97,7 @@ test.describe('Gallery Focus Restoration - WCAG 2.4.3', () => {
     await page.waitForURL('/', { timeout: 10000 })
 
     // Wait for gallery to fully re-render (important for focus restoration to complete)
-    await page.waitForSelector('[data-testid="desktop-gallery"], [data-testid="mobile-gallery"]', {
+    await page.waitForSelector(gallerySelector, {
       state: 'visible',
       timeout: 10000
     })
@@ -104,8 +119,9 @@ test.describe('Gallery Focus Restoration - WCAG 2.4.3', () => {
     // Navigate to homepage
     await page.goto('/')
 
-    // Wait for gallery to be visible
-    await page.waitForSelector('[data-testid="desktop-gallery"], [data-testid="mobile-gallery"]', {
+    // Wait for the visible gallery (viewport-aware: avoids hidden gallery timeout)
+    const gallerySelector = await getGallerySelector(page)
+    await page.waitForSelector(gallerySelector, {
       state: 'visible',
       timeout: 10000
     })
@@ -114,7 +130,8 @@ test.describe('Gallery Focus Restoration - WCAG 2.4.3', () => {
     await page.waitForSelector('[data-testid="gallery-loading-skeleton"]', { state: 'detached', timeout: 10000 })
 
     // Click on item 5 (index 4) which might require scrolling
-    const item5 = page.locator('[data-testid="gallery-item-4"]')
+    // Scoped to visible gallery to avoid strict mode violation
+    const item5 = page.locator(`${gallerySelector} [data-testid="gallery-item-4"]`)
     await item5.scrollIntoViewIfNeeded()
     await item5.click()
 
@@ -126,7 +143,7 @@ test.describe('Gallery Focus Restoration - WCAG 2.4.3', () => {
     await page.waitForURL('/', { timeout: 10000 })
 
     // Wait for gallery to fully re-render (important for focus restoration to complete)
-    await page.waitForSelector('[data-testid="desktop-gallery"], [data-testid="mobile-gallery"]', {
+    await page.waitForSelector(gallerySelector, {
       state: 'visible',
       timeout: 10000
     })
@@ -151,8 +168,9 @@ test.describe('Gallery Focus Restoration - WCAG 2.4.3', () => {
     // Navigate to homepage
     await page.goto('/')
 
-    // Wait for gallery to be visible
-    await page.waitForSelector('[data-testid="desktop-gallery"], [data-testid="mobile-gallery"]', {
+    // Wait for the visible gallery (viewport-aware: avoids hidden gallery timeout)
+    const gallerySelector = await getGallerySelector(page)
+    await page.waitForSelector(gallerySelector, {
       state: 'visible',
       timeout: 10000
     })
@@ -160,8 +178,8 @@ test.describe('Gallery Focus Restoration - WCAG 2.4.3', () => {
     // Wait for gallery to fully load (skeleton to disappear)
     await page.waitForSelector('[data-testid="gallery-loading-skeleton"]', { state: 'detached', timeout: 10000 })
 
-    // Click on item 2 (index 1) to focus it
-    const item2 = page.locator('[data-testid="gallery-item-1"]')
+    // Click on item 2 (index 1) — scoped to visible gallery to avoid strict mode violation
+    const item2 = page.locator(`${gallerySelector} [data-testid="gallery-item-1"]`)
     await item2.click()
 
     // Wait for navigation to project page
@@ -178,7 +196,7 @@ test.describe('Gallery Focus Restoration - WCAG 2.4.3', () => {
     await page.waitForURL('/', { timeout: 10000 })
 
     // Wait for gallery to fully re-render (important for focus restoration to complete)
-    await page.waitForSelector('[data-testid="desktop-gallery"], [data-testid="mobile-gallery"]', {
+    await page.waitForSelector(gallerySelector, {
       state: 'visible',
       timeout: 10000
     })

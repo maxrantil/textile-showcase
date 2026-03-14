@@ -49,14 +49,14 @@ test.describe('Gallery Performance Optimization E2E Tests', () => {
         // Fast load - skeleton already replaced by gallery
       }
 
-      // Desktop gallery component should render after progressive hydration
+      // Desktop gallery component should be visible (CSS media query shows it on desktop)
       await expect(page.locator('[data-testid="desktop-gallery"]')).toBeVisible({
         timeout: 3000,
       })
 
-      // Mobile gallery should NOT be in DOM (device-specific loading verified)
+      // Mobile gallery is in DOM but CSS-hidden on desktop (Issue #348: CSS media query approach)
       const mobileGallery = page.locator('[data-testid="mobile-gallery"]')
-      expect(await mobileGallery.count()).toBe(0)
+      await expect(mobileGallery).not.toBeVisible()
     })
 
     test('should_load_gallery_components_progressively_on_mobile', async ({
@@ -69,33 +69,33 @@ test.describe('Gallery Performance Optimization E2E Tests', () => {
 
       await page.waitForLoadState('networkidle')
 
-      // Mobile gallery component should render after progressive hydration
+      // Mobile gallery component should be visible (CSS media query shows it on mobile)
       await expect(page.locator('[data-testid="mobile-gallery"]')).toBeVisible({
         timeout: 3000,
       })
 
-      // Desktop gallery should NOT be in DOM (device-specific loading verified)
+      // Desktop gallery is in DOM but CSS-hidden on mobile (Issue #348: CSS media query approach)
       const desktopGallery = page.locator('[data-testid="desktop-gallery"]')
-      expect(await desktopGallery.count()).toBe(0)
+      await expect(desktopGallery).not.toBeVisible()
     })
 
-    test('should_show_loading_skeleton_during_progressive_hydration', async () => {
-      // Navigate with disabled JavaScript cache to see loading state
+    test('should_render_gallery_without_loading_skeleton', async () => {
+      // Issue #348: Gallery is now SSR-rendered via CSS media queries — no skeleton needed
       await page.reload({ waitUntil: 'domcontentloaded' })
 
-      // Should show loading skeleton immediately
+      // Skeleton should not appear (gallery is in initial SSR HTML)
       await expect(
         page.locator('[data-testid="gallery-loading-skeleton"]')
-      ).toBeVisible()
+      ).not.toBeVisible()
 
-      // Loading Skeleton CI Timeout: 5000ms
-      //   - Observed CI: >2000ms (Firefox) | Production: Fast as possible
-      //   - Buffer: 2000ms * 2.5 = 5000ms (generous for browser variance)
-      //   - Purpose: Prevent flakiness while detecting visibility issues
-      //   - Evidence-based: See PERFORMANCE-BASELINE-INVESTIGATION-2025-11-18.md
-      await expect(
-        page.locator('[data-testid="gallery-loading-skeleton"]')
-      ).toBeHidden({ timeout: 5000 })
+      // At least one gallery should be immediately visible (SSR rendered)
+      // Use viewport-aware selector — both galleries are in SSR HTML but only one is visible via CSS (Issue #348)
+      const gallerySelector = page.viewportSize()!.width < 768
+        ? '[data-testid="mobile-gallery"]'
+        : '[data-testid="desktop-gallery"]'
+      await expect(page.locator(gallerySelector)).toBeVisible({
+        timeout: 3000,
+      })
     })
   })
 
@@ -155,11 +155,11 @@ test.describe('Gallery Performance Optimization E2E Tests', () => {
 
       // Wait for gallery to fully load
       await page.waitForLoadState('networkidle')
-      await expect(
-        page.locator(
-          '[data-testid="desktop-gallery"], [data-testid="mobile-gallery"]'
-        )
-      ).toBeVisible()
+      // Use viewport-aware selector — both galleries are in SSR HTML but only one is visible via CSS (Issue #348)
+      const gallerySelector = page.viewportSize()!.width < 768
+        ? '[data-testid="mobile-gallery"]'
+        : '[data-testid="desktop-gallery"]'
+      await expect(page.locator(gallerySelector)).toBeVisible()
 
       const loadTime = Date.now() - startTime
 
@@ -296,18 +296,22 @@ test.describe('Gallery Performance Optimization E2E Tests', () => {
         route.abort('failed')
       })
 
-      await page.reload()
-
-      // Should show loading skeleton or fallback instead of crashing
-      await expect(
-        page.locator('[data-testid="gallery-loading-skeleton"]')
-      ).toBeVisible()
-
-      // Should not show JavaScript errors
+      // Collect JS errors before reload
       const errors: string[] = []
       page.on('pageerror', (error) => {
         errors.push(error.message)
       })
+
+      await page.reload()
+
+      // Issue #348: Gallery is SSR-rendered — both galleries are in the initial HTML.
+      // Aborting DesktopGallery JS requests does not remove the SSR HTML; gallery remains present.
+      // The skeleton is only shown by DynamicImportErrorBoundary (not triggered by this route abort).
+      // Verify the page does not crash and the gallery is present in the DOM.
+      const gallerySelector = page.viewportSize()!.width < 768
+        ? '[data-testid="mobile-gallery"]'
+        : '[data-testid="desktop-gallery"]'
+      await expect(page.locator(gallerySelector)).toBeAttached({ timeout: 5000 })
 
       await page.waitForTimeout(2000)
 
@@ -374,26 +378,24 @@ test.describe('Gallery Performance Optimization E2E Tests', () => {
       await page.waitForLoadState('networkidle')
 
       // Verify correct gallery component renders for device type
+      // Issue #348: Both galleries are in the SSR HTML; CSS media queries control visibility.
+      // The non-applicable gallery has display:none — check not.toBeVisible() instead of count()==0.
       if (isMobile) {
         // Mobile viewport should show mobile gallery only
         await expect(page.locator('[data-testid="mobile-gallery"]')).toBeVisible({
           timeout: 3000,
         })
 
-        // Desktop gallery should not be in DOM (not just hidden)
-        const desktopGallery = page.locator('[data-testid="desktop-gallery"]')
-        const desktopCount = await desktopGallery.count()
-        expect(desktopCount).toBe(0)
+        // Desktop gallery is in DOM but hidden via CSS on mobile
+        await expect(page.locator('[data-testid="desktop-gallery"]')).not.toBeVisible()
       } else {
         // Desktop viewport should show desktop gallery only
         await expect(page.locator('[data-testid="desktop-gallery"]')).toBeVisible({
           timeout: 3000,
         })
 
-        // Mobile gallery should not be in DOM (not just hidden)
-        const mobileGallery = page.locator('[data-testid="mobile-gallery"]')
-        const mobileCount = await mobileGallery.count()
-        expect(mobileCount).toBe(0)
+        // Mobile gallery is in DOM but hidden via CSS on desktop
+        await expect(page.locator('[data-testid="mobile-gallery"]')).not.toBeVisible()
       }
 
       // Verify no hydration errors occurred
@@ -436,9 +438,10 @@ test.describe('Gallery Performance Optimization E2E Tests', () => {
       const startTime = Date.now()
 
       await page.goto('/')
-      await expect(
-        page.locator('[data-testid="gallery-loading-skeleton"]')
-      ).toBeVisible()
+
+      // Issue #348: Gallery is SSR-rendered — no loading skeleton is shown.
+      // The skeleton was only rendered while waiting for a dynamic import to resolve.
+      // On slow networks the SSR HTML arrives with the gallery already present.
 
       // Should still complete within reasonable time on slow connection
       // CI Threshold: 6000ms
@@ -446,11 +449,11 @@ test.describe('Gallery Performance Optimization E2E Tests', () => {
       //   - Buffer: 5068ms * 1.18 = 5980ms → 6000ms
       //   - Purpose: Validate graceful degradation on slow networks
       //   - Evidence-based: See PERFORMANCE-BASELINE-INVESTIGATION-2025-11-18.md
-      await expect(
-        page.locator(
-          '[data-testid="desktop-gallery"], [data-testid="mobile-gallery"]'
-        )
-      ).toBeVisible({ timeout: 6000 })
+      // Use viewport-aware selector — both galleries are in SSR HTML but only one is visible via CSS
+      const gallerySelector = page.viewportSize()!.width < 768
+        ? '[data-testid="mobile-gallery"]'
+        : '[data-testid="desktop-gallery"]'
+      await expect(page.locator(gallerySelector)).toBeVisible({ timeout: 6000 })
 
       const totalTime = Date.now() - startTime
       expect(totalTime).toBeLessThan(6000)
@@ -475,11 +478,11 @@ test.describe('Gallery Performance Optimization E2E Tests', () => {
       }
 
       // Gallery should still hydrate properly
-      await expect(
-        page.locator(
-          '[data-testid="desktop-gallery"], [data-testid="mobile-gallery"]'
-        )
-      ).toBeVisible({ timeout: 3000 })
+      // Use viewport-aware selector — both galleries are in SSR HTML but only one is visible via CSS (Issue #348)
+      const gallerySelector = page.viewportSize()!.width < 768
+        ? '[data-testid="mobile-gallery"]'
+        : '[data-testid="desktop-gallery"]'
+      await expect(page.locator(gallerySelector)).toBeVisible({ timeout: 3000 })
     })
 
     test('should_handle_concurrent_page_navigation_during_hydration', async () => {

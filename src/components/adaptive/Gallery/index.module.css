@@ -4,6 +4,26 @@
   min-height: 400px;
 }
 
+/* Mobile gallery: visible on mobile/tablet, hidden on desktop */
+.mobileOnly {
+  display: block;
+}
+
+/* Desktop gallery: hidden on mobile/tablet, visible on desktop */
+.desktopOnly {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .mobileOnly {
+    display: none;
+  }
+
+  .desktopOnly {
+    display: block;
+  }
+}
+
 /* Gallery component styling */
 .gallery {
   opacity: 1;

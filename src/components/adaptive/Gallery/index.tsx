@@ -1,9 +1,7 @@
-// ABOUTME: Device-adaptive gallery wrapper with SSR-compatible hydration
+// ABOUTME: Device-adaptive gallery using CSS media queries for SSR-compatible LCP optimisation
+// Server component: renders both galleries in SSR HTML; CSS shows the correct one per viewport
+// Issue #348: Eliminates isHydrated barrier — LCP image now in initial HTML, Render Delay → ~0
 
-'use client'
-
-import { useDeviceType } from '@/hooks/shared/useDeviceType'
-import { useState, useEffect, useRef } from 'react'
 import { TextileDesign } from '@/types/textile'
 import DesktopGallery from '@/components/desktop/Gallery/Gallery'
 import MobileGallery from '@/components/mobile/Gallery/MobileGallery'
@@ -13,7 +11,7 @@ interface AdaptiveGalleryProps {
   designs: TextileDesign[]
 }
 
-// Skeleton component that matches gallery dimensions (prevents CLS during hydration)
+// Kept for backward compatibility with external references
 export function GallerySkeleton() {
   return (
     <div
@@ -26,40 +24,17 @@ export function GallerySkeleton() {
   )
 }
 
-// Minimum skeleton display time (prevents CLS flash, allows test detection)
-const MIN_SKELETON_DISPLAY_TIME = 300 // ms
-
 export default function AdaptiveGallery({ designs }: AdaptiveGalleryProps) {
-  const deviceType = useDeviceType()
-  const [isHydrated, setIsHydrated] = useState(false)
-  const skeletonStartTime = useRef(Date.now())
-
-  useEffect(() => {
-    // Ensure skeleton displays for minimum time to prevent CLS and allow E2E test detection
-    const elapsed = Date.now() - skeletonStartTime.current
-    const remainingTime = Math.max(0, MIN_SKELETON_DISPLAY_TIME - elapsed)
-
-    const timer = setTimeout(() => {
-      setIsHydrated(true)
-    }, remainingTime)
-
-    return () => clearTimeout(timer)
-  }, [])
-
-  // Select the appropriate gallery component based on device type
-  const isMobile = deviceType === 'mobile' || deviceType === 'tablet'
-  const GalleryComponent = isMobile ? MobileGallery : DesktopGallery
-
   return (
-    <div className={styles.container} suppressHydrationWarning>
-      <div className={styles.gallery}>
-        {isHydrated && <GalleryComponent designs={designs} />}
+    <div className={styles.container}>
+      {/* Mobile gallery: visible on mobile/tablet via CSS, hidden on desktop */}
+      <div className={styles.mobileOnly}>
+        <MobileGallery designs={designs} />
       </div>
-      {!isHydrated && (
-        <div className={`${styles.skeleton} ${styles.visible}`}>
-          <GallerySkeleton />
-        </div>
-      )}
+      {/* Desktop gallery: visible on desktop via CSS, hidden on mobile/tablet */}
+      <div className={styles.desktopOnly}>
+        <DesktopGallery designs={designs} />
+      </div>
     </div>
   )
 }

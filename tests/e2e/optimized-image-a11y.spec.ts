@@ -1,8 +1,21 @@
 // ABOUTME: Accessibility tests for OptimizedImage component ensuring WCAG 2.1 AA compliance
 
-import { test, expect } from '@playwright/test'
+import { test, expect, Page } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 import { setupTestPage } from './helpers/test-setup'
+
+// Helper function: Get gallery selector based on viewport size
+// Mobile (<768px) uses mobile-gallery, Desktop (>=768px) uses desktop-gallery
+// Both galleries are in the SSR HTML simultaneously; CSS media queries control visibility (Issue #348)
+async function getGallerySelector(page: Page): Promise<string> {
+  const viewport = page.viewportSize()
+  if (!viewport) {
+    throw new Error('Viewport size not set')
+  }
+  return viewport.width < 768
+    ? '[data-testid="mobile-gallery"]'
+    : '[data-testid="desktop-gallery"]'
+}
 
 test.describe('OptimizedImage Accessibility', () => {
   test.beforeEach(async ({ page }) => {
@@ -55,10 +68,10 @@ test.describe('OptimizedImage Accessibility', () => {
         timeout: 10000
       })
 
-      // Navigate to first project
-      const firstProject = page
-        .locator('[data-testid^="gallery-item-"], .desktop-gallery-item')
-        .first()
+      // Navigate to first project — scoped to visible gallery to avoid strict mode violation
+      // Both galleries are in SSR HTML; CSS media queries hide the non-applicable one (Issue #348)
+      const gallerySelector = await getGallerySelector(page)
+      const firstProject = page.locator(gallerySelector).locator('[data-testid^="gallery-item-"]').first()
       await firstProject.click()
 
       await page.waitForLoadState('networkidle')
@@ -112,12 +125,15 @@ test.describe('OptimizedImage Accessibility', () => {
       await page.goto('/')
       await page.waitForLoadState('networkidle')
 
-      // Wait for gallery items to be visible (works for both mobile and desktop gallery)
-      await page.locator('[data-testid^="gallery-item-"]').first().waitFor({ state: 'visible' })
+      // Wait for gallery items to be visible — scoped to visible gallery to avoid strict mode violation
+      // Both galleries are in SSR HTML; CSS media queries hide the non-applicable one (Issue #348)
+      const gallerySelector = await getGallerySelector(page)
+      await page.locator(gallerySelector).locator('[data-testid^="gallery-item-"]').first().waitFor({ state: 'visible' })
 
       // Gallery items are semantic <a> links (Issue #259 lockdown-mode fix)
       // Both MobileGallery and DesktopGallery use <Link> which renders as <a>
-      const galleryLinks = page.locator('[data-testid^="gallery-item-"]')
+      // Scope to visible gallery to avoid duplicate matches causing strict mode violation
+      const galleryLinks = page.locator(gallerySelector).locator('[data-testid^="gallery-item-"]')
       const linkCount = await galleryLinks.count()
 
       expect(linkCount).toBeGreaterThan(0)
@@ -184,9 +200,10 @@ test.describe('OptimizedImage Accessibility', () => {
       await page.goto('/')
       await page.waitForLoadState('networkidle')
 
-      // Find first gallery item link (works for both mobile and desktop gallery)
-      // Gallery items are <a> links (Issue #259 lockdown-mode fix) — natively keyboard accessible
-      const galleryLink = page.locator('[data-testid^="gallery-item-"]').first()
+      // Find first gallery item link scoped to visible gallery
+      // Both galleries are in SSR HTML; CSS hides the non-applicable one — scope avoids strict mode violation
+      const gallerySelector = await getGallerySelector(page)
+      const galleryLink = page.locator(gallerySelector).locator('[data-testid^="gallery-item-"]').first()
       await expect(galleryLink).toBeVisible({ timeout: 5000 })
 
       // Focus the link

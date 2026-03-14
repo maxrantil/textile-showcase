@@ -3,20 +3,33 @@ import { Page, Locator, expect } from '@playwright/test'
 
 export class GalleryPage {
   readonly page: Page
-  readonly galleryContainer: Locator
-  readonly galleryItems: Locator
-  readonly activeItem: Locator
   readonly navigationArrows: Locator
   readonly loadingSpinner: Locator
 
   constructor(page: Page) {
     this.page = page
-    // Accept either desktop or mobile gallery container
-    this.galleryContainer = page.locator('[data-testid="desktop-gallery"], [data-testid="mobile-gallery"]')
-    this.galleryItems = page.locator('[data-testid^="gallery-item-"]')
-    this.activeItem = page.locator('[data-active="true"]')
     this.navigationArrows = page.locator('[data-testid="navigation-arrows"]')
     this.loadingSpinner = page.locator('[data-testid="loading-spinner"]')
+  }
+
+  // Viewport-aware getter: returns the visible gallery at the current viewport size
+  // Both galleries are in the SSR DOM simultaneously; CSS media queries control visibility (Issue #348)
+  get galleryContainer(): Locator {
+    const viewport = this.page.viewportSize()
+    const selector = !viewport || viewport.width < 768
+      ? '[data-testid="mobile-gallery"]'
+      : '[data-testid="desktop-gallery"]'
+    return this.page.locator(selector)
+  }
+
+  // Scoped to visible gallery so first() is never a hidden element from the other gallery
+  get galleryItems(): Locator {
+    return this.galleryContainer.locator('[data-testid^="gallery-item-"]')
+  }
+
+  // Scoped to visible gallery to avoid strict mode violation (both galleries have data-active items)
+  get activeItem(): Locator {
+    return this.galleryContainer.locator('[data-active="true"]')
   }
 
   async goto() {
@@ -50,12 +63,18 @@ export class GalleryPage {
     // Get the current active item's index before navigation
     const initialIndex = await this.getActiveItemIndex()
 
+    // Determine which gallery is visible to scope the active-item check
+    const vp = this.page.viewportSize()
+    const galleryTestId = !vp || vp.width < 768 ? 'mobile-gallery' : 'desktop-gallery'
+
     await this.page.keyboard.press('ArrowRight')
 
-    // Wait for the active item index to actually change
+    // Wait for the active item index to actually change in the visible gallery
     await this.page.waitForFunction(
-      (expectedNewIndex) => {
-        const activeElement = document.querySelector('[data-active="true"]')
+      ({ expectedNewIndex, gallery }) => {
+        const activeElement = document.querySelector(
+          `[data-testid="${gallery}"] [data-active="true"]`
+        )
         if (!activeElement) return false
 
         const testId = activeElement.getAttribute('data-testid')
@@ -64,7 +83,7 @@ export class GalleryPage {
         const currentIndex = parseInt(testId.replace('gallery-item-', ''), 10)
         return currentIndex === expectedNewIndex
       },
-      initialIndex + 1,
+      { expectedNewIndex: initialIndex + 1, gallery: galleryTestId },
       { timeout: 2000 }
     )
 
@@ -76,12 +95,18 @@ export class GalleryPage {
     // Get the current active item's index before navigation
     const initialIndex = await this.getActiveItemIndex()
 
+    // Determine which gallery is visible to scope the active-item check
+    const vp = this.page.viewportSize()
+    const galleryTestId = !vp || vp.width < 768 ? 'mobile-gallery' : 'desktop-gallery'
+
     await this.page.keyboard.press('ArrowLeft')
 
-    // Wait for the active item index to actually change
+    // Wait for the active item index to actually change in the visible gallery
     await this.page.waitForFunction(
-      (expectedNewIndex) => {
-        const activeElement = document.querySelector('[data-active="true"]')
+      ({ expectedNewIndex, gallery }) => {
+        const activeElement = document.querySelector(
+          `[data-testid="${gallery}"] [data-active="true"]`
+        )
         if (!activeElement) return false
 
         const testId = activeElement.getAttribute('data-testid')
@@ -90,7 +115,7 @@ export class GalleryPage {
         const currentIndex = parseInt(testId.replace('gallery-item-', ''), 10)
         return currentIndex === expectedNewIndex
       },
-      initialIndex - 1,
+      { expectedNewIndex: initialIndex - 1, gallery: galleryTestId },
       { timeout: 2000 }
     )
 
@@ -147,7 +172,8 @@ export class GalleryPage {
   }
 
   async getActiveItemIndex(): Promise<number> {
-    const activeItems = await this.page.locator('[data-active="true"]').all()
+    // Use viewport-aware activeItem getter to avoid matching hidden gallery's active items
+    const activeItems = await this.activeItem.all()
     if (activeItems.length === 0) return -1
 
     // Find index of active item within all gallery items
