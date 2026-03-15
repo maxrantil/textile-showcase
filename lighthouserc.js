@@ -166,8 +166,7 @@ module.exports = {
 // Environment-specific overrides
 if (process.env.CI) {
   // CI-specific settings
-  module.exports.ci.collect.startServerCommand =
-    'npm run build && npm run start:ci'
+  module.exports.ci.collect.startServerCommand = 'npm start'
   module.exports.ci.collect.startServerReadyTimeout = 60000
 
   // EMERGENCY: Further reduced thresholds to unblock pipeline (Issue #39)
