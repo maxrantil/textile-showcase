@@ -5,6 +5,13 @@ on:
     branches:
       - master
 
+# Prevent concurrent deployments to the same VPS host.
+# If two pushes land within seconds of each other, the second run queues
+# rather than racing — avoids the .next.incoming mv race condition (Issue #358).
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
 jobs:
   test:
     runs-on: ubuntu-latest
