@@ -101,26 +101,14 @@ export default async function Home() {
   // Issue #51 Phase 1: Get first design for FirstImage component
   const firstDesign = designs[0]
 
-  // Generate /_next/image preload URLs for the LCP element (MobileGalleryItem)
-  // Issue #345: Previous preload pointed to Sanity CDN URLs which don't match the LCP image URL.
-  // MobileGalleryItem uses next/image which proxies through /_next/image, so the browser
-  // must wait for JS hydration (~2.7s) to discover the image. Preloading /_next/image URLs
-  // here (SSR) lets the browser start fetching before any JS runs.
+  // Issue #363: Preload LCP image via direct Sanity CDN URL.
+  // MobileGalleryItem uses unoptimized={isPriority} so the LCP <img> fetches the Sanity
+  // CDN URL directly — the preload href must match this URL exactly.
+  // Previously preloaded /_next/image proxy URLs (Issue #345) but proxy overhead
+  // added ~1.5–2s to CI LCP; the preload and the actual <img> src now match.
   const imageSource = firstDesign?.image || firstDesign?.images?.[0]?.asset
-  // Match MobileGalleryItem: getOptimizedImageUrl(imageSource, { width: 800, quality: 80 })
-  const baseImageUrl = imageSource
+  const lcpImageUrl = imageSource
     ? getOptimizedImageUrl(imageSource, { width: 800, quality: 80 })
-    : null
-
-  // Breakpoints: 750w, 828w cover mobile DPR 1–2; 1080w, 1200w cover larger screens
-  // q=75 matches Next.js Image default quality
-  const nextImageSrcSet = baseImageUrl
-    ? [750, 828, 1080, 1200]
-        .map(
-          (w) =>
-            `/_next/image?url=${encodeURIComponent(baseImageUrl)}&w=${w}&q=75 ${w}w`
-        )
-        .join(', ')
     : null
 
   return (
@@ -129,18 +117,11 @@ export default async function Home() {
       <link rel="preconnect" href="https://cdn.sanity.io" />
       <link rel="dns-prefetch" href="https://cdn.sanity.io" />
 
-      {/* Issue #345: Preload /_next/image URL for LCP element (MobileGalleryItem)
-          MobileGalleryItem is 'use client' — without this, browser waits 2.7s for JS
-          hydration to discover the LCP image. Preloading /_next/image srcset here
-          (SSR HTML) lets the browser start fetching before any JavaScript executes. */}
-      {nextImageSrcSet && (
-        <link
-          rel="preload"
-          as="image"
-          imageSrcSet={nextImageSrcSet}
-          imageSizes="100vw"
-          fetchPriority="high"
-        />
+      {/* Issue #363: Preload LCP image directly from Sanity CDN — no /_next/image proxy.
+          MobileGalleryItem uses unoptimized={isPriority} so the src URL exactly matches
+          this href; the browser reuses the preloaded resource with no cache miss. */}
+      {lcpImageUrl && (
+        <link rel="preload" as="image" href={lcpImageUrl} fetchPriority="high" />
       )}
 
       {/* Structured data for SEO - Person schema */}

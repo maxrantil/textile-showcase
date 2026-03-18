@@ -1,4 +1,4 @@
-// ABOUTME: Tests for Home page preload link — verifies /_next/image srcset (Issue #345)
+// ABOUTME: Tests for Home page preload link — verifies direct Sanity CDN href (Issue #363)
 
 import React from 'react'
 import { render } from '@testing-library/react'
@@ -58,61 +58,36 @@ async function renderHome() {
   return render(await Home())
 }
 
-describe('Home page — /_next/image preload (Issue #345)', () => {
+describe('Home page — direct CDN preload (Issue #363)', () => {
   it('renders a preload link for the LCP image', async () => {
     const { container } = await renderHome()
-    const link = container.querySelector('link[rel="preload"][as="image"]')
+    const link = document.head.querySelector('link[rel="preload"][as="image"]')
     expect(link).toBeInTheDocument()
   })
 
-  it('preload imageSrcSet uses /_next/image proxy URLs, not Sanity CDN directly', async () => {
+  it('preload href is the direct Sanity CDN URL — no /_next/image proxy', async () => {
     const { container } = await renderHome()
-    const link = container.querySelector('link[rel="preload"][as="image"]')
-    const srcset = link?.getAttribute('imagesrcset') ?? ''
-    expect(srcset).toContain('/_next/image')
-    // Should NOT have a bare Sanity CDN URL as the start of an entry
-    expect(srcset).not.toMatch(/(^|,\s*)https:\/\/cdn\.sanity\.io/)
+    const link = document.head.querySelector('link[rel="preload"][as="image"]')
+    const href = link?.getAttribute('href') ?? ''
+    expect(href).toContain('cdn.sanity.io')
+    expect(href).not.toContain('/_next/image')
   })
 
-  it('preload imageSrcSet contains the Sanity CDN URL encoded inside /_next/image', async () => {
+  it('preload href matches the exact URL MobileGalleryItem unoptimized <img> will fetch', async () => {
     const { container } = await renderHome()
-    const link = container.querySelector('link[rel="preload"][as="image"]')
-    const srcset = link?.getAttribute('imagesrcset') ?? ''
-    expect(srcset).toContain(encodeURIComponent(SANITY_BASE))
+    const link = document.head.querySelector('link[rel="preload"][as="image"]')
+    expect(link?.getAttribute('href')).toBe(SANITY_BASE)
   })
 
-  it('preload imageSrcSet includes mobile-critical breakpoints 750w and 828w', async () => {
+  it('preload has no imageSrcSet — single URL matches unoptimized <img> src', async () => {
     const { container } = await renderHome()
-    const link = container.querySelector('link[rel="preload"][as="image"]')
-    const srcset = link?.getAttribute('imagesrcset') ?? ''
-    expect(srcset).toContain('750w')
-    expect(srcset).toContain('828w')
-  })
-
-  it('preload imageSrcSet includes desktop breakpoints 1080w and 1200w', async () => {
-    const { container } = await renderHome()
-    const link = container.querySelector('link[rel="preload"][as="image"]')
-    const srcset = link?.getAttribute('imagesrcset') ?? ''
-    expect(srcset).toContain('1080w')
-    expect(srcset).toContain('1200w')
-  })
-
-  it('preload uses q=75 (Next.js default quality)', async () => {
-    const { container } = await renderHome()
-    const link = container.querySelector('link[rel="preload"][as="image"]')
-    const srcset = link?.getAttribute('imagesrcset') ?? ''
-    expect(srcset).toContain('q=75')
-  })
-
-  it('preload imageSizes is "100vw" matching MobileGalleryItem sizes prop', async () => {
-    const { container } = await renderHome()
-    const link = container.querySelector('link[rel="preload"][as="image"]')
-    expect(link?.getAttribute('imagesizes')).toBe('100vw')
+    const link = document.head.querySelector('link[rel="preload"][as="image"]')
+    expect(link?.getAttribute('imagesrcset')).toBeNull()
   })
 
   it('preload has fetchPriority="high"', async () => {
     const { container } = await renderHome()
-    const link = container.querySelector('link[rel="preload"][as="image"]')
+    const link = document.head.querySelector('link[rel="preload"][as="image"]')
     expect(link?.getAttribute('fetchpriority')).toBe('high')
   })
 
@@ -122,7 +97,7 @@ describe('Home page — /_next/image preload (Issue #345)', () => {
 
     const { default: Home } = await import('../page')
     const { container } = render(await Home())
-    const link = container.querySelector('link[rel="preload"][as="image"]')
+    const link = document.head.querySelector('link[rel="preload"][as="image"]')
     expect(link).not.toBeInTheDocument()
   })
 })

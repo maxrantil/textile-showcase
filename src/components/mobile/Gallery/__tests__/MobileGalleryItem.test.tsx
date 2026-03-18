@@ -18,6 +18,7 @@ jest.mock('next/image', () => ({
       alt={props.alt as string}
       width={props.width as number}
       height={props.height as number}
+      data-unoptimized={props.unoptimized === true ? 'true' : 'false'}
       data-testid="next-image"
     />
   ),
@@ -307,6 +308,22 @@ describe('MobileGalleryItem', () => {
       const link = container.querySelector('a')
       // Component should have appropriate classes for vertical layout
       expect(link?.className).toContain('mobile')
+    })
+  })
+
+  describe('LCP optimisation (Issue #363)', () => {
+    it('passes unoptimized to the priority image to bypass /_next/image proxy', () => {
+      render(<MobileGalleryItem design={mockSingleDesign} isPriority />)
+
+      const img = screen.getByTestId('next-image')
+      expect(img).toHaveAttribute('data-unoptimized', 'true')
+    })
+
+    it('does not pass unoptimized to non-priority images', () => {
+      render(<MobileGalleryItem design={mockSingleDesign} isPriority={false} />)
+
+      const img = screen.getByTestId('next-image')
+      expect(img).toHaveAttribute('data-unoptimized', 'false')
     })
   })
 })
