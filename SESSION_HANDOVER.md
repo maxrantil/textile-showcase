@@ -1,59 +1,67 @@
-# Session Handoff: Issue #358 — Production Deployment Race Condition (CLOSED)
+# Session Handoff: Issue #363 — LCP Direct CDN Preload (IN PROGRESS)
 
-**Date**: 2026-03-17
-**Issue**: #358 — fix: production deployment race condition — CLOSED ✅
-**PR**: #359 — fix: prevent concurrent production deployments — MERGED ✅
-**Branch**: master (squash-merged from fix/issue-358-deploy-race-condition)
+**Date**: 2026-03-18
+**Issue**: #363 — perf: preload LCP image via direct Sanity CDN URL instead of /_next/image proxy
+**PR**: #364 — perf: preload LCP image via direct Sanity CDN URL — bypass /_next/image proxy (OPEN)
+**Branch**: perf/issue-363-lcp-direct-cdn-preload
 
 ---
 
 ## ✅ Completed This Session
 
-### 1. Dependabot Security Audit
+### 1. Home Page LCP Investigation
 
-Reviewed and merged both open Dependabot PRs:
+Diagnosed why home page CI Lighthouse LCP (5.7–9.0s) is so much worse than /about (2.8–4.2s):
 
-| PR | Package | Change | CVEs Fixed | Status |
-|----|---------|--------|------------|--------|
-| #351 | `tar` | 7.5.10 → 7.5.11 | Symlink escape via drive-relative paths (high) | ✅ Merged |
-| #354 | `undici` | 6.23.0 → 6.24.1 | 3 High + 2 Medium (WebSocket crash, smuggling, CRLF) | ✅ Merged |
+- **LCP type**: home = gallery image (needs download), about = text h1 (in critical CSS)
+- **Five bottlenecks identified** — largest: `/_next/image` proxy overhead (~1.5–2s)
+- **Root cause**: preload in `page.tsx` pointed to `/_next/image?url=...` proxy URLs;
+  `<Image>` fetched via proxy even though Sanity CDN already serves optimised WebP
 
-Both are transitive deps only (`package-lock.json` changes). All security vulnerabilities cleared.
+### 2. LCP Fix (Issue #363, PR #364 — OPEN)
 
-### 2. Production Outage Discovered & Resolved
+**Two-file change:**
 
-**Root cause**: PR #351 and PR #354 merged 7 seconds apart triggered two simultaneous
-`Production Deployment` workflow runs racing on the same VPS.
+`MobileGalleryItem.tsx` — add `unoptimized={isPriority}`:
+- LCP `<Image>` (index 0, isPriority=true) now renders `<img src="https://cdn.sanity.io/...">` directly
+- Eliminates `/_next/image` proxy from the LCP critical path
 
-**Race condition sequence**:
-1. Both runs rsynced `.next.incoming` to the VPS (each overwrote the other)
-2. Run A: `rm -rf .next && mv .next.incoming .next` → success
-3. Run B: `rm -rf .next` → removes the active `.next`; `mv .next.incoming .next` → `.next.incoming` already gone → **silent failure**
-4. Run B restarts PM2 with **no `.next` directory** → app crash-loops → **502 for 30+ minutes**
+`page.tsx` — replace `/_next/image` srcset preload with direct CDN href:
+```html
+<!-- Before: multi-entry /_next/image srcset -->
+<link rel="preload" as="image" imageSrcSet="/_next/image?url=...&w=750 750w, ..." />
 
-**Recovery**: Re-ran deployment run #23180809462 (single run, no race) → site restored ✅
-
-### 3. Race Condition Fix (Issue #358, PR #359 — MERGED)
-
-Added `concurrency` group to `.github/workflows/production-deploy.yml`:
-
-```yaml
-concurrency:
-  group: production-deploy
-  cancel-in-progress: false
+<!-- After: single href matching unoptimized <img> src exactly -->
+<link rel="preload" as="image" href="https://cdn.sanity.io/...?w=800&q=80" fetchpriority="high" />
 ```
 
-`cancel-in-progress: false` ensures pending deploys queue (not dropped) — the latest commit will deploy once the current deploy finishes. Simple 7-line fix to a structural deployment reliability issue.
+**Tests** (TDD — RED → GREEN):
+- `MobileGalleryItem.test.tsx`: mock updated with `data-unoptimized`; 2 new tests
+- `page.test.tsx`: all 6 tests rewritten for new direct CDN preload; React 19 hoists
+  `<link rel="preload">` to `document.head` — tests updated to query `document.head`
+
+**All 1206 unit tests passing** ✅
+
+### 3. Context: Prior Session Work (2026-03-17)
+
+- PR #354 (undici) + PR #351 (tar) — Dependabot security updates merged ✅
+- Issue #358 + PR #359 — production deploy race condition fixed (concurrency group) ✅
+- Production idaromme.dk: live, HTTP 200 ✅
 
 ---
 
 ## 🎯 Current Project State
 
-**Tests**: ✅ 1218 passing (23 skipped)
-**Branch**: master — clean (a377349)
-**Production**: idaromme.dk — ✅ LIVE (HTTP 200)
-**Issue #358**: CLOSED ✅
-**PR #359**: MERGED ✅ (squash `a377349`)
+**Tests**: ✅ 1206 passing (23 skipped)
+**Branch**: perf/issue-363-lcp-direct-cdn-preload
+**Production**: idaromme.dk — ✅ LIVE
+**PR #364**: ⏳ open — E2E + Lighthouse CI pending
+
+### CI Status (PR #364)
+- ✅ Unit tests, Bundle size, Safari Smoke, Secret scan, Commit quality
+- ⏳ Playwright Desktop/Mobile Chrome pending
+- ⏳ Lighthouse Performance Budget pending
+- ❌ Verify Session Handoff (fixed by this update)
 
 ---
 
@@ -61,40 +69,41 @@ concurrency:
 
 | PR | Issue | Description |
 |----|-------|-------------|
+| #364 | #363 | perf: preload LCP via direct Sanity CDN — bypass /_next/image proxy |
 | #359 | #358 | fix: prevent concurrent production deployments — concurrency group |
-| #354 | — | build(deps): bump undici from 6.23.0 to 6.24.1 (Dependabot) |
-| #351 | — | build(deps): bump tar from 7.5.10 to 7.5.11 (Dependabot) |
-| #356 | #355 | fix: use npm start instead of missing start:ci in Lighthouse CI |
+| #354 | — | build(deps): bump undici 6.23.0→6.24.1 (Dependabot) |
+| #351 | — | build(deps): bump tar 7.5.10→7.5.11 (Dependabot) |
 
 ---
 
 ## 🚀 Next Session Priorities
 
-1. **Verify master Lighthouse CI** — check that next master push produces Lighthouse results (not "No results found" as before PR #356 fix)
-2. **Issue #349 (optional)** — unused JS: vendor 132KB, framework 61KB
-3. **Monitor Dependabot** — security alerts should be clear after tar+undici merges
+1. **Merge PR #364** (if CI green): verify Lighthouse CI score improvement on home page
+2. **Verify production LCP**: run Lighthouse on idaromme.dk after deploy to confirm ≤1.7s
+3. **Issue #349 (optional)** — unused JS: vendor 132KB, framework 61KB
 
 ### Key Architecture Notes (carry-forward)
-- Both `MobileGallery` and `DesktopGallery` are ALWAYS in SSR HTML — any selector touching `[data-testid^="gallery-item-"]` or `[data-active="true"]` MUST be scoped to the visible gallery via viewport check (`width < 768 ? mobile-gallery : desktop-gallery`)
+- `MobileGalleryItem`: `unoptimized={isPriority}` — LCP image bypasses `/_next/image`
+- Both `MobileGallery` and `DesktopGallery` ALWAYS in SSR HTML — selectors must be viewport-scoped
 - `getGallerySelector(page)` helper in `lockdown-mode-simulation.spec.ts`
-- `GalleryPage` class (`tests/e2e/utils/page-objects/gallery-page.ts`) has viewport-aware getters
-- `Gallery.tsx` focus management: `scrollContainerRef.current?.querySelector(...)` — NEVER bare `document.querySelector`
+- `GalleryPage` class (`tests/e2e/utils/page-objects/gallery-page.ts`) — viewport-aware getters
+- `Gallery.tsx` focus management: `scrollContainerRef.current?.querySelector(...)` — never bare `document.querySelector`
 
 ---
 
 ## 📝 Startup Prompt for Next Session
 
 ```
-Read CLAUDE.md to understand our workflow, then continue from Issue #358 completion.
+Read CLAUDE.md to understand our workflow, then continue from Issue #363 completion.
 
-**Immediate priority**: Verify Lighthouse CI on master now produces results.
-  Check recent master push CI run to confirm Lighthouse audit runs (not "No results found").
-**Context**: Issue #358 closed — deploy race condition fixed with concurrency group.
-  Dependabot security updates merged (tar, undici — 4 high + 2 moderate CVEs cleared).
-**Reference docs**: SESSION_HANDOVER.md, .github/workflows/production-deploy.yml
-**Ready state**: master clean (a377349), 1218 unit tests passing, production live ✅
+**Immediate priority**: Merge PR #364 if all CI checks green. Then verify Lighthouse CI
+  improvement on home page (expected: ~1.5–2s LCP reduction from direct CDN preload).
+**Context**: Issue #363 implemented — LCP image now fetches Sanity CDN directly
+  (unoptimized={isPriority} + matching preload href), bypassing /_next/image proxy.
+**Reference docs**: SESSION_HANDOVER.md
+**Ready state**: perf/issue-363-lcp-direct-cdn-preload pushed, 1206 unit tests passing
 
-**Expected scope**: Lighthouse CI verification, optional Issue #349 (bundle size optimisation)
+**Expected scope**: Merge PR #364, check Lighthouse results, optional Issue #349 bundle size
 ```
 
 ---
@@ -102,7 +111,7 @@ Read CLAUDE.md to understand our workflow, then continue from Issue #358 complet
 ## 📚 Key Reference Documents
 
 - `SESSION_HANDOVER.md` — this file
-- `.github/workflows/production-deploy.yml` — deployment workflow (concurrency fix in `a377349`)
-- `tests/e2e/production-smoke.spec.ts` — production smoke tests (CSP/HSTS checks)
-- `src/components/adaptive/Gallery/index.tsx` — server component with CSS media query approach
-- `tests/e2e/utils/page-objects/gallery-page.ts` — viewport-aware GalleryPage class
+- `src/app/page.tsx` — LCP preload (direct CDN href, Issue #363)
+- `src/components/mobile/Gallery/MobileGalleryItem.tsx` — `unoptimized={isPriority}`
+- `.github/workflows/production-deploy.yml` — concurrency group (Issue #358)
+- `tests/e2e/utils/page-objects/gallery-page.ts` — viewport-aware GalleryPage

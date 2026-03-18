@@ -56,6 +56,7 @@ export default function MobileGalleryItem({
               sizes="100vw"
               priority={isPriority}
               loading={isPriority ? 'eager' : 'lazy'}
+              unoptimized={isPriority}
               className={`mobile-gallery-image ${styles.fullWidthImage}`}
             />
           </div>
