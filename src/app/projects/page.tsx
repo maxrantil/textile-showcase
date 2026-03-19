@@ -1,7 +1,6 @@
 import { Metadata } from 'next'
 import Gallery from '@/components/adaptive/Gallery'
 import { TextileDesign } from '@/types/textile'
-import { FirstImage } from '@/components/server/FirstImage'
 import { getOptimizedImageUrl } from '@/utils/image-helpers'
 import { generateBreadcrumbSchema } from '@/app/metadata/breadcrumb-schema'
 
@@ -121,7 +120,7 @@ export default async function ProjectsPage() {
 
       {/* Preload LCP image for immediate browser discovery
           Critical for Core Web Vitals - reduces Load Delay
-          Issue #41: imageSizes aligned with FirstImage.tsx to avoid double download */}
+          Issue #41: imageSizes for LCP image preload */}
       {preloadUrl && (
         <link
           rel="preload"
@@ -193,11 +192,6 @@ export default async function ProjectsPage() {
           }),
         }}
       />
-
-      {/* Static HTML first image for LCP optimization
-          Renders in initial HTML so browser can discover and load immediately
-          Hidden after client hydration completes */}
-      {firstDesign && <FirstImage design={firstDesign} />}
 
       <Gallery designs={designs} />
     </>
