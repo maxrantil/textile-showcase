@@ -44,6 +44,7 @@ jest.mock('@/utils/analytics', () => ({
 describe('MobileGalleryItem', () => {
   let MobileGalleryItem: React.ComponentType<{
     design: TextileDesign
+    isPriority?: boolean
   }>
 
   beforeAll(async () => {
