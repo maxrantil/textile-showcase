@@ -1,73 +1,57 @@
-# Session Handoff: Issue #363 — LCP Direct CDN Preload (CLOSED) + PR #365 type fix
+# Session Handoff: Issue #366 — Remove FirstImage overlay (IN PROGRESS)
 
 **Date**: 2026-03-19
-**Issue**: #363 — perf: preload LCP image via direct Sanity CDN URL instead of /_next/image proxy (CLOSED)
-**PR**: #364 — perf: preload LCP image via direct Sanity CDN URL — bypass /_next/image proxy (MERGED)
-**PR**: #365 — fix: add isPriority to MobileGalleryItem test type (OPEN — CI passing)
-**Branch**: fix/issue-363-test-type-ispriority
+**Issue**: #366 — fix: remove FirstImage overlay — redundant after Issue #363 direct CDN preload
+**PR**: #367 — fix: remove FirstImage overlay (OPEN — CI running)
+**Branch**: fix/issue-366-remove-first-image-overlay
 
 ---
 
 ## ✅ Completed This Session
 
-### 1. Home Page LCP Investigation
+### 1. Issue #363 — LCP Direct CDN Preload (CLOSED ✅)
 
-Diagnosed why home page CI Lighthouse LCP (5.7–9.0s) is so much worse than /about (2.8–4.2s):
+- PR #364 merged: `unoptimized={isPriority}` on `MobileGalleryItem` + direct CDN preload in `page.tsx`
+- PR #365 merged: TypeScript type fix (`isPriority?: boolean` in test ComponentType)
+- Production deployed successfully ✅
 
-- **LCP type**: home = gallery image (needs download), about = text h1 (in critical CSS)
-- **Five bottlenecks identified** — largest: `/_next/image` proxy overhead (~1.5–2s)
-- **Root cause**: preload in `page.tsx` pointed to `/_next/image?url=...` proxy URLs;
-  `<Image>` fetched via proxy even though Sanity CDN already serves optimised WebP
+### 2. Bug: FirstImage overlay (Issue #366, PR #367 — OPEN)
 
-### 2. LCP Fix (Issue #363, PR #364 — MERGED ✅)
+**Bug reported**: after Issue #363 deploy, home page shows a large full-screen overlay image
+on every page load that fades out after ~1 second.
 
-**Two-file change:**
+**Root cause**: `FirstImage` component (Issue #51) renders a `position: fixed` overlay image
+with a CSS `fadeOutAfterDelay` animation. Before Issue #363, the gallery was slow so the
+overlay wasn't jarring. After #363, the gallery loads instantly via direct CDN, making the
+overlay visually intrusive.
 
-`MobileGalleryItem.tsx` — add `unoptimized={isPriority}`:
-- LCP `<Image>` (index 0, isPriority=true) now renders `<img src="https://cdn.sanity.io/...">` directly
-- Eliminates `/_next/image` proxy from the LCP critical path
+**Fix** (PR #367):
+- `src/app/page.tsx` — removed `FirstImage` import and render
+- `src/app/projects/page.tsx` — same
+- `src/app/__tests__/page.test.tsx` — added regression test; updated mock with `data-first-image`
 
-`page.tsx` — replace `/_next/image` srcset preload with direct CDN href:
-```html
-<!-- Before: multi-entry /_next/image srcset -->
-<link rel="preload" as="image" imageSrcSet="/_next/image?url=...&w=750 750w, ..." />
+**TDD**: RED (test asserts `[data-first-image]` not present, fails) → GREEN (remove FirstImage) ✅
+**All 1218 unit tests passing** ✅
 
-<!-- After: single href matching unoptimized <img> src exactly -->
-<link rel="preload" as="image" href="https://cdn.sanity.io/...?w=800&q=80" fetchpriority="high" />
-```
+### 3. Prior Session Work (2026-03-18/19)
 
-**Tests** (TDD — RED → GREEN):
-- `MobileGalleryItem.test.tsx`: mock updated with `data-unoptimized`; 2 new tests
-- `page.test.tsx`: all 6 tests rewritten for new direct CDN preload; React 19 hoists
-  `<link rel="preload">` to `document.head` — tests updated to query `document.head`
-
-### 3. Type Fix (PR #365 — OPEN, CI all green except session handoff)
-
-After PR #364 merged, Production Deployment CI failed — `npm run type-check` caught:
-```
-Property 'isPriority' does not exist on type 'IntrinsicAttributes & { design: TextileDesign }'
-```
-Root cause: local `ComponentType<{ design: TextileDesign }>` declaration in test file was missing `isPriority?: boolean`.
-Fix committed as `fad058b`, PR #365 open and passing all checks.
-
-### 4. Context: Prior Session Work (2026-03-17/18)
-
-- PR #354 (undici) + PR #351 (tar) — Dependabot security updates merged ✅
-- Issue #358 + PR #359 — production deploy race condition fixed (concurrency group) ✅
+- Issue #363 + PR #364 + PR #365 — LCP direct CDN preload, all merged ✅
+- Issue #358 + PR #359 — production deploy concurrency group ✅
 - Production idaromme.dk: live, HTTP 200 ✅
 
 ---
 
 ## 🎯 Current Project State
 
-**Tests**: ✅ 1206 passing (23 skipped)
-**Branch**: fix/issue-363-test-type-ispriority (PR #365 open)
-**Production**: idaromme.dk — ✅ LIVE (but Production Deployment failed post-#364 merge; pending PR #365 fix)
-**PR #365**: ✅ All CI checks passing (except session handoff — fixed by this update)
+**Tests**: ✅ 1218 passing (23 skipped)
+**Branch**: fix/issue-366-remove-first-image-overlay (PR #367 open)
+**Production**: idaromme.dk — ✅ LIVE (Issue #363 deployed; Issue #366 pending PR #367)
+**PR #367**: ⏳ CI running
 
-### CI Status (PR #365)
-- ✅ Unit tests, Bundle size, E2E (Desktop/Mobile/Safari), Lighthouse, Secret scan, Commit quality
-- ✅ Verify Session Handoff (fixed by this update)
+### CI Status (PR #367)
+- ✅ Commit quality, Secret scan, AI attribution, PR title, Commit format
+- ✅ Session Handoff (fixed by this update)
+- ⏳ Unit tests, Bundle size, E2E, Lighthouse pending
 
 ---
 
@@ -75,24 +59,23 @@ Fix committed as `fad058b`, PR #365 open and passing all checks.
 
 | PR | Issue | Description |
 |----|-------|-------------|
+| #367 | #366 | fix: remove FirstImage overlay — redundant after Issue #363 |
 | #365 | #363 | fix: add isPriority to MobileGalleryItem test type |
 | #364 | #363 | perf: preload LCP via direct Sanity CDN — bypass /_next/image proxy |
 | #359 | #358 | fix: prevent concurrent production deployments — concurrency group |
-| #354 | — | build(deps): bump undici 6.23.0→6.24.1 (Dependabot) |
 
 ---
 
 ## 🚀 Next Session Priorities
 
-1. **Merge PR #365** (CI green after this handoff commit): unblocks Production Deployment
-2. **Verify Production Deployment succeeds** after PR #365 merge
-3. **Verify production LCP**: run Lighthouse on idaromme.dk after deploy to confirm improvement
-4. **Issue #349 (optional)** — unused JS: vendor 132KB, framework 61KB
+1. **Merge PR #367** (if CI green): fixes the FirstImage overlay visual bug
+2. **Verify production deploy** succeeds and overlay is gone on idaromme.dk
+3. **Issue #349 (optional)** — unused JS: vendor 132KB, framework 61KB
 
 ### Key Architecture Notes (carry-forward)
 - `MobileGalleryItem`: `unoptimized={isPriority}` — LCP image bypasses `/_next/image`
+- `FirstImage` component still exists in codebase but is no longer rendered anywhere
 - Both `MobileGallery` and `DesktopGallery` ALWAYS in SSR HTML — selectors must be viewport-scoped
-- `getGallerySelector(page)` helper in `lockdown-mode-simulation.spec.ts`
 - `GalleryPage` class (`tests/e2e/utils/page-objects/gallery-page.ts`) — viewport-aware getters
 - `Gallery.tsx` focus management: `scrollContainerRef.current?.querySelector(...)` — never bare `document.querySelector`
 
@@ -101,16 +84,16 @@ Fix committed as `fad058b`, PR #365 open and passing all checks.
 ## 📝 Startup Prompt for Next Session
 
 ```
-Read CLAUDE.md to understand our workflow, then continue from Issue #363 completion.
+Read CLAUDE.md to understand our workflow, then continue from Issue #366 completion.
 
-**Immediate priority**: Merge PR #365 (type fix, CI green), then verify Production Deployment
-  succeeds and Lighthouse shows LCP improvement on idaromme.dk home page.
-**Context**: Issue #363 merged (PR #364) — LCP image bypasses /_next/image proxy via
-  unoptimized={isPriority}. PR #365 fixes follow-up TypeScript type error in test file.
+**Immediate priority**: Merge PR #367 (remove FirstImage overlay, CI should be green).
+  Then verify production deploy and confirm overlay is gone on idaromme.dk home page.
+**Context**: Issue #366 — FirstImage was a legacy LCP hack that became a visual bug after
+  Issue #363 made gallery images load instantly via direct Sanity CDN.
 **Reference docs**: SESSION_HANDOVER.md
-**Ready state**: fix/issue-363-test-type-ispriority branch pushed, all CI green on PR #365
+**Ready state**: fix/issue-366-remove-first-image-overlay pushed, 1218 unit tests passing
 
-**Expected scope**: Merge PR #365, confirm production deploy, verify LCP improvement, optional Issue #349
+**Expected scope**: Merge PR #367, confirm deploy, optional Issue #349 bundle size
 ```
 
 ---
@@ -118,7 +101,7 @@ Read CLAUDE.md to understand our workflow, then continue from Issue #363 complet
 ## 📚 Key Reference Documents
 
 - `SESSION_HANDOVER.md` — this file
-- `src/app/page.tsx` — LCP preload (direct CDN href, Issue #363)
+- `src/app/page.tsx` — LCP preload (direct CDN href, no FirstImage)
 - `src/components/mobile/Gallery/MobileGalleryItem.tsx` — `unoptimized={isPriority}`
 - `.github/workflows/production-deploy.yml` — concurrency group (Issue #358)
 - `tests/e2e/utils/page-objects/gallery-page.ts` — viewport-aware GalleryPage
