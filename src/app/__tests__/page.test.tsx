@@ -43,7 +43,7 @@ jest.mock('@/components/adaptive/Gallery', () => ({
 }))
 
 jest.mock('@/components/server/FirstImage', () => ({
-  FirstImage: () => <div data-testid="first-image" />,
+  FirstImage: () => <div data-testid="first-image" data-first-image="true" />,
 }))
 
 const SANITY_BASE =
@@ -99,5 +99,10 @@ describe('Home page — direct CDN preload (Issue #363)', () => {
     const { container } = render(await Home())
     const link = document.head.querySelector('link[rel="preload"][as="image"]')
     expect(link).not.toBeInTheDocument()
+  })
+
+  it('does not render FirstImage overlay — removed in Issue #366 (redundant after #363)', async () => {
+    const { container } = await renderHome()
+    expect(container.querySelector('[data-first-image]')).not.toBeInTheDocument()
   })
 })

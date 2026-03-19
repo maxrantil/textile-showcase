@@ -1,7 +1,6 @@
 import { Metadata } from 'next'
 import Gallery from '@/components/adaptive/Gallery'
 import { TextileDesign } from '@/types/textile'
-import { FirstImage } from '@/components/server/FirstImage'
 import { getOptimizedImageUrl } from '@/utils/image-helpers'
 import { generatePortfolioFAQSchema } from '@/app/metadata/faq-schema'
 
@@ -98,14 +97,12 @@ export default async function Home() {
   // EMERGENCY FIX: Move data fetching to server-side to eliminate TTI delays
   const designs = await getDesigns()
 
-  // Issue #51 Phase 1: Get first design for FirstImage component
-  const firstDesign = designs[0]
-
   // Issue #363: Preload LCP image via direct Sanity CDN URL.
   // MobileGalleryItem uses unoptimized={isPriority} so the LCP <img> fetches the Sanity
   // CDN URL directly — the preload href must match this URL exactly.
   // Previously preloaded /_next/image proxy URLs (Issue #345) but proxy overhead
   // added ~1.5–2s to CI LCP; the preload and the actual <img> src now match.
+  const firstDesign = designs[0]
   const imageSource = firstDesign?.image || firstDesign?.images?.[0]?.asset
   const lcpImageUrl = imageSource
     ? getOptimizedImageUrl(imageSource, { width: 800, quality: 80 })
@@ -177,11 +174,6 @@ export default async function Home() {
         Ida Romme - Scandinavian Textile Artist | Contemporary Hand Weaving &amp;
         Color Exploration | Gothenburg
       </h1>
-
-      {/* Issue #51 Phase 2: Static HTML first image for LCP optimization
-          Renders in initial HTML so browser can discover and load immediately
-          Hidden after client hydration completes */}
-      {firstDesign && <FirstImage design={firstDesign} />}
 
       <Gallery designs={designs} />
     </>
