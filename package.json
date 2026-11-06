@@ -19,6 +19,7 @@
     "test:e2e:headed": "playwright test --headed",
     "build:analyze": "ANALYZE=true next build --webpack",
     "check-bundle-size": "node scripts/bundle-size-check.js",
+    "check-route-js": "node scripts/route-js-budget.mjs",
     "performance:baseline": "node scripts/performance-baseline.js",
     "type-check": "tsc --noEmit",
     "deploy:production": "./scripts/deploy-production.sh"
