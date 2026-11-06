@@ -84,9 +84,11 @@
 - Gzipped first-load JS: `/` **539KB / 47 scripts → 137KB / 7 scripts (−75%)**; same on all content routes
 - New blocking CI check `npm run check-route-js` (`scripts/route-js-budget.mjs`): 250KB gzip per route
 - Verified in Chromium (desktop + mobile): no page/console errors, menu interactive
-- ⚠️ **Pre-existing bug found (not fixed)**: `/studio` crashes — `next.config.ts` maps `sanity` → `null`
-  in client builds (`Cannot read properties of null (reading 'defineLocaleResourceBundle')`). Same on master.
-- Rebase chain after merges: #386 → #387 → this branch
+- Issue #388 / PR #390
+- Studio crash → Issue #389, fixed on `fix/issue-389-studio-null-externals` (stacked on this branch).
+  Three causes: client externals mapped `sanity` → `null`; an unused stega client threw;
+  CSP `connect-src` blocked `<project>.api.sanity.io` (now allowed on `/studio` only)
+- Rebase chain after merges: #386 → #387 → #390 → Studio PR
 
 ---
 
@@ -113,6 +115,11 @@ None of these block the deploy — the site works without them — but each clos
 4. Confirm `RESEND_API_KEY` (and `CONTACT_EMAIL` if used) live in `.env.production.local`,
    not `.env.local` — otherwise the contact form returns 503.
 5. Confirm Node 22: `source ~/.nvm/nvm.sh && node -v` → `v22.x` (CI now builds with 22).
+
+**B2. Sanity Studio (after the Studio PR deploys)**
+- Open https://idaromme.dk/studio and log in. Not verifiable from the dev sandbox (no route to sanity.io)
+- If login fails with a CORS error: sanity.io/manage → project → API → CORS origins →
+  add `https://idaromme.dk` with **Allow credentials** ticked
 
 **C. After merge & deploy — smoke checks** (from any machine)
 6. `curl -sI https://idaromme.dk/ | grep -iE "x-xss|cross-origin-opener|cache-control"`
