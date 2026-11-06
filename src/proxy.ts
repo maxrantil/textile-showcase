@@ -235,13 +235,24 @@ function addSecurityHeaders(
   //
   // Refs: https://nextjs.org/docs/pages/guides/content-security-policy
   //       docs/guides/SECURITY-CSP-DECISION-2025-11-19.md
+  // The embedded Sanity Studio talks to the project API (HTTPS + realtime
+  // WebSocket) and api.sanity.io for auth. Only /studio gets these origins;
+  // public pages never call the Sanity API from the browser (Issue #389).
+  const { pathname } = request.nextUrl
+  const isStudio = pathname === '/studio' || pathname.startsWith('/studio/')
+  const sanityProjectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID
+  const studioConnectSrc =
+    isStudio && sanityProjectId
+      ? `https://${sanityProjectId}.api.sanity.io wss://${sanityProjectId}.api.sanity.io https://api.sanity.io`
+      : ''
+
   const cspDirectives: string[] = [
     `default-src 'self'`,
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https://analytics.idaromme.dk ${isDevelopment ? "'unsafe-eval'" : ''} https: http:`,
     `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`,
     `img-src 'self' data: blob: https://cdn.sanity.io https://*.googleusercontent.com https://www.google-analytics.com`,
     `font-src 'self' data: https://fonts.gstatic.com`,
-    `connect-src 'self' https://cdn.sanity.io https://www.google-analytics.com https://analytics.google.com https://analytics.idaromme.dk ${isDevelopment ? 'ws://localhost:*' : ''}`,
+    `connect-src 'self' https://cdn.sanity.io https://www.google-analytics.com https://analytics.google.com https://analytics.idaromme.dk ${studioConnectSrc} ${isDevelopment ? 'ws://localhost:*' : ''}`,
     `media-src 'self' https://cdn.sanity.io`,
     `object-src 'none'`,
     `child-src 'self'`,
