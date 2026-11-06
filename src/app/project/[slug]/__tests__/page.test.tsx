@@ -37,8 +37,19 @@ jest.mock('../hooks/use-project-data', () => ({
 jest.mock('../components/project-metadata', () => ({
   generateProjectMetadata: jest.fn(),
 }))
+const mockProjectContent = jest.fn((props: Record<string, unknown>) => (
+  <div
+    data-testid="project-content"
+    data-device={String(props.initialDeviceType)}
+  />
+))
 jest.mock('../components/project-content', () => ({
-  ProjectContent: () => <div data-testid="project-content" />,
+  ProjectContent: (props: Record<string, unknown>) => mockProjectContent(props),
+}))
+
+let mockUserAgent = ''
+jest.mock('next/headers', () => ({
+  headers: async () => new Headers({ 'user-agent': mockUserAgent }),
 }))
 
 describe('ProjectPage document links', () => {
@@ -66,5 +77,28 @@ describe('ProjectPage document links', () => {
         'link[rel="preconnect"][href="https://cdn.sanity.io"]'
       )
     ).not.toBeNull()
+  })
+
+  it('passes the server device guess to the view (phones get the mobile view)', async () => {
+    mockUserAgent =
+      'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) Mobile/15E148 Safari/604.1'
+    render(
+      await ProjectPage({
+        params: Promise.resolve({ slug: 'composing-tones' }),
+      })
+    )
+    expect(mockProjectContent).toHaveBeenLastCalledWith(
+      expect.objectContaining({ initialDeviceType: 'mobile' })
+    )
+
+    mockUserAgent = 'Mozilla/5.0 (X11; Linux x86_64) Chrome/130.0 Safari/537.36'
+    render(
+      await ProjectPage({
+        params: Promise.resolve({ slug: 'composing-tones' }),
+      })
+    )
+    expect(mockProjectContent).toHaveBeenLastCalledWith(
+      expect.objectContaining({ initialDeviceType: 'desktop' })
+    )
   })
 })
