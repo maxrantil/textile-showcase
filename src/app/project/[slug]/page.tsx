@@ -1,4 +1,6 @@
+import { headers } from 'next/headers'
 import { notFound } from 'next/navigation'
+import { deviceTypeFromHeaders } from '@/lib/deviceHint'
 import { generateProjectMetadata } from './components/project-metadata'
 import { generateProjectBreadcrumbs } from '@/app/metadata/breadcrumb-schema'
 import { generateProjectStructuredData } from './utils/project-helpers'
@@ -30,6 +32,10 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
   if (!project) {
     notFound()
   }
+
+  // Render the view matching the requesting device so phones get the mobile
+  // layout and its LCP image in the initial HTML (the client still re-checks)
+  const initialDeviceType = deviceTypeFromHeaders(await headers())
 
   // Generate structured data schemas
   const breadcrumbSchema = generateProjectBreadcrumbs(project.title, slug)
@@ -65,6 +71,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
       <ProjectContent
         project={project}
         slug={slug}
+        initialDeviceType={initialDeviceType}
         nextProject={nextProject}
         previousProject={previousProject}
       />
