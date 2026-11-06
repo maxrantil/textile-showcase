@@ -91,7 +91,7 @@ export default async function ProjectsPage() {
   // Server-side data fetching to eliminate TTI delays
   const designs = await getDesigns()
 
-  // Get first design for FirstImage component
+  // First design provides the LCP image for the preload link
   const firstDesign = designs[0]
 
   // Generate preload URLs for LCP image using helper (webp - avif removed, Sanity 400s on ?fm=avif)
