@@ -11,7 +11,13 @@ const compat = new FlatCompat({
 
 const eslintConfig = [
   {
-    ignores: ['scripts/dist/**', 'scripts/dist/**/*', '**/scripts/dist/**'],
+    ignores: [
+      'scripts/dist/**',
+      'scripts/dist/**/*',
+      '**/scripts/dist/**',
+      // Vendored agent skills (upstream code, see .claude/skills/*/UPSTREAM.md)
+      '.claude/**',
+    ],
   },
   ...compat.extends('next/core-web-vitals', 'next/typescript'),
 ]
