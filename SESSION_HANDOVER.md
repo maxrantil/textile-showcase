@@ -62,6 +62,20 @@
 
 ---
 
+## ➕ Follow-up branch: `fix/lint-errors-and-ci-lint` (stacked on PR #386)
+
+- All 22 lint errors fixed → `npm run lint`: **0 errors** (27 warnings, allowed); lint now runs in Unit Tests CI
+- 6 components/hooks refactored off setState-in-effect (Header, useDeviceType, useVirtualKeyboard,
+  DesktopImageCarousel, OptimizedImage); unused `src/components/hydration/` deleted
+- Behaviour tests written against the OLD code first (all passed), then refactors applied: 14 new tests,
+  **1261 passing**. Carousel test verified to fail if the iOS image-error → lockdown switch is removed
+- Visible change: `OptimizedImage` priority images now render in server HTML (no empty first render)
+- ⚠️ Stacked: branched from `chore/security-hardening-and-updates`. **After #386 is squash-merged**, run
+  `git fetch origin master && git rebase --onto origin/master chore/security-hardening-and-updates fix/lint-errors-and-ci-lint`
+  then `git push --force-with-lease`
+
+---
+
 ## 🔧 Doctor Hubert's server & GitHub to-do (before/at merge of PR #386)
 
 None of these block the deploy — the site works without them — but each closes a gap.
@@ -100,7 +114,7 @@ None of these block the deploy — the site works without them — but each clos
 
 1. **Merge PR #386** (squash), then work through the to-do list above
 2. **Sanity 4 → 6 / next-sanity 13 migration** — clears the remaining critical/high advisories
-3. Fix the React Compiler lint errors (setState in effects), then add `npm run lint` to CI
+3. ~~Fix the React Compiler lint errors~~ → done on `fix/lint-errors-and-ci-lint`; rebase onto master after #386 merges
 4. Issue #349 (optional) — unused JS: vendor 132KB, framework 61KB
 
 ---
