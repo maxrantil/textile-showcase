@@ -174,8 +174,15 @@ function addSecurityHeaders(
   // Control referrer information
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
 
-  // Enable XSS protection (legacy, but still useful for older browsers)
-  response.headers.set('X-XSS-Protection', '1; mode=block')
+  // Disable the legacy XSS auditor: it is removed from modern browsers and
+  // '1; mode=block' enabled XS-Leak side channels in older ones (OWASP: use 0)
+  response.headers.set('X-XSS-Protection', '0')
+
+  // Isolate this browsing context from cross-origin windows (tabnabbing, XS-Leaks)
+  response.headers.set('Cross-Origin-Opener-Policy', 'same-origin')
+
+  // Disallow Flash/PDF cross-domain policy files
+  response.headers.set('X-Permitted-Cross-Domain-Policies', 'none')
 
   // DNS prefetch control
   response.headers.set('X-DNS-Prefetch-Control', 'on')
@@ -186,7 +193,7 @@ function addSecurityHeaders(
   // Control which features and APIs can be used
   response.headers.set(
     'Permissions-Policy',
-    'camera=(), microphone=(), geolocation=(), interest-cohort=()'
+    'camera=(), microphone=(), geolocation=(), payment=(), usb=(), browsing-topics=()'
   )
 
   // Strict Transport Security (HSTS) - only on HTTPS
