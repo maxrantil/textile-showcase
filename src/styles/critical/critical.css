@@ -109,7 +109,9 @@ button:focus-visible {
 
 @font-face {
   font-family: 'Inter';
-  src: url('/fonts/inter-500.woff2') format('woff2');
+  /* Same file as weight 400: inter-500.woff2 was a byte-identical copy,
+     downloaded (and preloaded) a second time on every page */
+  src: url('/fonts/inter-400.woff2') format('woff2');
   font-weight: 500;
   font-style: normal;
   font-display: swap;
