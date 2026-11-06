@@ -3,6 +3,7 @@ import Gallery from '@/components/adaptive/Gallery'
 import { TextileDesign } from '@/types/textile'
 import { getOptimizedImageUrl } from '@/utils/image-helpers'
 import { generateBreadcrumbSchema } from '@/app/metadata/breadcrumb-schema'
+import { safeJsonLd } from '@/lib/safeJsonLd'
 
 // Enhanced metadata for projects page - optimized for portfolio discovery
 export const metadata: Metadata = {
@@ -138,7 +139,7 @@ export default async function ProjectsPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(
+          __html: safeJsonLd(
             generateBreadcrumbSchema([
               { name: 'Home', path: '/' },
               { name: 'Projects', path: '/projects' },
@@ -151,7 +152,7 @@ export default async function ProjectsPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: safeJsonLd({
             '@context': 'https://schema.org',
             '@type': 'CollectionPage',
             name: 'Textile Design Portfolio - Ida Romme',

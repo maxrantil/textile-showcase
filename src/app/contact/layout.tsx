@@ -1,5 +1,6 @@
 import { Metadata } from 'next'
 import { generateContactBreadcrumbs } from '@/app/metadata/breadcrumb-schema'
+import { safeJsonLd } from '@/lib/safeJsonLd'
 
 // SEO metadata for Contact page - optimized for commission inquiries
 export const metadata: Metadata = {
@@ -106,7 +107,7 @@ export default function ContactLayout({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(breadcrumbSchema),
+          __html: safeJsonLd(breadcrumbSchema),
         }}
       />
 
@@ -114,7 +115,7 @@ export default function ContactLayout({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(contactSchema),
+          __html: safeJsonLd(contactSchema),
         }}
       />
 
