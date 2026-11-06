@@ -1,5 +1,6 @@
 import { Metadata } from 'next'
 import { generateAboutBreadcrumbs } from '@/app/metadata/breadcrumb-schema'
+import { safeJsonLd } from '@/lib/safeJsonLd'
 
 // SEO metadata for About page - optimized for artist discovery
 export const metadata: Metadata = {
@@ -100,7 +101,7 @@ export default function AboutLayout({ children }: AboutLayoutProps) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(breadcrumbSchema),
+          __html: safeJsonLd(breadcrumbSchema),
         }}
       />
 
@@ -108,7 +109,7 @@ export default function AboutLayout({ children }: AboutLayoutProps) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(personSchema),
+          __html: safeJsonLd(personSchema),
         }}
       />
 
