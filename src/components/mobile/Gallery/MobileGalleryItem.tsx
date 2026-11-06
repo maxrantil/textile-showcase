@@ -2,7 +2,7 @@
 
 import { TextileDesign } from '@/types/textile'
 import Image from 'next/image'
-import { getOptimizedImageUrl } from '@/utils/image-helpers'
+import { mobileGalleryImageUrl } from '@/utils/lcp-images'
 import { MobileGalleryItemClient } from './MobileGalleryItemClient'
 import styles from './MobileGalleryItem.module.css'
 
@@ -21,13 +21,8 @@ export default function MobileGalleryItem({
 }: MobileGalleryItemProps) {
   // Image source with fallback chain
   const imageSource = design.image || design.images?.[0]?.asset
-  const imageUrl = imageSource
-    ? getOptimizedImageUrl(imageSource, {
-        width: 800, // Mobile screen optimal
-        quality: 80, // Balance quality/size
-        format: 'auto', // Keep 'auto' to match preload URL generated in page.tsx
-      })
-    : '/images/placeholder.jpg' // Fallback
+  // Same URL the home page preloads for mobile (src/utils/lcp-images.ts)
+  const imageUrl = mobileGalleryImageUrl(design) || '/images/placeholder.jpg'
 
   const alt =
     design.image?.alt ||
@@ -54,8 +49,11 @@ export default function MobileGalleryItem({
               width={600}
               height={800}
               sizes="100vw"
-              priority={isPriority}
-              loading={isPriority ? 'eager' : 'lazy'}
+              // Lazy, and not `priority`: this gallery is display:none on desktop,
+              // where an eager <img> or priority preload would still download it.
+              // On phones the first image starts early via the mobile-only
+              // preload in src/app/page.tsx.
+              loading="lazy"
               unoptimized={isPriority}
               className={`mobile-gallery-image ${styles.fullWidthImage}`}
             />

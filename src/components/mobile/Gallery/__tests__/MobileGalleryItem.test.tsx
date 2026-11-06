@@ -7,6 +7,7 @@ import {
   mockMinimalDesign,
 } from '../../../../../tests/fixtures/designs'
 import { TextileDesign } from '@/types/textile'
+import { UmamiEvents } from '@/utils/analytics'
 
 // Mock Next.js Image component
 jest.mock('next/image', () => ({
@@ -19,6 +20,8 @@ jest.mock('next/image', () => ({
       width={props.width as number}
       height={props.height as number}
       data-unoptimized={props.unoptimized === true ? 'true' : 'false'}
+      data-loading={props.loading as string}
+      data-priority={props.priority === true ? 'true' : 'false'}
       data-testid="next-image"
     />
   ),
@@ -49,9 +52,8 @@ describe('MobileGalleryItem', () => {
 
   beforeAll(async () => {
     // Dynamic import after mocks are ready
-    const itemModule = await import(
-      '@/components/mobile/Gallery/MobileGalleryItem'
-    )
+    const itemModule =
+      await import('@/components/mobile/Gallery/MobileGalleryItem')
     MobileGalleryItem = itemModule.default
   })
 
@@ -176,7 +178,6 @@ describe('MobileGalleryItem', () => {
       if (link) {
         fireEvent.click(link) // Links respond to Enter via click
         // Verify analytics was tracked
-        const { UmamiEvents } = require('@/utils/analytics')
         expect(UmamiEvents.viewProject).toHaveBeenCalled()
       }
     })
@@ -190,7 +191,6 @@ describe('MobileGalleryItem', () => {
       const link = container.querySelector('a')
       if (link) {
         fireEvent.click(link) // Space activates links via click
-        const { UmamiEvents } = require('@/utils/analytics')
         expect(UmamiEvents.viewProject).toHaveBeenCalled()
       }
     })
@@ -225,7 +225,6 @@ describe('MobileGalleryItem', () => {
       const link = container.querySelector('a')
       if (link) {
         fireEvent.click(link)
-        const { UmamiEvents } = require('@/utils/analytics')
         expect(UmamiEvents.viewProject).toHaveBeenCalledWith(
           mockSingleDesign.title,
           mockSingleDesign.year
@@ -318,6 +317,16 @@ describe('MobileGalleryItem', () => {
 
       const img = screen.getByTestId('next-image')
       expect(img).toHaveAttribute('data-unoptimized', 'true')
+    })
+
+    it('loads the priority image lazily without next/image priority', () => {
+      // Desktop hides this gallery; an eager <img> or priority preload would
+      // download it there too. The home page preloads it for phones only.
+      render(<MobileGalleryItem design={mockSingleDesign} isPriority />)
+
+      const img = screen.getByTestId('next-image')
+      expect(img).toHaveAttribute('data-loading', 'lazy')
+      expect(img).toHaveAttribute('data-priority', 'false')
     })
 
     it('does not pass unoptimized to non-priority images', () => {

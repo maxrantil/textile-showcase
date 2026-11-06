@@ -13,6 +13,13 @@ export function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isHeaderVisible, setIsHeaderVisible] = useState(true)
   const pathname = usePathname()
+  const [menuPathname, setMenuPathname] = useState(pathname)
+
+  // Close menu on route change (state adjusted during render, not in an effect)
+  if (menuPathname !== pathname) {
+    setMenuPathname(pathname)
+    setIsMenuOpen(false)
+  }
 
   // Scroll effects for desktop view
   useEffect(() => {
@@ -35,11 +42,6 @@ export function Header() {
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
-
-  // Close menu on route change
-  useEffect(() => {
-    setIsMenuOpen(false)
-  }, [pathname])
 
   // Prevent body scroll when mobile menu is open
   useEffect(() => {

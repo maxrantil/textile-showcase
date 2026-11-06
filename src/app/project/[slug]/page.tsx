@@ -1,10 +1,11 @@
+import { headers } from 'next/headers'
 import { notFound } from 'next/navigation'
+import { deviceTypeFromHeaders } from '@/lib/deviceHint'
 import { generateProjectMetadata } from './components/project-metadata'
 import { generateProjectBreadcrumbs } from '@/app/metadata/breadcrumb-schema'
 import { generateProjectStructuredData } from './utils/project-helpers'
 import { getProjectWithNavigation } from './hooks/use-project-data'
 import { ProjectContent } from './components/project-content'
-import { getOptimizedImageUrl } from '@/utils/image-helpers'
 
 interface ProjectPageProps {
   params: Promise<{
@@ -32,19 +33,13 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
     notFound()
   }
 
+  // Render the view matching the requesting device so phones get the mobile
+  // layout and its LCP image in the initial HTML (the client still re-checks)
+  const initialDeviceType = deviceTypeFromHeaders(await headers())
+
   // Generate structured data schemas
   const breadcrumbSchema = generateProjectBreadcrumbs(project.title, slug)
   const projectSchema = generateProjectStructuredData(project, slug)
-
-  // Build LCP preload URL for the main project image
-  const imageSource = project.image || project.images?.[0]?.asset
-  const preloadUrl = imageSource
-    ? getOptimizedImageUrl(imageSource, {
-        width: 800,
-        quality: 80,
-        format: 'webp',
-      })
-    : null
 
   return (
     <>
@@ -52,17 +47,10 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
       <link rel="preconnect" href="https://cdn.sanity.io" />
       <link rel="dns-prefetch" href="https://cdn.sanity.io" />
 
-      {/* Preload LCP image so the browser discovers it from the initial HTML */}
-      {preloadUrl && (
-        <link
-          rel="preload"
-          as="image"
-          href={preloadUrl}
-          type="image/webp"
-          fetchPriority="high"
-          crossOrigin="anonymous"
-        />
-      )}
+      {/* No page-level LCP preload: the desktop carousel's first image uses
+          next/image priority, which preloads its exact responsive srcset. The old
+          hand-written preload (main image, w=800, webp, crossOrigin) matched
+          neither view's <img>, so every visit downloaded an unused image. */}
 
       {/* Breadcrumb structured data for rich snippets */}
       <script
@@ -83,6 +71,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
       <ProjectContent
         project={project}
         slug={slug}
+        initialDeviceType={initialDeviceType}
         nextProject={nextProject}
         previousProject={previousProject}
       />
