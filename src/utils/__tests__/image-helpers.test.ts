@@ -261,3 +261,21 @@ describe('image-helpers', () => {
     })
   })
 })
+
+describe('missing image sources', () => {
+  it('getOptimizedImageUrl returns an empty string for undefined/null instead of throwing', () => {
+    const missing = [undefined, null] as unknown as ImageSource[]
+    for (const source of missing) {
+      expect(() => getOptimizedImageUrl(source, { width: 800 })).not.toThrow()
+      expect(getOptimizedImageUrl(source, { width: 800 })).toBe('')
+    }
+  })
+
+  it('getSimpleImageUrl returns an empty string for undefined/null instead of throwing', () => {
+    const missing = [undefined, null] as unknown as ImageSource[]
+    for (const source of missing) {
+      expect(() => getSimpleImageUrl(source)).not.toThrow()
+      expect(getSimpleImageUrl(source)).toBe('')
+    }
+  })
+})
