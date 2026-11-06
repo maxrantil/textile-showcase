@@ -39,4 +39,21 @@ const config: Config = {
   ],
 }
 
-export default createJestConfig(config)
+// @sanity/image-url v2 is ESM-only: let next/jest's SWC transform compile it
+// instead of skipping it like the rest of node_modules
+const ESM_PACKAGES = ['@sanity/image-url']
+
+export default async function jestConfig() {
+  const resolved = await createJestConfig(config)()
+  return {
+    ...resolved,
+    // next/jest's first pattern is /node_modules/(?!.pnpm)(?!(geist|...)/):
+    // add our packages to its exception list
+    transformIgnorePatterns: (resolved.transformIgnorePatterns || []).map(
+      (pattern, index) =>
+        index === 0 && pattern.includes('(?!(')
+          ? pattern.replace('(?!(', `(?!(${ESM_PACKAGES.join('|')}|`)
+          : pattern
+    ),
+  }
+}

@@ -245,13 +245,15 @@ function addSecurityHeaders(
     isStudio && sanityProjectId
       ? `https://${sanityProjectId}.api.sanity.io wss://${sanityProjectId}.api.sanity.io https://api.sanity.io`
       : ''
+  // Sanity Studio v6 loads its Inter fonts from Sanity's design-system CDN
+  const studioFontSrc = isStudio ? 'https://design-system-static.sanity.io' : ''
 
   const cspDirectives: string[] = [
     `default-src 'self'`,
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https://analytics.idaromme.dk ${isDevelopment ? "'unsafe-eval'" : ''} https: http:`,
     `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`,
     `img-src 'self' data: blob: https://cdn.sanity.io https://*.googleusercontent.com https://www.google-analytics.com`,
-    `font-src 'self' data: https://fonts.gstatic.com`,
+    `font-src 'self' data: https://fonts.gstatic.com ${studioFontSrc}`,
     `connect-src 'self' https://cdn.sanity.io https://www.google-analytics.com https://analytics.google.com https://analytics.idaromme.dk ${studioConnectSrc} ${isDevelopment ? 'ws://localhost:*' : ''}`,
     `media-src 'self' https://cdn.sanity.io`,
     `object-src 'none'`,
