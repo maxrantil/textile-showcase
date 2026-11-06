@@ -91,6 +91,7 @@ const subscribeNoop = () => () => {}
 
 export function DesktopImageCarousel({
   images = [],
+  mainImage,
   projectTitle,
   currentIndex: externalCurrentIndex,
   onIndexChange,
@@ -127,11 +128,11 @@ export function DesktopImageCarousel({
   const currentIndex = externalCurrentIndex ?? internalCurrentIndex
   const setCurrentIndex = onIndexChange ?? setInternalCurrentIndex
 
-  // Create array of gallery images only (exclude main image)
+  // Gallery images only (main image excluded). A project without gallery
+  // images shows its main image instead, matching the mobile view (#399).
   const allImages = useMemo((): ExtendedGalleryImage[] => {
     const imageArray: ExtendedGalleryImage[] = []
 
-    // Only add gallery images (skip main image completely)
     if (images && images.length > 0) {
       imageArray.push(
         ...images.map((img) => ({
@@ -139,10 +140,17 @@ export function DesktopImageCarousel({
           isMainImage: false,
         }))
       )
+    } else if (mainImage) {
+      imageArray.push({
+        _key: 'main-image',
+        asset: mainImage,
+        caption: projectTitle,
+        isMainImage: true,
+      })
     }
 
     return imageArray
-  }, [images])
+  }, [images, mainImage, projectTitle])
 
   const currentImage = allImages[currentIndex] || (images && images[0])
 
@@ -359,8 +367,8 @@ export function DesktopImageCarousel({
 
   const currentImageSource = currentImage?.asset || (images && images[0]?.asset)
 
-  // Don't render if no gallery images
-  if (!images || images.length === 0) {
+  // Nothing to show: no gallery images and no main image
+  if (allImages.length === 0) {
     return (
       <div className="desktop-carousel-container">
         <div className="desktop-carousel-main">
