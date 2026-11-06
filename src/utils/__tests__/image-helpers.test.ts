@@ -171,7 +171,9 @@ describe('image-helpers', () => {
     it('returns URLs for each of the default sizes', () => {
       const source = makeImageSource('image-abc123-1920x1080-jpg')
       const urls = getResponsiveImageUrls(source)
-      expect(Object.keys(urls).map(Number)).toEqual([640, 768, 1024, 1280, 1920])
+      expect(Object.keys(urls).map(Number)).toEqual([
+        640, 768, 1024, 1280, 1920,
+      ])
     })
 
     it('returns URLs for custom sizes', () => {
@@ -229,5 +231,23 @@ describe('image-helpers', () => {
       const srcSet = generateSrcSet(source, [400])
       expect(srcSet).toMatch(/https:\/\/.*\s400w/)
     })
+  })
+})
+
+describe('missing image sources', () => {
+  it('getOptimizedImageUrl returns an empty string for undefined/null instead of throwing', () => {
+    const missing = [undefined, null] as unknown as ImageSource[]
+    for (const source of missing) {
+      expect(() => getOptimizedImageUrl(source, { width: 800 })).not.toThrow()
+      expect(getOptimizedImageUrl(source, { width: 800 })).toBe('')
+    }
+  })
+
+  it('getSimpleImageUrl returns an empty string for undefined/null instead of throwing', () => {
+    const missing = [undefined, null] as unknown as ImageSource[]
+    for (const source of missing) {
+      expect(() => getSimpleImageUrl(source)).not.toThrow()
+      expect(getSimpleImageUrl(source)).toBe('')
+    }
   })
 })

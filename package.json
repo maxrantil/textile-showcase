@@ -2,6 +2,9 @@
   "name": "textile-showcase",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "scripts": {
     "dev": "next dev --webpack",
     "build": "NODE_OPTIONS='--max-old-space-size=2048' next build --webpack",
@@ -16,36 +19,36 @@
     "test:e2e:headed": "playwright test --headed",
     "build:analyze": "ANALYZE=true next build --webpack",
     "check-bundle-size": "node scripts/bundle-size-check.js",
+    "check-bundle-size:strict": "node scripts/bundle-size-check.js --strict",
+    "check-route-js": "node scripts/route-js-budget.mjs",
     "performance:baseline": "node scripts/performance-baseline.js",
     "type-check": "tsc --noEmit",
     "deploy:production": "./scripts/deploy-production.sh"
   },
   "dependencies": {
+    "@sanity/cli": "^8.28.0",
     "@sanity/client": "^7.3.0",
-    "@sanity/image-url": "^1.1.0",
+    "@sanity/icons": "^5.2.3",
+    "@sanity/image-url": "^2.1.1",
+    "@sanity/vision": "^6.22.0",
     "critters": "^0.0.23",
-    "next": "^16.1.6",
-    "next-sanity": "^11.6.12",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "react-is": "^19.1.0",
+    "next": "^16.4.5",
+    "next-sanity": "^13.4.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "react-is": "^19.3.1",
     "resend": "^4.5.2",
-    "sharp": "^0.34.3",
+    "sanity": "^6.22.0",
+    "sharp": "^0.35.5",
     "styled-components": "^6.1.18",
     "web-vitals": "^5.1.0",
-    "zod": "^4.1.11"
-  },
-  "peerDependencies": {
-    "@sanity/cli": "^3.90.0",
-    "@sanity/icons": "^3.7.0",
-    "@sanity/vision": "^4.9.0",
-    "sanity": "^4.9.0"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.10.2",
     "@eslint/eslintrc": "^3",
     "@jest/globals": "^30.1.2",
-    "@next/bundle-analyzer": "^16.1.6",
+    "@next/bundle-analyzer": "^16.4.5",
     "@playwright/test": "^1.56.1",
     "@tailwindcss/postcss": "^4",
     "@testing-library/dom": "^10.4.0",
@@ -59,7 +62,7 @@
     "@types/react-dom": "^19",
     "@types/webpack": "^5.28.5",
     "eslint": "^9",
-    "eslint-config-next": "16.1.6",
+    "eslint-config-next": "^16.4.5",
     "glob": "^11.1.0",
     "jest": "^30.0.0",
     "jest-axe": "^10.0.0",
@@ -83,6 +86,13 @@
     },
     "@architect/utils": {
       "glob": "^10.5.0"
+    },
+    "@vercel/frameworks": {
+      "js-yaml": "^3.15.2",
+      "smol-toml": "^1.9.1"
+    },
+    "@module-federation/dts-plugin": {
+      "undici": "^7.30.2"
     }
   },
   "engineStrict": true

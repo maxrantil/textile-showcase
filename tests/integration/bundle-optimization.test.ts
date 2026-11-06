@@ -50,38 +50,33 @@ describe('Bundle Optimization Integration', () => {
   })
 
   describe('Webpack Configuration', () => {
-    it('should have webpack externals configuration for Sanity packages', async () => {
-      // GREEN: Verify webpack externals configuration
+    it('should not map Sanity packages to null in client builds', async () => {
+      // Mapping them to null crashed the embedded Studio (Issue #389);
+      // behaviour is covered by tests/unit/next-config-client-externals.test.ts
       const nextConfigContent = await fs.readFile(
         path.join(process.cwd(), 'next.config.ts'),
         'utf-8'
       )
 
-      // Should have externals configuration for client-side builds
-      expect(nextConfigContent).toContain('config.externals = {')
-      expect(nextConfigContent).toContain("'@sanity/client': 'null'")
-      expect(nextConfigContent).toContain("'@sanity/image-url': 'null'")
-      expect(nextConfigContent).toContain("'next-sanity': 'null'")
+      expect(nextConfigContent).not.toContain('config.externals = {')
+      expect(nextConfigContent).not.toMatch(/'next-sanity':\s*'null'/)
 
-      // Should have bundle splitting settings (Phase 1 configuration)
-      expect(nextConfigContent).toContain('maxInitialRequests: 4')
-      expect(nextConfigContent).toContain('framework:')
-      expect(nextConfigContent).toContain('styledSystem:')
+      // Must NOT force every node_module into one named vendor group: that
+      // shipped ~540KB gzip of JS to every page (per-route budget enforced
+      // by scripts/route-js-budget.mjs)
+      expect(nextConfigContent).not.toContain('maxInitialRequests: 4')
+      expect(nextConfigContent).not.toMatch(/name:\s*'vendor'/)
     })
 
-    it('should exclude Sanity packages from client-side bundles only', async () => {
-      // GREEN: Externals should only apply to client-side production builds
+    it('should keep Sanity client packages external on the server', async () => {
+      // Server code loads them from node_modules instead of bundling them
       const nextConfigContent = await fs.readFile(
         path.join(process.cwd(), 'next.config.ts'),
         'utf-8'
       )
 
-      // Should have condition for client-side only (!dev && !isServer)
-      expect(nextConfigContent).toContain('if (!dev && !isServer)')
-
-      // Should have Phase 4 comment indicating externals strategy
       expect(nextConfigContent).toContain(
-        'PHASE 4: Exclude Sanity dependencies from client-side bundles'
+        "serverExternalPackages: ['@sanity/client', '@sanity/image-url']"
       )
     })
   })

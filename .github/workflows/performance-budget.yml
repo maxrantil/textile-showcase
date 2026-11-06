@@ -50,7 +50,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - name: Install dependencies
@@ -67,6 +67,14 @@ jobs:
           echo "Building with production optimizations..."
           npm run build:production
           echo "Build completed successfully"
+
+      # Blocking: gzipped JS each public route actually loads (scripts/route-js-budget.mjs)
+      - name: Enforce per-route JS budget
+        env:
+          NEXT_PUBLIC_SANITY_PROJECT_ID: 'ci-build-dummy'
+          NEXT_PUBLIC_SANITY_DATASET: 'production'
+          NEXT_PUBLIC_SANITY_API_VERSION: '2023-05-03'
+        run: npm run check-route-js
 
       - name: Analyze bundle size
         id: bundle-analysis
@@ -164,7 +172,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - name: Install dependencies

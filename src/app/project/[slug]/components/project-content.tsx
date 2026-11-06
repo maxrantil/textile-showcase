@@ -10,6 +10,7 @@ interface ProjectContentProps {
   slug: string
   nextProject?: { slug: string; title: string }
   previousProject?: { slug: string; title: string }
+  initialDeviceType?: 'mobile' | 'desktop'
 }
 
 export function ProjectContent({
@@ -17,6 +18,7 @@ export function ProjectContent({
   slug,
   nextProject,
   previousProject,
+  initialDeviceType,
 }: ProjectContentProps) {
   const structuredData = generateProjectStructuredData(project, slug)
 
@@ -41,6 +43,7 @@ export function ProjectContent({
               project={project}
               nextProject={nextProject}
               previousProject={previousProject}
+              initialDeviceType={initialDeviceType}
             />
           </ErrorBoundary>
         </div>

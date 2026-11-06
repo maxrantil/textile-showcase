@@ -1,7 +1,7 @@
 // src/sanity/imageHelpers.ts
-import imageUrlBuilder from '@sanity/image-url'
+import { createImageUrlBuilder } from '@sanity/image-url'
 import { client } from './client'
-import type { SanityImageSource } from '@sanity/image-url/lib/types/types'
+import type { SanityImageSource } from '@sanity/image-url'
 
 // Define Sanity image types
 interface SanityImageAsset {
@@ -22,7 +22,7 @@ interface SanityImage {
 }
 
 // Image URL builder
-const builder = imageUrlBuilder(client)
+const builder = createImageUrlBuilder(client)
 
 export const urlFor = (source: SanityImageSource | null | undefined) => {
   if (!source) {
