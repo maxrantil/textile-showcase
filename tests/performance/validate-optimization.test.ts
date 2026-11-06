@@ -39,9 +39,9 @@ describe('Bundle Optimization Validation (PROOF)', () => {
     // Validate our webpack configuration strategy
     const nextConfig = readFileSync('next.config.ts', 'utf8')
 
-    // Sanity chunks are externalized from client bundles
-    expect(nextConfig).toContain('@sanity/client')
-    expect(nextConfig).toContain('externals')
+    // Sanity stays out of public routes through route-level code splitting
+    // (Studio is dynamically imported on /studio), not null externals (#389)
+    expect(nextConfig).not.toContain('config.externals = {')
 
     // Chunking is left to Next.js defaults so each route only loads what it
     // imports; a forced catch-all vendor group put every library on every page
