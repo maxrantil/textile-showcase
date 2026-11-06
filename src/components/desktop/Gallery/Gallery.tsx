@@ -8,7 +8,10 @@ import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import ImageNoStyle from '@/components/ui/ImageNoStyle'
 import { TextileDesign } from '@/types/textile'
-import { getOptimizedImageUrl } from '@/utils/image-helpers'
+import {
+  DESKTOP_GALLERY_IMAGE,
+  desktopGalleryImageUrl,
+} from '@/utils/lcp-images'
 import { UmamiEvents } from '@/utils/analytics'
 import { scrollManager } from '@/lib/scrollManager'
 import { NavigationArrows } from '@/components/ui/NavigationArrows'
@@ -35,15 +38,7 @@ const GalleryItem = memo(function GalleryItem({
     UmamiEvents.viewProject(design.title, design.year)
   }
 
-  const imageSource = design.image || design.images?.[0]?.asset
-  const imageUrl = imageSource
-    ? getOptimizedImageUrl(imageSource, {
-        height: 700,
-        quality: 75,
-        format: 'webp',
-        fit: 'crop',
-      })
-    : ''
+  const imageUrl = desktopGalleryImageUrl(design) || ''
 
   const displayImageUrl = imageUrl || '/images/placeholder.jpg'
   const projectUrl = `/project/${design.slug?.current || design._id}`
@@ -61,12 +56,15 @@ const GalleryItem = memo(function GalleryItem({
         <ImageNoStyle
           src={displayImageUrl}
           alt={`Textile design artwork: ${design.title}${design.year ? ` (${design.year})` : ''}`}
-          height={600}
-          width={800}
-          sizes="(max-width: 1024px) 90vw, (max-width: 1440px) 800px, 900px"
+          height={DESKTOP_GALLERY_IMAGE.height}
+          width={DESKTOP_GALLERY_IMAGE.width}
+          sizes={DESKTOP_GALLERY_IMAGE.sizes}
           className={`desktop-gallery-img ${styles.galleryImage}`}
-          priority={index === 0}
-          loading={index === 0 ? 'eager' : 'lazy'}
+          // Lazy, and not `priority`, even for the first (LCP) image: this gallery
+          // is display:none on phones, and an eager <img> or priority preload
+          // would download it there anyway. On desktop the first image starts
+          // early via the desktop-only preload in src/app/page.tsx.
+          loading="lazy"
         />
       </div>
 

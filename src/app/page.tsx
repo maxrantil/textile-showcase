@@ -1,7 +1,12 @@
 import { Metadata } from 'next'
 import Gallery from '@/components/adaptive/Gallery'
 import { TextileDesign } from '@/types/textile'
-import { getOptimizedImageUrl } from '@/utils/image-helpers'
+import {
+  DESKTOP_MEDIA,
+  MOBILE_MEDIA,
+  desktopGalleryPreload,
+  mobileGalleryImageUrl,
+} from '@/utils/lcp-images'
 import { generatePortfolioFAQSchema } from '@/app/metadata/faq-schema'
 
 // Enhanced metadata with structured data - optimized for search visibility
@@ -97,16 +102,13 @@ export default async function Home() {
   // EMERGENCY FIX: Move data fetching to server-side to eliminate TTI delays
   const designs = await getDesigns()
 
-  // Issue #363: Preload LCP image via direct Sanity CDN URL.
-  // MobileGalleryItem uses unoptimized={isPriority} so the LCP <img> fetches the Sanity
-  // CDN URL directly — the preload href must match this URL exactly.
-  // Previously preloaded /_next/image proxy URLs (Issue #345) but proxy overhead
-  // added ~1.5–2s to CI LCP; the preload and the actual <img> src now match.
+  // One LCP preload per viewport, built from the same helpers the galleries use
+  // (src/utils/lcp-images.ts) so each preload matches the <img> that viewport shows.
+  // Mobile: direct Sanity CDN URL (unoptimized <img>, Issue #363).
+  // Desktop: the next/image responsive srcset of the first desktop gallery image.
   const firstDesign = designs[0]
-  const imageSource = firstDesign?.image || firstDesign?.images?.[0]?.asset
-  const lcpImageUrl = imageSource
-    ? getOptimizedImageUrl(imageSource, { width: 800, quality: 80 })
-    : null
+  const mobileLcpUrl = firstDesign ? mobileGalleryImageUrl(firstDesign) : null
+  const desktopLcp = firstDesign ? desktopGalleryPreload(firstDesign) : null
 
   return (
     <>
@@ -114,11 +116,26 @@ export default async function Home() {
       <link rel="preconnect" href="https://cdn.sanity.io" />
       <link rel="dns-prefetch" href="https://cdn.sanity.io" />
 
-      {/* Issue #363: Preload LCP image directly from Sanity CDN — no /_next/image proxy.
-          MobileGalleryItem uses unoptimized={isPriority} so the src URL exactly matches
-          this href; the browser reuses the preloaded resource with no cache miss. */}
-      {lcpImageUrl && (
-        <link rel="preload" as="image" href={lcpImageUrl} fetchPriority="high" />
+      {/* Media-scoped so each viewport downloads only the image it displays */}
+      {mobileLcpUrl && (
+        <link
+          rel="preload"
+          as="image"
+          href={mobileLcpUrl}
+          media={MOBILE_MEDIA}
+          fetchPriority="high"
+        />
+      )}
+      {desktopLcp && (
+        <link
+          rel="preload"
+          as="image"
+          href={desktopLcp.href}
+          imageSrcSet={desktopLcp.imageSrcSet}
+          imageSizes={desktopLcp.imageSizes}
+          media={DESKTOP_MEDIA}
+          fetchPriority="high"
+        />
       )}
 
       {/* Structured data for SEO - Person schema */}

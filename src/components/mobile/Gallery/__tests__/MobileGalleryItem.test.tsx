@@ -20,6 +20,8 @@ jest.mock('next/image', () => ({
       width={props.width as number}
       height={props.height as number}
       data-unoptimized={props.unoptimized === true ? 'true' : 'false'}
+      data-loading={props.loading as string}
+      data-priority={props.priority === true ? 'true' : 'false'}
       data-testid="next-image"
     />
   ),
@@ -315,6 +317,16 @@ describe('MobileGalleryItem', () => {
 
       const img = screen.getByTestId('next-image')
       expect(img).toHaveAttribute('data-unoptimized', 'true')
+    })
+
+    it('loads the priority image lazily without next/image priority', () => {
+      // Desktop hides this gallery; an eager <img> or priority preload would
+      // download it there too. The home page preloads it for phones only.
+      render(<MobileGalleryItem design={mockSingleDesign} isPriority />)
+
+      const img = screen.getByTestId('next-image')
+      expect(img).toHaveAttribute('data-loading', 'lazy')
+      expect(img).toHaveAttribute('data-priority', 'false')
     })
 
     it('does not pass unoptimized to non-priority images', () => {
