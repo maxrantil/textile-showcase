@@ -47,6 +47,20 @@ describe('proxy CSP for the embedded Sanity Studio (Issue #389)', () => {
     expect(directive).toContain('https://api.sanity.io')
   })
 
+  it('allows the Sanity Studio v6 font host on /studio only', async () => {
+    const fontSrc = async (path: string) => {
+      const response = await proxy(
+        new NextRequest(`https://idaromme.dk${path}`)
+      )
+      const csp = response.headers.get('Content-Security-Policy') || ''
+      return csp.split(';').find((d) => d.trim().startsWith('font-src')) || ''
+    }
+    expect(await fontSrc('/studio')).toContain(
+      'https://design-system-static.sanity.io'
+    )
+    expect(await fontSrc('/about')).not.toContain('design-system-static')
+  })
+
   it('keeps public pages restricted to the image CDN', async () => {
     const directive = await connectSrc('/about')
     expect(directive).not.toContain('api.sanity.io')
