@@ -86,7 +86,7 @@ describe('MobileProjectView', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     ;(useRouter as jest.MockedFunction<typeof useRouter>).mockReturnValue(
-      mockRouter as ReturnType<typeof useRouter>
+      mockRouter as unknown as ReturnType<typeof useRouter>
     )
   })
 

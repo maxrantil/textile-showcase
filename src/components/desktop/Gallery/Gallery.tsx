@@ -89,12 +89,6 @@ export default function Gallery({ designs }: GalleryProps) {
   const hasRestoredRef = useRef(false)
   const focusTimeoutRef = useRef<NodeJS.Timeout | null>(null) // Track focus management timeout for cleanup
 
-  // Phase 4: Hide static first image AFTER first gallery image loads AND minimum display time
-  // Issue #132: Ensures FirstImage visible for minimum time (allows E2E tests to verify + prevents CLS flash)
-  // Issue #136: Fixed race condition on slow 3G - network-aware timing + proper image load detection
-  // Issue #236: Removed DOM polling for FirstImage hiding - now handled by CSS animation
-  // This eliminates 2-20s JavaScript overhead on Safari
-
   // Scroll to specific index
   const scrollToIndex = useCallback(
     (index: number, instant = false) => {
