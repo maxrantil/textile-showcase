@@ -18,7 +18,7 @@ if (!SANITY_PROJECT_ID) {
  * Lightweight alternative to @sanity/image-url for better bundle size
  */
 export function getOptimizedImageUrl(
-  source: ImageSource | string,
+  source: ImageSource | string | null | undefined,
   options: {
     width?: number
     height?: number
@@ -27,6 +27,11 @@ export function getOptimizedImageUrl(
     fit?: 'crop' | 'fillmax' | 'fill' | 'clip' | 'scale'
   } = {}
 ): string {
+  // Missing source (e.g. a project without gallery images)
+  if (!source) {
+    return ''
+  }
+
   // Handle direct URL strings
   if (typeof source === 'string') {
     return source
@@ -70,7 +75,13 @@ export function getOptimizedImageUrl(
  * Generate simple image URL without optimization parameters
  * Ultra-lightweight version for basic use cases
  */
-export function getSimpleImageUrl(source: ImageSource | string): string {
+export function getSimpleImageUrl(
+  source: ImageSource | string | null | undefined
+): string {
+  if (!source) {
+    return ''
+  }
+
   if (typeof source === 'string') {
     return source
   }

@@ -39,15 +39,14 @@ describe('Bundle Optimization Validation (PROOF)', () => {
     // Validate our webpack configuration strategy
     const nextConfig = readFileSync('next.config.ts', 'utf8')
 
-    // EMERGENCY FIX: Verify current optimization configuration
-    expect(nextConfig).toContain("chunks: 'all'") // Updated to current config
-    // Sanity chunks are now externalized instead of async
-    expect(nextConfig).toContain('@sanity/client')
-    expect(nextConfig).toContain('externals')
+    // Sanity stays out of public routes through route-level code splitting
+    // (Studio is dynamically imported on /studio), not null externals (#389)
+    expect(nextConfig).not.toContain('config.externals = {')
 
-    // Verify current bundle optimization strategy
-    expect(nextConfig).toContain('styledSystem') // Current cache group
-    expect(nextConfig).toContain('vendor') // Current vendor consolidation
+    // Chunking is left to Next.js defaults so each route only loads what it
+    // imports; a forced catch-all vendor group put every library on every page
+    expect(nextConfig).not.toMatch(/name:\s*'vendor'/)
+    expect(nextConfig).not.toContain('enforceSizeThreshold')
 
     console.log(
       '✅ Webpack configuration verified: Large dependencies are async-only'

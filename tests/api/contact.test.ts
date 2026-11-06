@@ -358,6 +358,7 @@ describe('POST /api/contact', () => {
       expect(mockResendSend).toHaveBeenCalledWith({
         from: 'contact@idaromme.dk',
         to: ['test@example.com'],
+        replyTo: 'john@example.com',
         subject: 'New Contact Form Message from John Doe',
         html: expect.stringContaining('John Doe'),
       })
@@ -440,9 +441,9 @@ describe('POST /api/contact', () => {
       const response = await POST(request)
       const data = await extractResponseJson(response)
 
-      expect(response.status).toBe(500)
+      expect(response.status).toBe(400)
       expect(data).toHaveProperty('error')
-      expect((data as { error: string }).error).toMatch(/unexpected error/i)
+      expect((data as { error: string }).error).toMatch(/invalid json/i)
     })
 
     it('should handle unexpected Resend errors', async () => {
@@ -576,6 +577,105 @@ describe('POST /api/contact', () => {
 
       const response = await POST(request)
       expect(response.status).toBe(200)
+    })
+  })
+
+  describe('Hardening', () => {
+    const validBody = {
+      name: 'Test User',
+      email: 'test@example.com',
+      message: 'This is a test message that is long enough.',
+    }
+
+    it('should not let a client bypass rate limiting by spoofing the leftmost x-forwarded-for entry', async () => {
+      mockResendSend.mockResolvedValue({ data: { id: '123' }, error: null })
+
+      // nginx appends the real client address as the rightmost entry
+      const statuses: number[] = []
+      for (let i = 0; i < 6; i++) {
+        const response = await POST(
+          createMockRequest({
+            body: validBody,
+            headers: { 'x-forwarded-for': `10.0.0.${i}, 203.0.113.7` },
+          })
+        )
+        statuses.push(response.status)
+      }
+
+      expect(statuses.slice(0, 5)).toEqual([200, 200, 200, 200, 200])
+      expect(statuses[5]).toBe(429)
+      expect(mockResendSend).toHaveBeenCalledTimes(5)
+    })
+
+    it('should reject oversized request bodies with 413', async () => {
+      const response = await POST(
+        createMockRequest({
+          body: { ...validBody, message: 'x'.repeat(40_000) },
+        })
+      )
+
+      expect(response.status).toBe(413)
+      expect(mockResendSend).not.toHaveBeenCalled()
+    })
+
+    it('should reject non-JSON content types with 415', async () => {
+      const response = await POST(
+        createMockRequest({
+          body: validBody,
+          headers: { 'Content-Type': 'text/plain' },
+        })
+      )
+
+      expect(response.status).toBe(415)
+      expect(mockResendSend).not.toHaveBeenCalled()
+    })
+
+    it('should strip control characters (CR/LF) from the email subject', async () => {
+      mockResendSend.mockResolvedValueOnce({ data: { id: '1' }, error: null })
+
+      await POST(
+        createMockRequest({
+          body: { ...validBody, name: 'Eve\r\nBcc: victim@example.com' },
+        })
+      )
+
+      const { subject } = mockResendSend.mock.calls[0][0]
+      expect(subject).not.toMatch(/[\r\n]/)
+      expect(subject).toContain('Eve')
+    })
+
+    it('should not show HTML entities in the plain-text subject', async () => {
+      mockResendSend.mockResolvedValueOnce({ data: { id: '1' }, error: null })
+
+      await POST(
+        createMockRequest({ body: { ...validBody, name: "O'Brien & Co" } })
+      )
+
+      const { subject, html } = mockResendSend.mock.calls[0][0]
+      expect(subject).toBe("New Contact Form Message from O'Brien & Co")
+      // HTML body must still be escaped
+      expect(html).toContain('O&#x27;Brien &amp; Co')
+    })
+
+    it('should enforce a global hourly cap across all IPs', async () => {
+      mockResendSend.mockResolvedValue({ data: { id: '1' }, error: null })
+      const { GLOBAL_CONTACT_LIMIT } = await import('@/lib/rateLimit')
+
+      let lastStatus = 0
+      for (let i = 0; i <= GLOBAL_CONTACT_LIMIT; i++) {
+        const response = await POST(
+          createMockRequest({
+            body: validBody,
+            headers: {
+              'x-forwarded-for': `198.51.100.${i % 250}, 172.16.${Math.floor(i / 250)}.${i % 250}`,
+            },
+          })
+        )
+        lastStatus = response.status
+      }
+
+      expect(lastStatus).toBe(429)
+      expect(mockResendSend).toHaveBeenCalledTimes(GLOBAL_CONTACT_LIMIT)
     })
   })
 })

@@ -28,7 +28,11 @@ const mockNextRequest = (
 
 const mockResponse = {
   headers: new Map<string, string>(),
-  set: jest.fn(function (this: any, key: string, value: string) {
+  set: jest.fn(function (
+    this: { headers: Map<string, string> },
+    key: string,
+    value: string
+  ) {
     this.headers.set(key, value)
   }),
 }
