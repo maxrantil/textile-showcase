@@ -1,5 +1,5 @@
 // ABOUTME: Tests the desktop carousel for projects without gallery images
-// It crashed (getOptimizedImageUrl(undefined)) before reaching its placeholder
+// Without a gallery it shows the project's main image, like the mobile view
 
 import { render, screen } from '@testing-library/react'
 import type { ImgHTMLAttributes } from 'react'
@@ -44,20 +44,43 @@ describe('DesktopImageCarousel without gallery images', () => {
   it.each([
     ['empty gallery', []],
     ['missing gallery', undefined],
-  ])(
-    'shows the no-gallery placeholder instead of crashing (%s)',
-    (_, images) => {
-      render(
-        <DesktopImageCarousel
-          images={images}
-          mainImage={mainImage}
-          projectTitle="Salt"
-        />
-      )
+  ])('shows the main image (%s)', (_, images) => {
+    render(
+      <DesktopImageCarousel
+        images={images}
+        mainImage={mainImage}
+        projectTitle="Salt"
+      />
+    )
 
-      expect(
-        screen.getByText('No gallery images available')
-      ).toBeInTheDocument()
-    }
-  )
+    const img = screen.getByRole('img')
+    expect(img.getAttribute('src')).toContain('mainimg-1200x900')
+    expect(
+      screen.queryByText('No gallery images available')
+    ).not.toBeInTheDocument()
+  })
+
+  it('shows no previous/next navigation for a single image', () => {
+    render(
+      <DesktopImageCarousel
+        images={[]}
+        mainImage={mainImage}
+        projectTitle="Salt"
+      />
+    )
+    expect(
+      screen.queryByRole('button', { name: /next|previous/i })
+    ).not.toBeInTheDocument()
+  })
+
+  it('still shows the placeholder when there is no image at all', () => {
+    render(
+      <DesktopImageCarousel
+        images={[]}
+        mainImage={undefined as never}
+        projectTitle="Salt"
+      />
+    )
+    expect(screen.getByText('No gallery images available')).toBeInTheDocument()
+  })
 })
