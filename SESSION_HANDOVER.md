@@ -76,6 +76,20 @@
 
 ---
 
+## ➕ Follow-up branch: `perf/reduce-client-js` (stacked on `fix/lint-errors-and-ci-lint`)
+
+- "Issue #349" in older notes was wrong: #349 is a closed handoff PR; no open issue tracks unused JS
+- Root cause: custom `splitChunks` forced ALL node_modules into one named `vendor` group (`enforce: true`),
+  so every page loaded every library. Removed (Sanity externals unchanged)
+- Gzipped first-load JS: `/` **539KB / 47 scripts → 137KB / 7 scripts (−75%)**; same on all content routes
+- New blocking CI check `npm run check-route-js` (`scripts/route-js-budget.mjs`): 250KB gzip per route
+- Verified in Chromium (desktop + mobile): no page/console errors, menu interactive
+- ⚠️ **Pre-existing bug found (not fixed)**: `/studio` crashes — `next.config.ts` maps `sanity` → `null`
+  in client builds (`Cannot read properties of null (reading 'defineLocaleResourceBundle')`). Same on master.
+- Rebase chain after merges: #386 → #387 → this branch
+
+---
+
 ## 🔧 Doctor Hubert's server & GitHub to-do (before/at merge of PR #386)
 
 None of these block the deploy — the site works without them — but each closes a gap.
