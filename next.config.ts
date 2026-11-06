@@ -48,7 +48,8 @@ const nextConfig = {
   // PHASE 2C: Critical server components for TTI optimization
   serverExternalPackages: ['@sanity/client', '@sanity/image-url'],
 
-  // PERFORMANCE: Phase 1 Bundle Consolidation - Strategic 4-chunk approach
+  // Client builds: externalize Sanity packages; chunk splitting is left to
+  // Next.js defaults so each route only downloads the code it imports
   webpack: (
     config: {
       optimization?: Record<string, unknown>
@@ -74,79 +75,6 @@ const nextConfig = {
         '@sanity/mutator': 'null',
         '@sanity/diff': 'null',
         '@sanity/util': 'null',
-      }
-
-      // CRITICAL: Strategic bundle consolidation from PDR Phase 1 - Aggressive approach
-      config.optimization = {
-        ...config.optimization,
-        splitChunks: {
-          chunks: 'all',
-          maxInitialRequests: 4, // Strict 4-chunk limit per PDR
-          maxAsyncRequests: 6, // Very conservative async limit
-          minSize: 50000, // Larger minimum to force consolidation
-          maxSize: 500000, // Larger max to allow strategic grouping
-          enforceSizeThreshold: 400000, // Force consolidation below this size
-
-          cacheGroups: {
-            // Disable default cache groups to prevent fragmentation
-            default: false,
-            defaultVendors: false,
-
-            // CRITICAL: Framework chunk (highest priority) - Allow larger size for consolidation
-            framework: {
-              test: /[\\/]node_modules[\\/](react|react-dom|next|scheduler|react-is)[\\/]/,
-              name: 'framework',
-              priority: 50,
-              chunks: 'all',
-              enforce: true,
-              minSize: 0,
-              maxSize: 400000, // Increased to allow consolidation
-            },
-
-            // PHASE 4: Sanity cache group removed - externalized instead
-
-            // Styled Components + UI Libraries - Consolidated
-            styledSystem: {
-              test: /[\\/]node_modules[\\/](styled-components|@emotion|@radix-ui|framer-motion)[\\/]/,
-              name: 'styled-system',
-              priority: 35,
-              chunks: 'all',
-              enforce: true,
-              minSize: 0,
-              maxSize: 300000,
-            },
-
-            // ALL OTHER vendor libraries (massive consolidation)
-            vendor: {
-              test: /[\\/]node_modules[\\/]/,
-              name: 'vendor',
-              priority: 10,
-              chunks: 'all',
-              enforce: true,
-              minSize: 0,
-              maxSize: 400000, // Reduced from 600KB to 400KB for better compression
-              minChunks: 1,
-            },
-          },
-        },
-
-        // Enhanced tree shaking per PDR
-        usedExports: true,
-        innerGraph: true, // Advanced tree shaking per PDR
-        sideEffects: false,
-        providedExports: true,
-
-        // Aggressive dead code elimination for Phase 2B
-        mangleExports: true,
-        realContentHash: true,
-
-        // Module concatenation for better performance per PDR
-        concatenateModules: true,
-        moduleIds: 'deterministic',
-        chunkIds: 'deterministic',
-        removeEmptyChunks: true,
-        mergeDuplicateChunks: true,
-        minimize: true,
       }
 
       // ENHANCED: Advanced module resolution optimizations
