@@ -1,10 +1,10 @@
 /** @type {import('next').NextConfig} */
 // Only require @next/bundle-analyzer (devDep) when ANALYZE=true so that
 // `next start` works with `npm ci --omit=dev` on the production VPS (Fixes #325).
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const withBundleAnalyzer =
   process.env.ANALYZE === 'true'
-    ? require('@next/bundle-analyzer')({ enabled: true })
+    ? // eslint-disable-next-line @typescript-eslint/no-require-imports
+      require('@next/bundle-analyzer')({ enabled: true })
     : (config: unknown) => config
 
 const nextConfig = {
@@ -200,9 +200,10 @@ const nextConfig = {
             key: 'Link',
             value: '<https://cdn.sanity.io>; rel=preconnect; crossorigin',
           },
+          // Legacy XSS auditor disabled per OWASP (proxy.ts sets the same value)
           {
             key: 'X-XSS-Protection',
-            value: '1; mode=block',
+            value: '0',
           },
           {
             key: 'X-Frame-Options',
@@ -216,11 +217,9 @@ const nextConfig = {
             key: 'Referrer-Policy',
             value: 'strict-origin-when-cross-origin',
           },
-          // Cache static assets
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
-          },
+          // No catch-all Cache-Control: it applied 'immutable' to HTML, API
+          // responses, sw.js and manifest.json. Next.js sets correct caching
+          // for /_next/static; public assets are covered by the rules below.
         ],
       },
       // Longer cache for images with proper referrer policy
@@ -234,6 +233,16 @@ const nextConfig = {
           {
             key: 'Referrer-Policy',
             value: 'strict-origin-when-cross-origin',
+          },
+        ],
+      },
+      // Self-hosted fonts
+      {
+        source: '/fonts/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
           },
         ],
       },
