@@ -7,6 +7,7 @@ import {
   mockMinimalDesign,
 } from '../../../../../tests/fixtures/designs'
 import { TextileDesign } from '@/types/textile'
+import { UmamiEvents } from '@/utils/analytics'
 
 // Mock Next.js Image component
 jest.mock('next/image', () => ({
@@ -49,9 +50,8 @@ describe('MobileGalleryItem', () => {
 
   beforeAll(async () => {
     // Dynamic import after mocks are ready
-    const itemModule = await import(
-      '@/components/mobile/Gallery/MobileGalleryItem'
-    )
+    const itemModule =
+      await import('@/components/mobile/Gallery/MobileGalleryItem')
     MobileGalleryItem = itemModule.default
   })
 
@@ -176,7 +176,6 @@ describe('MobileGalleryItem', () => {
       if (link) {
         fireEvent.click(link) // Links respond to Enter via click
         // Verify analytics was tracked
-        const { UmamiEvents } = require('@/utils/analytics')
         expect(UmamiEvents.viewProject).toHaveBeenCalled()
       }
     })
@@ -190,7 +189,6 @@ describe('MobileGalleryItem', () => {
       const link = container.querySelector('a')
       if (link) {
         fireEvent.click(link) // Space activates links via click
-        const { UmamiEvents } = require('@/utils/analytics')
         expect(UmamiEvents.viewProject).toHaveBeenCalled()
       }
     })
@@ -225,7 +223,6 @@ describe('MobileGalleryItem', () => {
       const link = container.querySelector('a')
       if (link) {
         fireEvent.click(link)
-        const { UmamiEvents } = require('@/utils/analytics')
         expect(UmamiEvents.viewProject).toHaveBeenCalledWith(
           mockSingleDesign.title,
           mockSingleDesign.year
