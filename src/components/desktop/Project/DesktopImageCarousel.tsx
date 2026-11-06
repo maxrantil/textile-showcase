@@ -1,6 +1,13 @@
 'use client'
 
-import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
+import {
+  useState,
+  useCallback,
+  useMemo,
+  useEffect,
+  useRef,
+  useSyncExternalStore,
+} from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { useKeyboardNavigation } from '@/hooks/desktop/useKeyboardNavigation'
@@ -48,6 +55,9 @@ const isIOSLockdownMode = () => {
   }
 }
 
+// Detected lockdown mode cannot change while the page is open, so nothing to subscribe to
+const subscribeNoop = () => () => {}
+
 export function DesktopImageCarousel({
   images = [],
   projectTitle,
@@ -56,7 +66,15 @@ export function DesktopImageCarousel({
 }: DesktopImageCarouselProps) {
   const router = useRouter()
   const [internalCurrentIndex, setInternalCurrentIndex] = useState(0)
-  const [useLockdownMode, setUseLockdownMode] = useState(false)
+  // Client-only detection; false during SSR and hydration
+  const detectedLockdownMode = useSyncExternalStore(
+    subscribeNoop,
+    isIOSLockdownMode,
+    () => false
+  )
+  // Set when an image fails to load on iOS
+  const [forcedLockdownMode, setForcedLockdownMode] = useState(false)
+  const useLockdownMode = detectedLockdownMode || forcedLockdownMode
   const carouselRef = useRef<HTMLDivElement>(null)
   const lastScrollTime = useRef(0)
   const lastNavigationTime = useRef(0)
@@ -64,14 +82,12 @@ export function DesktopImageCarousel({
   const isNavigating = useRef(false)
   const lastKeyboardDirection = useRef<'next' | 'previous' | null>(null)
 
-  // Check for iOS lockdown mode on mount (only for iPads)
+  // Log iOS lockdown mode detection (only for iPads)
   useEffect(() => {
-    const lockdownMode = isIOSLockdownMode()
-    if (lockdownMode) {
+    if (useLockdownMode) {
       console.log('🔒 iOS Lockdown Mode detected on tablet/iPad')
     }
-    setUseLockdownMode(lockdownMode)
-  }, [])
+  }, [useLockdownMode])
 
   // Use external index if provided, otherwise use internal
   const currentIndex = externalCurrentIndex ?? internalCurrentIndex
@@ -396,7 +412,7 @@ export function DesktopImageCarousel({
                         console.log(
                           '🔒 Image failed on iOS device, switching to lockdown mode'
                         )
-                        setUseLockdownMode(true)
+                        setForcedLockdownMode(true)
                       }
                     }}
                   />

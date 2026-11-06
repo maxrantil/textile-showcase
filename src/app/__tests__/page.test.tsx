@@ -42,10 +42,6 @@ jest.mock('@/components/adaptive/Gallery', () => ({
   default: () => <div data-testid="gallery" />,
 }))
 
-jest.mock('@/components/server/FirstImage', () => ({
-  FirstImage: () => <div data-testid="first-image" data-first-image="true" />,
-}))
-
 const SANITY_BASE =
   'https://cdn.sanity.io/images/testproject/testdataset/abc123-800x600.jpg?w=800&q=80'
 

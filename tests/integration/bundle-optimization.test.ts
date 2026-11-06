@@ -63,10 +63,11 @@ describe('Bundle Optimization Integration', () => {
       expect(nextConfigContent).toContain("'@sanity/image-url': 'null'")
       expect(nextConfigContent).toContain("'next-sanity': 'null'")
 
-      // Should have bundle splitting settings (Phase 1 configuration)
-      expect(nextConfigContent).toContain('maxInitialRequests: 4')
-      expect(nextConfigContent).toContain('framework:')
-      expect(nextConfigContent).toContain('styledSystem:')
+      // Must NOT force every node_module into one named vendor group: that
+      // shipped ~540KB gzip of JS to every page (per-route budget enforced
+      // by scripts/route-js-budget.mjs)
+      expect(nextConfigContent).not.toContain('maxInitialRequests: 4')
+      expect(nextConfigContent).not.toMatch(/name:\s*'vendor'/)
     })
 
     it('should exclude Sanity packages from client-side bundles only', async () => {

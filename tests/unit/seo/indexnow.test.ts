@@ -7,10 +7,79 @@ import { NextRequest } from 'next/server'
 const mockFetch = jest.fn()
 global.fetch = mockFetch
 
+const TEST_SECRET = 'test-indexnow-secret'
+const originalSecret = process.env.INDEXNOW_API_SECRET
+
+const indexNowRequest = (body: unknown, headers: Record<string, string> = {}) =>
+  new NextRequest('http://localhost:3000/api/indexnow', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...headers },
+    body: JSON.stringify(body),
+  })
+
 describe('IndexNow API', () => {
   beforeEach(() => {
     mockFetch.mockReset()
     jest.resetModules()
+    process.env.INDEXNOW_API_SECRET = TEST_SECRET
+  })
+
+  afterAll(() => {
+    process.env.INDEXNOW_API_SECRET = originalSecret
+  })
+
+  describe('POST /api/indexnow authorization', () => {
+    const body = { url: 'https://idaromme.dk/project/test' }
+
+    it('rejects requests without a bearer token', async () => {
+      const { POST } = await import('@/app/api/indexnow/route')
+      const response = await POST(indexNowRequest(body))
+      expect(response.status).toBe(401)
+      expect(mockFetch).not.toHaveBeenCalled()
+    })
+
+    it('rejects requests with the wrong bearer token', async () => {
+      const { POST } = await import('@/app/api/indexnow/route')
+      const response = await POST(
+        indexNowRequest(body, { Authorization: 'Bearer wrong-secret' })
+      )
+      expect(response.status).toBe(401)
+      expect(mockFetch).not.toHaveBeenCalled()
+    })
+
+    it('is disabled (503) when INDEXNOW_API_SECRET is not configured', async () => {
+      delete process.env.INDEXNOW_API_SECRET
+      const { POST } = await import('@/app/api/indexnow/route')
+      const response = await POST(
+        indexNowRequest(body, { Authorization: 'Bearer anything' })
+      )
+      expect(response.status).toBe(503)
+      expect(mockFetch).not.toHaveBeenCalled()
+    })
+
+    it('rejects more than 100 URLs per request', async () => {
+      const { POST } = await import('@/app/api/indexnow/route')
+      const urls = Array.from(
+        { length: 101 },
+        (_, i) => `https://idaromme.dk/project/p-${i}`
+      )
+      const response = await POST(
+        indexNowRequest({ urls }, { Authorization: `Bearer ${TEST_SECRET}` })
+      )
+      expect(response.status).toBe(400)
+      expect(mockFetch).not.toHaveBeenCalled()
+    })
+
+    it('rejects non-string URL entries', async () => {
+      const { POST } = await import('@/app/api/indexnow/route')
+      const response = await POST(
+        indexNowRequest(
+          { urls: [{ toString: 1 }] },
+          { Authorization: `Bearer ${TEST_SECRET}` }
+        )
+      )
+      expect(response.status).toBe(400)
+    })
   })
 
   describe('POST /api/indexnow', () => {
@@ -26,6 +95,7 @@ describe('IndexNow API', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${TEST_SECRET}`,
         },
         body: JSON.stringify({
           url: 'https://idaromme.dk/project/test-project',
@@ -52,6 +122,7 @@ describe('IndexNow API', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${TEST_SECRET}`,
         },
         body: JSON.stringify({
           urls: [
@@ -75,6 +146,7 @@ describe('IndexNow API', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${TEST_SECRET}`,
         },
         body: JSON.stringify({
           url: 'https://malicious-site.com/page',
@@ -95,6 +167,7 @@ describe('IndexNow API', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${TEST_SECRET}`,
         },
         body: JSON.stringify({}),
       })
@@ -115,6 +188,7 @@ describe('IndexNow API', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${TEST_SECRET}`,
         },
         body: JSON.stringify({
           url: 'https://idaromme.dk/project/test',
