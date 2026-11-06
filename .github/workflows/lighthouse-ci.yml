@@ -17,6 +17,8 @@ on:
       - 'package-lock.json'
       - 'next.config.ts'
       - 'lighthouserc.js'
+      - 'scripts/lighthouse-summary.js'
+      - '.github/workflows/lighthouse-ci.yml'
   push:
     branches: [master]
     paths:
@@ -30,6 +32,8 @@ on:
       - 'package-lock.json'
       - 'next.config.ts'
       - 'lighthouserc.js'
+      - 'scripts/lighthouse-summary.js'
+      - '.github/workflows/lighthouse-ci.yml'
 
 # Limit concurrent runs to prevent resource conflicts
 concurrency:
