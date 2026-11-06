@@ -12,6 +12,10 @@ concurrency:
   group: production-deploy
   cancel-in-progress: false
 
+# Least-privilege GITHUB_TOKEN: deploy only needs to read the repository
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -20,7 +24,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
       - name: Install dependencies
         run: npm ci
@@ -39,7 +43,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
       - name: Install dependencies
         run: npm ci
@@ -66,7 +70,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
       - name: Install dependencies
         run: npm ci
@@ -145,24 +149,44 @@ jobs:
           path: .next/
 
       - name: Set up SSH key for rsync
+        env:
+          VULTR_SSH_KEY: ${{ secrets.VULTR_SSH_KEY }}
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.VULTR_SSH_KEY }}" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
+          chmod 700 ~/.ssh
+          ( umask 077; printf '%s\n' "$VULTR_SSH_KEY" > ~/.ssh/deploy_key )
+
+      # Host key verification: store the VPS host key line(s) from
+      # `ssh-keyscan <host>` in the VULTR_KNOWN_HOSTS secret to prevent MITM.
+      # Without it, falls back to unverified connections (with a warning).
+      - name: Configure SSH host verification
+        env:
+          VULTR_KNOWN_HOSTS: ${{ secrets.VULTR_KNOWN_HOSTS }}
+        run: |
+          if [ -n "$VULTR_KNOWN_HOSTS" ]; then
+            printf '%s\n' "$VULTR_KNOWN_HOSTS" > ~/.ssh/known_hosts
+            chmod 600 ~/.ssh/known_hosts
+            echo "SSH_HOST_OPTS=-o StrictHostKeyChecking=yes -o UserKnownHostsFile=$HOME/.ssh/known_hosts" >> "$GITHUB_ENV"
+          else
+            echo "::warning::VULTR_KNOWN_HOSTS secret not set - SSH host key is NOT verified"
+            echo "SSH_HOST_OPTS=-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" >> "$GITHUB_ENV"
+          fi
 
       - name: Rsync build artifact to VPS staging area
         run: |
           rsync -az --delete \
-            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
+            -e "ssh -i ~/.ssh/deploy_key $SSH_HOST_OPTS" \
             .next/ \
             ${{ secrets.VULTR_USERNAME }}@${{ secrets.VULTR_HOST }}:/var/www/idaromme.dk/.next.incoming/
 
       - name: Deploy on VPS
-        uses: appleboy/ssh-action@v1.0.0
+        uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.VULTR_HOST }}
           username: ${{ secrets.VULTR_USERNAME }}
           key: ${{ secrets.VULTR_SSH_KEY }}
+          # SHA256 host key fingerprint; verification is skipped when unset
+          fingerprint: ${{ secrets.VULTR_HOST_FINGERPRINT }}
           script: |
             echo "🚀 Starting deployment..."
 
@@ -260,7 +284,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
       - name: Install dependencies
         run: npm ci

@@ -1,6 +1,13 @@
 'use client'
 
-import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
+import {
+  useState,
+  useCallback,
+  useMemo,
+  useEffect,
+  useRef,
+  useSyncExternalStore,
+} from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { useKeyboardNavigation } from '@/hooks/desktop/useKeyboardNavigation'
@@ -48,15 +55,27 @@ const isIOSLockdownMode = () => {
   }
 }
 
+// Detected lockdown mode cannot change while the page is open, so nothing to subscribe to
+const subscribeNoop = () => () => {}
+
 export function DesktopImageCarousel({
   images = [],
+  mainImage,
   projectTitle,
   currentIndex: externalCurrentIndex,
   onIndexChange,
 }: DesktopImageCarouselProps) {
   const router = useRouter()
   const [internalCurrentIndex, setInternalCurrentIndex] = useState(0)
-  const [useLockdownMode, setUseLockdownMode] = useState(false)
+  // Client-only detection; false during SSR and hydration
+  const detectedLockdownMode = useSyncExternalStore(
+    subscribeNoop,
+    isIOSLockdownMode,
+    () => false
+  )
+  // Set when an image fails to load on iOS
+  const [forcedLockdownMode, setForcedLockdownMode] = useState(false)
+  const useLockdownMode = detectedLockdownMode || forcedLockdownMode
   const carouselRef = useRef<HTMLDivElement>(null)
   const lastScrollTime = useRef(0)
   const lastNavigationTime = useRef(0)
@@ -64,24 +83,22 @@ export function DesktopImageCarousel({
   const isNavigating = useRef(false)
   const lastKeyboardDirection = useRef<'next' | 'previous' | null>(null)
 
-  // Check for iOS lockdown mode on mount (only for iPads)
+  // Log iOS lockdown mode detection (only for iPads)
   useEffect(() => {
-    const lockdownMode = isIOSLockdownMode()
-    if (lockdownMode) {
+    if (useLockdownMode) {
       console.log('🔒 iOS Lockdown Mode detected on tablet/iPad')
     }
-    setUseLockdownMode(lockdownMode)
-  }, [])
+  }, [useLockdownMode])
 
   // Use external index if provided, otherwise use internal
   const currentIndex = externalCurrentIndex ?? internalCurrentIndex
   const setCurrentIndex = onIndexChange ?? setInternalCurrentIndex
 
-  // Create array of gallery images only (exclude main image)
+  // Gallery images only (main image excluded). A project without gallery
+  // images shows its main image instead, matching the mobile view (#399).
   const allImages = useMemo((): ExtendedGalleryImage[] => {
     const imageArray: ExtendedGalleryImage[] = []
 
-    // Only add gallery images (skip main image completely)
     if (images && images.length > 0) {
       imageArray.push(
         ...images.map((img) => ({
@@ -89,10 +106,17 @@ export function DesktopImageCarousel({
           isMainImage: false,
         }))
       )
+    } else if (mainImage) {
+      imageArray.push({
+        _key: 'main-image',
+        asset: mainImage,
+        caption: projectTitle,
+        isMainImage: true,
+      })
     }
 
     return imageArray
-  }, [images])
+  }, [images, mainImage, projectTitle])
 
   const currentImage = allImages[currentIndex] || (images && images[0])
 
@@ -307,8 +331,8 @@ export function DesktopImageCarousel({
     }
   )
 
-  // Don't render if no gallery images
-  if (!images || images.length === 0) {
+  // Nothing to show: no gallery images and no main image
+  if (allImages.length === 0) {
     return (
       <div className="desktop-carousel-container">
         <div className="desktop-carousel-main">
@@ -396,7 +420,7 @@ export function DesktopImageCarousel({
                         console.log(
                           '🔒 Image failed on iOS device, switching to lockdown mode'
                         )
-                        setUseLockdownMode(true)
+                        setForcedLockdownMode(true)
                       }
                     }}
                   />

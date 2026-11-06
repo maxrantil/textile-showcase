@@ -389,34 +389,3 @@
 /* Remove dark mode support to prevent black background */
 /* Commented out the dark mode section that was causing the black background */
 
-/* FirstImage static LCP optimization - Issue #51 Phase 2
-   Issue #136: FirstImage now supports both desktop AND mobile for LCP optimization
-   - Desktop: Horizontal gallery (60vh height)
-   - Mobile: Vertical stack (full width)
-   FirstImage is visible initially on all viewports for fast LCP, then hidden by JS after gallery loads */
-@media (max-width: 768px) {
-  .first-image-container {
-    /* Mobile-specific layout for FirstImage
-       Visible initially for LCP optimization, hidden after gallery hydration
-       Issue #257: Keep in document flow (relative) to avoid overlaying gallery
-       pointer-events: none prevents any click blocking */
-    width: 100%;
-    margin-bottom: -50px; /* Overlap slightly to save space but don't block clicks */
-    z-index: -1; /* Behind gallery items so clicks go through */
-    pointer-events: none !important; /* Force pointer-events: none on mobile */
-    aspect-ratio: 4/3;
-    position: relative; /* Keep in document flow */
-  }
-
-  .first-image-container img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-
-  /* Hide after hydration (controlled by JS) */
-  .first-image-container[style*='display: none'] {
-    display: none !important;
-  }
-}

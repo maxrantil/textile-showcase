@@ -79,7 +79,9 @@ module.exports = {
 
         // Adjusted Core Web Vitals for CI environment (Issue #47)
         'first-contentful-paint': ['warn', { maxNumericValue: 3000 }], // <3s (was 2.5s)
-        'largest-contentful-paint': ['warn', { maxNumericValue: 5000 }], // <5s (was 3s)
+        // Agreed target: Core Web Vitals "good" (<= 2.5s). Warn-level: CI runs
+        // with simulated 1.6Mbps / 4x CPU, where the framework alone costs ~2s
+        'largest-contentful-paint': ['warn', { maxNumericValue: 2500 }],
         'cumulative-layout-shift': ['warn', { maxNumericValue: 0.25 }], // <0.25 (was 0.2)
         'max-potential-fid': ['warn', { maxNumericValue: 500 }], // <500ms
         'total-blocking-time': ['warn', { maxNumericValue: 1000 }], // <1s
@@ -176,7 +178,7 @@ if (process.env.CI) {
   ]
   module.exports.ci.assert.assertions['largest-contentful-paint'] = [
     'warn',
-    { maxNumericValue: 3000 },
+    { maxNumericValue: 2500 }, // agreed target: Core Web Vitals "good"
   ]
   module.exports.ci.assert.assertions['speed-index'] = [
     'warn',
@@ -211,7 +213,7 @@ if (process.env.NODE_ENV === 'development') {
   ]
   module.exports.ci.assert.assertions['largest-contentful-paint'] = [
     'warn',
-    { maxNumericValue: 1500 },
+    { maxNumericValue: 2500 }, // agreed target: Core Web Vitals "good"
   ]
 }
 

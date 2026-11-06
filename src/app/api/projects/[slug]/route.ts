@@ -4,6 +4,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { TextileDesign } from '@/types/textile'
 
+// Sanity slugs: letters (incl. æøå), digits, '-', '_', '.'; schema maxLength 200
+const SLUG_PATTERN = /^[\p{L}\p{N}_.-]{1,200}$/u
+
 interface RouteParams {
   params: Promise<{
     slug: string
@@ -13,7 +16,13 @@ interface RouteParams {
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const { slug } = await params
-    console.log(`🔍 API: Fetching project with navigation: ${slug}`)
+    if (typeof slug !== 'string' || !SLUG_PATTERN.test(slug)) {
+      return NextResponse.json({ error: 'Invalid slug' }, { status: 400 })
+    }
+
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔍 API: Fetching project with navigation: ${slug}`)
+    }
 
     // Server-side dynamic import - Sanity only loaded on API routes
     const [{ queries }, { resilientFetch }] = await Promise.all([
@@ -61,7 +70,9 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     ])
 
     if (!project) {
-      console.warn(`⚠️ API: Project not found: ${slug}`)
+      if (process.env.NODE_ENV === 'development') {
+        console.warn(`⚠️ API: Project not found: ${slug}`)
+      }
       return NextResponse.json({ error: 'Project not found' }, { status: 404 })
     }
 
@@ -77,9 +88,11 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         }
       : null
 
-    console.log(
-      `✅ API: Project found with navigation: ${project.title} (previous=${previousProject?.title}, next=${nextProject?.title})`
-    )
+    if (process.env.NODE_ENV === 'development') {
+      console.log(
+        `✅ API: Project found with navigation: ${project.title} (previous=${previousProject?.title}, next=${nextProject?.title})`
+      )
+    }
 
     const responseData = {
       project,
@@ -96,8 +109,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     return response
   } catch (error) {
-    const { slug } = await params
-    console.error(`❌ API: Failed to fetch project ${slug}:`, error)
+    console.error('❌ API: Failed to fetch project:', error)
 
     return NextResponse.json(
       {
