@@ -10,14 +10,17 @@ interface ProjectProps {
   project: TextileDesign
   nextProject?: { slug: string; title: string }
   previousProject?: { slug: string; title: string }
+  /** Server's request-based guess, so SSR renders the matching view (no swap) */
+  initialDeviceType?: 'mobile' | 'desktop'
 }
 
 export default function ProjectView({
   project,
   nextProject,
   previousProject,
+  initialDeviceType = 'desktop',
 }: ProjectProps) {
-  const deviceType = useDeviceType()
+  const deviceType = useDeviceType(initialDeviceType)
 
   return deviceType === 'mobile' ? (
     <MobileProjectView
