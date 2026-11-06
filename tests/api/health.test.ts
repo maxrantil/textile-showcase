@@ -56,8 +56,7 @@ describe('GET /api/health', () => {
   })
 
   const load = async () =>
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    (await import('@/pages/api/health')).default as (
+    (await import('@/pages/api/health')).default as unknown as (
       req: unknown,
       res: MockRes
     ) => Promise<void>
