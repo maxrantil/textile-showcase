@@ -43,7 +43,9 @@ describe('scrollManager', () => {
     it('stores a timestamp with the saved position', () => {
       const before = Date.now()
       sm.saveImmediate(3, '/projects')
-      expect(getStoragePositions()['/projects'].timestamp).toBeGreaterThanOrEqual(before)
+      expect(
+        getStoragePositions()['/projects'].timestamp
+      ).toBeGreaterThanOrEqual(before)
     })
 
     it('does not save when index has not changed since last save', () => {

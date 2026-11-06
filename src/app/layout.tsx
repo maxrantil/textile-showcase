@@ -57,18 +57,12 @@ export default async function RootLayout({ children }: RootLayoutProps) {
         />
         <link rel="dns-prefetch" href="https://cdn.sanity.io" />
 
-        {/* Issue #41: Preload critical self-hosted fonts with proper CORS
-            crossOrigin="anonymous" enables cache reuse between preload and @font-face */}
+        {/* Issue #41: Preload the self-hosted font with proper CORS
+            crossOrigin="anonymous" enables cache reuse between preload and @font-face.
+            One file serves weights 400 and 500 (see critical.css). */}
         <link
           rel="preload"
           href="/fonts/inter-400.woff2"
-          as="font"
-          type="font/woff2"
-          crossOrigin="anonymous"
-        />
-        <link
-          rel="preload"
-          href="/fonts/inter-500.woff2"
           as="font"
           type="font/woff2"
           crossOrigin="anonymous"

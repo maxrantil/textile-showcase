@@ -10,7 +10,7 @@ describe('AnalyticsProvider Integration Tests', () => {
 
   let originalEnv: NodeJS.ProcessEnv
   let mockRequestIdleCallback: jest.Mock
-  let originalRequestIdleCallback: any
+  let originalRequestIdleCallback: typeof window.requestIdleCallback
 
   beforeEach(() => {
     // Save original environment
@@ -541,8 +541,8 @@ describe('AnalyticsProvider Integration Tests', () => {
 
       await new Promise((resolve) => setTimeout(resolve, 100))
 
-      const wasScriptLoaded = (document.head.appendChild as jest.Mock).mock
-        .calls.length > 0
+      const wasScriptLoaded =
+        (document.head.appendChild as jest.Mock).mock.calls.length > 0
 
       if (wasScriptLoaded) {
         throw new Error(
@@ -573,8 +573,8 @@ describe('AnalyticsProvider Integration Tests', () => {
 
       await new Promise((resolve) => setTimeout(resolve, 100))
 
-      const wasScriptLoaded = (document.head.appendChild as jest.Mock).mock
-        .calls.length > 0
+      const wasScriptLoaded =
+        (document.head.appendChild as jest.Mock).mock.calls.length > 0
 
       if (wasScriptLoaded) {
         throw new Error(
