@@ -8,6 +8,7 @@ import {
   mobileGalleryImageUrl,
 } from '@/utils/lcp-images'
 import { generatePortfolioFAQSchema } from '@/app/metadata/faq-schema'
+import { safeJsonLd } from '@/lib/safeJsonLd'
 
 // Enhanced metadata with structured data - optimized for search visibility
 export const metadata: Metadata = {
@@ -142,7 +143,7 @@ export default async function Home() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: safeJsonLd({
             '@context': 'https://schema.org',
             '@type': 'Person',
             name: 'Ida Romme',
@@ -179,7 +180,7 @@ export default async function Home() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(generatePortfolioFAQSchema()),
+          __html: safeJsonLd(generatePortfolioFAQSchema()),
         }}
       />
 

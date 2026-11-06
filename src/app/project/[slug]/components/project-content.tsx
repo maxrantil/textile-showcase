@@ -4,6 +4,7 @@ import { TextileDesign } from '@/types/textile'
 import ProjectView from '@/components/adaptive/Project'
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 import { generateProjectStructuredData } from '../utils/project-helpers'
+import { safeJsonLd } from '@/lib/safeJsonLd'
 
 interface ProjectContentProps {
   project: TextileDesign
@@ -28,7 +29,7 @@ export function ProjectContent({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(structuredData),
+          __html: safeJsonLd(structuredData),
         }}
       />
 
