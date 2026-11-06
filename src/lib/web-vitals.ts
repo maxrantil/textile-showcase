@@ -155,7 +155,10 @@ export async function initWebVitals(
   callback?: WebVitalsCallback
 ): Promise<void> {
   // Only run in browser environment with PerformanceObserver support
-  if (typeof window === 'undefined' || typeof PerformanceObserver === 'undefined') {
+  if (
+    typeof window === 'undefined' ||
+    typeof PerformanceObserver === 'undefined'
+  ) {
     return
   }
 
@@ -202,7 +205,10 @@ export async function collectWebVitals(
   timeoutMs = 10000
 ): Promise<WebVitalsData> {
   // Only run in browser environment with PerformanceObserver support
-  if (typeof window === 'undefined' || typeof PerformanceObserver === 'undefined') {
+  if (
+    typeof window === 'undefined' ||
+    typeof PerformanceObserver === 'undefined'
+  ) {
     return {}
   }
 

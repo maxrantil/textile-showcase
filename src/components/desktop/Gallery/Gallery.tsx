@@ -87,13 +87,11 @@ export default function Gallery({ designs }: GalleryProps) {
   const [canScrollRight, setCanScrollRight] = useState(true)
   const isScrollingRef = useRef(false)
   const hasRestoredRef = useRef(false)
+  // Scroll snapping is enabled only after the first paint: snapping at initial
+  // layout scrolls the track before anything paints, and Chrome then records
+  // no Largest Contentful Paint for the home page (NO_LCP in Lighthouse)
+  const [snapReady, setSnapReady] = useState(false)
   const focusTimeoutRef = useRef<NodeJS.Timeout | null>(null) // Track focus management timeout for cleanup
-
-  // Phase 4: Hide static first image AFTER first gallery image loads AND minimum display time
-  // Issue #132: Ensures FirstImage visible for minimum time (allows E2E tests to verify + prevents CLS flash)
-  // Issue #136: Fixed race condition on slow 3G - network-aware timing + proper image load detection
-  // Issue #236: Removed DOM polling for FirstImage hiding - now handled by CSS animation
-  // This eliminates 2-20s JavaScript overhead on Safari
 
   // Scroll to specific index
   const scrollToIndex = useCallback(
@@ -190,6 +188,18 @@ export default function Gallery({ designs }: GalleryProps) {
     updateCurrentIndex()
   }, [updateCurrentIndex])
 
+  // Enable scroll snapping two frames after mount (i.e. after first paint)
+  useEffect(() => {
+    let second = 0
+    const first = requestAnimationFrame(() => {
+      second = requestAnimationFrame(() => setSnapReady(true))
+    })
+    return () => {
+      cancelAnimationFrame(first)
+      cancelAnimationFrame(second)
+    }
+  }, [])
+
   // Setup scroll listener
   useEffect(() => {
     const container = scrollContainerRef.current
@@ -281,15 +291,19 @@ export default function Gallery({ designs }: GalleryProps) {
   }, [designs.length, pathname, scrollToIndex, checkScrollBounds])
 
   // Save position and focus before navigation
-  const handleNavigate = useCallback((clickedIndex?: number) => {
-    // Use clicked index if provided, otherwise use currentIndex (for keyboard navigation)
-    const indexToSave = clickedIndex !== undefined ? clickedIndex : currentIndex
-    scrollManager.saveImmediate(indexToSave, pathname ?? undefined)
-    // Save current focused element index for restoration
-    if (typeof window !== 'undefined') {
-      sessionStorage.setItem('galleryFocusIndex', indexToSave.toString())
-    }
-  }, [pathname, currentIndex])
+  const handleNavigate = useCallback(
+    (clickedIndex?: number) => {
+      // Use clicked index if provided, otherwise use currentIndex (for keyboard navigation)
+      const indexToSave =
+        clickedIndex !== undefined ? clickedIndex : currentIndex
+      scrollManager.saveImmediate(indexToSave, pathname ?? undefined)
+      // Save current focused element index for restoration
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('galleryFocusIndex', indexToSave.toString())
+      }
+    },
+    [pathname, currentIndex]
+  )
 
   // Keyboard navigation (with vim keybindings)
   useEffect(() => {
@@ -403,7 +417,7 @@ export default function Gallery({ designs }: GalleryProps) {
 
       <div className="desktop-gallery" data-testid="desktop-gallery">
         <div
-          className="desktop-gallery-track"
+          className={`desktop-gallery-track${snapReady ? ' snap-ready' : ''}`}
           ref={scrollContainerRef}
           data-scroll-container="true"
           data-current-index={currentIndex.toString()}

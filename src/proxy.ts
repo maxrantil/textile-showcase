@@ -174,8 +174,15 @@ function addSecurityHeaders(
   // Control referrer information
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
 
-  // Enable XSS protection (legacy, but still useful for older browsers)
-  response.headers.set('X-XSS-Protection', '1; mode=block')
+  // Disable the legacy XSS auditor: it is removed from modern browsers and
+  // '1; mode=block' enabled XS-Leak side channels in older ones (OWASP: use 0)
+  response.headers.set('X-XSS-Protection', '0')
+
+  // Isolate this browsing context from cross-origin windows (tabnabbing, XS-Leaks)
+  response.headers.set('Cross-Origin-Opener-Policy', 'same-origin')
+
+  // Disallow Flash/PDF cross-domain policy files
+  response.headers.set('X-Permitted-Cross-Domain-Policies', 'none')
 
   // DNS prefetch control
   response.headers.set('X-DNS-Prefetch-Control', 'on')
@@ -186,7 +193,7 @@ function addSecurityHeaders(
   // Control which features and APIs can be used
   response.headers.set(
     'Permissions-Policy',
-    'camera=(), microphone=(), geolocation=(), interest-cohort=()'
+    'camera=(), microphone=(), geolocation=(), payment=(), usb=(), browsing-topics=()'
   )
 
   // Strict Transport Security (HSTS) - only on HTTPS
@@ -228,13 +235,24 @@ function addSecurityHeaders(
   //
   // Refs: https://nextjs.org/docs/pages/guides/content-security-policy
   //       docs/guides/SECURITY-CSP-DECISION-2025-11-19.md
+  // The embedded Sanity Studio talks to the project API (HTTPS + realtime
+  // WebSocket) and api.sanity.io for auth. Only /studio gets these origins;
+  // public pages never call the Sanity API from the browser (Issue #389).
+  const { pathname } = request.nextUrl
+  const isStudio = pathname === '/studio' || pathname.startsWith('/studio/')
+  const sanityProjectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID
+  const studioConnectSrc =
+    isStudio && sanityProjectId
+      ? `https://${sanityProjectId}.api.sanity.io wss://${sanityProjectId}.api.sanity.io https://api.sanity.io`
+      : ''
+
   const cspDirectives: string[] = [
     `default-src 'self'`,
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https://analytics.idaromme.dk ${isDevelopment ? "'unsafe-eval'" : ''} https: http:`,
     `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`,
     `img-src 'self' data: blob: https://cdn.sanity.io https://*.googleusercontent.com https://www.google-analytics.com`,
     `font-src 'self' data: https://fonts.gstatic.com`,
-    `connect-src 'self' https://cdn.sanity.io https://www.google-analytics.com https://analytics.google.com https://analytics.idaromme.dk ${isDevelopment ? 'ws://localhost:*' : ''}`,
+    `connect-src 'self' https://cdn.sanity.io https://www.google-analytics.com https://analytics.google.com https://analytics.idaromme.dk ${studioConnectSrc} ${isDevelopment ? 'ws://localhost:*' : ''}`,
     `media-src 'self' https://cdn.sanity.io`,
     `object-src 'none'`,
     `child-src 'self'`,
