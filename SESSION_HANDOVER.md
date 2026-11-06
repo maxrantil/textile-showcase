@@ -62,10 +62,43 @@
 
 ---
 
+## 🔧 Doctor Hubert's server & GitHub to-do (before/at merge of PR #386)
+
+None of these block the deploy — the site works without them — but each closes a gap.
+
+**A. GitHub repo secrets** (Settings → Secrets and variables → Actions → New repository secret)
+1. `VULTR_KNOWN_HOSTS` — run on your own machine (not the VPS):
+   `ssh-keyscan -t ed25519,ecdsa,rsa <VPS_HOST>` → paste the full output as the secret value.
+   Enables host-key checking for the rsync step.
+2. `VULTR_HOST_FINGERPRINT` — on the VPS run:
+   `ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub` → copy only the `SHA256:...` part.
+   Enables host-key checking for the ssh-action step.
+   Verify: the next deploy log no longer shows "SSH host key is NOT verified".
+
+**B. VPS environment** (`/var/www/idaromme.dk`)
+- ⚠️ Every deploy **overwrites `.env.local`**. Put server-only secrets in
+  **`.env.production.local`** instead (Next.js loads it in production; deploys don't touch it).
+3. `INDEXNOW_API_SECRET` — only if anything calls `POST /api/indexnow` (nothing in the repo does).
+   Generate: `openssl rand -hex 32`, add `INDEXNOW_API_SECRET=<value>` to `.env.production.local`,
+   then `pm2 restart idaromme-website`. Callers send `Authorization: Bearer <value>`.
+   Without it the endpoint returns 503 (intentional).
+4. Confirm `RESEND_API_KEY` (and `CONTACT_EMAIL` if used) live in `.env.production.local`,
+   not `.env.local` — otherwise the contact form returns 503.
+5. Confirm Node 22: `source ~/.nvm/nvm.sh && node -v` → `v22.x` (CI now builds with 22).
+
+**C. After merge & deploy — smoke checks** (from any machine)
+6. `curl -sI https://idaromme.dk/ | grep -iE "x-xss|cross-origin-opener|cache-control"`
+   → `x-xss-protection: 0`, `cross-origin-opener-policy: same-origin`, HTML not `immutable`
+7. `curl -s -o /dev/null -w "%{http_code}\n" -X POST -H 'Content-Type: application/csp-report' -d '{"csp-report":{}}' https://idaromme.dk/api/csp-report` → `204`
+8. Send one real message through the contact form → arrives; **Reply** goes to the sender (new `replyTo`)
+9. Open a project page → images load (sharp was bumped to 0.35; confirms the binary installed on the VPS)
+10. Optional: `pm2 logs idaromme-website --lines 50` → no new errors
+
+---
+
 ## 🚀 Next Session Priorities
 
-1. **Ops (Doctor Hubert)**: set `INDEXNOW_API_SECRET` on the VPS if IndexNow POST is used;
-   add `VULTR_KNOWN_HOSTS` (output of `ssh-keyscan <host>`) and `VULTR_HOST_FINGERPRINT` repo secrets
+1. **Merge PR #386** (squash), then work through the to-do list above
 2. **Sanity 4 → 6 / next-sanity 13 migration** — clears the remaining critical/high advisories
 3. Fix the React Compiler lint errors (setState in effects), then add `npm run lint` to CI
 4. Issue #349 (optional) — unused JS: vendor 132KB, framework 61KB
