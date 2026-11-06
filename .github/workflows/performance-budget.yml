@@ -324,12 +324,12 @@ jobs:
           ## Lighthouse Performance Validation
           ### Desktop Results
           - **Performance Score**: Target 98%+
-          - **LCP**: Target <1s
+          - **LCP**: Target ≤2.5s (Core Web Vitals "good")
           - **CLS**: Target <0.05
 
           ### Mobile Results
           - **Performance Score**: Target 98%+
-          - **LCP**: Target <1s
+          - **LCP**: Target ≤2.5s (Core Web Vitals "good")
           - **CLS**: Target <0.05
 
           ## Performance Budget Status
