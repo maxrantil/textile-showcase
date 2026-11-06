@@ -16,6 +16,13 @@
   scroll-behavior: smooth;
   scrollbar-width: none;
   align-items: center;
+  /* Snapping starts after first paint (.snap-ready, set by Gallery.tsx):
+     snapping at initial layout scrolls the track before paint and Chrome
+     then reports no LCP for the home page */
+  scroll-snap-type: none;
+}
+
+.desktop-gallery-track.snap-ready {
   scroll-snap-type: x mandatory;
 }
 
