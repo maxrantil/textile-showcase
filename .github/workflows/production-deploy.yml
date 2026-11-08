@@ -135,6 +135,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [test, security-scan, build]
     if: github.ref == 'refs/heads/master'
+    # VULTR_* secrets live in the "production" environment, which only the
+    # master branch may use, so workflows on other branches cannot read them.
+    environment: production
     steps:
       # Build artifact is already produced and uploaded by the 'build' job.
       # Download it here so we can rsync it to the VPS — no build on VPS (fixes OOM, Issue #320).
