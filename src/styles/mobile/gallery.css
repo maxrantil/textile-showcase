@@ -72,9 +72,9 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 14px;
+  font-size: 16px;
   color: #5a5a5a;
-  font-weight: 300;
+  font-weight: 400;
 }
 
 .mobile-gallery-error {
@@ -89,8 +89,8 @@
   z-index: 9999;
   color: #333;
   cursor: pointer;
-  font-size: 2.25rem;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 400;
   font-family: monospace;
   transition: all 0.2s ease;
   background: none;
@@ -113,7 +113,7 @@
 @media (max-width: 480px) {
   .scroll-to-top-button {
     bottom: 1.5rem;
-    font-size: 2rem;
+    font-size: 16px;
   }
 }
 
@@ -156,7 +156,7 @@
   color: white;
   border: none;
   border-radius: 4px;
-  font-size: 12px;
+  font-size: 16px;
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
@@ -176,36 +176,36 @@
 }
 
 .mobile-gallery-title {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 400;
   margin: 0 0 4px 0;
   color: #333;
-  letter-spacing: 0.3px;
+  letter-spacing: normal;
 }
 
 .mobile-gallery-year {
-  font-size: 14px;
+  font-size: 16px;
   color: #595959; /* WCAG AA contrast: 4.57:1 */
   margin: 0;
 }
 
 .mobile-gallery-description {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 400;
   line-height: 1.5;
   color: #666;
   margin: 8px 0 0 0;
-  letter-spacing: 0.2px;
+  letter-spacing: normal;
 }
 
 .mobile-gallery-category {
-  font-size: 12px;
+  font-size: 16px;
   font-weight: 400;
   line-height: 1.4;
   color: #999;
   margin: 6px 0 0 0;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
+  letter-spacing: normal;
+  text-transform: none;
 }
 
 /* Responsive Adjustments */
@@ -221,15 +221,16 @@
   }
 
   .mobile-gallery-title {
-    font-size: 13px;
+    font-size: 16px;
+    letter-spacing: normal;
   }
 
   .mobile-gallery-description {
-    font-size: 13px;
+    font-size: 16px;
   }
 
   .mobile-gallery-category {
-    font-size: 11px;
+    font-size: 16px;
   }
 
   .loading-spinner {
@@ -239,7 +240,7 @@
   }
 
   .retry-button {
-    font-size: 11px;
+    font-size: 16px;
     padding: 3px 6px;
   }
 }
@@ -256,12 +257,13 @@
   }
 
   .mobile-gallery-title {
-    font-size: 15px;
+    font-size: 16px;
+    letter-spacing: normal;
   }
 
   .mobile-gallery-loading,
   .mobile-gallery-error {
-    font-size: 13px;
+    font-size: 16px;
   }
 
   .loading-spinner {
@@ -283,7 +285,8 @@
   }
 
   .mobile-gallery-title {
-    font-size: 12px;
+    font-size: 16px;
+    letter-spacing: normal;
   }
 
   .loading-spinner {
@@ -293,7 +296,7 @@
 
   .mobile-gallery-loading,
   .mobile-gallery-error {
-    font-size: 12px;
+    font-size: 16px;
   }
 }
 
@@ -310,7 +313,8 @@
   }
 
   .mobile-gallery-title {
-    font-size: 14px;
+    font-size: 16px;
+    letter-spacing: normal;
   }
 
   .loading-spinner {

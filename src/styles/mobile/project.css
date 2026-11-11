@@ -18,16 +18,16 @@
 }
 
 .mobile-project-header {
-  text-align: center;
+  text-align: left;
   margin-bottom: 32px;
 }
 
 .mobile-project-title {
-  font-size: clamp(24px, 6vw, 32px);
-  font-weight: 300;
+  font-size: 20px;
+  font-weight: 400;
   margin: 0 0 8px 0;
   color: #333;
-  letter-spacing: -0.5px;
+  letter-spacing: normal;
 }
 
 .mobile-project-year {
@@ -47,12 +47,12 @@
 }
 
 .mobile-section-title {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 400;
   margin: 0 0 16px 0;
-  color: #333;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  color: #666;
+  text-transform: none;
+  letter-spacing: normal;
 }
 
 .mobile-project-description {
@@ -70,17 +70,17 @@
 
 .mobile-detail-item h3,
 .mobile-info-item h3 {
-  font-size: 12px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-size: 16px;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
   color: #5a5a5a;
   margin: 0 0 4px 0;
 }
 
 .mobile-detail-item p,
 .mobile-info-item p {
-  font-size: 14px;
+  font-size: 16px;
   color: #333;
   margin: 0;
 }
@@ -92,7 +92,7 @@
 }
 
 .mobile-care-instructions {
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.5;
   color: #555;
   background: #fff;
@@ -144,16 +144,16 @@
   background: rgba(0, 0, 0, 0.7);
   color: white;
   border-radius: 4px;
-  font-size: 14px;
+  font-size: 16px;
   text-align: center;
 }
 
 .mobile-image-caption {
   margin-top: 12px;
   text-align: center;
-  font-size: 14px;
+  font-size: 16px;
   color: #666;
-  font-style: italic;
+  font-style: normal;
   line-height: 1.4;
 }
 
@@ -168,19 +168,19 @@
 }
 
 .mobile-next-project-label {
-  font-size: 0.75rem;
+  font-size: 16px;
   color: #5a5a5a;
   margin-bottom: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-weight: 500;
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: 400;
 }
 
 .mobile-next-project-button {
   width: 100%;
   padding: 1rem;
   font-size: 1rem;
-  font-weight: 500;
+  font-weight: 400;
 }
 
 /* Mobile Project Navigation - Simple 3 Buttons */
@@ -201,9 +201,9 @@
 .mobile-nav-next,
 .mobile-nav-back {
   padding: 0.875rem 0.5rem;
-  font-size: 0.875rem;
+  font-size: 16px;
   text-align: center;
-  font-weight: 500;
+  font-weight: 400;
 }
 
 /* Previous button - align left to keep < symbol inline with text */
@@ -232,7 +232,7 @@
   .mobile-nav-next,
   .mobile-nav-back {
     padding: 0.75rem 0.375rem;
-    font-size: 0.8125rem;
+    font-size: 16px;
   }
 }
 
@@ -251,4 +251,11 @@
     margin-top: 1.5rem;
     padding: 1rem 0;
   }
+}
+
+/* Project navigation reads as text links, not boxed buttons */
+.mobile-project-navigation .nordic-btn {
+  border-color: transparent;
+  background: none;
+  color: var(--color-text-secondary);
 }

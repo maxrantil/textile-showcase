@@ -27,7 +27,6 @@
   align-items: center;
   justify-content: space-between;
   padding: 1rem;
-  max-width: 1200px;
   margin: 0 auto;
 }
 
@@ -36,16 +35,12 @@
   text-decoration: none;
   color: inherit;
   font-size: 1.25rem;
-  font-weight: 600;
+  font-weight: 400;
   transition: opacity 0.2s;
 }
 
 .header__logo:hover {
   opacity: 0.8;
-}
-
-.header__logo-text {
-  letter-spacing: 0.05em;
 }
 
 /* Desktop Navigation (hidden on mobile) */
@@ -56,8 +51,8 @@
 .header__nav-link {
   text-decoration: none;
   color: #666;
-  font-size: 0.875rem;
-  font-weight: 500;
+  font-size: 1.25rem;
+  font-weight: 400;
   margin-left: 2rem;
   transition: color 0.2s;
   position: relative;
@@ -69,16 +64,6 @@
 
 .header__nav-link--active {
   color: #000;
-}
-
-.header__nav-link--active::after {
-  content: '';
-  position: absolute;
-  bottom: -4px;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background-color: #000;
 }
 
 /* Mobile Menu Button */
@@ -154,8 +139,8 @@
 .mobile-menu__link {
   display: block;
   padding: 1rem;
-  font-size: 1.5rem;
-  font-weight: 500;
+  font-size: 1.25rem;
+  font-weight: 400;
   text-decoration: none;
   color: #666;
   transition: color 0.2s;
@@ -169,11 +154,11 @@
 /* Tablet Styles (768px and up) */
 @media (min-width: 768px) {
   .header__container {
-    padding: 1.5rem 2rem;
+    padding: 1.0625rem 1.5rem;
   }
 
   .header__logo {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
   }
 
   /* Show desktop nav, hide mobile menu button */
@@ -193,19 +178,8 @@
 
 /* Desktop Styles (1024px and up) */
 @media (min-width: 1024px) {
-  .header__container {
-    padding: 2rem 3rem;
-  }
-
   .header__nav-link {
-    font-size: 1rem;
+    font-size: 1.25rem;
     margin-left: 3rem;
-  }
-}
-
-/* Large Desktop (1280px and up) */
-@media (min-width: 1280px) {
-  .header__container {
-    max-width: 1400px;
   }
 }

@@ -7,10 +7,10 @@
 .nordic-btn {
   display: inline-block;
   padding: 12px 24px;
-  font-size: 11px;
+  font-size: 16px;
   font-weight: 400;
-  letter-spacing: 0.8px;
-  text-transform: uppercase;
+  letter-spacing: normal;
+  text-transform: none;
   text-decoration: none;
   border: 1px solid transparent;
   border-radius: 0;
@@ -82,8 +82,8 @@
   color: #ffffff;
   border: 1px solid var(--color-text-secondary);
   padding: 14px 28px;
-  font-size: 10px;
-  letter-spacing: 1px;
+  font-size: 16px;
+  letter-spacing: normal;
   min-width: 120px;
 }
 
@@ -102,14 +102,14 @@
 /* Size Variants */
 .nordic-btn-sm {
   padding: 8px 16px;
-  font-size: 10px;
-  letter-spacing: 0.6px;
+  font-size: 16px;
+  letter-spacing: normal;
 }
 
 .nordic-btn-lg {
   padding: 16px 32px;
-  font-size: 12px;
-  letter-spacing: 1px;
+  font-size: 16px;
+  letter-spacing: normal;
 }
 
 /* Link styling */
@@ -128,8 +128,8 @@
 .nordic-link-subtle {
   color: var(--color-text-light);
   transition: color 0.2s ease;
-  font-size: 11px;
-  letter-spacing: 0.3px;
+  font-size: 16px;
+  letter-spacing: normal;
 }
 
 .nordic-link-subtle:hover {
@@ -146,16 +146,20 @@
 @media (max-width: 768px) {
   .nordic-btn {
     padding: 14px 20px;
-    font-size: 10px;
+    font-size: 16px;
     min-height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
+    letter-spacing: normal;
+    text-transform: none;
   }
 
   .nordic-btn-submit {
     padding: 16px 24px;
     min-width: 100px;
+    font-size: 16px;
+    letter-spacing: normal;
   }
 }
 
@@ -167,6 +171,8 @@
 .nordic-btn-submit {
   box-shadow: none;
   transform: none;
+  font-size: 16px;
+  letter-spacing: normal;
 }
 
 .nordic-btn:hover,
