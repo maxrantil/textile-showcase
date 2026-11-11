@@ -1,19 +1,14 @@
-import { dirname } from 'path'
-import { fileURLToPath } from 'url'
-import { FlatCompat } from '@eslint/eslintrc'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-})
+// ABOUTME: ESLint flat config using eslint-config-next's native flat presets
+// ABOUTME: (core-web-vitals + typescript); FlatCompat is not needed since Next 16
+import nextCoreWebVitals from 'eslint-config-next/core-web-vitals'
+import nextTypescript from 'eslint-config-next/typescript'
 
 const eslintConfig = [
   {
     ignores: ['scripts/dist/**', 'scripts/dist/**/*', '**/scripts/dist/**'],
   },
-  ...compat.extends('next/core-web-vitals', 'next/typescript'),
+  ...nextCoreWebVitals,
+  ...nextTypescript,
 ]
 
 export default eslintConfig
