@@ -1,107 +1,70 @@
-# Session Handoff: Issue #366 — Remove FirstImage overlay (IN PROGRESS)
+# Session Handoff: ESLint restore + Fable frontend session prep
 
-**Date**: 2026-03-19
-**Issue**: #366 — fix: remove FirstImage overlay — redundant after Issue #363 direct CDN preload
-**PR**: #367 — fix: remove FirstImage overlay (OPEN — CI running)
-**Branch**: fix/issue-366-remove-first-image-overlay
+**Date**: 2026-11-11
+**PR**: #410 — fix: restore ESLint with native Next 16 flat config (DRAFT)
+**Branch**: fix/eslint-native-flat-config
 
 ---
 
 ## ✅ Completed This Session
 
-### 1. Issue #363 — LCP Direct CDN Preload (CLOSED ✅)
-
-- PR #364 merged: `unoptimized={isPriority}` on `MobileGalleryItem` + direct CDN preload in `page.tsx`
-- PR #365 merged: TypeScript type fix (`isPriority?: boolean` in test ComponentType)
-- Production deployed successfully ✅
-
-### 2. Bug: FirstImage overlay (Issue #366, PR #367 — OPEN)
-
-**Bug reported**: after Issue #363 deploy, home page shows a large full-screen overlay image
-on every page load that fades out after ~1 second.
-
-**Root cause**: `FirstImage` component (Issue #51) renders a `position: fixed` overlay image
-with a CSS `fadeOutAfterDelay` animation. Before Issue #363, the gallery was slow so the
-overlay wasn't jarring. After #363, the gallery loads instantly via direct CDN, making the
-overlay visually intrusive.
-
-**Fix** (PR #367):
-- `src/app/page.tsx` — removed `FirstImage` import and render
-- `src/app/projects/page.tsx` — same
-- `src/app/__tests__/page.test.tsx` — added regression test; updated mock with `data-first-image`
-
-**TDD**: RED (test asserts `[data-first-image]` not present, fails) → GREEN (remove FirstImage) ✅
-**All 1218 unit tests passing** ✅
-
-### 3. Prior Session Work (2026-03-18/19)
-
-- Issue #363 + PR #364 + PR #365 — LCP direct CDN preload, all merged ✅
-- Issue #358 + PR #359 — production deploy concurrency group ✅
-- Production idaromme.dk: live, HTTP 200 ✅
-
----
+- **ESLint was completely broken.** It crashed on config load with a circular-structure error,
+  because `eslint-config-next` 16 ships native flat configs and `FlatCompat` choked on them.
+  `eslint.config.mjs` now imports `eslint-config-next/core-web-vitals` and `/typescript` directly.
+- **Cleared 15 mechanical lint errors** in tests and `next.config.ts` (`any` replaced with real types,
+  `require()` replaced with an import, a misplaced disable comment fixed).
+- Since the last handover (2026-03-19), PRs #367, #406, #407 and #408 have all merged
+  (Debian 13 server deploy is live on master).
+- Removed a stray untracked `${XDG_CACHE_HOME:-/` dir (it held an nvim undo file for `.env.local`).
+- `gh` CLI authenticated. Claude Code plugins installed: `frontend-design`, `playwright`, `claude-code-setup`.
 
 ## 🎯 Current Project State
 
-**Tests**: ✅ 1218 passing (23 skipped)
-**Branch**: fix/issue-366-remove-first-image-overlay (PR #367 open)
-**Production**: idaromme.dk — ✅ LIVE (Issue #363 deployed; Issue #366 pending PR #367)
-**PR #367**: ⏳ CI running
+**Tests**: ✅ affected suites pass (74 passed, 7 skipped); `tsc --noEmit` clean
+**Lint**: ⚠️ 7 errors remaining (below). CI does not run ESLint, so these don't block PRs
+**Branch**: ✅ clean, pushed
+**Production**: idaromme.dk on the rebuilt Debian 13 server (#408)
 
-### CI Status (PR #367)
-- ✅ Commit quality, Secret scan, AI attribution, PR title, Commit format
-- ✅ Session Handoff (fixed by this update)
-- ⏳ Unit tests, Bundle size, E2E, Lighthouse pending
+### Remaining lint errors: react-hooks v7 (React Compiler rules)
 
----
+| File | Rule |
+|------|------|
+| `src/components/Header/Header.tsx:41` | set-state-in-effect |
+| `src/components/hydration/useProgressiveHydration.ts:46` | set-state-in-effect |
+| `src/components/mobile/Project/ImageBlock.tsx:50` | set-state-in-effect |
+| `src/components/ui/NavigationArrows.tsx:110,125` | static-components |
+| `src/hooks/mobile/useVirtualKeyboard.ts:12` | set-state-in-effect |
+| `src/hooks/shared/useDeviceType.ts:12` | set-state-in-effect |
 
-## 📦 Recent Work
-
-| PR | Issue | Description |
-|----|-------|-------------|
-| #367 | #366 | fix: remove FirstImage overlay — redundant after Issue #363 |
-| #365 | #363 | fix: add isPriority to MobileGalleryItem test type |
-| #364 | #363 | perf: preload LCP via direct Sanity CDN — bypass /_next/image proxy |
-| #359 | #358 | fix: prevent concurrent production deployments — concurrency group |
-
----
+These change component behaviour (SSR/hydration timing, device detection), so they need TDD and
+mobile and desktop E2E checks, not a mechanical fix.
 
 ## 🚀 Next Session Priorities
 
-1. **Merge PR #367** (if CI green): fixes the FirstImage overlay visual bug
-2. **Verify production deploy** succeeds and overlay is gone on idaromme.dk
-3. **Issue #349 (optional)** — unused JS: vendor 132KB, framework 61KB
+1. **Merge PR #410** once CI is green
+2. **Fix the 7 react-hooks errors** (frontend, TDD; watch hydration and SSR mismatches)
+3. **Issue #349 (optional)**: unused JS (vendor 132KB, framework 61KB)
 
 ### Key Architecture Notes (carry-forward)
-- `MobileGalleryItem`: `unoptimized={isPriority}` — LCP image bypasses `/_next/image`
-- `FirstImage` component still exists in codebase but is no longer rendered anywhere
-- Both `MobileGallery` and `DesktopGallery` ALWAYS in SSR HTML — selectors must be viewport-scoped
-- `GalleryPage` class (`tests/e2e/utils/page-objects/gallery-page.ts`) — viewport-aware getters
-- `Gallery.tsx` focus management: `scrollContainerRef.current?.querySelector(...)` — never bare `document.querySelector`
 
----
+- `MobileGalleryItem`: `unoptimized={isPriority}` makes the LCP image bypass `/_next/image`
+- `FirstImage` component still exists in the codebase but is no longer rendered anywhere
+- Both `MobileGallery` and `DesktopGallery` are ALWAYS in the SSR HTML, so selectors must be viewport-scoped
+- `GalleryPage` class (`tests/e2e/utils/page-objects/gallery-page.ts`) has viewport-aware getters
+- `Gallery.tsx` focus management: `scrollContainerRef.current?.querySelector(...)`, never bare `document.querySelector`
 
 ## 📝 Startup Prompt for Next Session
 
-```
-Read CLAUDE.md to understand our workflow, then continue from Issue #366 completion.
+Read CLAUDE.md to understand our workflow, then continue from PR #410 (ESLint restored, draft).
 
-**Immediate priority**: Merge PR #367 (remove FirstImage overlay, CI should be green).
-  Then verify production deploy and confirm overlay is gone on idaromme.dk home page.
-**Context**: Issue #366 — FirstImage was a legacy LCP hack that became a visual bug after
-  Issue #363 made gallery images load instantly via direct Sanity CDN.
-**Reference docs**: SESSION_HANDOVER.md
-**Ready state**: fix/issue-366-remove-first-image-overlay pushed, 1218 unit tests passing
+**Immediate priority**: fix the 7 react-hooks v7 lint errors in `src/` (2-3 hours)
+**Context**: ESLint was silently broken; config fixed and 15 mechanical errors cleared in #410
+**Reference docs**: SESSION_HANDOVER.md (error table), PR #410
+**Ready state**: branch fix/eslint-native-flat-config pushed; gh authed; playwright + frontend-design plugins active
 
-**Expected scope**: Merge PR #367, confirm deploy, optional Issue #349 bundle size
-```
-
----
+**Expected scope**: TDD-fix each set-state-in-effect / static-components error, verify mobile + desktop, `npx eslint .` clean
 
 ## 📚 Key Reference Documents
 
-- `SESSION_HANDOVER.md` — this file
-- `src/app/page.tsx` — LCP preload (direct CDN href, no FirstImage)
-- `src/components/mobile/Gallery/MobileGalleryItem.tsx` — `unoptimized={isPriority}`
-- `.github/workflows/production-deploy.yml` — concurrency group (Issue #358)
-- `tests/e2e/utils/page-objects/gallery-page.ts` — viewport-aware GalleryPage
+- `eslint.config.mjs`
+- `tests/e2e/utils/page-objects/gallery-page.ts`
