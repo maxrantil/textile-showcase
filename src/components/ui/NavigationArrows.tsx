@@ -15,6 +15,21 @@ interface NavigationArrowsProps {
   showOnMobile?: boolean
 }
 
+// Triangle components using CSS modules with size classes
+const LeftTriangle = ({ size }: { size: number }) => (
+  <div
+    className={`${styles.triangleLeft} ${styles[`triangleSize${size}`]}`}
+    aria-hidden="true"
+  />
+)
+
+const RightTriangle = ({ size }: { size: number }) => (
+  <div
+    className={`${styles.triangleRight} ${styles[`triangleSize${size}`]}`}
+    aria-hidden="true"
+  />
+)
+
 const NavigationArrows = memo(function NavigationArrows({
   canScrollLeft,
   canScrollRight,
@@ -47,35 +62,26 @@ const NavigationArrows = memo(function NavigationArrows({
   const config = sizeConfig[size]
   const triangleSize = config.triangleSize
 
-  // Triangle components using CSS modules with size classes
-  const LeftTriangle = ({ size }: { size: number }) => (
-    <div
-      className={`${styles.triangleLeft} ${styles[`triangleSize${size}`]}`}
-      aria-hidden="true"
-    />
-  )
-
-  const RightTriangle = ({ size }: { size: number }) => (
-    <div
-      className={`${styles.triangleRight} ${styles[`triangleSize${size}`]}`}
-      aria-hidden="true"
-    />
-  )
-
   // Build CSS class names based on props
   const getButtonClasses = (side: 'left' | 'right'): string => {
     const classes = [
       styles.navButton,
       side === 'left' ? styles.navButtonLeft : styles.navButtonRight,
-      variant === 'project' || position === 'absolute' ? styles.navButtonProject : styles.navButtonGallery,
+      variant === 'project' || position === 'absolute'
+        ? styles.navButtonProject
+        : styles.navButtonGallery,
       styles[`navButton${size.charAt(0).toUpperCase() + size.slice(1)}`], // Small/Medium/Large
     ]
 
     // Add padding classes
     if (side === 'left') {
-      classes.push(styles[`navButtonLeft${size.charAt(0).toUpperCase() + size.slice(1)}`])
+      classes.push(
+        styles[`navButtonLeft${size.charAt(0).toUpperCase() + size.slice(1)}`]
+      )
     } else {
-      classes.push(styles[`navButtonRight${size.charAt(0).toUpperCase() + size.slice(1)}`])
+      classes.push(
+        styles[`navButtonRight${size.charAt(0).toUpperCase() + size.slice(1)}`]
+      )
     }
 
     // Add mobile visibility class

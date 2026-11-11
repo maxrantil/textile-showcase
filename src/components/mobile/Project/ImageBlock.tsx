@@ -1,6 +1,6 @@
 // ABOUTME: Project image component with lazy loading and iOS lockdown mode detection
 'use client'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useSyncExternalStore } from 'react'
 import Image from 'next/image'
 import { getOptimizedImageUrl } from '@/utils/image-helpers'
 import { LockdownImage } from '@/components/ui/LockdownImage'
@@ -35,6 +35,9 @@ const isLockdownMode = () => {
   }
 }
 
+// Lockdown mode cannot change while the page is open, so there is nothing to subscribe to
+const subscribeNoop = () => () => {}
+
 export const ImageBlock = React.memo(function ImageBlock({
   image,
   index,
@@ -43,12 +46,15 @@ export const ImageBlock = React.memo(function ImageBlock({
 }: ImageBlockProps) {
   const [imageLoaded, setImageLoaded] = useState(false)
   const [imageError, setImageError] = useState(false)
-  const [useLockdownMode, setUseLockdownMode] = useState(false)
+  const [forceLockdownMode, setUseLockdownMode] = useState(false)
 
-  // Check for lockdown mode on mount
-  useEffect(() => {
-    setUseLockdownMode(isLockdownMode())
-  }, [])
+  // Detect lockdown mode on the client; false during SSR and hydration
+  const detectedLockdownMode = useSyncExternalStore(
+    subscribeNoop,
+    isLockdownMode,
+    () => false
+  )
+  const useLockdownMode = detectedLockdownMode || forceLockdownMode
 
   // Don't render if no asset
   if (!image?.asset) {

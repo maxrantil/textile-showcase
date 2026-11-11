@@ -36,10 +36,13 @@ export function Header() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  // Close menu on route change
-  useEffect(() => {
+  // Close menu on route change (adjusting state during render, per React docs:
+  // https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes)
+  const [prevPathname, setPrevPathname] = useState(pathname)
+  if (pathname !== prevPathname) {
+    setPrevPathname(pathname)
     setIsMenuOpen(false)
-  }, [pathname])
+  }
 
   // Prevent body scroll when mobile menu is open
   useEffect(() => {

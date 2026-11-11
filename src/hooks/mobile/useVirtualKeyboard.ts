@@ -1,28 +1,30 @@
-// src/hooks/mobile/useVirtualKeyboard.ts
+// ABOUTME: Detects an open on-screen keyboard from the viewport height
+// ABOUTME: shrinking more than 150px compared with its height on mount
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState, useSyncExternalStore } from 'react'
+
+const subscribe = (onChange: () => void) => {
+  window.addEventListener('resize', onChange)
+  return () => window.removeEventListener('resize', onChange)
+}
+
+const getViewportHeight = () => window.innerHeight
 
 export function useVirtualKeyboard() {
-  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false)
-  const [viewportHeight, setViewportHeight] = useState(0)
+  const viewportHeight = useSyncExternalStore(
+    subscribe,
+    getViewportHeight,
+    () => 0
+  )
+  // Height when the hook first rendered on the client (0 during SSR)
+  const [initialHeight, setInitialHeight] = useState(viewportHeight)
+  if (initialHeight === 0 && viewportHeight !== 0) {
+    setInitialHeight(viewportHeight)
+  }
 
-  useEffect(() => {
-    const initialHeight = window.innerHeight
-    setViewportHeight(initialHeight)
-
-    const handleResize = () => {
-      const currentHeight = window.innerHeight
-      const heightDiff = initialHeight - currentHeight
-
-      // Assume keyboard is open if height decreased by more than 150px
-      setIsKeyboardOpen(heightDiff > 150)
-      setViewportHeight(currentHeight)
-    }
-
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
+  // Assume keyboard is open if height decreased by more than 150px
+  const isKeyboardOpen = initialHeight - viewportHeight > 150
 
   return { isKeyboardOpen, viewportHeight }
 }
