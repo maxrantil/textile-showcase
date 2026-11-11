@@ -1,7 +1,7 @@
-# Session Handoff: ESLint restore + Fable frontend session prep
+# Session Handoff: ESLint restored (0 errors) + Fable frontend session prep
 
 **Date**: 2026-11-11
-**PR**: #410 — fix: restore ESLint with native Next 16 flat config (DRAFT)
+**PR**: #410 — fix: restore ESLint with native Next 16 flat config (ready, merging once CI is green)
 **Branch**: fix/eslint-native-flat-config
 
 ---
@@ -20,30 +20,25 @@
 
 ## 🎯 Current Project State
 
-**Tests**: ✅ affected suites pass (74 passed, 7 skipped); `tsc --noEmit` clean
-**Lint**: ⚠️ 7 errors remaining (below). CI does not run ESLint, so these don't block PRs
+**Tests**: ✅ 1227 passing (23 skipped); `tsc --noEmit` clean
+**Lint**: ✅ `npx eslint .` reports 0 errors (CI does not run ESLint, so run it locally)
 **Branch**: ✅ clean, pushed
 **Production**: idaromme.dk on the rebuilt Debian 13 server (#408)
 
-### Remaining lint errors: react-hooks v7 (React Compiler rules)
+### react-hooks v7 fixes (all behaviour-preserving, in #410)
 
-| File | Rule |
-|------|------|
-| `src/components/Header/Header.tsx:41` | set-state-in-effect |
-| `src/components/hydration/useProgressiveHydration.ts:46` | set-state-in-effect |
-| `src/components/mobile/Project/ImageBlock.tsx:50` | set-state-in-effect |
-| `src/components/ui/NavigationArrows.tsx:110,125` | static-components |
-| `src/hooks/mobile/useVirtualKeyboard.ts:12` | set-state-in-effect |
-| `src/hooks/shared/useDeviceType.ts:12` | set-state-in-effect |
-
-These change component behaviour (SSR/hydration timing, device detection), so they need TDD and
-mobile and desktop E2E checks, not a mechanical fix.
+- `NavigationArrows`: triangle components hoisted out of render
+- `Header`: close menu on route change by adjusting state during render
+- `ImageBlock`, `useDeviceType`, `useVirtualKeyboard`: `useSyncExternalStore` with a server
+  snapshot (`false` / `'desktop'` / `0`) instead of setState in a mount effect.
+  Same SSR/hydration output as before.
+- `useProgressiveHydration`: documented eslint-disable (state is only set after async `hydrate()`)
+- New characterization tests: `Header`, `useDeviceType`, `useVirtualKeyboard`
 
 ## 🚀 Next Session Priorities
 
-1. **Merge PR #410** once CI is green
-2. **Fix the 7 react-hooks errors** (frontend, TDD; watch hydration and SSR mismatches)
-3. **Issue #349 (optional)**: unused JS (vendor 132KB, framework 61KB)
+1. **Frontend work with Fable**: scope to be set by Doctor Hubert at session start
+2. **Issue #349 (optional)**: unused JS (vendor 132KB, framework 61KB)
 
 ### Key Architecture Notes (carry-forward)
 
@@ -55,14 +50,14 @@ mobile and desktop E2E checks, not a mechanical fix.
 
 ## 📝 Startup Prompt for Next Session
 
-Read CLAUDE.md to understand our workflow, then continue from PR #410 (ESLint restored, draft).
+Read CLAUDE.md to understand our workflow, then start the frontend work from a clean master (PR #410 merged, ESLint at 0 errors).
 
-**Immediate priority**: fix the 7 react-hooks v7 lint errors in `src/` (2-3 hours)
-**Context**: ESLint was silently broken; config fixed and 15 mechanical errors cleared in #410
-**Reference docs**: SESSION_HANDOVER.md (error table), PR #410
-**Ready state**: branch fix/eslint-native-flat-config pushed; gh authed; playwright + frontend-design plugins active
+**Immediate priority**: frontend task chosen by Doctor Hubert (create the issue and branch first)
+**Context**: ESLint restored; react-hooks v7 rules now enforced, so prefer useSyncExternalStore or derived state over setState in effects
+**Reference docs**: SESSION_HANDOVER.md (architecture notes), PR #410
+**Ready state**: master clean; gh authed; playwright + frontend-design plugins active
 
-**Expected scope**: TDD-fix each set-state-in-effect / static-components error, verify mobile + desktop, `npx eslint .` clean
+**Expected scope**: TDD, verify mobile and desktop layouts (Playwright), `npx eslint .` stays at 0
 
 ## 📚 Key Reference Documents
 
