@@ -43,6 +43,9 @@ export function useProgressiveHydration(config: UseProgressiveHydrationConfig) {
   useEffect(() => {
     // Auto-schedule if critical priority
     if (config.priority === 'critical') {
+      // State is only set after the scheduler's async hydrate() resolves, never
+      // synchronously in this effect, so this cannot cause a cascading render.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       scheduleHydration()
     }
 
