@@ -76,6 +76,9 @@ export async function POST(request: NextRequest) {
     }
 
     const { name, email, message } = validation.data
+    // Reply-To needs the address as typed, not the HTML-escaped copy above
+    // (an apostrophe is valid in an address). Zod has already validated it.
+    const replyTo = String(body.email).trim()
 
     // Initialize Resend
     const apiKey = process.env.RESEND_API_KEY
@@ -96,6 +99,7 @@ export async function POST(request: NextRequest) {
     const { error } = await resend.emails.send({
       from: 'contact@idaromme.dk',
       to: [process.env.CONTACT_EMAIL || 'idaromme@gmail.com'],
+      replyTo,
       subject: `New Contact Form Message from ${name}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
