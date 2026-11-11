@@ -4,7 +4,7 @@
 /* Form containers */
 .desktop-contact-form {
   max-width: 600px;
-  margin: 0 auto;
+  margin: 0;
   display: flex;
   flex-direction: column;
   gap: 32px;
@@ -45,8 +45,8 @@
   width: 100%;
   padding: 16px;
   font-size: 16px;
-  border: 2px solid #e5e5e5;
-  border-radius: 8px;
+  border: 1px solid #8c8c8c;
+  border-radius: 0;
   background: #fff;
   color: #1f2937; /* Gray-800 for WCAG AAA compliance (12.6:1 contrast) - fixes Issue #173 desktop */
   transition: all 0.3s ease;
@@ -99,13 +99,13 @@
 }
 
 .text-required {
-  color: #ef4444;
+  color: inherit;
 }
 
 /* Form actions */
 .desktop-form-submit {
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   margin-top: 32px;
 }
 
@@ -163,6 +163,7 @@
   .desktop-contact-form {
     max-width: 580px;
     gap: 28px;
+    margin: 0;
   }
 
   .desktop-form-grid {
@@ -179,5 +180,6 @@
 
   .desktop-contact-form {
     gap: 24px;
+    margin: 0;
   }
 }

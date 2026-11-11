@@ -2,7 +2,6 @@
 'use client'
 import { DesktopFormField } from './DesktopFormField'
 import { DesktopButton } from '../UI/DesktopButton'
-import { EmailRevealButton } from '@/components/shared/EmailReveal/EmailRevealButton'
 import { useContactForm } from '@/hooks/shared/useContactForm'
 
 interface DesktopContactFormProps {
@@ -63,8 +62,6 @@ export function DesktopContactForm({
           Send Message
         </DesktopButton>
       </div>
-
-      <EmailRevealButton />
     </form>
   )
 }

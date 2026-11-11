@@ -4,7 +4,6 @@
 import { MobileFormField } from './MobileFormField'
 import { MobileButton } from '../UI/MobileButton'
 import { useVirtualKeyboard } from '@/hooks/mobile/useVirtualKeyboard'
-import { EmailRevealButton } from '@/components/shared/EmailReveal/EmailRevealButton'
 import { useContactForm } from '@/hooks/shared/useContactForm'
 
 interface MobileContactFormProps {
@@ -88,8 +87,6 @@ export function MobileContactForm({
           Send Message
         </MobileButton>
       </div>
-
-      <EmailRevealButton />
     </form>
   )
 }
