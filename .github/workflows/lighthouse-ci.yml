@@ -16,7 +16,10 @@ on:
       - 'package.json'
       - 'package-lock.json'
       - 'next.config.js'
+      - 'next.config.ts'
       - 'lighthouserc.js'
+      - 'scripts/lighthouse-summary.js'
+      - '.github/workflows/lighthouse-ci.yml'
   push:
     branches: [master]
     paths:
@@ -29,7 +32,10 @@ on:
       - 'package.json'
       - 'package-lock.json'
       - 'next.config.js'
+      - 'next.config.ts'
       - 'lighthouserc.js'
+      - 'scripts/lighthouse-summary.js'
+      - '.github/workflows/lighthouse-ci.yml'
 
 # Limit concurrent runs to prevent resource conflicts
 concurrency:
@@ -147,7 +153,19 @@ jobs:
             files.forEach(file => {
               try {
                 const data = JSON.parse(fs.readFileSync(file, 'utf8'));
+                // lhci also writes manifest.json; only Lighthouse reports count
+                if (typeof data.lighthouseVersion !== 'string') return;
                 const url = data.finalUrl || data.requestedUrl || 'Unknown URL';
+
+                // A missing score means Lighthouse could not measure the page:
+                // report why instead of treating it as 0%
+                if (typeof data.categories?.performance?.score !== 'number') {
+                  const lcpError = data.audits?.['largest-contentful-paint']?.errorMessage;
+                  const reason = data.runtimeError?.message || lcpError || 'unknown reason';
+                  console.log(\`❌ No performance score for \${url.replace('http://localhost:3000', '') || '/'}: \${reason}\`);
+                  allPassed = false;
+                  return;
+                }
                 const performanceScore = data.categories?.performance?.score * 100 || 0;
                 const accessibilityScore = data.categories?.accessibility?.score * 100 || 0;
                 const bestPracticesScore = data.categories?.['best-practices']?.score * 100 || 0;
@@ -245,66 +263,30 @@ jobs:
             const fs = require('fs');
             const path = require('path');
 
-            // Read Lighthouse results
+            // Shared, unit-tested summary (scripts/lighthouse-summary.js):
+            // skips lhci's manifest.json and reports missing metrics as n/a
+            // with Lighthouse's reason instead of 0
+            const { isLighthouseReport, summarizeReport, formatMarkdown } =
+              require(`${process.env.GITHUB_WORKSPACE}/scripts/lighthouse-summary.js`);
+
             const resultsDir = './lighthouse-results';
-            let results = [];
+            const results = [];
 
             if (fs.existsSync(resultsDir)) {
-              const files = fs.readdirSync(resultsDir)
-                .filter(f => f.endsWith('.json'))
-                .map(f => path.join(resultsDir, f));
-
-              files.forEach(file => {
+              for (const f of fs.readdirSync(resultsDir).filter(f => f.endsWith('.json'))) {
+                const file = path.join(resultsDir, f);
                 try {
                   const data = JSON.parse(fs.readFileSync(file, 'utf8'));
-                  const url = data.finalUrl || data.requestedUrl || 'Unknown URL';
-                  const performanceScore = Math.round((data.categories?.performance?.score || 0) * 100);
-                  const lcp = Math.round(data.audits?.['largest-contentful-paint']?.numericValue || 0);
-                  const fcp = Math.round(data.audits?.['first-contentful-paint']?.numericValue || 0);
-                  const cls = Math.round((data.audits?.['cumulative-layout-shift']?.numericValue || 0) * 1000) / 1000;
-
-                  results.push({
-                    url: url.replace('http://localhost:3000', '') || '/',
-                    performance: performanceScore,
-                    lcp,
-                    fcp,
-                    cls
-                  });
+                  if (isLighthouseReport(data)) results.push(summarizeReport(data));
                 } catch (err) {
                   console.log('Error parsing:', file, err.message);
                 }
-              });
+              }
             }
 
-            // Create comment body
-            let body = '## 🔍 Lighthouse Performance Report\n\n';
-
-            if (results.length > 0) {
-              body += '### Performance Scores\n\n';
-              body += '| Page | Performance | LCP | FCP | CLS |\n';
-              body += '|------|-------------|-----|-----|-----|\n';
-
-              results.forEach(r => {
-                const perfEmoji = r.performance >= 98 ? '🟢' : r.performance >= 90 ? '🟡' : '🔴';
-                const lcpEmoji = r.lcp <= 1200 ? '🟢' : r.lcp <= 2500 ? '🟡' : '🔴';
-                const fcpEmoji = r.fcp <= 1200 ? '🟢' : r.fcp <= 1800 ? '🟡' : '🔴';
-                const clsEmoji = r.cls <= 0.1 ? '🟢' : r.cls <= 0.25 ? '🟡' : '🔴';
-
-                body += `| ${r.url} | ${perfEmoji} ${r.performance}% | ${lcpEmoji} ${r.lcp}ms | ${fcpEmoji} ${r.fcp}ms | ${clsEmoji} ${r.cls} |\n`;
-              });
-
-              body += '\n### Thresholds\n';
-              body += '- 🟢 **Performance**: ≥98% (Target)\n';
-              body += '- 🟡 **Performance**: 90-97% (Needs improvement)\n';
-              body += '- 🔴 **Performance**: <90% (Poor)\n';
-              body += '- **LCP**: 🟢 ≤1.2s, 🟡 ≤2.5s, 🔴 >2.5s\n';
-              body += '- **FCP**: 🟢 ≤1.2s, 🟡 ≤1.8s, 🔴 >1.8s\n';
-              body += '- **CLS**: 🟢 ≤0.1, 🟡 ≤0.25, 🔴 >0.25\n';
-            } else {
-              body += '❌ No Lighthouse results found. Check the workflow logs for details.\n';
-            }
-
-            body += '\n---\n*This report was generated by Lighthouse CI in GitHub Actions*';
+            const body =
+              formatMarkdown(results) +
+              '\n---\n*This report was generated by Lighthouse CI in GitHub Actions*';
 
             // Post comment
             github.rest.issues.createComment({
