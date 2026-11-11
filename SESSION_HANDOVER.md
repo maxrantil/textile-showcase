@@ -1,65 +1,71 @@
-# Session Handoff: ESLint restored (0 errors) + Fable frontend session prep
+# Session Handoff: Issue #411 - Mobile project page shows the image first
 
 **Date**: 2026-11-11
-**PR**: #410 — fix: restore ESLint with native Next 16 flat config (ready, merging once CI is green)
-**Branch**: fix/eslint-native-flat-config
+**Issue**: #411 - feat: show a photograph before the text on the mobile project page
+**PR**: draft, see branch below
+**Branch**: feat/issue-411-mobile-project-image-first
 
 ---
 
 ## ✅ Completed This Session
 
-- **ESLint was completely broken.** It crashed on config load with a circular-structure error,
-  because `eslint-config-next` 16 ships native flat configs and `FlatCompat` choked on them.
-  `eslint.config.mjs` now imports `eslint-config-next/core-web-vitals` and `/typescript` directly.
-- **Cleared 15 mechanical lint errors** in tests and `next.config.ts` (`any` replaced with real types,
-  `require()` replaced with an import, a misplaced disable comment fixed).
-- Since the last handover (2026-03-19), PRs #367, #406, #407 and #408 have all merged
-  (Debian 13 server deploy is live on master).
-- Removed a stray untracked `${XDG_CACHE_HOME:-/` dir (it held an nvim undo file for `.env.local`).
-- `gh` CLI authenticated. Claude Code plugins installed: `frontend-design`, `playwright`, `claude-code-setup`.
+- **Front-end design review** of idaromme.dk against the two mood-board sites,
+  https://margretheodgaard.com/ and https://malenebach.dk/. Doctor Hubert approved all six
+  items. The review (with side-by-side screenshots) is a private artifact:
+  https://claude.ai/artifact/RgjdJbMAPjrEDnwtK3mKuY. It is not committed, because this repo is
+  public and the review contains screenshots of other artists' sites.
+- **Issue #411 (review item 2)**:
+  - Mobile project page order is now title and year, lead image, text sections, remaining images.
+    `MobileImageStack` takes a `range` prop (`lead` / `rest`); `ProjectDetails` renders `children`
+    between its header and first section.
+  - Image containers use the real proportions parsed from the Sanity asset reference
+    (`getImageAspectRatio` in `src/utils/image-helpers.ts`), falling back to 4:3.
+  - The dark "Loading image N..." slab is gone; the container has a pale tint and `aria-busy`.
+  - On `/project/composing-tones` at 390px the first image moved from about 1,390px down the page to 244px.
 
 ## 🎯 Current Project State
 
-**Tests**: ✅ 1227 passing (23 skipped); `tsc --noEmit` clean
-**Lint**: ✅ `npx eslint .` reports 0 errors (CI does not run ESLint, so run it locally)
+**Tests**: ✅ 1240 passing (23 skipped); `tsc --noEmit` clean
+**Lint**: ✅ `npx eslint .` reports 0 errors
 **Branch**: ✅ clean, pushed
-**Production**: idaromme.dk on the rebuilt Debian 13 server (#408)
+**CI/CD**: 🔄 running on the draft PR
+**Not run**: Playwright E2E suite locally. The change was checked by hand at 390x844 against a local dev server.
 
-### react-hooks v7 fixes (all behaviour-preserving, in #410)
+### Agent Validation Status
 
-- `NavigationArrows`: triangle components hoisted out of render
-- `Header`: close menu on route change by adjusting state during render
-- `ImageBlock`, `useDeviceType`, `useVirtualKeyboard`: `useSyncExternalStore` with a server
-  snapshot (`false` / `'desktop'` / `0`) instead of setState in a mount effect.
-  Same SSR/hydration output as before.
-- `useProgressiveHydration`: documented eslint-disable (state is only set after async `hydrate()`)
-- New characterization tests: `Header`, `useDeviceType`, `useVirtualKeyboard`
+The named validation agents were not run this session.
 
 ## 🚀 Next Session Priorities
 
-1. **Frontend work with Fable**: scope to be set by Doctor Hubert at session start
-2. **Issue #349 (optional)**: unused JS (vendor 132KB, framework 61KB)
+Approved order for the remaining review items, one issue and branch each:
 
-### Key Architecture Notes (carry-forward)
+1. **Items 3 and 4 together**: reduce type to two sizes and one voice; header from 100px to about 64px,
+   side margins from 68px to about 24px, first home image aligned to the left margin
+2. **Item 1**: enlarge the desktop project carousel (keep the carousel) and fix the clipped thumbnail strip
+3. **Item 5**: add the year to home captions
+4. **Item 6**: one left edge across Project, About and Contact; keep the contact form, with the
+   email address and Instagram as plain text above it
 
-- `MobileGalleryItem`: `unoptimized={isPriority}` makes the LCP image bypass `/_next/image`
-- `FirstImage` component still exists in the codebase but is no longer rendered anywhere
-- Both `MobileGallery` and `DesktopGallery` are ALWAYS in the SSR HTML, so selectors must be viewport-scoped
-- `GalleryPage` class (`tests/e2e/utils/page-objects/gallery-page.ts`) has viewport-aware getters
-- `Gallery.tsx` focus management: `scrollContainerRef.current?.querySelector(...)`, never bare `document.querySelector`
+### Carry-forward notes
+
+- Both `MobileGallery` and `DesktopGallery` are always in the SSR HTML, so selectors must be viewport-scoped
+- react-hooks v7 rules are enforced: prefer `useSyncExternalStore` or derived state over setState in effects
+- Browser tooling: Playwright's Chromium is in `~/.cache/ms-playwright`; system deps were being installed
+  with `sudo npx playwright install-deps` at the end of this session. The playwright MCP plugin also needs
+  Google Chrome (`npx playwright install chrome`).
 
 ## 📝 Startup Prompt for Next Session
 
-Read CLAUDE.md to understand our workflow, then start the frontend work from a clean master (PR #410 merged, ESLint at 0 errors).
+Read CLAUDE.md to understand our workflow, then continue from Issue #411 (mobile project page shows the image first, draft PR open).
 
-**Immediate priority**: frontend task chosen by Doctor Hubert (create the issue and branch first)
-**Context**: ESLint restored; react-hooks v7 rules now enforced, so prefer useSyncExternalStore or derived state over setState in effects
-**Reference docs**: SESSION_HANDOVER.md (architecture notes), PR #410
-**Ready state**: master clean; gh authed; playwright + frontend-design plugins active
+**Immediate priority**: merge the #411 PR once CI is green, then open an issue for review items 3 and 4 (type and frame, 3-5 hours)
+**Context**: all six design-review items are approved; the mood board is margretheodgaard.com and malenebach.dk
+**Reference docs**: SESSION_HANDOVER.md, the review artifact linked above, issue #411
+**Ready state**: feature branch clean and pushed; 1240 tests passing; ESLint at 0 errors
 
-**Expected scope**: TDD, verify mobile and desktop layouts (Playwright), `npx eslint .` stays at 0
+**Expected scope**: TDD, CSS-led changes across all pages, verify at 1440x900 and 390x844 with Playwright, run the E2E suite
 
 ## 📚 Key Reference Documents
 
-- `eslint.config.mjs`
-- `tests/e2e/utils/page-objects/gallery-page.ts`
+- Review artifact: https://claude.ai/artifact/RgjdJbMAPjrEDnwtK3mKuY
+- `src/styles/mobile/project.css`, `src/styles/desktop/project.css`, `src/styles/base/typography.css`
