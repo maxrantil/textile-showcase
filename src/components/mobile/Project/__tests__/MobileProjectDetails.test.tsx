@@ -309,4 +309,28 @@ describe('MobileProjectDetails', () => {
       expect(h3Elements.length).toBeGreaterThan(0)
     })
   })
+
+  describe('Lead Media Slot', () => {
+    it('should_render_children_between_header_and_first_text_section', () => {
+      const project = { ...baseProject, description: 'A short description' }
+
+      render(
+        <MobileProjectDetails project={project}>
+          <div data-testid="lead-media" />
+        </MobileProjectDetails>
+      )
+
+      const header = document.querySelector('.mobile-project-header') as Element
+      const lead = screen.getByTestId('lead-media')
+      const description = screen.getByText('A short description')
+
+      expect(
+        header.compareDocumentPosition(lead) & Node.DOCUMENT_POSITION_FOLLOWING
+      ).toBeTruthy()
+      expect(
+        lead.compareDocumentPosition(description) &
+          Node.DOCUMENT_POSITION_FOLLOWING
+      ).toBeTruthy()
+    })
+  })
 })

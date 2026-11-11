@@ -70,12 +70,22 @@ export function MobileProjectView({
   return (
     <div className="mobile-project">
       <div className="mobile-project-content">
-        <MobileProjectDetails project={project} />
+        <MobileProjectDetails project={project}>
+          {project.image && (
+            <MobileImageStack
+              mainImage={project.image}
+              images={galleryImages}
+              projectTitle={project.title}
+              range="lead"
+            />
+          )}
+        </MobileProjectDetails>
         {project.image && (
           <MobileImageStack
             mainImage={project.image}
             images={galleryImages}
             projectTitle={project.title}
+            range="rest"
           />
         )}
         <MobileProjectNavigation

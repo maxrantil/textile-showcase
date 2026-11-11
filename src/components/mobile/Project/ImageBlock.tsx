@@ -2,7 +2,10 @@
 'use client'
 import React, { useState, useSyncExternalStore } from 'react'
 import Image from 'next/image'
-import { getOptimizedImageUrl } from '@/utils/image-helpers'
+import {
+  getImageAspectRatio,
+  getOptimizedImageUrl,
+} from '@/utils/image-helpers'
 import { LockdownImage } from '@/components/ui/LockdownImage'
 import { UmamiEvents } from '@/utils/analytics'
 import type { ImageSource } from '@/types/textile'
@@ -61,8 +64,8 @@ export const ImageBlock = React.memo(function ImageBlock({
     return null
   }
 
-  // Use default aspect ratio for performance optimization
-  const aspectRatio = 4 / 3
+  // Hold the image's own proportions while it loads; 4:3 when the reference has no dimensions
+  const aspectRatio = getImageAspectRatio(image.asset) ?? 4 / 3
 
   const handleImageLoad = () => {
     setImageLoaded(true)
@@ -85,7 +88,11 @@ export const ImageBlock = React.memo(function ImageBlock({
 
   return (
     <div className="mobile-image-block">
-      <div className="mobile-image-container" style={{ aspectRatio }}>
+      <div
+        className="mobile-image-container"
+        style={{ aspectRatio }}
+        aria-busy={!useLockdownMode && !imageLoaded && !imageError}
+      >
         {useLockdownMode ? (
           // Lockdown mode - use simple image
           <LockdownImage
@@ -115,12 +122,6 @@ export const ImageBlock = React.memo(function ImageBlock({
               onLoad={handleImageLoad}
               onError={handleImageError}
             />
-
-            {!imageLoaded && !imageError && (
-              <div className="mobile-image-loading">
-                Loading image {index + 1}...
-              </div>
-            )}
 
             {imageError && (
               <div className="mobile-image-error">

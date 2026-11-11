@@ -9,6 +9,7 @@ import { UmamiEvents } from '@/utils/analytics'
 // Mock dependencies
 jest.mock('@/utils/analytics')
 jest.mock('@/utils/image-helpers', () => ({
+  ...jest.requireActual('@/utils/image-helpers'),
   getOptimizedImageUrl: jest.fn(() => 'optimized-image-url'),
 }))
 
@@ -366,8 +367,8 @@ describe('ImageBlock', () => {
   })
 
   describe('Image Loading', () => {
-    it('should_show_loading_state_initially', () => {
-      render(
+    it('should_mark_container_busy_without_loading_text_initially', () => {
+      const { container } = render(
         <ImageBlock
           image={mockImage}
           index={0}
@@ -376,7 +377,35 @@ describe('ImageBlock', () => {
         />
       )
 
-      expect(screen.getByText(/Loading image 1/)).toBeInTheDocument()
+      expect(
+        container.querySelector('.mobile-image-container')
+      ).toHaveAttribute('aria-busy', 'true')
+      expect(screen.queryByText(/Loading image/)).not.toBeInTheDocument()
+    })
+
+    it('should_use_image_proportions_from_asset_reference', () => {
+      const portrait = {
+        ...mockImage,
+        asset: {
+          _type: 'image',
+          asset: {
+            _ref: 'image-abc123-4000x6000-png',
+            _type: 'reference' as const,
+          },
+        },
+      }
+      const { container } = render(
+        <ImageBlock
+          image={portrait}
+          index={0}
+          isFirst={false}
+          projectTitle={mockProjectTitle}
+        />
+      )
+
+      expect(container.querySelector('.mobile-image-container')).toHaveStyle({
+        aspectRatio: String(4000 / 6000),
+      })
     })
 
     it('should_hide_loading_state_when_image_loaded', async () => {
@@ -395,7 +424,9 @@ describe('ImageBlock', () => {
       }
 
       await waitFor(() => {
-        expect(screen.queryByText(/Loading image/)).not.toBeInTheDocument()
+        expect(
+          container.querySelector('.mobile-image-container')
+        ).toHaveAttribute('aria-busy', 'false')
       })
     })
 

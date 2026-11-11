@@ -19,12 +19,15 @@ interface MobileImageStackProps {
   images?: GalleryImage[]
   mainImage: ImageSource
   projectTitle: string
+  // 'lead' renders only the main image, 'rest' everything after it
+  range?: 'all' | 'lead' | 'rest'
 }
 
 export function MobileImageStack({
   images = [],
   mainImage,
   projectTitle,
+  range = 'all',
 }: MobileImageStackProps) {
   // Create array of all images for mobile stack
   const allImages = useMemo((): ExtendedGalleryImage[] => {
@@ -53,9 +56,26 @@ export function MobileImageStack({
     return imageArray
   }, [images, mainImage, projectTitle])
 
+  // Indices stay those of the full list, so alt text and analytics keep counting from the main image
+  const visibleImages = allImages
+    .map((image, index) => ({ image, index }))
+    .filter(({ index }) =>
+      range === 'lead' ? index === 0 : range === 'rest' ? index > 0 : true
+    )
+
+  if (range !== 'all' && visibleImages.length === 0) {
+    return null
+  }
+
   return (
-    <div className="mobile-image-stack">
-      {allImages.map((image, index) => (
+    <div
+      className={
+        range === 'lead'
+          ? 'mobile-image-stack mobile-image-stack-lead'
+          : 'mobile-image-stack'
+      }
+    >
+      {visibleImages.map(({ image, index }) => (
         <ImageBlock
           key={`${image._key}-${index}`}
           image={image}
