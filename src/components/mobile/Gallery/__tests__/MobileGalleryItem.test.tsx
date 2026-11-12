@@ -254,15 +254,21 @@ describe('MobileGalleryItem', () => {
   })
 
   describe('Metadata Display', () => {
-    it('should not display year (removed per Doctor Hubert request)', () => {
+    it('should show the year after the title, as a catalogue entry', () => {
       render(<MobileGalleryItem design={mockSingleDesign} />)
 
-      // Year should NOT be displayed on gallery page (only title shown)
-      if (mockSingleDesign.year) {
-        expect(
-          screen.queryByText(mockSingleDesign.year.toString())
-        ).not.toBeInTheDocument()
-      }
+      const heading = screen.getByRole('heading', { level: 2 })
+      expect(heading).toHaveClass('mobile-gallery-title')
+      expect(heading).toHaveTextContent(
+        `${mockSingleDesign.title}, ${mockSingleDesign.year}`
+      )
+    })
+
+    it('should show the title alone when the design has no year', () => {
+      render(<MobileGalleryItem design={mockMinimalDesign} />)
+
+      const heading = screen.getByRole('heading', { level: 2 })
+      expect(heading.textContent).toBe(mockMinimalDesign.title)
     })
 
     it('should display category when available', () => {
