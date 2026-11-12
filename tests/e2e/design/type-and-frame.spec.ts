@@ -120,6 +120,20 @@ test.describe('Type system', () => {
 })
 
 test.describe('Frame', () => {
+  test('phone header is as compact as the desktop one', async ({ page }) => {
+    const viewport = page.viewportSize()
+    test.skip(!viewport || viewport.width >= 768, 'phone layout only')
+
+    await page.goto('/')
+    const header = await page.locator('header.header').boundingBox()
+    const menuButton = await page
+      .locator('.header__menu-button')
+      .boundingBox()
+
+    expect(header?.height).toBe(64)
+    expect(menuButton?.height).toBeGreaterThanOrEqual(40)
+  })
+
   test('desktop header is compact and anchored to the corners', async ({
     page,
   }) => {
