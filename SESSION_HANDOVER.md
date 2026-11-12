@@ -2,7 +2,7 @@
 
 **Date**: 2026-11-12
 **Issue**: #393 - perf: home page reports no LCP on desktop
-**PR**: see the PR for branch `feat/issue-393-left-align-first-home-image`
+**PR**: #425 - feat: start the desktop home gallery with its first image on the left margin
 **Branch**: feat/issue-393-left-align-first-home-image
 
 ---
@@ -81,9 +81,9 @@ The named validation agents were not run this session.
 
 ## 📝 Startup Prompt for Next Session
 
-Read CLAUDE.md to understand our workflow, then continue from Issue #393 (✅ first home image on the left margin, focus restoration race fixed, PR open).
+Read CLAUDE.md to understand our workflow, then continue from Issue #393 (✅ first home image on the left margin, focus restoration race fixed, PR #425 open).
 
-**Immediate priority**: merge the #393 PR if CI is green, verify production, then the Mobile Chrome contact-form failures (1-2 hours)
+**Immediate priority**: merge PR #425 if CI is green, verify production, then the Mobile Chrome contact-form failures (1-2 hours)
 **Context**: the home gallery opens unscrolled with the first image under the name; Lighthouse should now report an LCP for `/`
 **Reference docs**: SESSION_HANDOVER.md, tests/e2e/design/home-first-image.spec.ts, tests/e2e/workflows/contact-form.spec.ts
 **Ready state**: feature branch pushed, Jest 1257 passing; 4 contact-form E2E tests fail only on the development machine
