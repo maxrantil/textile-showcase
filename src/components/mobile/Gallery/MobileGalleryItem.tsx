@@ -63,11 +63,14 @@ export default function MobileGalleryItem({
         )}
 
         <div className="mobile-gallery-info">
-          <h2 className="mobile-gallery-title">{design.title}</h2>
+          {/* Title and year read as one catalogue entry: "Composing Tones, 2025" */}
+          <h2 className="mobile-gallery-title">
+            {design.title}
+            {design.year && <span>, {design.year}</span>}
+          </h2>
           {design.description && (
             <p className="mobile-gallery-description">{design.description}</p>
           )}
-          {/* Year removed per Doctor Hubert's request - keep only title on homepage gallery */}
           {design.category && (
             <p className="mobile-gallery-category">{design.category}</p>
           )}

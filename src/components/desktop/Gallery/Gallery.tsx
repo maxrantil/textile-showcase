@@ -71,7 +71,11 @@ const GalleryItem = memo(function GalleryItem({
       </div>
 
       <div className="desktop-gallery-info">
-        <h2 className="desktop-gallery-title">{design.title}</h2>
+        {/* Title and year read as one catalogue entry: "Composing Tones, 2025" */}
+        <h2 className="desktop-gallery-title">
+          {design.title}
+          {design.year && <span>, {design.year}</span>}
+        </h2>
       </div>
     </Link>
   )
