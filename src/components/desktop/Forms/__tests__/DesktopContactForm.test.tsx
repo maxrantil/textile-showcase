@@ -216,10 +216,12 @@ describe('DesktopContactForm', () => {
       expect(form).toHaveClass('desktop-contact-form')
     })
 
-    it('should_render_email_reveal_button', () => {
+    it('should_leave_email_reveal_to_the_contact_page', () => {
       render(<DesktopContactForm />)
 
-      expect(screen.getByTestId('email-reveal-button')).toBeInTheDocument()
+      expect(
+        screen.queryByTestId('email-reveal-button')
+      ).not.toBeInTheDocument()
     })
   })
 

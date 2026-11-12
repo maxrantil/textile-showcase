@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import ContactForm from '@/components/adaptive/Forms'
+import { EmailRevealButton } from '@/components/shared/EmailReveal/EmailRevealButton'
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 import KeyboardScrollHandler from '@/components/KeyboardScrollHandler'
 
@@ -19,14 +20,24 @@ export default function ContactPage() {
         style={{ minHeight: '100vh', paddingTop: '100px' }}
       >
         <ErrorBoundary>
-          <section className="nordic-section" style={{ textAlign: 'center' }}>
-            <h1 className="nordic-display nordic-spacing-md">Contact</h1>
-
+          <section className="nordic-section">
             <div className="nordic-content">
-              <p className="nordic-body-large">
+              <h1 className="nordic-display nordic-spacing-md">Contact</h1>
+              <p className="nordic-body-large nordic-spacing-md">
                 Interested in collaborating or learning more about my work?
                 I&apos;d love to hear from you.
               </p>
+              <div className="contact-direct">
+                <EmailRevealButton />
+                <a
+                  href="https://www.instagram.com/idaromme"
+                  className="contact-direct-link"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Instagram @idaromme
+                </a>
+              </div>
             </div>
           </section>
 

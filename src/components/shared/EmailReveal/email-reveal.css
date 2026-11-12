@@ -2,10 +2,9 @@
 
 /* Email reveal container */
 .email-reveal-container {
-  margin-top: 24px;
-  padding-top: 24px;
-  border-top: 1px solid #e5e5e5;
-  text-align: center;
+  margin-top: 0;
+  padding-top: 0;
+  text-align: left;
 }
 
 /* Reveal button - subtle and minimal */
@@ -17,11 +16,11 @@
     sans-serif;
   font-size: 16px;
   font-weight: 400;
-  padding: 8px 16px;
-  border-radius: 4px;
+  padding: 8px 0;
+  border-radius: 0;
   border: none;
   background: transparent;
-  color: #666;
+  color: #333;
   cursor: pointer;
   transition: color 0.2s ease;
   text-decoration: underline;
@@ -40,7 +39,10 @@
 
 /* Revealed container */
 .email-revealed-container {
-  margin-top: 12px;
+  margin-top: 0;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
 }
 
 /* Email address link - WCAG AA compliant */
@@ -76,4 +78,25 @@
   .email-address {
     text-decoration-thickness: 2px;
   }
+}
+
+/* Direct contact lines above the form */
+.contact-direct {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.contact-direct-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: 16px;
+  color: #333;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.contact-direct-link:hover {
+  color: #000;
 }

@@ -19,12 +19,7 @@ interface MobileFormFieldProps {
 }
 
 export const MobileFormField = forwardRef(function MobileFormFieldComponent(
-  {
-    autoComplete = 'off',
-    inputMode,
-    type,
-    ...props
-  }: MobileFormFieldProps,
+  { autoComplete = 'off', inputMode, type, ...props }: MobileFormFieldProps,
   ref: ForwardedRef<HTMLInputElement | HTMLTextAreaElement>
 ) {
   const { touchProps } = useTouchFeedback()
@@ -37,7 +32,11 @@ export const MobileFormField = forwardRef(function MobileFormFieldComponent(
       type={type}
       classPrefix="mobile"
       errorRole="alert"
-      extraInputProps={{ ...touchProps, autoComplete, inputMode: resolvedInputMode }}
+      extraInputProps={{
+        ...touchProps,
+        autoComplete,
+        inputMode: resolvedInputMode,
+      }}
       extraTextareaProps={{ ...touchProps, autoComplete }}
     />
   )

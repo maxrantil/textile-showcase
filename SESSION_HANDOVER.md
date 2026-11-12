@@ -1,9 +1,9 @@
-# Session Handoff: Design review stack, merging to master (Issues #411, #413, #415)
+# Session Handoff: Design review stack, merging to master (Issues #411, #413, #415, #418)
 
 **Date**: 2026-11-12
-**Issues**: #411 and #413 closed; #415 closes with this PR; #418 and #417 follow
-**PRs**: #412 and #414 merged; #416 (this PR) ready; #419 and #420 still stacked above it
-**Branch**: feat/issue-415-desktop-project-image-size
+**Issues**: #411, #413 and #415 closed; #418 closes with this PR; #417 follows
+**PRs**: #412, #414 and #416 merged; #419 (this PR) ready; #420 still stacked above it
+**Branch**: feat/issue-418-alignment-and-contact
 
 ---
 
@@ -11,15 +11,16 @@
 
 - **#412 merged** (phone project page: lead image before the text). Full CI green, including E2E on Desktop Chrome, Mobile Chrome and Safari Smoke.
 - **#414 merged** (two text sizes, 64px header, 70vh home images). E2E and Lighthouse budget green on the PR; Jest and the Lighthouse audit ran green on master after the merge.
-- **#416** (desktop project image uses the window height, 700px at 1440x900) retargeted to master, master merged in, marked ready.
+- **#416 merged** (desktop project image uses the window height, 700px at 1440x900). Full CI green, including Lighthouse.
+- **#419** (Project, About and Contact share one left edge; contact page leads with email reveal and Instagram) retargeted to master, master merged in, marked ready.
 - **#417 decided**: Doctor Hubert approved putting the year back in the home captions (reverses #100). Implemented test-first in draft PR #420.
-- Both production deploys (after #412 and #414) succeeded.
+- Production deploys after #412 and #414 succeeded.
 
 ## 🎯 Current Project State
 
 **Tests**: ✅ Jest passing in CI on this branch; 1245 passing locally at the top of the stack (#420)
 **Branch**: ✅ clean, pushed
-**CI/CD**: 🔄 running on #416
+**CI/CD**: 🔄 running on #419
 
 **Local E2E note**: on the development machine 14 E2E tests fail (all of `tests/e2e/accessibility/focus-restoration.spec.ts` on
 Desktop Chrome and Mobile Chrome, and six submit tests of `tests/e2e/workflows/contact-form.spec.ts` on Mobile Chrome). The same
@@ -31,7 +32,7 @@ The named validation agents were not run this session.
 
 ## 🚀 Next Session Priorities
 
-1. Merge #419 (one left edge, plainer contact page), then #420 (year in captions), each after a full green CI run
+1. Merge #419, then #420 (year in captions), each after a full green CI run
 2. Check production at 1440x900 and on a phone
 3. #393 together with left-aligning the first home image
 4. Find out why the 14 E2E tests above fail on the development machine
@@ -51,14 +52,14 @@ The named validation agents were not run this session.
 
 ## 📝 Startup Prompt for Next Session
 
-Read CLAUDE.md to understand our workflow, then continue from the design-review stack (#412, #414 merged; #416 in CI).
+Read CLAUDE.md to understand our workflow, then continue from the design-review stack (#412, #414, #416 merged; #419 in CI).
 
-**Immediate priority**: merge #416, then #419 and #420 bottom-up, each on a full green CI run (1 hour)
+**Immediate priority**: merge #419, then #420, each on a full green CI run (1 hour)
 **Context**: all six design-review items are implemented; the year in captions (#417) is approved and sits in PR #420
 **Reference docs**: SESSION_HANDOVER.md, tests/e2e/design/
 **Ready state**: branches clean and pushed; Jest green; 14 E2E tests fail only on the development machine
 
-**Expected scope**: the three remaining PRs merged, production checked at 1440x900 and on a phone
+**Expected scope**: the two remaining PRs merged, production checked at 1440x900 and on a phone
 
 ## 📚 Key Reference Documents
 
