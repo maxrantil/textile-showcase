@@ -1,15 +1,15 @@
-# Session Handoff: Design review merged, phone left edge (Issues #411, #413, #415, #418, #417, #421)
+# Session Handoff: Design review merged, phone left edge and header (Issues #411 to #423)
 
 **Date**: 2026-11-12
-**Issues**: #411, #413, #415, #418 and #417 closed; #421 closes with this PR
-**PRs**: #412, #414, #416, #419 and #420 merged; this PR fixes #421
-**Branch**: fix/issue-421-phone-left-edge
+**Issues**: #411, #413, #415, #418, #417 and #421 closed; #423 closes with this PR
+**PRs**: #412, #414, #416, #419, #420 and #422 merged; this PR fixes #423
+**Branch**: fix/issue-423-phone-header-height
 
 ---
 
 ## ✅ Completed This Session
 
-All six items of the front-end design review are implemented and on master. This PR is a follow-up found in the production check.
+All six items of the front-end design review are implemented and on master. #422 and this PR are follow-ups found in the production check.
 
 | PR | Issue | What it does | State |
 | --- | --- | --- | --- |
@@ -18,7 +18,8 @@ All six items of the front-end design review are implemented and on master. This
 | #416 | #415 | Desktop project image uses the window height (700px at 1440x900); thumbnail strip back on screen | merged |
 | #419 | #418 | Project, About and Contact share one left edge; contact page leads with email reveal and Instagram | merged |
 | #420 | #417 | Home gallery captions show the year after the title ("Composing Tones, 2025"), desktop and phone | merged |
-| this PR | #421 | Phone: home gallery, project page and contact form start at the page gutter (16px), like the header, About and Contact | open |
+| #422 | #421 | Phone: home gallery, project page and contact form start at the page gutter (16px), like the header, About and Contact | merged |
+| this PR | #423 | Phone header is 64px high, like the desktop one (was 72px) | open |
 
 - Each PR was merged on a green CI run: Jest, E2E on Desktop Chrome, Mobile Chrome and Safari Smoke, Lighthouse budget and audit.
   Exception: on #414 Jest and the Lighthouse audit did not run on the PR (see the retarget note below); both ran green on master
@@ -31,6 +32,8 @@ All six items of the front-end design review are implemented and on master. This
 - **#421**: that check showed four left edges on the phone (header, About and Contact text 16px; home images 20px with
   captions at 23px; contact form 32px; project page 40px). All now use the gutter of `.nordic-container`,
   `clamp(16px, 4vw, 40px)`. Guarded by `tests/e2e/design/phone-left-edge.spec.ts`.
+- **#423**: the phone header had 16px padding above and below its 40px menu button (72px). The padding is now 12px, which
+  gives 64px. Guarded by a phone test in `tests/e2e/design/type-and-frame.spec.ts`.
 
 ## 🎯 Current Project State
 
@@ -63,7 +66,6 @@ The named validation agents were not run this session.
 - Type tokens are defined in three places that must stay in step: `src/styles/base/typography.css`,
   `src/styles/critical/deferred.css` and `public/styles/critical/deferred.css`
 - `src/styles/mobile/navigation.css` duplicates rules from `mobile/project.css` and loads after it
-- The phone header is 72px high, the desktop one 64px; not checked whether #413 meant 64px for both
 - A caption whose title ends in a question mark reads "...SALT?, 2022"
 - On the phone project page the "Next" button ends 32px from the right edge, not at the gutter
 - `src/styles/mobile/gallery.css` still has an unused `.mobile-gallery-year` rule; the year now sits inside the title heading
@@ -74,7 +76,7 @@ The named validation agents were not run this session.
 
 ## 📝 Startup Prompt for Next Session
 
-Read CLAUDE.md to understand our workflow, then continue from the design review (✅ all six items implemented, PRs #412 to #420, plus the phone left edge #421).
+Read CLAUDE.md to understand our workflow, then continue from the design review (✅ all six items implemented, PRs #412 to #420, plus the phone left edge #421 and phone header #423).
 
 **Immediate priority**: Issue #393 with left-aligning the first home image (2-4 hours)
 **Context**: the design-review stack is on master; the home gallery still centres its first image because scroll, focus and restore logic assume it
