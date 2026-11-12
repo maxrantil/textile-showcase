@@ -66,8 +66,10 @@ const GalleryItem = memo(function GalleryItem({
           width={800}
           sizes="(max-width: 1024px) 90vw, (max-width: 1440px) 800px, 900px"
           className={`desktop-gallery-img ${styles.galleryImage}`}
-          priority={index === 0}
-          loading={index === 0 ? 'eager' : 'lazy'}
+          // With the first image on the left margin, the second is on screen
+          // at arrival too, and is often the larger of the two (the LCP element)
+          priority={index < 2}
+          loading={index < 2 ? 'eager' : 'lazy'}
         />
       </div>
 

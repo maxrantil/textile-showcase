@@ -12,9 +12,12 @@
 - **Left margin**: on desktop the home gallery opens with its first image and caption under the name, 24px from the edge
   (was centred, at x=489 on a 1440 window, with the left third empty). The last image ends 24px from the right edge.
   The images in between are centred as before. Captions lost their 4px side padding so they line up with the image.
-- **#393**: the track is unscrolled on arrival, so nothing scrolls before the first paint. On a production build at
-  1350x940, Chrome recorded an LCP entry for the first gallery image in 3 of 3 runs (92 to 724ms). The "no LCP" state
-  on master was not re-measured this session; it is documented in #393.
+- **#393**: the track is unscrolled on arrival, so nothing scrolls before the first paint. CI Lighthouse reported the
+  home page's LCP as `NaN` on all three runs on master (run 43272105489) and as a number on this PR. On a local
+  production build at 1350x940 Chrome recorded an LCP entry for the first gallery image in 3 of 3 runs.
+- **Second image loads eagerly**: with the first image on the left, the second is on screen at arrival and is often the
+  LCP element. The first CI run on this PR measured LCP at about 8.5s and flagged it as lazily loaded, so the first two
+  gallery images are now eager with high priority. See the PR for the figure after this change.
 - **Scroll positions** moved into `src/components/desktop/Gallery/scrollTargets.ts` (first item: 0, last: end of track,
   others: centred), used for scrolling, current-item tracking and restoration.
 - **Two restore faults fixed on the way**: the "instant" restore scroll was animated by `scroll-behavior: smooth`, and
@@ -24,12 +27,12 @@
   saved focus index up to 200ms after mounting. A click inside that window saved a new index, which the running restore
   routine then focused and deleted, leaving nothing for the return visit. It is now read at mount.
   `focus-restoration.spec.ts` failed 8 of 24 runs here before (desktop and phone, in parallel) and 0 of 24 after.
-- **Tests added**: `scrollTargets.test.ts` (10), `GalleryFocusRestore.test.tsx` (2), `tests/e2e/design/home-first-image.spec.ts` (5).
+- **Tests added**: `scrollTargets.test.ts` (10), `GalleryFocusRestore.test.tsx` (2), one loading test in `Gallery.test.tsx`, `tests/e2e/design/home-first-image.spec.ts` (5).
   The E2E LCP test passes on the dev server with or without the change, so it does not guard #393 by itself.
 
 ## 🎯 Current Project State
 
-**Tests**: ✅ Jest 1257 passing (23 skipped); `tsc --noEmit` clean
+**Tests**: ✅ Jest 1258 passing (23 skipped); `tsc --noEmit` clean
 **Branch**: ✅ clean, pushed
 **CI/CD**: 🔄 running on the PR
 
@@ -43,7 +46,8 @@ The named validation agents were not run this session.
 
 ## 🚀 Next Session Priorities
 
-1. Merge the PR once CI is green and look at the home page in production; check that Lighthouse now reports an LCP for `/`
+1. Merge PR #425 once CI is green and look at the home page in production
+2. Home LCP is now measurable and high in CI Lighthouse (seconds, not the 1s target): worth its own issue
 2. Close draft PR #394 (the earlier approach to #393, stacked on old drafts) once this is merged
 3. Find out why the contact-form submit tests fail on Mobile Chrome on the development machine
 4. The older draft PRs (#386 to #405) mostly conflict with master now and need a decision: rebase or close
@@ -86,7 +90,7 @@ Read CLAUDE.md to understand our workflow, then continue from Issue #393 (✅ fi
 **Immediate priority**: merge PR #425 if CI is green, verify production, then the Mobile Chrome contact-form failures (1-2 hours)
 **Context**: the home gallery opens unscrolled with the first image under the name; Lighthouse should now report an LCP for `/`
 **Reference docs**: SESSION_HANDOVER.md, tests/e2e/design/home-first-image.spec.ts, tests/e2e/workflows/contact-form.spec.ts
-**Ready state**: feature branch pushed, Jest 1257 passing; 4 contact-form E2E tests fail only on the development machine
+**Ready state**: feature branch pushed, Jest 1258 passing; 4 contact-form E2E tests fail only on the development machine
 
 **Expected scope**: PR merged and checked in production, draft #394 closed, contact-form failures explained
 
