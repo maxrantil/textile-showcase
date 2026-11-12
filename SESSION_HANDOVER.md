@@ -1,35 +1,29 @@
-# Session Handoff: Issue #411 - Mobile project page shows the image first
+# Session Handoff: Design review stack, merging to master (Issues #411, #413, #415)
 
-**Date**: 2026-11-11
-**Issue**: #411 - feat: show a photograph before the text on the mobile project page
-**PR**: draft, see branch below
-**Branch**: feat/issue-411-mobile-project-image-first
+**Date**: 2026-11-12
+**Issues**: #411 and #413 closed; #415 closes with this PR; #418 and #417 follow
+**PRs**: #412 and #414 merged; #416 (this PR) ready; #419 and #420 still stacked above it
+**Branch**: feat/issue-415-desktop-project-image-size
 
 ---
 
 ## ✅ Completed This Session
 
-- **Front-end design review** of idaromme.dk against the two mood-board sites,
-  https://margretheodgaard.com/ and https://malenebach.dk/. Doctor Hubert approved all six
-  items. The review (with side-by-side screenshots) is a private artifact:
-  https://claude.ai/artifact/RgjdJbMAPjrEDnwtK3mKuY. It is not committed, because this repo is
-  public and the review contains screenshots of other artists' sites.
-- **Issue #411 (review item 2)**:
-  - Mobile project page order is now title and year, lead image, text sections, remaining images.
-    `MobileImageStack` takes a `range` prop (`lead` / `rest`); `ProjectDetails` renders `children`
-    between its header and first section.
-  - Image containers use the real proportions parsed from the Sanity asset reference
-    (`getImageAspectRatio` in `src/utils/image-helpers.ts`), falling back to 4:3.
-  - The dark "Loading image N..." slab is gone; the container has a pale tint and `aria-busy`.
-  - On `/project/composing-tones` at 390px the first image moved from about 1,390px down the page to 244px.
+- **#412 merged** (phone project page: lead image before the text). Full CI green, including E2E on Desktop Chrome, Mobile Chrome and Safari Smoke.
+- **#414 merged** (two text sizes, 64px header, 70vh home images). E2E and Lighthouse budget green on the PR; Jest and the Lighthouse audit ran green on master after the merge.
+- **#416** (desktop project image uses the window height, 700px at 1440x900) retargeted to master, master merged in, marked ready.
+- **#417 decided**: Doctor Hubert approved putting the year back in the home captions (reverses #100). Implemented test-first in draft PR #420.
+- Both production deploys (after #412 and #414) succeeded.
 
 ## 🎯 Current Project State
 
-**Tests**: ✅ 1240 passing (23 skipped); `tsc --noEmit` clean
-**Lint**: ✅ `npx eslint .` reports 0 errors
+**Tests**: ✅ Jest passing in CI on this branch; 1245 passing locally at the top of the stack (#420)
 **Branch**: ✅ clean, pushed
-**CI/CD**: 🔄 running on the draft PR
-**Not run**: Playwright E2E suite locally. The change was checked by hand at 390x844 against a local dev server.
+**CI/CD**: 🔄 running on #416
+
+**Local E2E note**: on the development machine 14 E2E tests fail (all of `tests/e2e/accessibility/focus-restoration.spec.ts` on
+Desktop Chrome and Mobile Chrome, and six submit tests of `tests/e2e/workflows/contact-form.spec.ts` on Mobile Chrome). The same
+14 fail there on plain master and pass in CI, so they do not come from this stack. The cause is not investigated.
 
 ### Agent Validation Status
 
@@ -37,35 +31,36 @@ The named validation agents were not run this session.
 
 ## 🚀 Next Session Priorities
 
-Approved order for the remaining review items, one issue and branch each:
-
-1. **Items 3 and 4 together**: reduce type to two sizes and one voice; header from 100px to about 64px,
-   side margins from 68px to about 24px, first home image aligned to the left margin
-2. **Item 1**: enlarge the desktop project carousel (keep the carousel) and fix the clipped thumbnail strip
-3. **Item 5**: add the year to home captions
-4. **Item 6**: one left edge across Project, About and Contact; keep the contact form, with the
-   email address and Instagram as plain text above it
+1. Merge #419 (one left edge, plainer contact page), then #420 (year in captions), each after a full green CI run
+2. Check production at 1440x900 and on a phone
+3. #393 together with left-aligning the first home image
+4. Find out why the 14 E2E tests above fail on the development machine
 
 ### Carry-forward notes
 
-- Both `MobileGallery` and `DesktopGallery` are always in the SSR HTML, so selectors must be viewport-scoped
-- react-hooks v7 rules are enforced: prefer `useSyncExternalStore` or derived state over setState in effects
-- Browser tooling: Playwright's Chromium is in `~/.cache/ms-playwright`; system deps were being installed
-  with `sudo npx playwright install-deps` at the end of this session. The playwright MCP plugin also needs
-  Google Chrome (`npx playwright install chrome`).
+- CI workflows only run on PRs that target master. After retargeting a stacked PR, merge master into its branch and push;
+  a retarget alone triggers only some workflows (no Jest, no Lighthouse audit).
+- The session-handoff check fails a PR that does not change `SESSION_HANDOVER.md`.
+- Type tokens are defined in three places that must stay in step: `src/styles/base/typography.css`,
+  `src/styles/critical/deferred.css` and `public/styles/critical/deferred.css`
+- `src/styles/mobile/navigation.css` duplicates rules from `mobile/project.css` and loads after it
+- The live header is `src/components/Header`; `components/desktop/Header` and `components/mobile/Header` are not rendered
+- Layout (desktop or phone) is chosen after hydration, so E2E tests should target `.mobile-*` / `.desktop-*`
+  containers by viewport rather than `:visible`
+- Running E2E locally: start `npx next dev --webpack -p 3000` first; the Playwright config reuses it
 
 ## 📝 Startup Prompt for Next Session
 
-Read CLAUDE.md to understand our workflow, then continue from Issue #411 (mobile project page shows the image first, draft PR open).
+Read CLAUDE.md to understand our workflow, then continue from the design-review stack (#412, #414 merged; #416 in CI).
 
-**Immediate priority**: merge the #411 PR once CI is green, then open an issue for review items 3 and 4 (type and frame, 3-5 hours)
-**Context**: all six design-review items are approved; the mood board is margretheodgaard.com and malenebach.dk
-**Reference docs**: SESSION_HANDOVER.md, the review artifact linked above, issue #411
-**Ready state**: feature branch clean and pushed; 1240 tests passing; ESLint at 0 errors
+**Immediate priority**: merge #416, then #419 and #420 bottom-up, each on a full green CI run (1 hour)
+**Context**: all six design-review items are implemented; the year in captions (#417) is approved and sits in PR #420
+**Reference docs**: SESSION_HANDOVER.md, tests/e2e/design/
+**Ready state**: branches clean and pushed; Jest green; 14 E2E tests fail only on the development machine
 
-**Expected scope**: TDD, CSS-led changes across all pages, verify at 1440x900 and 390x844 with Playwright, run the E2E suite
+**Expected scope**: the three remaining PRs merged, production checked at 1440x900 and on a phone
 
 ## 📚 Key Reference Documents
 
 - Review artifact: https://claude.ai/artifact/RgjdJbMAPjrEDnwtK3mKuY
-- `src/styles/mobile/project.css`, `src/styles/desktop/project.css`, `src/styles/base/typography.css`
+- `tests/e2e/design/type-and-frame.spec.ts`, `desktop-project-image.spec.ts`, `alignment-and-contact.spec.ts`
