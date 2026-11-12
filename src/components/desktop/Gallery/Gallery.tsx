@@ -209,6 +209,30 @@ export default function Gallery({ designs }: GalleryProps) {
   useEffect(() => {
     if (designs.length === 0 || hasRestoredRef.current) return
 
+    // Read at mount, before anything is awaited: a click on an image right
+    // after mounting saves a new index for the return visit, and reading
+    // later would take that one, "restore" it now and delete it
+    const savedFocusIndex =
+      pathname === '/' ? sessionStorage.getItem('galleryFocusIndex') : null
+
+    const restoreFocus = () => {
+      if (savedFocusIndex === null) return
+      const focusIndex = parseInt(savedFocusIndex, 10)
+
+      // Additional delay to ensure DOM is ready
+      // Scope to scrollContainerRef to avoid focusing hidden mobile gallery items (Issue #348)
+      setTimeout(() => {
+        const galleryItem = scrollContainerRef.current?.querySelector(
+          `[data-testid="gallery-item-${focusIndex}"]`
+        ) as HTMLElement | null
+
+        if (galleryItem) {
+          galleryItem.focus()
+          sessionStorage.removeItem('galleryFocusIndex')
+        }
+      }, 200)
+    }
+
     const restorePosition = async () => {
       try {
         const savedIndex = await scrollManager.restore(pathname ?? undefined)
@@ -223,45 +247,14 @@ export default function Gallery({ designs }: GalleryProps) {
             hasRestoredRef.current = true
 
             // Restore focus after scroll restoration
-            const savedFocusIndex = sessionStorage.getItem('galleryFocusIndex')
-            if (savedFocusIndex !== null && pathname === '/') {
-              const focusIndex = parseInt(savedFocusIndex, 10)
-
-              // Additional delay to ensure DOM is ready
-              // Scope to scrollContainerRef to avoid focusing hidden mobile gallery items (Issue #348)
-              setTimeout(() => {
-                const galleryItem = scrollContainerRef.current?.querySelector(
-                  `[data-testid="gallery-item-${focusIndex}"]`
-                ) as HTMLElement | null
-
-                if (galleryItem) {
-                  galleryItem.focus()
-                  sessionStorage.removeItem('galleryFocusIndex')
-                }
-              }, 200)
-            }
+            restoreFocus()
           }, 150)
         } else {
           hasRestoredRef.current = true
           setTimeout(checkScrollBounds, 100)
 
           // Still try to restore focus even if no scroll position
-          const savedFocusIndex = sessionStorage.getItem('galleryFocusIndex')
-          if (savedFocusIndex !== null && pathname === '/') {
-            const focusIndex = parseInt(savedFocusIndex, 10)
-
-            // Scope to scrollContainerRef to avoid focusing hidden mobile gallery items (Issue #348)
-            setTimeout(() => {
-              const galleryItem = scrollContainerRef.current?.querySelector(
-                `[data-testid="gallery-item-${focusIndex}"]`
-              ) as HTMLElement | null
-
-              if (galleryItem) {
-                galleryItem.focus()
-                sessionStorage.removeItem('galleryFocusIndex')
-              }
-            }, 200)
-          }
+          restoreFocus()
         }
       } catch {
         hasRestoredRef.current = true
