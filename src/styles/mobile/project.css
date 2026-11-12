@@ -3,11 +3,12 @@
 /* Mobile Project Styles */
 .mobile-project {
   min-height: 100vh;
-  padding: 70px 20px 60px;
+  /* Sides use the page gutter shared with the header and .nordic-container */
+  padding: 70px clamp(16px, 4vw, 40px) 60px;
 }
 
 .mobile-project-content {
-  padding: 20px;
+  padding: 20px 0;
   max-width: 100%;
   margin: 0 auto;
 }
@@ -221,7 +222,7 @@
 /* Responsive adjustments for very small screens */
 @media (max-width: 380px) {
   .mobile-project-content {
-    padding: 16px;
+    padding: 16px 0;
   }
 
   .mobile-nav-buttons {

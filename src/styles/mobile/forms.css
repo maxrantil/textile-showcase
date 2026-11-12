@@ -159,7 +159,8 @@
 /* Small screen adjustments */
 @media (max-width: 480px) {
   .mobile-contact-form {
-    padding: 16px;
+    /* No side padding: the page container already provides the gutter */
+    padding: 16px 0;
   }
 
   .mobile-form-stack {

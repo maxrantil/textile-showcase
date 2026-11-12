@@ -3,7 +3,8 @@
   display: flex;
   flex-direction: column;
   gap: 40px;
-  padding: 20px;
+  /* Sides use the page gutter shared with the header and .nordic-container */
+  padding: 20px clamp(16px, 4vw, 40px);
   margin-top: 60px; /* Account for mobile header height */
   min-height: calc(100vh - 60px);
 }
@@ -172,7 +173,8 @@
 /* Gallery Info - Title & Year (PDR Spec) */
 .mobile-gallery-info {
   margin-top: 12px;
-  padding: 0 4px;
+  /* No side padding: the caption starts at the image's left edge */
+  padding: 0;
 }
 
 .mobile-gallery-title {
@@ -217,7 +219,7 @@
   }
 
   .mobile-gallery-info {
-    padding: 2px 3px;
+    padding: 2px 0;
   }
 
   .mobile-gallery-title {
