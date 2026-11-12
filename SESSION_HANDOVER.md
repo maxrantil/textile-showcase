@@ -1,49 +1,44 @@
-# Session Handoff: Design review merged, phone left edge and header (Issues #411 to #423)
+# Session Handoff: First home image on the left margin (Issue #393)
 
 **Date**: 2026-11-12
-**Issues**: #411, #413, #415, #418, #417 and #421 closed; #423 closes with this PR
-**PRs**: #412, #414, #416, #419, #420 and #422 merged; this PR fixes #423
-**Branch**: fix/issue-423-phone-header-height
+**Issue**: #393 - perf: home page reports no LCP on desktop
+**PR**: #425 - feat: start the desktop home gallery with its first image on the left margin
+**Branch**: feat/issue-393-left-align-first-home-image
 
 ---
 
 ## ✅ Completed This Session
 
-All six items of the front-end design review are implemented and on master. #422 and this PR are follow-ups found in the production check.
-
-| PR | Issue | What it does | State |
-| --- | --- | --- | --- |
-| #412 | #411 | Phone project page: lead image before the text, real image proportions, pale loading placeholder | merged |
-| #414 | #413 | Two text sizes (16px, 20px), regular weight; 64px header anchored to the corners; home gallery images 70vh | merged |
-| #416 | #415 | Desktop project image uses the window height (700px at 1440x900); thumbnail strip back on screen | merged |
-| #419 | #418 | Project, About and Contact share one left edge; contact page leads with email reveal and Instagram | merged |
-| #420 | #417 | Home gallery captions show the year after the title ("Composing Tones, 2025"), desktop and phone | merged |
-| #422 | #421 | Phone: home gallery, project page and contact form start at the page gutter (16px), like the header, About and Contact | merged |
-| this PR | #423 | Phone header is 64px high, like the desktop one (was 72px) | open |
-
-- Each PR was merged on a green CI run: Jest, E2E on Desktop Chrome, Mobile Chrome and Safari Smoke, Lighthouse budget and audit.
-  Exception: on #414 Jest and the Lighthouse audit did not run on the PR (see the retarget note below); both ran green on master
-  right after its merge.
-- Lighthouse passed on #416, which requests the project page's main image 1200px high (was 800px).
-- **#417 reverses #100** (year removed from the phone gallery). Doctor Hubert approved it on 2026-11-12. The old test that
-  asserted the year stays hidden is replaced; a work without a year shows the title alone.
-- All five production deploys succeeded. Production was checked at 1440x900 and on a Pixel 5 viewport after the last one:
-  pages load without script errors, header 64px on desktop, project image 700px high, captions read "Title, year".
-- **#421**: that check showed four left edges on the phone (header, About and Contact text 16px; home images 20px with
-  captions at 23px; contact form 32px; project page 40px). All now use the gutter of `.nordic-container`,
-  `clamp(16px, 4vw, 40px)`. Guarded by `tests/e2e/design/phone-left-edge.spec.ts`.
-- **#423**: the phone header had 16px padding above and below its 40px menu button (72px). The padding is now 12px, which
-  gives 64px. Guarded by a phone test in `tests/e2e/design/type-and-frame.spec.ts`.
+- **Left margin**: on desktop the home gallery opens with its first image and caption under the name, 24px from the edge
+  (was centred, at x=489 on a 1440 window, with the left third empty). The last image ends 24px from the right edge.
+  The images in between are centred as before. Captions lost their 4px side padding so they line up with the image.
+- **#393**: the track is unscrolled on arrival, so nothing scrolls before the first paint. CI Lighthouse reported the
+  home page's LCP as `NaN` on all three runs on master (run 43272105489) and as a number on this PR. On a local
+  production build at 1350x940 Chrome recorded an LCP entry for the first gallery image in 3 of 3 runs.
+- **Second image loads eagerly**: with the first image on the left, the second is on screen at arrival and is often the
+  LCP element. The first CI run on this PR measured LCP at about 8.5s and flagged it as lazily loaded, so the first two
+  gallery images are now eager with high priority. See the PR for the figure after this change.
+- **Scroll positions** moved into `src/components/desktop/Gallery/scrollTargets.ts` (first item: 0, last: end of track,
+  others: centred), used for scrolling, current-item tracking and restoration.
+- **Two restore faults fixed on the way**: the "instant" restore scroll was animated by `scroll-behavior: smooth`, and
+  scroll callbacks compared against a stale current index. With several images sharing the end of the track, both
+  showed up as the wrong image being current after back navigation.
+- **Focus restoration race fixed** (the cause of the local focus-restoration failures): the desktop gallery read the
+  saved focus index up to 200ms after mounting. A click inside that window saved a new index, which the running restore
+  routine then focused and deleted, leaving nothing for the return visit. It is now read at mount.
+  `focus-restoration.spec.ts` failed 8 of 24 runs here before (desktop and phone, in parallel) and 0 of 24 after.
+- **Tests added**: `scrollTargets.test.ts` (10), `GalleryFocusRestore.test.tsx` (2), one loading test in `Gallery.test.tsx`, `tests/e2e/design/home-first-image.spec.ts` (5).
+  The E2E LCP test passes on the dev server with or without the change, so it does not guard #393 by itself.
 
 ## 🎯 Current Project State
 
-**Tests**: ✅ Jest 1245 passing (23 skipped); `tsc --noEmit` clean
+**Tests**: ✅ Jest 1258 passing (23 skipped); `tsc --noEmit` clean
 **Branch**: ✅ clean, pushed
-**CI/CD**: 🔄 running on this PR
+**CI/CD**: 🔄 running on the PR
 
-**Local E2E note**: on the development machine 14 of 330 E2E tests fail (all of `tests/e2e/accessibility/focus-restoration.spec.ts`
-on Desktop Chrome and Mobile Chrome, and six submit tests of `tests/e2e/workflows/contact-form.spec.ts` on Mobile Chrome). The
-same 14 fail there on plain master and pass in CI, so they do not come from this work. The cause is not investigated.
+**Local E2E**: Desktop Chrome and Mobile Chrome, 301 passed and 4 failed. The 4 are submit tests of
+`tests/e2e/workflows/contact-form.spec.ts` on Mobile Chrome, which also fail on plain master here and pass in CI.
+Cause not investigated.
 
 ### Agent Validation Status
 
@@ -51,10 +46,18 @@ The named validation agents were not run this session.
 
 ## 🚀 Next Session Priorities
 
-1. If not already done: merge this PR and look at the phone pages in production
-2. #393 together with left-aligning the first home image (the gallery's scroll, focus and restore logic assumes a centred item)
-3. Find out why the 14 E2E tests above fail on the development machine
+1. Merge PR #425 once CI is green and look at the home page in production
+2. Home LCP is now measurable and high in CI Lighthouse (seconds, not the 1s target): worth its own issue
+2. Close draft PR #394 (the earlier approach to #393, stacked on old drafts) once this is merged
+3. Find out why the contact-form submit tests fail on Mobile Chrome on the development machine
 4. The older draft PRs (#386 to #405) mostly conflict with master now and need a decision: rebase or close
+
+### Known behaviour, not changed
+
+- Left/right arrow keys move focus to the new image only when the index did not change: the keydown effect's cleanup
+  cancels the pending focus timer on every index change. Same on master.
+- When two images share the end of the track, the "Next image" arrow hides at the first of them; the keyboard still
+  steps to the last one.
 
 ### Carry-forward notes
 
@@ -73,19 +76,25 @@ The named validation agents were not run this session.
 - Layout (desktop or phone) is chosen after hydration, so E2E tests should target `.mobile-*` / `.desktop-*`
   containers by viewport rather than `:visible`
 - Running E2E locally: start `npx next dev --webpack -p 3000` first; the Playwright config reuses it
+- Desktop gallery scroll positions are defined twice and must stay in step: the snap rules in
+  `src/styles/desktop/gallery.css` and `src/components/desktop/Gallery/scrollTargets.ts`
+- The gallery margin (24px) repeats the header's desktop side padding (`1.5rem` in `src/components/Header/Header.css`)
+- Both galleries are always in the page and share the `galleryFocusIndex` session key; only the visible one can take focus
+- `src/hooks/useHorizontalScroll.ts` and `src/hooks/gallery/useGalleryNavigation.ts` still centre every item, but no
+  component uses them
 
 ## 📝 Startup Prompt for Next Session
 
-Read CLAUDE.md to understand our workflow, then continue from the design review (✅ all six items implemented, PRs #412 to #420, plus the phone left edge #421 and phone header #423).
+Read CLAUDE.md to understand our workflow, then continue from Issue #393 (✅ first home image on the left margin, focus restoration race fixed, PR #425 open).
 
-**Immediate priority**: Issue #393 with left-aligning the first home image (2-4 hours)
-**Context**: the design-review stack is on master; the home gallery still centres its first image because scroll, focus and restore logic assume it
-**Reference docs**: SESSION_HANDOVER.md, tests/e2e/design/, tests/e2e/accessibility/focus-restoration.spec.ts
-**Ready state**: master clean, Jest 1245 passing, CI green; 14 E2E tests fail only on the development machine
+**Immediate priority**: merge PR #425 if CI is green, verify production, then the Mobile Chrome contact-form failures (1-2 hours)
+**Context**: the home gallery opens unscrolled with the first image under the name; Lighthouse should now report an LCP for `/`
+**Reference docs**: SESSION_HANDOVER.md, tests/e2e/design/home-first-image.spec.ts, tests/e2e/workflows/contact-form.spec.ts
+**Ready state**: feature branch pushed, Jest 1258 passing; 4 contact-form E2E tests fail only on the development machine
 
-**Expected scope**: first home image on the left margin with scroll and focus restoration intact, E2E green in CI
+**Expected scope**: PR merged and checked in production, draft #394 closed, contact-form failures explained
 
 ## 📚 Key Reference Documents
 
 - Review artifact: https://claude.ai/artifact/RgjdJbMAPjrEDnwtK3mKuY
-- `tests/e2e/design/type-and-frame.spec.ts`, `desktop-project-image.spec.ts`, `alignment-and-contact.spec.ts`
+- `tests/e2e/design/home-first-image.spec.ts`, `type-and-frame.spec.ts`, `desktop-project-image.spec.ts`, `alignment-and-contact.spec.ts`

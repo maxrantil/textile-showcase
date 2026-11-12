@@ -54,3 +54,17 @@ describe('Desktop Gallery captions', () => {
     expect(heading.textContent).toBe(mockMinimalDesign.title)
   })
 })
+
+describe('Desktop Gallery image loading', () => {
+  it('loads the two images on screen at arrival eagerly and the rest lazily', () => {
+    render(<Gallery designs={mockDesigns} />)
+
+    const loading = screen
+      .getAllByRole('img')
+      .map((img) => img.getAttribute('loading'))
+
+    expect(loading.slice(0, 2)).toEqual(['eager', 'eager'])
+    expect(loading.slice(2).every((value) => value === 'lazy')).toBe(true)
+    expect(loading.length).toBeGreaterThan(2)
+  })
+})

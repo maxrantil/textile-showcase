@@ -12,6 +12,7 @@ import { getOptimizedImageUrl } from '@/utils/image-helpers'
 import { UmamiEvents } from '@/utils/analytics'
 import { scrollManager } from '@/lib/scrollManager'
 import { NavigationArrows } from '@/components/ui/NavigationArrows'
+import { getScrollTarget, getIndexAtScroll } from './scrollTargets'
 import styles from './Gallery.module.css'
 
 interface GalleryProps {
@@ -65,8 +66,10 @@ const GalleryItem = memo(function GalleryItem({
           width={800}
           sizes="(max-width: 1024px) 90vw, (max-width: 1440px) 800px, 900px"
           className={`desktop-gallery-img ${styles.galleryImage}`}
-          priority={index === 0}
-          loading={index === 0 ? 'eager' : 'lazy'}
+          // With the first image on the left margin, the second is on screen
+          // at arrival too, and is often the larger of the two (the LCP element)
+          priority={index < 2}
+          loading={index < 2 ? 'eager' : 'lazy'}
         />
       </div>
 
@@ -87,6 +90,9 @@ export default function Gallery({ designs }: GalleryProps) {
   const router = useRouter()
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [currentIndex, setCurrentIndex] = useState(0)
+  // Mirrors currentIndex for scroll callbacks, which can run before the state
+  // update from a scroll they follow has rendered
+  const currentIndexRef = useRef(0)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(true)
   const isScrollingRef = useRef(false)
@@ -105,32 +111,30 @@ export default function Gallery({ designs }: GalleryProps) {
       const container = scrollContainerRef.current
       if (!container || index < 0 || index >= designs.length) return
 
-      const items = container.children
-      const targetItem = items[index] as HTMLElement
+      const scrollPosition = getScrollTarget(container, index)
+      if (scrollPosition === null) return
 
-      if (targetItem) {
-        const itemCenter = targetItem.offsetLeft + targetItem.offsetWidth / 2
-        const containerCenter = container.clientWidth / 2
-        const scrollPosition = Math.max(0, itemCenter - containerCenter)
+      isScrollingRef.current = true
 
-        isScrollingRef.current = true
+      if (instant) {
+        // The track has scroll-behavior: smooth, which would also animate a
+        // plain scrollLeft assignment; the index would then follow the
+        // animation and the restored position would be lost on the way
+        container.scrollTo({ left: scrollPosition, behavior: 'instant' })
+        isScrollingRef.current = false
+      } else {
+        container.scrollTo({
+          left: scrollPosition,
+          behavior: 'smooth',
+        })
 
-        if (instant) {
-          container.scrollLeft = scrollPosition
+        setTimeout(() => {
           isScrollingRef.current = false
-        } else {
-          container.scrollTo({
-            left: scrollPosition,
-            behavior: 'smooth',
-          })
-
-          setTimeout(() => {
-            isScrollingRef.current = false
-          }, 600)
-        }
-
-        setCurrentIndex(index)
+        }, 600)
       }
+
+      currentIndexRef.current = index
+      setCurrentIndex(index)
     },
     [designs.length]
   )
@@ -159,28 +163,14 @@ export default function Gallery({ designs }: GalleryProps) {
     const container = scrollContainerRef.current
     if (!container) return
 
-    const { scrollLeft, clientWidth } = container
-    const items = container.children
-    const containerCenter = scrollLeft + clientWidth / 2
-    let closestIndex = 0
-    let closestDistance = Infinity
+    const closestIndex = getIndexAtScroll(container, currentIndexRef.current)
 
-    for (let i = 0; i < items.length && i < designs.length; i++) {
-      const item = items[i] as HTMLElement
-      const itemCenter = item.offsetLeft + item.offsetWidth / 2
-      const distance = Math.abs(containerCenter - itemCenter)
-
-      if (distance < closestDistance) {
-        closestDistance = distance
-        closestIndex = i
-      }
-    }
-
-    if (closestIndex !== currentIndex) {
+    if (closestIndex !== currentIndexRef.current) {
+      currentIndexRef.current = closestIndex
       setCurrentIndex(closestIndex)
       container.setAttribute('data-current-index', closestIndex.toString())
     }
-  }, [currentIndex, designs.length])
+  }, [])
 
   // Check scroll boundaries
   const checkScrollBounds = useCallback(() => {
@@ -221,6 +211,30 @@ export default function Gallery({ designs }: GalleryProps) {
   useEffect(() => {
     if (designs.length === 0 || hasRestoredRef.current) return
 
+    // Read at mount, before anything is awaited: a click on an image right
+    // after mounting saves a new index for the return visit, and reading
+    // later would take that one, "restore" it now and delete it
+    const savedFocusIndex =
+      pathname === '/' ? sessionStorage.getItem('galleryFocusIndex') : null
+
+    const restoreFocus = () => {
+      if (savedFocusIndex === null) return
+      const focusIndex = parseInt(savedFocusIndex, 10)
+
+      // Additional delay to ensure DOM is ready
+      // Scope to scrollContainerRef to avoid focusing hidden mobile gallery items (Issue #348)
+      setTimeout(() => {
+        const galleryItem = scrollContainerRef.current?.querySelector(
+          `[data-testid="gallery-item-${focusIndex}"]`
+        ) as HTMLElement | null
+
+        if (galleryItem) {
+          galleryItem.focus()
+          sessionStorage.removeItem('galleryFocusIndex')
+        }
+      }, 200)
+    }
+
     const restorePosition = async () => {
       try {
         const savedIndex = await scrollManager.restore(pathname ?? undefined)
@@ -235,45 +249,14 @@ export default function Gallery({ designs }: GalleryProps) {
             hasRestoredRef.current = true
 
             // Restore focus after scroll restoration
-            const savedFocusIndex = sessionStorage.getItem('galleryFocusIndex')
-            if (savedFocusIndex !== null && pathname === '/') {
-              const focusIndex = parseInt(savedFocusIndex, 10)
-
-              // Additional delay to ensure DOM is ready
-              // Scope to scrollContainerRef to avoid focusing hidden mobile gallery items (Issue #348)
-              setTimeout(() => {
-                const galleryItem = scrollContainerRef.current?.querySelector(
-                  `[data-testid="gallery-item-${focusIndex}"]`
-                ) as HTMLElement | null
-
-                if (galleryItem) {
-                  galleryItem.focus()
-                  sessionStorage.removeItem('galleryFocusIndex')
-                }
-              }, 200)
-            }
+            restoreFocus()
           }, 150)
         } else {
           hasRestoredRef.current = true
           setTimeout(checkScrollBounds, 100)
 
           // Still try to restore focus even if no scroll position
-          const savedFocusIndex = sessionStorage.getItem('galleryFocusIndex')
-          if (savedFocusIndex !== null && pathname === '/') {
-            const focusIndex = parseInt(savedFocusIndex, 10)
-
-            // Scope to scrollContainerRef to avoid focusing hidden mobile gallery items (Issue #348)
-            setTimeout(() => {
-              const galleryItem = scrollContainerRef.current?.querySelector(
-                `[data-testid="gallery-item-${focusIndex}"]`
-              ) as HTMLElement | null
-
-              if (galleryItem) {
-                galleryItem.focus()
-                sessionStorage.removeItem('galleryFocusIndex')
-              }
-            }, 200)
-          }
+          restoreFocus()
         }
       } catch {
         hasRestoredRef.current = true
@@ -319,7 +302,7 @@ export default function Gallery({ designs }: GalleryProps) {
           clearTimeout(focusTimeoutRef.current)
         }
 
-        // Move focus to newly centered item after scroll animation completes
+        // Move focus to the newly current item after scroll animation completes
         // Delay matches scroll animation duration (600ms from line 182-184)
         // Scope to scrollContainerRef to avoid focusing hidden mobile gallery items (Issue #348)
         focusTimeoutRef.current = setTimeout(() => {
@@ -346,7 +329,7 @@ export default function Gallery({ designs }: GalleryProps) {
           clearTimeout(focusTimeoutRef.current)
         }
 
-        // Move focus to newly centered item after scroll animation completes
+        // Move focus to the newly current item after scroll animation completes
         // Delay matches scroll animation duration (600ms from line 182-184)
         // Scope to scrollContainerRef to avoid focusing hidden mobile gallery items (Issue #348)
         focusTimeoutRef.current = setTimeout(() => {
