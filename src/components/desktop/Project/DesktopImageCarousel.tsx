@@ -29,6 +29,9 @@ interface DesktopImageCarouselProps {
   onIndexChange?: (index: number) => void
 }
 
+// Source height requested from the CDN; the image is shown up to the window height minus header and controls
+const CAROUSEL_IMAGE_HEIGHT = 1200
+
 // Lightweight lockdown mode detection - only for iOS devices
 const isIOSLockdownMode = () => {
   if (typeof window === 'undefined') return false
@@ -301,7 +304,7 @@ export function DesktopImageCarousel({
   const currentImageUrl = getOptimizedImageUrl(
     currentImage?.asset || (images && images[0]?.asset),
     {
-      height: 800,
+      height: CAROUSEL_IMAGE_HEIGHT,
       quality: 80, // Reduced from 90 to 80 for performance
       format: 'auto', // Use auto format for lockdown detection
     }
@@ -417,7 +420,7 @@ export function DesktopImageCarousel({
                         src={getOptimizedImageUrl(
                           allImages[currentIndex + 1].asset,
                           {
-                            height: 800,
+                            height: CAROUSEL_IMAGE_HEIGHT,
                             quality: 80,
                             format: 'auto',
                           }
@@ -434,7 +437,7 @@ export function DesktopImageCarousel({
                         src={getOptimizedImageUrl(
                           allImages[currentIndex - 1].asset,
                           {
-                            height: 800,
+                            height: CAROUSEL_IMAGE_HEIGHT,
                             quality: 80,
                             format: 'auto',
                           }
