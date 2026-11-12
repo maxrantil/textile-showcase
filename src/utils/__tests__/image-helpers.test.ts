@@ -6,6 +6,7 @@ import {
   getSimpleImageUrl,
   getResponsiveImageUrls,
   generateSrcSet,
+  getImageAspectRatio,
 } from '../image-helpers'
 import type { ImageSource } from '@/types/textile'
 
@@ -171,7 +172,9 @@ describe('image-helpers', () => {
     it('returns URLs for each of the default sizes', () => {
       const source = makeImageSource('image-abc123-1920x1080-jpg')
       const urls = getResponsiveImageUrls(source)
-      expect(Object.keys(urls).map(Number)).toEqual([640, 768, 1024, 1280, 1920])
+      expect(Object.keys(urls).map(Number)).toEqual([
+        640, 768, 1024, 1280, 1920,
+      ])
     })
 
     it('returns URLs for custom sizes', () => {
@@ -228,6 +231,33 @@ describe('image-helpers', () => {
       const source = makeImageSource('image-abc123-1920x1080-jpg')
       const srcSet = generateSrcSet(source, [400])
       expect(srcSet).toMatch(/https:\/\/.*\s400w/)
+    })
+  })
+
+  describe('getImageAspectRatio', () => {
+    it('reads width over height from a nested asset reference', () => {
+      const source = makeImageSource('image-abc123-4000x6000-png')
+      expect(getImageAspectRatio(source)).toBeCloseTo(4000 / 6000)
+    })
+
+    it('reads width over height from a direct reference', () => {
+      expect(
+        getImageAspectRatio({ _ref: 'image-abc123-4032x3024-jpg' })
+      ).toBeCloseTo(4032 / 3024)
+    })
+
+    it('returns null when the reference carries no dimensions', () => {
+      expect(getImageAspectRatio(makeImageSource('image-ref-123'))).toBeNull()
+    })
+
+    it('returns null for a source without a reference', () => {
+      expect(
+        getImageAspectRatio({ url: 'https://example.com/a.jpg' })
+      ).toBeNull()
+    })
+
+    it('returns null for a zero height', () => {
+      expect(getImageAspectRatio({ _ref: 'image-abc123-100x0-jpg' })).toBeNull()
     })
   })
 })

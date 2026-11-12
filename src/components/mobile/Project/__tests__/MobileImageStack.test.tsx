@@ -388,4 +388,52 @@ describe('MobileImageStack', () => {
       expect(imageBlocks).toHaveLength(2) // 1 main + 1 gallery
     })
   })
+
+  describe('Range', () => {
+    it('should_render_only_the_main_image_for_lead_range', () => {
+      const { getAllByTestId } = render(
+        <MobileImageStack
+          mainImage={mockMainImage}
+          images={mockGalleryImages}
+          projectTitle={mockProjectTitle}
+          range="lead"
+        />
+      )
+
+      const imageBlocks = getAllByTestId('image-block')
+      expect(imageBlocks).toHaveLength(1)
+      expect(imageBlocks[0]).toHaveAttribute('data-is-main-image', 'true')
+      expect(imageBlocks[0]).toHaveAttribute('data-index', '0')
+      expect(imageBlocks[0]).toHaveAttribute('data-is-first', 'true')
+    })
+
+    it('should_render_gallery_images_with_continued_indices_for_rest_range', () => {
+      const { getAllByTestId } = render(
+        <MobileImageStack
+          mainImage={mockMainImage}
+          images={mockGalleryImages}
+          projectTitle={mockProjectTitle}
+          range="rest"
+        />
+      )
+
+      const imageBlocks = getAllByTestId('image-block')
+      expect(imageBlocks).toHaveLength(mockGalleryImages.length)
+      expect(imageBlocks[0]).toHaveAttribute('data-index', '1')
+      expect(imageBlocks[0]).toHaveAttribute('data-is-first', 'false')
+      expect(imageBlocks[0]).toHaveAttribute('data-is-main-image', 'false')
+    })
+
+    it('should_render_nothing_for_rest_range_without_gallery_images', () => {
+      const { container } = render(
+        <MobileImageStack
+          mainImage={mockMainImage}
+          projectTitle={mockProjectTitle}
+          range="rest"
+        />
+      )
+
+      expect(container).toBeEmptyDOMElement()
+    })
+  })
 })

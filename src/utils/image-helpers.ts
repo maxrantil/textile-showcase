@@ -119,3 +119,18 @@ export function generateSrcSet(
   const urls = getResponsiveImageUrls(source, sizes)
   return sizes.map((size) => `${urls[size]} ${size}w`).join(', ')
 }
+
+/**
+ * Width divided by height, read from the dimensions Sanity encodes in an
+ * asset reference (image-<id>-<width>x<height>-<format>).
+ * Returns null when the source has no reference or the reference has no dimensions.
+ */
+export function getImageAspectRatio(source: ImageSource): number | null {
+  const ref = source.asset?._ref || source._ref
+  const match = ref?.match(/-(\d+)x(\d+)-[a-z0-9]+$/i)
+  if (!match) return null
+
+  const width = Number(match[1])
+  const height = Number(match[2])
+  return width > 0 && height > 0 ? width / height : null
+}

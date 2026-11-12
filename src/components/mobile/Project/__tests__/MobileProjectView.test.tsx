@@ -1,7 +1,7 @@
 // ABOUTME: Comprehensive test suite for MobileProjectView - project composition, navigation, scroll management
 
 import React from 'react'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import { MobileProjectView } from '../MobileProjectView'
 import { mockSingleDesign } from '../../../../../tests/fixtures/designs'
 import { mockNavigationProjects } from '../../../../../tests/fixtures/navigation'
@@ -32,12 +32,19 @@ jest.mock('../MobileImageStack', () => ({
     mainImage,
     images,
     projectTitle,
+    range,
   }: {
     mainImage?: { asset?: { _ref?: string } }
     images?: unknown[]
     projectTitle: string
+    range?: string
   }) => (
-    <div data-testid="mobile-image-stack">
+    <div
+      data-testid={
+        range === 'lead' ? 'mobile-lead-image' : 'mobile-image-stack'
+      }
+      data-range={range}
+    >
       <span>{projectTitle}</span>
       <span>Main Image: {mainImage?.asset?._ref}</span>
       <span>Gallery Count: {images?.length || 0}</span>
@@ -48,12 +55,15 @@ jest.mock('../MobileImageStack', () => ({
 jest.mock('../MobileProjectDetails', () => ({
   MobileProjectDetails: ({
     project,
+    children,
   }: {
     project: { title: string; year?: number }
+    children?: React.ReactNode
   }) => (
     <div data-testid="mobile-project-details">
       <h1>{project.title}</h1>
       <span>{project.year}</span>
+      {children}
     </div>
   ),
 }))
@@ -103,6 +113,32 @@ describe('MobileProjectView', () => {
       expect(screen.getByTestId('mobile-image-stack')).toBeInTheDocument()
     })
 
+    it('should_render_lead_image_inside_project_details', () => {
+      render(<MobileProjectView project={mockSingleDesign} />)
+
+      const details = screen.getByTestId('mobile-project-details')
+      expect(details).toContainElement(screen.getByTestId('mobile-lead-image'))
+    })
+
+    it('should_render_remaining_images_after_project_details', () => {
+      render(<MobileProjectView project={mockSingleDesign} />)
+
+      const details = screen.getByTestId('mobile-project-details')
+      const rest = screen.getByTestId('mobile-image-stack')
+      expect(rest).toHaveAttribute('data-range', 'rest')
+      expect(details).not.toContainElement(rest)
+      expect(
+        details.compareDocumentPosition(rest) & Node.DOCUMENT_POSITION_FOLLOWING
+      ).toBeTruthy()
+    })
+
+    it('should_not_render_lead_image_when_no_main_image', () => {
+      const projectWithoutImage = { ...mockSingleDesign, image: undefined }
+      render(<MobileProjectView project={projectWithoutImage} />)
+
+      expect(screen.queryByTestId('mobile-lead-image')).not.toBeInTheDocument()
+    })
+
     it('should_render_project_navigation_component', () => {
       render(<MobileProjectView project={mockSingleDesign} />)
 
@@ -140,7 +176,11 @@ describe('MobileProjectView', () => {
 
       render(<MobileProjectView project={projectWithGallery} />)
 
-      expect(screen.getByText(/Gallery Count: 2/)).toBeInTheDocument()
+      expect(
+        within(screen.getByTestId('mobile-image-stack')).getByText(
+          /Gallery Count: 2/
+        )
+      ).toBeInTheDocument()
     })
   })
 
@@ -333,7 +373,11 @@ describe('MobileProjectView', () => {
 
       render(<MobileProjectView project={projectWithGallery} />)
 
-      expect(screen.getByText(/Gallery Count: 2/)).toBeInTheDocument()
+      expect(
+        within(screen.getByTestId('mobile-image-stack')).getByText(
+          /Gallery Count: 2/
+        )
+      ).toBeInTheDocument()
     })
 
     it('should_handle_undefined_gallery_gracefully', () => {
@@ -341,7 +385,11 @@ describe('MobileProjectView', () => {
 
       render(<MobileProjectView project={projectWithoutGallery} />)
 
-      expect(screen.getByText(/Gallery Count: 0/)).toBeInTheDocument()
+      expect(
+        within(screen.getByTestId('mobile-image-stack')).getByText(
+          /Gallery Count: 0/
+        )
+      ).toBeInTheDocument()
     })
 
     it('should_include_image_captions_in_mapping', () => {
@@ -374,7 +422,11 @@ describe('MobileProjectView', () => {
       render(<MobileProjectView project={projectWithGallery} />)
 
       // Should still render correctly with generated keys
-      expect(screen.getByText(/Gallery Count: 2/)).toBeInTheDocument()
+      expect(
+        within(screen.getByTestId('mobile-image-stack')).getByText(
+          /Gallery Count: 2/
+        )
+      ).toBeInTheDocument()
     })
   })
 
@@ -391,7 +443,9 @@ describe('MobileProjectView', () => {
       render(<MobileProjectView project={mockSingleDesign} />)
 
       expect(
-        screen.getByText(`Main Image: ${mockSingleDesign.image?.asset?._ref}`)
+        within(screen.getByTestId('mobile-image-stack')).getByText(
+          `Main Image: ${mockSingleDesign.image?.asset?._ref}`
+        )
       ).toBeInTheDocument()
     })
 

@@ -1,17 +1,26 @@
 // ABOUTME: Shared project details component displaying title, description, materials, and technical specifications
 'use client'
 
+import type { ReactNode } from 'react'
 import { TextileDesign } from '@/types/textile'
 
 interface ProjectDetailsProps {
   project: TextileDesign
   classPrefix: 'mobile' | 'desktop'
+  // Rendered between the header and the first text section (e.g. a lead image)
+  children?: ReactNode
 }
 
-export function ProjectDetails({ project, classPrefix: p }: ProjectDetailsProps) {
+export function ProjectDetails({
+  project,
+  classPrefix: p,
+  children,
+}: ProjectDetailsProps) {
   // Resolve CSS class naming inconsistencies between mobile and desktop
-  const detailGridClass = p === 'mobile' ? 'mobile-detail-grid' : 'desktop-project-info'
-  const detailItemClass = p === 'mobile' ? 'mobile-detail-item' : 'desktop-info-item'
+  const detailGridClass =
+    p === 'mobile' ? 'mobile-detail-grid' : 'desktop-project-info'
+  const detailItemClass =
+    p === 'mobile' ? 'mobile-detail-item' : 'desktop-info-item'
 
   const formatDimensions = (
     d: string | { width?: number; height?: number; unit?: string }
@@ -26,6 +35,8 @@ export function ProjectDetails({ project, classPrefix: p }: ProjectDetailsProps)
         <h1 className={`${p}-project-title`}>{project.title}</h1>
         {project.year && <p className={`${p}-project-year`}>{project.year}</p>}
       </header>
+
+      {children}
 
       {project.description && (
         <section className={`${p}-project-section`}>
