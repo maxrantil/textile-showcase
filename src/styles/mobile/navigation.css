@@ -1,9 +1,9 @@
 .mobile-image-caption {
   margin-top: 12px;
   text-align: center;
-  font-size: 14px;
+  font-size: 16px;
   color: #666;
-  font-style: italic;
+  font-style: normal;
 }
 
 /* Mobile Project Details */
@@ -12,16 +12,16 @@
 }
 
 .mobile-project-header {
-  text-align: center;
+  text-align: left;
   margin-bottom: 32px;
 }
 
 .mobile-project-title {
-  font-size: clamp(24px, 6vw, 32px);
-  font-weight: 300;
+  font-size: 20px;
+  font-weight: 400;
   margin: 0 0 8px 0;
   color: #333;
-  letter-spacing: -0.5px;
+  letter-spacing: normal;
 }
 
 .mobile-project-year {
@@ -41,12 +41,12 @@
 }
 
 .mobile-section-title {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 400;
   margin: 0 0 16px 0;
   color: #333;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  text-transform: none;
+  letter-spacing: normal;
 }
 
 .mobile-project-description {
@@ -64,17 +64,17 @@
 
 .mobile-detail-item h3,
 .mobile-info-item h3 {
-  font-size: 12px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-size: 16px;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
   color: #999;
   margin: 0 0 4px 0;
 }
 
 .mobile-detail-item p,
 .mobile-info-item p {
-  font-size: 14px;
+  font-size: 16px;
   color: #333;
   margin: 0;
 }
@@ -86,7 +86,7 @@
 }
 
 .mobile-care-instructions {
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.5;
   color: #555;
   background: #fff;
@@ -143,11 +143,11 @@
 }
 
 .mobile-nav-label {
-  font-size: 12px;
+  font-size: 16px;
   color: #666;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
 }
 
 .mobile-nav-button {
@@ -157,7 +157,7 @@
   padding: 12px 16px;
   background: #f8f8f8;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 400;
   color: #333;
 }
@@ -185,11 +185,11 @@
 .mobile-next-project-label,
 .mobile-action-label {
   display: block;
-  font-size: 12px;
+  font-size: 16px;
   color: #666;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
   margin-bottom: 8px;
 }
 
@@ -246,7 +246,7 @@
   }
 
   .mobile-nav-button {
-    font-size: 13px;
+    font-size: 16px;
     padding: 10px 14px;
   }
 

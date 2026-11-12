@@ -31,12 +31,12 @@
 
 .desktop-form-label {
   display: block;
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 16px;
+  font-weight: 400;
   margin-bottom: 8px;
   color: #333;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
+  letter-spacing: normal;
+  text-transform: none;
 }
 
 /* Form inputs */
@@ -85,14 +85,14 @@
 
 /* Helper text */
 .desktop-form-help-text {
-  font-size: 12px;
+  font-size: 16px;
   color: #666;
   margin: 4px 0 0 0;
   line-height: 1.4;
 }
 
 .desktop-form-error-text {
-  font-size: 12px;
+  font-size: 16px;
   color: #ef4444;
   margin: 4px 0 0 0;
   line-height: 1.4;
@@ -132,13 +132,13 @@
 
 .desktop-form-message-title {
   margin: 0 0 8px 0;
-  font-weight: 500;
+  font-weight: 400;
   font-size: 16px;
 }
 
 .desktop-form-message-text {
   margin: 0 0 16px 0;
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.5;
 }
 
@@ -155,7 +155,7 @@
 .desktop-form-textarea::placeholder {
   color: #5a5a5a;
   opacity: 1;
-  font-style: italic;
+  font-style: normal;
 }
 
 /* Medium screen adjustments */

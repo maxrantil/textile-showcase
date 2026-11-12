@@ -15,11 +15,10 @@ export default function AboutPage() {
         <ErrorBoundary>
           {/* Artist Statement */}
           <section className="nordic-section">
-            <h1 className="nordic-display nordic-spacing-lg">
-              Artist Statement
-            </h1>
-
             <div className="nordic-content">
+              <h1 className="nordic-display nordic-spacing-md">
+                Artist Statement
+              </h1>
               {}
               <p className="nordic-body-large nordic-spacing-md">
                 My work springs from a fascination of color combinations - how

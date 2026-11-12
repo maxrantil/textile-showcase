@@ -10,8 +10,12 @@
 
 /* Reveal button - subtle and minimal */
 .email-reveal-button {
-  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
-  font-size: 14px;
+  font-family:
+    var(--font-inter),
+    system-ui,
+    -apple-system,
+    sans-serif;
+  font-size: 16px;
   font-weight: 400;
   padding: 8px 16px;
   border-radius: 4px;
@@ -43,7 +47,7 @@
 .email-address {
   font-size: 16px;
   color: #333; /* WCAG AA: 12.6:1 contrast */
-  font-weight: 500;
+  font-weight: 400;
   text-decoration: underline;
   text-underline-offset: 3px;
   transition: color 0.2s ease;

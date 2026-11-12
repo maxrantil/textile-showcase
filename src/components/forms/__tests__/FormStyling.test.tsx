@@ -83,13 +83,13 @@ describe('Form Styling CSS Classes (TDD - GREEN Phase)', () => {
       const styles = window.getComputedStyle(label)
 
       // These assertions WILL FAIL initially
-      expect(styles.fontSize).toBe('0.875rem') // 14px
-      expect(styles.fontWeight).toBe('500')
+      expect(styles.fontSize).toBe('16px')
+      expect(styles.fontWeight).toBe('400')
       expect(styles.color).toBe('rgb(55, 65, 81)') // #374151
       expect(styles.marginBottom).toBe('0.25rem') // 4px
       expect(styles.lineHeight).toBe('1.25')
-      expect(styles.textTransform).toBe('uppercase')
-      expect(styles.letterSpacing).toBe('0.5px')
+      expect(styles.textTransform).toBe('none')
+      expect(styles.letterSpacing).toBe('normal')
     })
   })
 
@@ -152,7 +152,7 @@ describe('Form Styling CSS Classes (TDD - GREEN Phase)', () => {
       const styles = window.getComputedStyle(helpText)
 
       // These assertions WILL FAIL initially
-      expect(styles.fontSize).toBe('0.75rem') // 12px
+      expect(styles.fontSize).toBe('16px')
       expect(styles.color).toBe('rgb(107, 114, 128)') // #6b7280
       expect(styles.marginTop).toBe('0.25rem') // 4px
       expect(styles.lineHeight).toBe('1.33')
@@ -167,7 +167,7 @@ describe('Form Styling CSS Classes (TDD - GREEN Phase)', () => {
       const styles = window.getComputedStyle(errorText)
 
       // These assertions WILL FAIL initially
-      expect(styles.fontSize).toBe('0.75rem') // 12px
+      expect(styles.fontSize).toBe('16px')
       expect(styles.color).toBe('rgb(239, 68, 68)') // #ef4444
       expect(styles.marginTop).toBe('0.25rem') // 4px
       expect(styles.lineHeight).toBe('1.33')

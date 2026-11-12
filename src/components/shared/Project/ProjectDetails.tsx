@@ -74,7 +74,8 @@ export function ProjectDetails({
       {/* Extended Description */}
       {project.detailedDescription && (
         <section className={`${p}-project-section`}>
-          <h2 className={`${p}-section-title`}>About This Piece</h2>
+          {/* The text follows the lead image directly; the heading stays for screen readers */}
+          <h2 className={`${p}-section-title sr-only`}>About This Piece</h2>
           <p className={`${p}-project-description`}>
             {project.detailedDescription}
           </p>

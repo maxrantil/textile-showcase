@@ -8,14 +8,14 @@
 /* CSS Custom Properties for Typography */
 :root {
   /* Nordic Typography Scale */
-  --font-size-display: clamp(32px, 6vw, 64px);
-  --font-size-h1: clamp(24px, 4.5vw, 48px);
-  --font-size-h2: clamp(20px, 3.5vw, 32px);
-  --font-size-h3: clamp(18px, 3vw, 24px);
-  --font-size-body-large: clamp(16px, 2.5vw, 20px);
-  --font-size-body: clamp(15px, 2.2vw, 18px);
-  --font-size-caption: clamp(12px, 2vw, 16px);
-  --font-size-small: clamp(11px, 1.8vw, 14px);
+  --font-size-display: 20px;
+  --font-size-h1: 20px;
+  --font-size-h2: 20px;
+  --font-size-h3: 20px;
+  --font-size-body-large: 20px;
+  --font-size-body: 16px;
+  --font-size-caption: 16px;
+  --font-size-small: 16px;
 
   /* Nordic Color Palette */
   --color-text-primary: #222;
@@ -27,12 +27,12 @@
   --color-text-disabled: #999;
 
   /* Nordic Letter Spacing */
-  --letter-spacing-tight: -0.02em;
-  --letter-spacing-normal: 0;
-  --letter-spacing-wide: 0.5px;
-  --letter-spacing-wider: 1px;
-  --letter-spacing-widest: 1.5px;
-  --letter-spacing-ultra: 2px;
+  --letter-spacing-tight: normal;
+  --letter-spacing-normal: normal;
+  --letter-spacing-wide: normal;
+  --letter-spacing-wider: normal;
+  --letter-spacing-widest: normal;
+  --letter-spacing-ultra: normal;
 
   /* Nordic Line Heights */
   --line-height-tight: 1.1;
@@ -53,12 +53,12 @@
 
 /* Display Titles */
 .nordic-display {
-  font-size: var(--font-size-display);
+  font-size: 16px;
   font-weight: 400;
-  line-height: var(--line-height-tight);
-  letter-spacing: var(--letter-spacing-tight);
-  color: var(--color-text-primary);
-  text-transform: uppercase;
+  line-height: var(--line-height-relaxed);
+  letter-spacing: normal;
+  color: var(--color-text-light);
+  text-transform: none;
   margin: 0;
 }
 
@@ -69,7 +69,7 @@
   line-height: var(--line-height-normal);
   letter-spacing: var(--letter-spacing-wide);
   color: var(--color-text-primary);
-  text-transform: uppercase;
+  text-transform: none;
   margin: 0;
 }
 
@@ -79,28 +79,28 @@
   line-height: var(--line-height-normal);
   letter-spacing: var(--letter-spacing-wide);
   color: var(--color-text-secondary);
-  text-transform: uppercase;
+  text-transform: none;
   margin: 0;
 }
 
 .nordic-h3 {
   font-size: var(--font-size-h3);
-  font-weight: 500;
+  font-weight: 400;
   line-height: var(--line-height-normal);
   letter-spacing: var(--letter-spacing-wider);
   color: var(--color-text-secondary);
-  text-transform: uppercase;
+  text-transform: none;
   margin: 0;
 }
 
 /* Section Titles (like in desktop project) */
 .nordic-section-title {
   font-size: 16px;
-  font-weight: 500;
+  font-weight: 400;
   line-height: var(--line-height-normal);
-  letter-spacing: var(--letter-spacing-widest);
-  color: var(--color-text-secondary);
-  text-transform: uppercase;
+  letter-spacing: normal;
+  color: var(--color-text-light);
+  text-transform: none;
   margin: 0;
 }
 
@@ -109,7 +109,7 @@
   font-size: var(--font-size-body-large);
   font-weight: 400;
   line-height: var(--line-height-very-loose);
-  letter-spacing: 0.3px;
+  letter-spacing: normal;
   color: var(--color-text-tertiary);
   margin: 0;
 }
@@ -207,8 +207,11 @@
   }
 
   .nordic-section-title {
-    font-size: 14px;
-    letter-spacing: 1px;
+    font-size: 16px;
+    letter-spacing: normal;
+    font-weight: 400;
+    text-transform: none;
+    color: var(--color-text-light);
   }
 }
 
