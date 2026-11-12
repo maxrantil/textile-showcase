@@ -10,7 +10,12 @@
   display: flex;
   height: 100%;
   gap: 70px;
-  padding: 0 50vw;
+  /* The header's side padding: the first image starts under the name and the
+     last one ends under the navigation. The track is then unscrolled on
+     arrival, which Chrome needs to record a Largest Contentful Paint (#393) */
+  padding: 0 24px;
+  /* Snap points keep the same margin; equal on both sides, so centring is unaffected */
+  scroll-padding: 0 24px;
   overflow-x: auto;
   overflow-y: hidden;
   scroll-behavior: smooth;
@@ -30,6 +35,19 @@
   cursor: pointer;
   transition: transform 0.3s ease;
   scroll-snap-align: center;
+}
+
+/* Scroll positions are mirrored in components/desktop/Gallery/scrollTargets.ts */
+.desktop-gallery-item:first-child {
+  scroll-snap-align: start;
+}
+
+.desktop-gallery-item:last-child {
+  scroll-snap-align: end;
+}
+
+.desktop-gallery-item:only-child {
+  scroll-snap-align: start;
 }
 
 .desktop-gallery-item:hover {
@@ -54,7 +72,6 @@
 .desktop-gallery-info {
   text-align: left;
   flex-shrink: 0;
-  padding: 0 4px;
 }
 
 .desktop-gallery-title {
