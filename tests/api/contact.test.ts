@@ -358,9 +358,29 @@ describe('POST /api/contact', () => {
       expect(mockResendSend).toHaveBeenCalledWith({
         from: 'contact@idaromme.dk',
         to: ['test@example.com'],
+        replyTo: 'john@example.com',
         subject: 'New Contact Form Message from John Doe',
         html: expect.stringContaining('John Doe'),
       })
+    })
+
+    it('should set replyTo to the unescaped sender address', async () => {
+      mockResendSend.mockResolvedValueOnce({ data: { id: '124' }, error: null })
+
+      const request = createMockRequest({
+        body: {
+          name: 'Siobhan',
+          email: "  o'brien@example.com ",
+          message: 'I am interested in your textile designs.',
+        },
+      })
+
+      const response = await POST(request)
+
+      expect(response.status).toBe(200)
+      expect(mockResendSend).toHaveBeenCalledWith(
+        expect.objectContaining({ replyTo: "o'brien@example.com" })
+      )
     })
 
     it('should return 503 when RESEND_API_KEY is not configured', async () => {

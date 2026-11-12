@@ -208,7 +208,10 @@ jobs:
             NEXT_PUBLIC_UMAMI_URL=${{ secrets.NEXT_PUBLIC_UMAMI_URL }}
             NEXT_PUBLIC_UMAMI_WEBSITE_ID=${{ secrets.NEXT_PUBLIC_UMAMI_WEBSITE_ID }}
             SECURITY_ENABLED=false
+            RESEND_API_KEY=${{ secrets.RESEND_API_KEY }}
             EOF
+            # .env.local now holds a secret; keep it readable by the deploy user only.
+            chmod 600 .env.local
 
             # Stop PM2 before removing node_modules to release file locks (Issue #302).
             echo "⏹️ Stopping PM2 to release node_modules file locks..."
