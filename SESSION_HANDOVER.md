@@ -1,55 +1,55 @@
-# Session Handoff: Issue #426 - contact form keeps text and focus across the desktop-to-mobile swap
+# Session Handoff: Issue #429 - home page LCP and layout shift
 
 **Date**: 2026-11-13
-**Issue**: #426 - fix: text typed into the contact form on a phone is lost when the mobile form replaces the desktop one
-**PR**: #428 - fix: keep contact form text and focus when the mobile form replaces the desktop one (draft)
-**Branch**: fix/issue-426-contact-form-swap
+**Issue**: #429 - perf: home page LCP is 5-10s in CI Lighthouse while FCP is 1.1s (open until PR #431 merges)
+**PR**: #431 - perf: load only the visible home gallery's images, one font file, no layout shift (draft)
+**Branch**: perf/issue-429-home-lcp
 
 ---
 
 ## ✅ Completed This Session
 
-- **Cause narrowed down with a probe** (scripts held back 2.5s so the server HTML stays unhydrated). Two faults, not one:
-  1. Text typed before hydration never reached React state. The field kept showing it until the next render, then it
-     was emptied. This happened on desktop too (type a name early, then type in the email field: the name vanished).
-  2. On a phone the mobile form replaced the desktop one right after hydration. Different elements with their own
-     state, so the text and the focus were both dropped.
-- **Fix** in `src/components/adaptive/Forms/index.tsx`: the wrapper owns the single `useContactForm` state and passes it
-  to `DesktopContactFormView` or `MobileContactFormView`. On mount it reads what is already in the three fields into
-  that state and notes which field has focus. After a swap it focuses the replacement field and restores the caret.
-- `DesktopContactForm` and `MobileContactForm` still exist and still own their state when used alone; each now renders
-  its `...View`. Their existing test files pass unchanged.
-- **Tests added first, seen failing, then passing**:
-  - `src/components/adaptive/Forms/__tests__/AdaptiveContactForm.test.tsx` (6 tests): text, validation errors, focus
-    and caret across the swap; text typed before hydration on desktop and on a phone
-  - `tests/e2e/workflows/contact-form.spec.ts`: "Text typed into the server-rendered form is kept and can be sent".
-    Failed on Desktop Chrome and Mobile Chrome before the fix
-- **`ContactPage.goto()`** now waits for hydration (React's key on `#field-name`) plus two animation frames for the
-  layout swap. Without the two frames "Mobile form has proper touch targets" caught the submit button mid-swap once.
+- **LCP element found**: the second desktop gallery image (`img.desktop-gallery-img`, 57KB through `/_next/image`).
+  Measured on a local production build with the `lighthouserc.js` settings (Lighthouse 10.1 through `lhci` 0.12).
+- **Cause of the 5-10s figure**: the image paints at about 0.4s in the browser; the large figure is Lighthouse's
+  1.6 Mbps simulation, where the image shared the line with 308KB the page never shows on desktop: two hidden phone
+  gallery images (166KB preloaded at high priority, 94KB) and the same 48KB font twice.
+- **Cause of the 0.122 layout shift**: every desktop gallery image had `width=800 height=600`. The first image is
+  portrait, so the second item moved when it loaded. Reproduced in 3 of 3 local runs.
+- **Fix in PR #431** (two commits):
+  - Image preloads scoped by `media` to the layout that shows the image
+  - Eager images in a `<picture>` with an empty source for the hidden layout
+  - Desktop gallery images take width and height from the Sanity asset reference
+  - Inter 500 served from `inter-400.woff2`; `inter-500.woff2` and a stray copy under `public/fonts/public/fonts/` removed
+- **Measured before and after** (local, same settings): LCP median 5.7s (3 runs: 2.8, 5.7, 6.6) to 3.1s (5 runs:
+  2.6 to 3.8); CLS 0.122 to 0; page weight 1121KB to 813KB; FCP unchanged at 1.1s.
+- **Browser check** (Chromium, 393px and 1350px): each viewport requests only its own gallery's images, one font file,
+  no unused-preload warnings.
+- This covers tasks 1 and 2 of #395. Its task 3 (project page preload) is untouched, so #395 stays open.
 
 ## 🎯 Current Project State
 
-**Tests**: ✅ Jest 1265 passed, 23 skipped (78 suites). Contact-form E2E spec on Mobile Chrome and Desktop Chrome:
-26 of 26, and 78 of 78 with `--repeat-each=3`. `tsc --noEmit` clean, eslint clean on the changed files
-**Branch**: ✅ clean
-**CI/CD**: 🔄 running on the draft PR
+**Tests**: ✅ Jest 1274 passed, 23 skipped; type-check clean; lint 0 errors (25 warnings, none new)
+**Branch**: ✅ clean, pushed
+**CI/CD**: 🔄 PR #431 is a draft; CI Lighthouse has not run on it yet
 
-**Not tested**: Safari and Firefox projects were not run locally. Focus carry-over on a real iPhone is untested: the
-replacement field is focused in the same task as the swap, but whether iOS keeps the on-screen keyboard up through it
-is unknown.
+**Not tested**: Firefox and Safari (not installed here). E2E suite not run locally.
 
 ### Agent Validation Status
 
-The named validation agents are not available in this environment and were not run. The change was reviewed by hand.
+The named validation agents are not available in this environment and were not run.
 
 ## 🚀 Next Session Priorities
 
-1. Get PR #428 through CI and merged, then check `/contact` on production with Pixel 5 emulation and, if possible,
-   on a real iPhone (tap the name field straight after load and type)
-2. PR #427 (handoff after #425) is superseded by this file; close it once this PR is merged
-3. Home LCP in CI Lighthouse is now measurable and was high on PR #425 (seconds, not the 1s target): read the figure
-   from the master run for `7156a67` and open an issue if it is still high
-4. The older draft PRs (#386 to #405) mostly conflict with master now and need a decision: rebase or close
+1. PR #431: read the CI Lighthouse figures for `/`, then mark ready and merge. Close #430 (handoff after #428) as
+   superseded by this file
+2. Remaining LCP spread: about 560KB of JavaScript in 50 chunks still loads alongside the LCP image. Draft PR #390
+   (remove forced vendor chunking) addresses it but conflicts with master
+3. LCP threshold in `lighthouserc.js` (last task of #429): draft PR #402 sets 2.5s; decide once CI shows the figure
+4. Project page LCP is 8.5-10.2s in CI: #395 task 3 and #397
+5. Real iPhone check of `/contact`: tap the name field straight after load and type
+6. The older draft PRs (#386 to #405) mostly conflict with master and need a decision: rebase or close. #396 now
+   overlaps with #431
 
 ### Possible follow-up
 
@@ -86,6 +86,15 @@ The named validation agents are not available in this environment and were not r
   `field-email`, `field-message`
 - E2E tests that use the contact form should go through `ContactPage.goto()`, which waits for hydration and the
   layout swap. `#field-name` being visible does not mean the page is hydrated
+- Both home galleries are always in the HTML. Their image URLs, sizes and layout media queries live in
+  `src/utils/gallery-images.ts`; the page preloads and both gallery components read from it. The breakpoint there
+  mirrors `src/components/adaptive/Gallery/index.module.css` (768px)
+- Eager gallery images sit in a `<picture>` with an empty `<source>` for the hidden layout. Do not swap this for
+  `loading="lazy"`: Lighthouse's `lcp-lazy-loaded` audit fails on a lazy LCP image
+- Weights 400 and 500 of Inter are both served from `public/fonts/inter-400.woff2`
+- Measuring locally with the CI Lighthouse settings: build, `npx next start -p 3100`, then `lhci collect` (0.12.x) with a
+  config that reuses `lighthouserc.js` without `startServerCommand`, and `CHROME_PATH` set to Playwright's Chromium
+- `src/components/ui/ImageNoStyle.tsx` is not used by any component
 - Running E2E locally: start `npx next dev --webpack -p 3000` first; the Playwright config reuses it
 - Desktop gallery scroll positions are defined twice and must stay in step: the snap rules in
   `src/styles/desktop/gallery.css` and `src/components/desktop/Gallery/scrollTargets.ts`
@@ -96,17 +105,17 @@ The named validation agents are not available in this environment and were not r
 
 ## 📝 Startup Prompt for Next Session
 
-Read CLAUDE.md to understand our workflow, then continue from Issue #426 (fix in draft PR #428, tests green locally, not merged).
+Read CLAUDE.md to understand our workflow, then continue from Issue #429 (fix in draft PR #431, local LCP median 5.7s to 3.1s, CLS 0.122 to 0).
 
-**Immediate priority**: get PR #428 through CI, merge it, and check `/contact` in production on a phone (1 hour)
-**Context**: the contact form now keeps text typed before hydration and keeps text and focus when the mobile form replaces the desktop one
-**Reference docs**: SESSION_HANDOVER.md, src/components/adaptive/Forms/index.tsx, tests/e2e/pages/ContactPage.ts
-**Ready state**: branch fix/issue-426-contact-form-swap pushed and clean; Jest and the contact-form E2E spec pass locally
+**Immediate priority**: read CI Lighthouse on PR #431, mark it ready and merge; close #430 as superseded (1 hour)
+**Context**: desktop no longer downloads the hidden phone gallery or a duplicate font; JavaScript weight is what remains ahead of the LCP image
+**Reference docs**: SESSION_HANDOVER.md, PR #431, issue #395, draft PR #390, lighthouserc.js
+**Ready state**: branch perf/issue-429-home-lcp pushed and clean, Jest green; master at `6b97223`
 
-**Expected scope**: merge #428, close #427 as superseded, production check on Pixel 5 emulation, then read the home LCP figure from CI
+**Expected scope**: merge #431, then decide between #390 (JavaScript chunking) and the project page LCP (#395 task 3, #397)
 
 ## 📚 Key Reference Documents
 
-- Issue #426 (measurements), issue #397 (same root cause on project pages)
-- `src/components/adaptive/Forms/index.tsx`, `src/components/adaptive/Forms/__tests__/AdaptiveContactForm.test.tsx`
-- `tests/e2e/workflows/contact-form.spec.ts`, `tests/e2e/pages/ContactPage.ts`
+- PR #431, issue #429, issue #395 (duplicate font and image downloads), issue #397 (layout swap on project pages)
+- `src/utils/gallery-images.ts`, `src/app/page.tsx`
+- `lighthouserc.js`, `.github/workflows/lighthouse-ci.yml`
