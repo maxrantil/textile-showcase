@@ -1,55 +1,47 @@
-# Session Handoff: Issue #426 - contact form keeps text and focus across the desktop-to-mobile swap
+# Session Handoff: Issue #426 - contact form fix merged and checked in production
 
 **Date**: 2026-11-13
-**Issue**: #426 - fix: text typed into the contact form on a phone is lost when the mobile form replaces the desktop one
-**PR**: #428 - fix: keep contact form text and focus when the mobile form replaces the desktop one (draft)
-**Branch**: fix/issue-426-contact-form-swap
+**Issue**: #426 - fix: text typed into the contact form on a phone is lost when the mobile form replaces the desktop one (closed)
+**PR**: #428 - fix: keep contact form text and focus when the mobile form replaces the desktop one (merged as `6b97223`)
+**Branch**: docs/session-handoff-after-428 (this file only)
 
 ---
 
 ## ✅ Completed This Session
 
-- **Cause narrowed down with a probe** (scripts held back 2.5s so the server HTML stays unhydrated). Two faults, not one:
-  1. Text typed before hydration never reached React state. The field kept showing it until the next render, then it
-     was emptied. This happened on desktop too (type a name early, then type in the email field: the name vanished).
-  2. On a phone the mobile form replaced the desktop one right after hydration. Different elements with their own
-     state, so the text and the focus were both dropped.
-- **Fix** in `src/components/adaptive/Forms/index.tsx`: the wrapper owns the single `useContactForm` state and passes it
-  to `DesktopContactFormView` or `MobileContactFormView`. On mount it reads what is already in the three fields into
-  that state and notes which field has focus. After a swap it focuses the replacement field and restores the caret.
-- `DesktopContactForm` and `MobileContactForm` still exist and still own their state when used alone; each now renders
-  its `...View`. Their existing test files pass unchanged.
-- **Tests added first, seen failing, then passing**:
-  - `src/components/adaptive/Forms/__tests__/AdaptiveContactForm.test.tsx` (6 tests): text, validation errors, focus
-    and caret across the swap; text typed before hydration on desktop and on a phone
-  - `tests/e2e/workflows/contact-form.spec.ts`: "Text typed into the server-rendered form is kept and can be sent".
-    Failed on Desktop Chrome and Mobile Chrome before the fix
-- **`ContactPage.goto()`** now waits for hydration (React's key on `#field-name`) plus two animation frames for the
-  layout swap. Without the two frames "Mobile form has proper touch targets" caught the submit button mid-swap once.
+- **PR #428 merged** (squash, `6b97223`). All CI checks passed after it was marked ready, including Playwright on
+  Desktop Chrome, Mobile Chrome and Safari Smoke. Issue #426 closed by the merge. Production deployment succeeded.
+- **Production check on `https://idaromme.dk/contact` with Pixel 5 emulation** (Chromium, scripts held back 2s, the
+  `/api/contact` request intercepted so no email was sent):
+  - Before hydration: desktop form in the page, "Pixel Five" typed into the name field
+  - After hydration: mobile form in place, name field still holds "Pixel Five", still focused, caret still at 10
+  - Typing carried on in the same field, then email and message by Tab; the submit posted all three values and the
+    "Thank You" message showed
+- **PR #427 closed** as superseded (handoff after #425), branch deleted.
+- **Home LCP read from CI and filed as #429.** Lighthouse run 43290982791 on master for `7156a67`: LCP 5.3s, 7.0s and
+  10.6s over three runs (median 7.0s) with FCP 1.1s. Run 3 alone had CLS 0.122. The reports do not name the LCP
+  element. Settings are desktop form factor with 1.6 Mbps simulated throttling. `lighthouserc.js` only warns at 5s,
+  so the run is green. Same run: `/about` 3.0-4.9s, `/contact` 4.0-5.1s, project page 8.5-10.2s.
 
 ## 🎯 Current Project State
 
-**Tests**: ✅ Jest 1265 passed, 23 skipped (78 suites). Contact-form E2E spec on Mobile Chrome and Desktop Chrome:
-26 of 26, and 78 of 78 with `--repeat-each=3`. `tsc --noEmit` clean, eslint clean on the changed files
+**Tests**: ✅ CI green on master for `6b97223` (Unit Tests, Lighthouse, Performance Budget, Production Deployment)
 **Branch**: ✅ clean
-**CI/CD**: 🔄 running on the draft PR
+**CI/CD**: ✅ passing; production is on `6b97223`
 
-**Not tested**: Safari and Firefox projects were not run locally. Focus carry-over on a real iPhone is untested: the
-replacement field is focused in the same task as the swap, but whether iOS keeps the on-screen keyboard up through it
-is unknown.
+**Not tested**: focus carry-over on a real iPhone. Emulation cannot show whether iOS keeps the on-screen keyboard up
+when the mobile form replaces the desktop one. Firefox was not run.
 
 ### Agent Validation Status
 
-The named validation agents are not available in this environment and were not run. The change was reviewed by hand.
+The named validation agents are not available in this environment and were not run. No code changed this session.
 
 ## 🚀 Next Session Priorities
 
-1. Get PR #428 through CI and merged, then check `/contact` on production with Pixel 5 emulation and, if possible,
-   on a real iPhone (tap the name field straight after load and type)
-2. PR #427 (handoff after #425) is superseded by this file; close it once this PR is merged
-3. Home LCP in CI Lighthouse is now measurable and was high on PR #425 (seconds, not the 1s target): read the figure
-   from the master run for `7156a67` and open an issue if it is still high
-4. The older draft PRs (#386 to #405) mostly conflict with master now and need a decision: rebase or close
+1. Issue #429: find the home page's LCP element and what delays it 4-9s past FCP (local production build with the CI
+   Lighthouse settings). #395 (two LCP-sized images and a duplicate font per visit) is the likely related cause
+2. Real iPhone check of `/contact`: tap the name field straight after load and type
+3. The older draft PRs (#386 to #405) mostly conflict with master now and need a decision: rebase or close
 
 ### Possible follow-up
 
@@ -96,17 +88,17 @@ The named validation agents are not available in this environment and were not r
 
 ## 📝 Startup Prompt for Next Session
 
-Read CLAUDE.md to understand our workflow, then continue from Issue #426 (fix in draft PR #428, tests green locally, not merged).
+Read CLAUDE.md to understand our workflow, then tackle Issue #429 (home page LCP 5-10s in CI Lighthouse, FCP 1.1s).
 
-**Immediate priority**: get PR #428 through CI, merge it, and check `/contact` in production on a phone (1 hour)
-**Context**: the contact form now keeps text typed before hydration and keeps text and focus when the mobile form replaces the desktop one
-**Reference docs**: SESSION_HANDOVER.md, src/components/adaptive/Forms/index.tsx, tests/e2e/pages/ContactPage.ts
-**Ready state**: branch fix/issue-426-contact-form-swap pushed and clean; Jest and the contact-form E2E spec pass locally
+**Immediate priority**: identify the home LCP element and what delays it, then fix or fold into #395 (2-4 hours)
+**Context**: #426 is fixed, merged (PR #428) and checked in production on Pixel 5 emulation; #427 closed as superseded
+**Reference docs**: SESSION_HANDOVER.md, issue #429, issue #395, lighthouserc.js
+**Ready state**: master at `6b97223`, CI green, production deployed; this handoff is in an open docs PR
 
-**Expected scope**: merge #428, close #427 as superseded, production check on Pixel 5 emulation, then read the home LCP figure from CI
+**Expected scope**: LCP element and phase breakdown for `/`, a failing test or measurement first, then the fix in a PR
 
 ## 📚 Key Reference Documents
 
-- Issue #426 (measurements), issue #397 (same root cause on project pages)
-- `src/components/adaptive/Forms/index.tsx`, `src/components/adaptive/Forms/__tests__/AdaptiveContactForm.test.tsx`
-- `tests/e2e/workflows/contact-form.spec.ts`, `tests/e2e/pages/ContactPage.ts`
+- Issue #429 (home LCP figures), issue #395 (duplicate font and image downloads), issue #397 (layout swap on project pages)
+- `lighthouserc.js`, `.github/workflows/lighthouse-ci.yml`
+- `src/components/adaptive/Forms/index.tsx`, `tests/e2e/pages/ContactPage.ts`
