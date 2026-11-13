@@ -1,56 +1,61 @@
-# Session Handoff: First home image on the left margin (Issue #393)
+# Session Handoff: Issue #426 - contact form keeps text and focus across the desktop-to-mobile swap
 
-**Date**: 2026-11-12
-**Issue**: #393 - perf: home page reports no LCP on desktop
-**PR**: #425 - feat: start the desktop home gallery with its first image on the left margin
-**Branch**: feat/issue-393-left-align-first-home-image
+**Date**: 2026-11-13
+**Issue**: #426 - fix: text typed into the contact form on a phone is lost when the mobile form replaces the desktop one
+**PR**: #428 - fix: keep contact form text and focus when the mobile form replaces the desktop one (draft)
+**Branch**: fix/issue-426-contact-form-swap
 
 ---
 
 ## ✅ Completed This Session
 
-- **Left margin**: on desktop the home gallery opens with its first image and caption under the name, 24px from the edge
-  (was centred, at x=489 on a 1440 window, with the left third empty). The last image ends 24px from the right edge.
-  The images in between are centred as before. Captions lost their 4px side padding so they line up with the image.
-- **#393**: the track is unscrolled on arrival, so nothing scrolls before the first paint. CI Lighthouse reported the
-  home page's LCP as `NaN` on all three runs on master (run 43272105489) and as a number on this PR. On a local
-  production build at 1350x940 Chrome recorded an LCP entry for the first gallery image in 3 of 3 runs.
-- **Second image loads eagerly**: with the first image on the left, the second is on screen at arrival and is often the
-  LCP element. The first CI run on this PR measured LCP at about 8.5s and flagged it as lazily loaded, so the first two
-  gallery images are now eager with high priority. See the PR for the figure after this change.
-- **Scroll positions** moved into `src/components/desktop/Gallery/scrollTargets.ts` (first item: 0, last: end of track,
-  others: centred), used for scrolling, current-item tracking and restoration.
-- **Two restore faults fixed on the way**: the "instant" restore scroll was animated by `scroll-behavior: smooth`, and
-  scroll callbacks compared against a stale current index. With several images sharing the end of the track, both
-  showed up as the wrong image being current after back navigation.
-- **Focus restoration race fixed** (the cause of the local focus-restoration failures): the desktop gallery read the
-  saved focus index up to 200ms after mounting. A click inside that window saved a new index, which the running restore
-  routine then focused and deleted, leaving nothing for the return visit. It is now read at mount.
-  `focus-restoration.spec.ts` failed 8 of 24 runs here before (desktop and phone, in parallel) and 0 of 24 after.
-- **Tests added**: `scrollTargets.test.ts` (10), `GalleryFocusRestore.test.tsx` (2), one loading test in `Gallery.test.tsx`, `tests/e2e/design/home-first-image.spec.ts` (5).
-  The E2E LCP test passes on the dev server with or without the change, so it does not guard #393 by itself.
+- **Cause narrowed down with a probe** (scripts held back 2.5s so the server HTML stays unhydrated). Two faults, not one:
+  1. Text typed before hydration never reached React state. The field kept showing it until the next render, then it
+     was emptied. This happened on desktop too (type a name early, then type in the email field: the name vanished).
+  2. On a phone the mobile form replaced the desktop one right after hydration. Different elements with their own
+     state, so the text and the focus were both dropped.
+- **Fix** in `src/components/adaptive/Forms/index.tsx`: the wrapper owns the single `useContactForm` state and passes it
+  to `DesktopContactFormView` or `MobileContactFormView`. On mount it reads what is already in the three fields into
+  that state and notes which field has focus. After a swap it focuses the replacement field and restores the caret.
+- `DesktopContactForm` and `MobileContactForm` still exist and still own their state when used alone; each now renders
+  its `...View`. Their existing test files pass unchanged.
+- **Tests added first, seen failing, then passing**:
+  - `src/components/adaptive/Forms/__tests__/AdaptiveContactForm.test.tsx` (6 tests): text, validation errors, focus
+    and caret across the swap; text typed before hydration on desktop and on a phone
+  - `tests/e2e/workflows/contact-form.spec.ts`: "Text typed into the server-rendered form is kept and can be sent".
+    Failed on Desktop Chrome and Mobile Chrome before the fix
+- **`ContactPage.goto()`** now waits for hydration (React's key on `#field-name`) plus two animation frames for the
+  layout swap. Without the two frames "Mobile form has proper touch targets" caught the submit button mid-swap once.
 
 ## 🎯 Current Project State
 
-**Tests**: ✅ Jest 1258 passing (23 skipped); `tsc --noEmit` clean
-**Branch**: ✅ clean, pushed
-**CI/CD**: 🔄 running on the PR
+**Tests**: ✅ Jest 1265 passed, 23 skipped (78 suites). Contact-form E2E spec on Mobile Chrome and Desktop Chrome:
+26 of 26, and 78 of 78 with `--repeat-each=3`. `tsc --noEmit` clean, eslint clean on the changed files
+**Branch**: ✅ clean
+**CI/CD**: 🔄 running on the draft PR
 
-**Local E2E**: Desktop Chrome and Mobile Chrome, 301 passed and 4 failed. The 4 are submit tests of
-`tests/e2e/workflows/contact-form.spec.ts` on Mobile Chrome, which also fail on plain master here and pass in CI.
-Cause not investigated.
+**Not tested**: Safari and Firefox projects were not run locally. Focus carry-over on a real iPhone is untested: the
+replacement field is focused in the same task as the swap, but whether iOS keeps the on-screen keyboard up through it
+is unknown.
 
 ### Agent Validation Status
 
-The named validation agents were not run this session.
+The named validation agents are not available in this environment and were not run. The change was reviewed by hand.
 
 ## 🚀 Next Session Priorities
 
-1. Merge PR #425 once CI is green and look at the home page in production
-2. Home LCP is now measurable and high in CI Lighthouse (seconds, not the 1s target): worth its own issue
-2. Close draft PR #394 (the earlier approach to #393, stacked on old drafts) once this is merged
-3. Find out why the contact-form submit tests fail on Mobile Chrome on the development machine
+1. Get PR #428 through CI and merged, then check `/contact` on production with Pixel 5 emulation and, if possible,
+   on a real iPhone (tap the name field straight after load and type)
+2. PR #427 (handoff after #425) is superseded by this file; close it once this PR is merged
+3. Home LCP in CI Lighthouse is now measurable and was high on PR #425 (seconds, not the 1s target): read the figure
+   from the master run for `7156a67` and open an issue if it is still high
 4. The older draft PRs (#386 to #405) mostly conflict with master now and need a decision: rebase or close
+
+### Possible follow-up
+
+- One contact form styled per breakpoint would remove the swap altogether, so focus would never have to be moved. It
+  means replacing `MobileContactForm`, `DesktopContactForm` and about 1,700 lines of their tests, so it was left out
+  of #426. Same root cause as #397.
 
 ### Known behaviour, not changed
 
@@ -75,6 +80,12 @@ The named validation agents were not run this session.
 - The live header is `src/components/Header`; `components/desktop/Header` and `components/mobile/Header` are not rendered
 - Layout (desktop or phone) is chosen after hydration, so E2E tests should target `.mobile-*` / `.desktop-*`
   containers by viewport rather than `:visible`
+- The contact form's state lives in `src/components/adaptive/Forms/index.tsx`; the desktop and mobile forms are views
+  over it (`DesktopContactFormView`, `MobileContactFormView`). The two layouts are still separate elements, so the
+  wrapper moves focus to the replacement field after a swap. Both layouts must keep the field ids `field-name`,
+  `field-email`, `field-message`
+- E2E tests that use the contact form should go through `ContactPage.goto()`, which waits for hydration and the
+  layout swap. `#field-name` being visible does not mean the page is hydrated
 - Running E2E locally: start `npx next dev --webpack -p 3000` first; the Playwright config reuses it
 - Desktop gallery scroll positions are defined twice and must stay in step: the snap rules in
   `src/styles/desktop/gallery.css` and `src/components/desktop/Gallery/scrollTargets.ts`
@@ -85,16 +96,17 @@ The named validation agents were not run this session.
 
 ## 📝 Startup Prompt for Next Session
 
-Read CLAUDE.md to understand our workflow, then continue from Issue #393 (✅ first home image on the left margin, focus restoration race fixed, PR #425 open).
+Read CLAUDE.md to understand our workflow, then continue from Issue #426 (fix in draft PR #428, tests green locally, not merged).
 
-**Immediate priority**: merge PR #425 if CI is green, verify production, then the Mobile Chrome contact-form failures (1-2 hours)
-**Context**: the home gallery opens unscrolled with the first image under the name; Lighthouse should now report an LCP for `/`
-**Reference docs**: SESSION_HANDOVER.md, tests/e2e/design/home-first-image.spec.ts, tests/e2e/workflows/contact-form.spec.ts
-**Ready state**: feature branch pushed, Jest 1258 passing; 4 contact-form E2E tests fail only on the development machine
+**Immediate priority**: get PR #428 through CI, merge it, and check `/contact` in production on a phone (1 hour)
+**Context**: the contact form now keeps text typed before hydration and keeps text and focus when the mobile form replaces the desktop one
+**Reference docs**: SESSION_HANDOVER.md, src/components/adaptive/Forms/index.tsx, tests/e2e/pages/ContactPage.ts
+**Ready state**: branch fix/issue-426-contact-form-swap pushed and clean; Jest and the contact-form E2E spec pass locally
 
-**Expected scope**: PR merged and checked in production, draft #394 closed, contact-form failures explained
+**Expected scope**: merge #428, close #427 as superseded, production check on Pixel 5 emulation, then read the home LCP figure from CI
 
 ## 📚 Key Reference Documents
 
-- Review artifact: https://claude.ai/artifact/RgjdJbMAPjrEDnwtK3mKuY
-- `tests/e2e/design/home-first-image.spec.ts`, `type-and-frame.spec.ts`, `desktop-project-image.spec.ts`, `alignment-and-contact.spec.ts`
+- Issue #426 (measurements), issue #397 (same root cause on project pages)
+- `src/components/adaptive/Forms/index.tsx`, `src/components/adaptive/Forms/__tests__/AdaptiveContactForm.test.tsx`
+- `tests/e2e/workflows/contact-form.spec.ts`, `tests/e2e/pages/ContactPage.ts`
