@@ -1,8 +1,12 @@
-// ABOUTME: Desktop contact form — renders form fields and submit button using useContactForm hook
+// ABOUTME: Desktop contact form — the fields and submit button as a view over contact form state,
+// ABOUTME: plus a standalone form that owns that state through the useContactForm hook
 'use client'
 import { DesktopFormField } from './DesktopFormField'
 import { DesktopButton } from '../UI/DesktopButton'
-import { useContactForm } from '@/hooks/shared/useContactForm'
+import {
+  useContactForm,
+  type ContactFormState,
+} from '@/hooks/shared/useContactForm'
 
 interface DesktopContactFormProps {
   onSuccess?: () => void
@@ -13,6 +17,13 @@ export function DesktopContactForm({
   onSuccess,
   onError,
 }: DesktopContactFormProps) {
+  const form = useContactForm({ onSuccess, onError })
+
+  return <DesktopContactFormView form={form} />
+}
+
+// Renders state owned by the caller, so the state outlives this component
+export function DesktopContactFormView({ form }: { form: ContactFormState }) {
   const {
     formData,
     errors,
@@ -20,7 +31,7 @@ export function DesktopContactForm({
     handleFieldChange,
     handleSubmit,
     isFormValid,
-  } = useContactForm({ onSuccess, onError })
+  } = form
 
   return (
     <form className="desktop-contact-form" onSubmit={handleSubmit}>
