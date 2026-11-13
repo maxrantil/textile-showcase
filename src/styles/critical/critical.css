@@ -107,9 +107,11 @@ button:focus-visible {
   line-gap-override: 0%;
 }
 
+/* Weight 500 is served from the same file as 400: the two files that used to
+   ship were byte-identical, so this renders as before with one download */
 @font-face {
   font-family: 'Inter';
-  src: url('/fonts/inter-500.woff2') format('woff2');
+  src: url('/fonts/inter-400.woff2') format('woff2');
   font-weight: 500;
   font-style: normal;
   font-display: swap;

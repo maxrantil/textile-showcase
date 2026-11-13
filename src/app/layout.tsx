@@ -66,13 +66,6 @@ export default async function RootLayout({ children }: RootLayoutProps) {
           type="font/woff2"
           crossOrigin="anonymous"
         />
-        <link
-          rel="preload"
-          href="/fonts/inter-500.woff2"
-          as="font"
-          type="font/woff2"
-          crossOrigin="anonymous"
-        />
 
         {/* Performance and mobile optimization */}
         <meta name="format-detection" content="telephone=no" />
