@@ -18,6 +18,8 @@ interface UseContactFormOptions {
   onError?: (error: string) => void
 }
 
+export type ContactFormState = ReturnType<typeof useContactForm>
+
 export function useContactForm({
   onSuccess,
   onError,

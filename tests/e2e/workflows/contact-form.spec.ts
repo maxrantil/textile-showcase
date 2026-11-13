@@ -150,6 +150,56 @@ test.describe('Contact Form E2E Workflows', () => {
     })
   })
 
+  test.describe('Typing Before The Page Is Interactive', () => {
+    // Issue #426: the fields are on screen before React hydrates them, and on a
+    // phone the mobile form then replaces the server-rendered desktop one
+    test('Text typed into the server-rendered form is kept and can be sent', async ({
+      page,
+    }) => {
+      const contactPage = new ContactPage(page)
+
+      // Hold the scripts back so the form is on screen, unhydrated, for a while
+      await page.route('**/_next/static/**/*.js', async (route) => {
+        await new Promise((resolve) => setTimeout(resolve, 2000))
+        await route.continue()
+      })
+      await page.route('**/api/contact', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ success: true }),
+        })
+      })
+
+      await page.goto('/contact', { waitUntil: 'commit' })
+      await contactPage.nameInput.waitFor({ state: 'visible' })
+      await contactPage.nameInput.click()
+      await page.keyboard.type(validFormData.name)
+
+      await contactPage.waitForHydration()
+
+      // The visitor is still in the name field and carries on from there
+      await expect(contactPage.nameInput).toBeFocused()
+      await expect(contactPage.nameInput).toHaveValue(validFormData.name)
+      await page.keyboard.press('Tab')
+      await page.keyboard.type(validFormData.email)
+      await page.keyboard.press('Tab')
+      await page.keyboard.type(validFormData.message)
+
+      await expect(contactPage.nameInput).toHaveValue(validFormData.name)
+      await expect(contactPage.submitButton).toBeEnabled()
+
+      const request = page.waitForRequest('**/api/contact')
+      await contactPage.submit()
+      expect((await request).postDataJSON()).toEqual({
+        name: validFormData.name,
+        email: validFormData.email,
+        message: validFormData.message,
+      })
+      await contactPage.waitForSuccess()
+    })
+  })
+
   test.describe('Successful Form Submission', () => {
     test('User successfully submits valid contact form', async ({ page }) => {
       const contactPage = new ContactPage(page)

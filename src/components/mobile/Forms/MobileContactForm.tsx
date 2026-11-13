@@ -4,7 +4,10 @@
 import { MobileFormField } from './MobileFormField'
 import { MobileButton } from '../UI/MobileButton'
 import { useVirtualKeyboard } from '@/hooks/mobile/useVirtualKeyboard'
-import { useContactForm } from '@/hooks/shared/useContactForm'
+import {
+  useContactForm,
+  type ContactFormState,
+} from '@/hooks/shared/useContactForm'
 
 interface MobileContactFormProps {
   onSuccess?: () => void
@@ -15,6 +18,13 @@ export function MobileContactForm({
   onSuccess,
   onError,
 }: MobileContactFormProps) {
+  const form = useContactForm({ onSuccess, onError })
+
+  return <MobileContactFormView form={form} />
+}
+
+// Renders state owned by the caller, so the state outlives this component
+export function MobileContactFormView({ form }: { form: ContactFormState }) {
   const {
     formData,
     errors,
@@ -23,7 +33,7 @@ export function MobileContactForm({
     handleFieldChange,
     handleSubmit,
     isFormValid,
-  } = useContactForm({ onSuccess, onError })
+  } = form
 
   const { isKeyboardOpen } = useVirtualKeyboard()
 

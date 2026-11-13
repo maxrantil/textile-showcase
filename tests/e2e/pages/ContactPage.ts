@@ -60,8 +60,35 @@ export class ContactPage {
   async goto() {
     await this.page.goto('/contact')
     await this.page.waitForLoadState('networkidle')
-    // Wait for form fields to be visible (ensures React has hydrated)
     await this.nameInput.waitFor({ state: 'visible', timeout: 10000 })
+    await this.waitForHydration()
+  }
+
+  /**
+   * Wait until React has taken over the form and chosen its layout. The
+   * server HTML shows the fields before that, so their visibility says
+   * nothing about hydration.
+   */
+  async waitForHydration() {
+    await this.page.waitForFunction(
+      () => {
+        const field = document.querySelector('#field-name')
+        return (
+          !!field &&
+          Object.keys(field).some((key) => key.startsWith('__reactFiber'))
+        )
+      },
+      undefined,
+      { timeout: 30000 }
+    )
+    // On a phone the mobile form replaces the desktop one just after
+    // hydration; two frames later that swap is over
+    await this.page.evaluate(
+      () =>
+        new Promise<void>((resolve) =>
+          requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
+        )
+    )
   }
 
   /**
