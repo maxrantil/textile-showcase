@@ -1,7 +1,7 @@
 # Session Handoff: Issue #429 - home page LCP and layout shift
 
 **Date**: 2026-11-13
-**Issue**: #429 - perf: home page LCP is 5-10s in CI Lighthouse while FCP is 1.1s (open until PR #431 merges)
+**Issue**: #429 - perf: home page LCP is 5-10s in CI Lighthouse while FCP is 1.1s (open; PR #431 fixes part of it)
 **PR**: #431 - perf: load only the visible home gallery's images, one font file, no layout shift (draft)
 **Branch**: perf/issue-429-home-lcp
 
@@ -23,6 +23,10 @@
   - Inter 500 served from `inter-400.woff2`; `inter-500.woff2` and a stray copy under `public/fonts/public/fonts/` removed
 - **Measured before and after** (local, same settings): LCP median 5.7s (3 runs: 2.8, 5.7, 6.6) to 3.1s (5 runs:
   2.6 to 3.8); CLS 0.122 to 0; page weight 1121KB to 813KB; FCP unchanged at 1.1s.
+- **CI Lighthouse on PR #431** (run 43490933639): home LCP 3.6s, 5.4s, 9.0s (median 5.4s; master was 5.3s, 7.0s,
+  10.6s, median 7.0s), CLS 0 in all three, page weight 847KB, `lcp-lazy-loaded` passes. The LCP element is now named
+  in the CI reports. The spread is still there, and it is not specific to the home page: `/contact`, whose LCP is a
+  paragraph of text, ranged 2.9s to 6.7s in the same run, and `/about` 2.8s to 5.2s.
 - **Browser check** (Chromium, 393px and 1350px): each viewport requests only its own gallery's images, one font file,
   no unused-preload warnings.
 - This covers tasks 1 and 2 of #395. Its task 3 (project page preload) is untouched, so #395 stays open.
@@ -31,7 +35,7 @@
 
 **Tests**: ✅ Jest 1274 passed, 23 skipped; type-check clean; lint 0 errors (25 warnings, none new)
 **Branch**: ✅ clean, pushed
-**CI/CD**: 🔄 PR #431 is a draft; CI Lighthouse has not run on it yet
+**CI/CD**: ✅ PR #431 (draft): Jest, Lighthouse audit, bundle size and desktop budget pass; LCP still above the 3s CI warning
 
 **Not tested**: Firefox and Safari (not installed here). E2E suite not run locally.
 
@@ -41,10 +45,11 @@ The named validation agents are not available in this environment and were not r
 
 ## 🚀 Next Session Priorities
 
-1. PR #431: read the CI Lighthouse figures for `/`, then mark ready and merge. Close #430 (handoff after #428) as
-   superseded by this file
-2. Remaining LCP spread: about 560KB of JavaScript in 50 chunks still loads alongside the LCP image. Draft PR #390
-   (remove forced vendor chunking) addresses it but conflicts with master
+1. PR #431: mark ready and merge. Close #430 (handoff after #428) as superseded by this file
+2. Remaining LCP spread on every page (2.8s to 9s between identical runs, text LCP included). Not yet explained. The
+   likely cause is the about 560KB of JavaScript in 50 chunks that loads alongside the LCP element; draft PR #390
+   (remove forced vendor chunking) addresses that but conflicts with master. Confirm before rebasing it: compare the
+   requests Lighthouse counts before LCP in a fast and a slow run of `/contact`
 3. LCP threshold in `lighthouserc.js` (last task of #429): draft PR #402 sets 2.5s; decide once CI shows the figure
 4. Project page LCP is 8.5-10.2s in CI: #395 task 3 and #397
 5. Real iPhone check of `/contact`: tap the name field straight after load and type
@@ -105,14 +110,14 @@ The named validation agents are not available in this environment and were not r
 
 ## 📝 Startup Prompt for Next Session
 
-Read CLAUDE.md to understand our workflow, then continue from Issue #429 (fix in draft PR #431, local LCP median 5.7s to 3.1s, CLS 0.122 to 0).
+Read CLAUDE.md to understand our workflow, then continue from Issue #429 (part fixed in draft PR #431: CI home LCP median 7.0s to 5.4s, CLS 0.122 to 0).
 
-**Immediate priority**: read CI Lighthouse on PR #431, mark it ready and merge; close #430 as superseded (1 hour)
-**Context**: desktop no longer downloads the hidden phone gallery or a duplicate font; JavaScript weight is what remains ahead of the LCP image
+**Immediate priority**: merge PR #431, close #430 as superseded, then explain the 3s-9s LCP spread that all pages share (2-4 hours)
+**Context**: desktop no longer downloads the hidden phone gallery or a duplicate font; `/contact` with a text LCP still ranges 2.9s-6.7s, so the rest is not about images
 **Reference docs**: SESSION_HANDOVER.md, PR #431, issue #395, draft PR #390, lighthouserc.js
 **Ready state**: branch perf/issue-429-home-lcp pushed and clean, Jest green; master at `6b97223`
 
-**Expected scope**: merge #431, then decide between #390 (JavaScript chunking) and the project page LCP (#395 task 3, #397)
+**Expected scope**: merge #431, find what differs between a fast and a slow CI run, then decide whether #390 (JavaScript chunking) is the fix
 
 ## 📚 Key Reference Documents
 
