@@ -6,9 +6,13 @@
 import { useEffect, useRef, useState, useCallback, memo } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import ImageNoStyle from '@/components/ui/ImageNoStyle'
 import { TextileDesign } from '@/types/textile'
-import { getOptimizedImageUrl } from '@/utils/image-helpers'
+import {
+  DESKTOP_EAGER_IMAGE_COUNT,
+  EMPTY_IMAGE_SRC,
+  MOBILE_GALLERY_MEDIA,
+  desktopGalleryImage,
+} from '@/utils/gallery-images'
 import { UmamiEvents } from '@/utils/analytics'
 import { scrollManager } from '@/lib/scrollManager'
 import { NavigationArrows } from '@/components/ui/NavigationArrows'
@@ -36,17 +40,23 @@ const GalleryItem = memo(function GalleryItem({
     UmamiEvents.viewProject(design.title, design.year)
   }
 
-  const imageSource = design.image || design.images?.[0]?.asset
-  const imageUrl = imageSource
-    ? getOptimizedImageUrl(imageSource, {
-        height: 700,
-        quality: 75,
-        format: 'webp',
-        fit: 'crop',
-      })
-    : ''
-
-  const displayImageUrl = imageUrl || '/images/placeholder.jpg'
+  const image = desktopGalleryImage(design)
+  const isEager = index < DESKTOP_EAGER_IMAGE_COUNT
+  const img = (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={image.src}
+      srcSet={image.srcSet}
+      sizes={image.sizes}
+      alt={`Textile design artwork: ${design.title}${design.year ? ` (${design.year})` : ''}`}
+      height={image.height}
+      width={image.width}
+      className={`desktop-gallery-img ${styles.galleryImage}`}
+      decoding="async"
+      loading={isEager ? 'eager' : 'lazy'}
+      fetchPriority={isEager ? 'high' : undefined}
+    />
+  )
   const projectUrl = `/project/${design.slug?.current || design._id}`
 
   return (
@@ -59,18 +69,17 @@ const GalleryItem = memo(function GalleryItem({
       data-active={isActive}
     >
       <div className="desktop-gallery-image">
-        <ImageNoStyle
-          src={displayImageUrl}
-          alt={`Textile design artwork: ${design.title}${design.year ? ` (${design.year})` : ''}`}
-          height={600}
-          width={800}
-          sizes="(max-width: 1024px) 90vw, (max-width: 1440px) 800px, 900px"
-          className={`desktop-gallery-img ${styles.galleryImage}`}
-          // With the first image on the left margin, the second is on screen
-          // at arrival too, and is often the larger of the two (the LCP element)
-          priority={index < 2}
-          loading={index < 2 ? 'eager' : 'lazy'}
-        />
+        {/* The eager images are on screen at arrival on desktop; the page
+            preloads them for desktop only. Below the breakpoint this gallery
+            is hidden, and the empty source keeps a phone from downloading them */}
+        {isEager ? (
+          <picture className={styles.picture}>
+            <source media={MOBILE_GALLERY_MEDIA} srcSet={EMPTY_IMAGE_SRC} />
+            {img}
+          </picture>
+        ) : (
+          img
+        )}
       </div>
 
       <div className="desktop-gallery-info">

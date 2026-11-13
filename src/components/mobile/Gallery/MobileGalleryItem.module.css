@@ -4,3 +4,8 @@
   width: 100%;
   height: auto;
 }
+
+/* The <picture> around a priority image takes no box of its own */
+.picture {
+  display: contents;
+}
