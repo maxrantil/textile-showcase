@@ -2,7 +2,7 @@
 
 **Date**: 2026-11-14
 **Issue**: #429 - perf: home page LCP is 5-10s in CI Lighthouse while FCP is 1.1s (open); #388 - forced vendor chunking
-**PR**: #431 merged to master as `9c53155`; draft PR for #388 on this branch
+**PR**: #431 merged to master as `9c53155`; #433 - perf: remove forced vendor chunking (draft)
 **Branch**: perf/issue-388-route-chunks
 
 ---
@@ -31,7 +31,21 @@
 
   This machine paints later than the CI runner (0.2s to 0.5s), so the local `/contact` runs never reached the slow end
   seen in CI and its LCP range did not move. On home the worst run dropped from 5.4s to 4.3s. The change lowers the
-  ceiling; it does not remove the run-to-run variation. CI figures for this branch are the real test and are not in yet.
+  ceiling; it does not remove the run-to-run variation locally.
+- **CI Lighthouse on PR #433** (run 43569766855), three runs per page, against PR #431's run:
+
+  | | PR #431 | PR #433 |
+  |---|---|---|
+  | `/contact` | 2.8s, 3.7s, 6.4s | 2.80s, 2.81s, 2.81s |
+  | `/about` | 2.7s, 3.8s, 5.5s | 2.65s, 2.65s, 2.66s |
+  | `/` | 4.2s, 6.0s, 8.4s | 3.7s, 3.7s, 5.2s |
+  | project page | 2.7s, 6.3s, 6.5s | 3.6s, 4.7s, 5.7s |
+
+  The spread on the text pages is gone: all of each page's 10 or so scripts now finish before paint in every run, so
+  the same weight is counted each time. Time to interactive went from about 7.4s to 2.7s. The slow home and project runs
+  (5.2s, 5.7s) are the first run of each, where the server took 0.3s to 0.4s to answer and paint came at 0.8s.
+- `.github/workflows/lighthouse-ci.yml` listed `next.config.js` in its path filter; the file is `next.config.ts`, so a
+  config-only change skipped the Lighthouse audit. Fixed in PR #433.
 - **Decision on #390**: its chunking commit is the right change, but the PR carries 17 commits stacked on #386 and #387
   and conflicts with master. The one commit is now on `perf/issue-388-route-chunks` from master (`next.config.ts` and
   two tests). #390 still holds the per-route JavaScript budget check (`scripts/route-js-budget.mjs`), not brought over.
@@ -40,7 +54,7 @@
 
 **Tests**: ✅ the two changed suites pass (16 tests), type-check clean. Full Jest and E2E not run locally on this branch; CI runs them
 **Branch**: ✅ clean, pushed
-**CI/CD**: 🔄 running on the draft PR for #388
+**CI/CD**: ✅ PR #433 (draft): Jest, Lighthouse audit, bundle size pass. E2E only runs once the PR is marked ready
 
 **Not tested**: the chunking change in a browser by hand (PR #390 records a Chromium check of the same commit on its
 own base, at 1440px and 390px). Firefox and Safari not installed here.
@@ -51,10 +65,10 @@ The named validation agents are not available in this environment and were not r
 
 ## 🚀 Next Session Priorities
 
-1. Draft PR for #388: read the CI Lighthouse figures (expect `/contact` and `/about` at or under 3s in all three runs,
-   home under about 4.5s), check the pages by hand, then mark ready and merge
+1. PR #433: check the pages by hand at desktop and phone widths, mark ready (starts E2E), then merge
 2. Close #390 once #388 is merged; decide whether to bring over its route JavaScript budget check as its own PR
-3. Home LCP after #388 is bounded by about 270KB of images and fonts. Next lever is the LCP image itself (#429)
+3. Home LCP is now 3.7s in CI with about 250KB of images and fonts counted before paint, and the project page 3.6s to
+   4.7s. Next lever is the image weight ahead of the LCP image (#429, #395 task 3)
 4. LCP threshold in `lighthouserc.js` (last task of #429): draft PR #402 sets 2.5s; decide once CI shows the figure
 5. Project page LCP: #395 task 3 and #397
 6. Real iPhone check of `/contact`: tap the name field straight after load and type
@@ -115,17 +129,17 @@ The named validation agents are not available in this environment and were not r
 
 ## 📝 Startup Prompt for Next Session
 
-Read CLAUDE.md to understand our workflow, then continue from Issue #388 (draft PR open: per-route JavaScript 541KB to about 140KB, awaiting CI Lighthouse figures).
+Read CLAUDE.md to understand our workflow, then continue from Issue #388 (draft PR #433: per-route JavaScript 541KB to about 140KB; CI LCP on `/contact` and `/about` now 2.7-2.8s in every run).
 
-**Immediate priority**: read CI Lighthouse on the #388 PR, check pages by hand, merge it, then close #390 (1-2 hours)
+**Immediate priority**: check pages by hand, mark PR #433 ready so E2E runs, merge it, then close #390 (1-2 hours)
 **Context**: the 3s-9s LCP spread comes from Lighthouse replaying whatever finished before paint at 1.6 Mbps; less JavaScript lowers the ceiling
-**Reference docs**: SESSION_HANDOVER.md, the #388 PR, issue #429, draft PR #390, lighthouserc.js
+**Reference docs**: SESSION_HANDOVER.md, PR #433, issue #429, draft PR #390, lighthouserc.js
 **Ready state**: branch perf/issue-388-route-chunks pushed and clean; master at `9c53155` with PR #431 merged
 
-**Expected scope**: merge #388, confirm `/contact` and `/about` LCP at or under 3s in CI, then pick the next home LCP step for #429
+**Expected scope**: merge #433, then cut the image weight ahead of the LCP image on home (3.7s) and the project page (3.6-4.7s)
 
 ## 📚 Key Reference Documents
 
-- Issue #388 and its PR, PR #431 (merged), issue #429, issue #395 (duplicate font and image downloads), issue #397 (layout swap on project pages)
+- Issue #388 and PR #433, PR #431 (merged), issue #429, issue #395 (duplicate font and image downloads), issue #397 (layout swap on project pages)
 - `src/utils/gallery-images.ts`, `src/app/page.tsx`
 - `lighthouserc.js`, `.github/workflows/lighthouse-ci.yml`
