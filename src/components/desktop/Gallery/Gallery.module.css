@@ -6,6 +6,11 @@
   object-fit: contain;
 }
 
+/* The <picture> around an eager image takes no box of its own */
+.picture {
+  display: contents;
+}
+
 /* Hidden state for first image (CSP compliant) */
 .firstImageHidden {
   visibility: hidden;
