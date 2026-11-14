@@ -163,7 +163,7 @@ Appended rather than merged into the sections above: this work ran in parallel w
 
 **Date**: 2026-11-14
 **Issue**: #435 - feat: turn Umami analytics back on without letting it affect the page
-**PR**: #436 (draft)
+**PR**: #436 merged to master as `d6414a6`
 **Branch**: feat/issue-435-reenable-umami-analytics (worktree at `../textile-showcase-analytics`)
 
 ## ✅ Completed Work (#435)
