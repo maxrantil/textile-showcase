@@ -229,10 +229,10 @@ npm test:e2e
 
 ### Issue: Unit tests fail with CSP directive mismatch
 
-**Cause:** CSP header structure changed in middleware
+**Cause:** CSP header structure changed in the proxy
 
 **Solution:**
-1. Check `src/middleware.ts` for CSP changes
+1. Check `src/proxy.ts` for CSP changes
 2. Update test expectations if changes are intentional
 3. Ensure `analytics.idaromme.dk` remains in CSP
 
@@ -246,7 +246,7 @@ npm test:e2e
 - **46 total tests** ensuring analytics reliability
 
 **Code Coverage:**
-- `src/middleware.ts`: CSP headers function (100%)
+- `src/proxy.ts`: CSP headers function (100%)
 - `src/app/components/analytics-provider.tsx`: Full component (100%)
 
 **What's Protected:**
