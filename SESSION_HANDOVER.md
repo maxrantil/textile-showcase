@@ -46,7 +46,7 @@
 commit; the font branch's three font tests pass), type-check clean. E2E not run locally on the two new branches
 **Branch**: ✅ both clean and pushed
 **CI/CD**: 🔄 #437 and #438 are drafts; E2E only runs once a PR is marked ready. The production deploy of `5814ffc`
-was running when this was written and its result was not checked
+succeeded (all five jobs); idaromme.dk serves the project page's first image with `fetchPriority="high"` and the new `sizes`
 
 **Not tested**: Firefox and Safari are not installed here. No Lighthouse run was made for #437 or #438; CI's
 Lighthouse will show the figures on each PR. CI's Chrome runs with web security off, so the failing `/projects`
@@ -58,7 +58,8 @@ The named validation agents are not available in this environment and were not r
 
 ## 🚀 Next Session Priorities
 
-1. Confirm the production deploy of `5814ffc` succeeded and the project pages look right on idaromme.dk
+1. Look at a project page on idaromme.dk on a real desktop and phone: the deploy of `5814ffc` succeeded and the
+   HTML was checked, the page was not viewed in a browser
 2. Draft PRs #437 (font) and #438 (`/projects` preloads): review, mark ready so E2E runs, merge. Both carry this
    same handoff file, so the second one merges cleanly after the first
 3. After the deploy that includes #436: open idaromme.dk without an ad blocker and confirm the visit under Realtime
@@ -151,7 +152,7 @@ The named validation agents are not available in this environment and were not r
 
 Read CLAUDE.md to understand our workflow, then continue from PR #434 (✅ merged as `5814ffc`) with draft PRs #437 and #438 open.
 
-**Immediate priority**: confirm the production deploy, then mark #437 and #438 ready, let E2E run, merge both (1 hour)
+**Immediate priority**: mark #437 and #438 ready, let E2E run, merge both (1 hour)
 **Context**: the font goes from 48KB to 32KB by limiting its weight axis to 400-500 (it was already Latin only); `/projects` gets home's gallery preloads instead of one that failed on CORS
 **Reference docs**: SESSION_HANDOVER.md, issues #395 and #429, `src/components/server/GalleryImagePreloads.tsx`, `tests/unit/fonts-no-duplicates.test.ts`
 **Ready state**: branches perf/issue-429-font-weight-axis and perf/issue-395-projects-preload pushed and clean; master at `5814ffc`
