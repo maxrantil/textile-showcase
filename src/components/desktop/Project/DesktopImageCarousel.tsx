@@ -32,6 +32,34 @@ interface DesktopImageCarouselProps {
 // Source height requested from the CDN; the image is shown up to the window height minus header and controls
 const CAROUSEL_IMAGE_HEIGHT = 1200
 
+// Used when an asset reference carries no dimensions
+const FALLBACK_IMAGE_SIZE = { width: 800, height: 600 }
+
+// Asset references look like image-{id}-{width}x{height}-{format}
+function getAssetSize(source: ImageSource | undefined) {
+  const ref = source?.asset?._ref || source?._ref
+  const match = ref?.match(/-(\d+)x(\d+)-[a-z0-9]+$/i)
+  if (!match) return FALLBACK_IMAGE_SIZE
+
+  return { width: Number(match[1]), height: Number(match[2]) }
+}
+
+// Intrinsic size and laid-out width of a carousel image. The sizes value is
+// what the browser picks a srcset candidate by, and mirrors
+// .desktop-project-img in styles/desktop/project.css: as tall as the window
+// less 200px, and no wider than the window less 280px. A prefetched image
+// uses the same values so it is the same request as when it is shown
+function getCarouselImageLayout(source: ImageSource | undefined) {
+  const { width, height } = getAssetSize(source)
+  const ratio = (width / height).toFixed(4)
+
+  return {
+    width,
+    height,
+    sizes: `min(calc(100vw - 280px), calc((100vh - 200px) * ${ratio}))`,
+  }
+}
+
 // Lightweight lockdown mode detection - only for iOS devices
 const isIOSLockdownMode = () => {
   if (typeof window === 'undefined') return false
@@ -60,6 +88,9 @@ export function DesktopImageCarousel({
   const router = useRouter()
   const [internalCurrentIndex, setInternalCurrentIndex] = useState(0)
   const [useLockdownMode, setUseLockdownMode] = useState(false)
+  // The neighbouring images wait for the first main image, so they never
+  // compete with it for bandwidth
+  const [hasMainImageLoaded, setHasMainImageLoaded] = useState(false)
   const carouselRef = useRef<HTMLDivElement>(null)
   const lastScrollTime = useRef(0)
   const lastNavigationTime = useRef(0)
@@ -310,6 +341,8 @@ export function DesktopImageCarousel({
     }
   )
 
+  const currentImageSource = currentImage?.asset || (images && images[0]?.asset)
+
   // Don't render if no gallery images
   if (!images || images.length === 0) {
     return (
@@ -387,12 +420,12 @@ export function DesktopImageCarousel({
                       currentImage?.caption ||
                       `Gallery image ${currentIndex + 1}`
                     }
-                    width={800}
-                    height={600}
+                    {...getCarouselImageLayout(currentImageSource)}
                     className="desktop-project-img"
                     loading="eager"
                     priority={true}
-                    sizes="(max-width: 768px) 100vw, 800px"
+                    fetchPriority="high"
+                    onLoad={() => setHasMainImageLoaded(true)}
                     onError={() => {
                       // If image fails and we're on iOS, try lockdown mode
                       if (/iPad|iPhone|iPod/.test(window.navigator.userAgent)) {
@@ -415,7 +448,7 @@ export function DesktopImageCarousel({
                       pointerEvents: 'none',
                     }}
                   >
-                    {allImages[currentIndex + 1] && (
+                    {hasMainImageLoaded && allImages[currentIndex + 1] && (
                       <Image
                         src={getOptimizedImageUrl(
                           allImages[currentIndex + 1].asset,
@@ -426,13 +459,14 @@ export function DesktopImageCarousel({
                           }
                         )}
                         alt="Next image prefetch"
-                        width={800}
-                        height={600}
+                        {...getCarouselImageLayout(
+                          allImages[currentIndex + 1].asset
+                        )}
                         priority={false}
                         loading="lazy"
                       />
                     )}
-                    {allImages[currentIndex - 1] && (
+                    {hasMainImageLoaded && allImages[currentIndex - 1] && (
                       <Image
                         src={getOptimizedImageUrl(
                           allImages[currentIndex - 1].asset,
@@ -443,8 +477,9 @@ export function DesktopImageCarousel({
                           }
                         )}
                         alt="Previous image prefetch"
-                        width={800}
-                        height={600}
+                        {...getCarouselImageLayout(
+                          allImages[currentIndex - 1].asset
+                        )}
                         priority={false}
                         loading="lazy"
                       />
