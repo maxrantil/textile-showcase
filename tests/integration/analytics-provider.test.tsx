@@ -50,8 +50,7 @@ describe('AnalyticsProvider Integration Tests', () => {
   })
 
   describe('Production Mode - Script Loading', () => {
-    // HOTFIX Issue #263: Analytics disabled temporarily - skip tests
-    it.skip('should load Umami script in production mode with env vars set', async () => {
+    it('should load Umami script in production mode with env vars set', async () => {
       Object.defineProperty(process.env, 'NODE_ENV', {
         writable: true,
         value: 'production',
@@ -89,8 +88,7 @@ describe('AnalyticsProvider Integration Tests', () => {
       expect(script.getAttribute('data-website-id')).toBe(WEBSITE_ID)
     })
 
-    // HOTFIX Issue #263: Analytics disabled temporarily - skip test
-    it.skip('should use requestIdleCallback for deferred loading in production', async () => {
+    it('should use requestIdleCallback for deferred loading in production', async () => {
       Object.defineProperty(process.env, 'NODE_ENV', {
         writable: true,
         value: 'production',
@@ -120,8 +118,7 @@ describe('AnalyticsProvider Integration Tests', () => {
       expect(callArgs[1]).toEqual({ timeout: 2000 })
     })
 
-    // HOTFIX Issue #263: Analytics disabled temporarily - skip test
-    it.skip('should fallback to setTimeout when requestIdleCallback unavailable', async () => {
+    it('should fallback to setTimeout when requestIdleCallback unavailable', async () => {
       Object.defineProperty(process.env, 'NODE_ENV', {
         writable: true,
         value: 'production',
@@ -263,18 +260,9 @@ describe('AnalyticsProvider Integration Tests', () => {
 
       await new Promise((resolve) => setTimeout(resolve, 100))
 
-      // Script might be added but without website ID
-      // This tests the component's handling of missing WEBSITE_ID
-      const appendCalls = (document.head.appendChild as jest.Mock).mock.calls
-      const scriptCall = appendCalls.find(
-        (call) => call[0]?.tagName?.toLowerCase() === 'script'
-      )
-
-      if (scriptCall) {
-        const script = scriptCall[0] as HTMLScriptElement
-        // If script was added, website-id should be empty string
-        expect(script.getAttribute('data-website-id')).toBe('')
-      }
+      // Without a website ID the tracker has nowhere to report to
+      expect(document.head.appendChild).not.toHaveBeenCalled()
+      expect(mockRequestIdleCallback).not.toHaveBeenCalled()
     })
 
     it('should NOT load script when both env vars are missing', async () => {
@@ -371,8 +359,7 @@ describe('AnalyticsProvider Integration Tests', () => {
   })
 
   describe('Script Attributes Validation', () => {
-    // HOTFIX Issue #263: Analytics disabled temporarily - skip test
-    it.skip('should set defer attribute on script element', async () => {
+    it('should set defer attribute on script element', async () => {
       Object.defineProperty(process.env, 'NODE_ENV', {
         writable: true,
         value: 'production',
@@ -405,8 +392,7 @@ describe('AnalyticsProvider Integration Tests', () => {
       expect(script.defer).toBe(true)
     })
 
-    // HOTFIX Issue #263: Analytics disabled temporarily - skip test
-    it.skip('should construct correct script URL from environment variable', async () => {
+    it('should construct correct script URL from environment variable', async () => {
       const customURL = 'https://custom-analytics.example.com'
       Object.defineProperty(process.env, 'NODE_ENV', {
         writable: true,
@@ -440,8 +426,7 @@ describe('AnalyticsProvider Integration Tests', () => {
       expect(script.src).toBe(`${customURL}/script.js`)
     })
 
-    // HOTFIX Issue #263: Analytics disabled temporarily - skip test
-    it.skip('should set data-website-id attribute correctly', async () => {
+    it('should set data-website-id attribute correctly', async () => {
       const customWebsiteId = 'custom-website-id-12345'
       Object.defineProperty(process.env, 'NODE_ENV', {
         writable: true,
@@ -476,9 +461,127 @@ describe('AnalyticsProvider Integration Tests', () => {
     })
   })
 
+  describe('Isolation from the page (Issue #263)', () => {
+    const enableAnalytics = () => {
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        writable: true,
+        value: 'production',
+      })
+      Object.defineProperty(process.env, 'NEXT_PUBLIC_UMAMI_URL', {
+        writable: true,
+        value: UMAMI_URL,
+      })
+      Object.defineProperty(process.env, 'NEXT_PUBLIC_UMAMI_WEBSITE_ID', {
+        writable: true,
+        value: WEBSITE_ID,
+      })
+    }
+
+    const setReadyState = (state: DocumentReadyState) => {
+      Object.defineProperty(document, 'readyState', {
+        configurable: true,
+        get: () => state,
+      })
+    }
+
+    afterEach(() => {
+      // Drop the override so the document reports its own state again
+      delete (document as unknown as Record<string, unknown>).readyState
+    })
+
+    it('should apply the CSP nonce to the script element', async () => {
+      enableAnalytics()
+
+      render(
+        <AnalyticsProvider nonce="test-nonce-123">
+          <div>Test</div>
+        </AnalyticsProvider>
+      )
+
+      await waitFor(() => {
+        expect(document.head.appendChild).toHaveBeenCalled()
+      })
+
+      const script = (document.head.appendChild as jest.Mock).mock
+        .calls[0][0] as HTMLScriptElement
+      expect(script.getAttribute('nonce')).toBe('test-nonce-123')
+    })
+
+    it('should wait for the window load event before adding the script', async () => {
+      enableAnalytics()
+      setReadyState('loading')
+
+      render(
+        <AnalyticsProvider>
+          <div>Test</div>
+        </AnalyticsProvider>
+      )
+
+      await new Promise((resolve) => setTimeout(resolve, 50))
+
+      // A pending script request must not be able to hold back the load event
+      expect(mockRequestIdleCallback).not.toHaveBeenCalled()
+      expect(document.head.appendChild).not.toHaveBeenCalled()
+
+      window.dispatchEvent(new Event('load'))
+
+      await waitFor(() => {
+        expect(document.head.appendChild).toHaveBeenCalled()
+      })
+    })
+
+    it('should keep children rendered when adding the script throws', async () => {
+      enableAnalytics()
+      ;(document.head.appendChild as jest.Mock).mockImplementation(() => {
+        throw new Error('appendChild failed')
+      })
+
+      const { getByText } = render(
+        <AnalyticsProvider>
+          <div>Still Here</div>
+        </AnalyticsProvider>
+      )
+
+      await waitFor(() => {
+        expect(document.head.appendChild).toHaveBeenCalled()
+      })
+
+      expect(getByText('Still Here')).toBeInTheDocument()
+    })
+
+    it('should add the script only once when the nonce changes', async () => {
+      enableAnalytics()
+      // Let the script reach the document so the second run can see it
+      ;(document.head.appendChild as jest.Mock).mockRestore()
+
+      const { rerender } = render(
+        <AnalyticsProvider nonce="first">
+          <div>Test</div>
+        </AnalyticsProvider>
+      )
+
+      await waitFor(() => {
+        expect(
+          document.querySelectorAll('script[data-website-id]')
+        ).toHaveLength(1)
+      })
+
+      rerender(
+        <AnalyticsProvider nonce="second">
+          <div>Test</div>
+        </AnalyticsProvider>
+      )
+
+      await new Promise((resolve) => setTimeout(resolve, 50))
+
+      expect(document.querySelectorAll('script[data-website-id]')).toHaveLength(
+        1
+      )
+    })
+  })
+
   describe('Regression Prevention', () => {
-    // HOTFIX Issue #263: Analytics disabled temporarily - skip test
-    it.skip('should fail if script is not deferred', async () => {
+    it('should fail if script is not deferred', async () => {
       Object.defineProperty(process.env, 'NODE_ENV', {
         writable: true,
         value: 'production',
