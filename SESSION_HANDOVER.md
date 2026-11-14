@@ -54,8 +54,9 @@ The named validation agents are not available in this environment and were not r
 
 1. The draft PR for `perf/issue-395-project-lcp-image`: read the CI Lighthouse figures for the project page against
    PR #433's (3.6s, 4.7s, 5.7s), mark ready so E2E runs, merge
-2. Next levers for LCP on every page, by weight counted before paint: the font (48KB; the file carries more than the
-   Latin range the CSS declares), then the two shared script chunks (62KB and 51KB)
+2. Next levers for LCP on every page, by weight counted before paint: the font (48KB; whether the file holds
+   more than the Latin range the CSS declares was not checked, fontTools is not installed here), then the two shared
+   script chunks (62KB and 51KB)
 3. `/projects` still preloads a Sanity image with `crossorigin="anonymous"`; the CDN sends no CORS header for it, so
    the preload fails in a normal browser and the image is fetched twice (#395)
 4. Home LCP 3.7s in CI: about 100KB of gallery images ahead of paint, plus three lazy ones (65KB) that start at
@@ -139,7 +140,7 @@ Read CLAUDE.md to understand our workflow, then continue from Issue #395 (draft 
 **Reference docs**: SESSION_HANDOVER.md, issues #395 and #429, `src/components/desktop/Project/DesktopImageCarousel.tsx`, lighthouserc.js
 **Ready state**: branch perf/issue-395-project-lcp-image pushed and clean; master at `c8cac4e` with PR #433 merged
 
-**Expected scope**: merge the project page PR, then cut the font file (48KB) to the Latin range and remove the failing preload on `/projects`
+**Expected scope**: merge the project page PR, then check whether the font file (48KB) can be cut to the Latin range, and remove the failing preload on `/projects`
 
 ## 📚 Key Reference Documents
 
