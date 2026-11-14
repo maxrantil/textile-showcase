@@ -1,54 +1,56 @@
-# Session Handoff: Issue #388 merged, project page LCP image (#395, #429)
+# Session Handoff: PR #434 merged, font weight axis (#429), /projects preloads (#395)
 
 **Date**: 2026-11-14
-**Issue**: #388 - forced vendor chunking (closed); #395 - duplicate font and wasted LCP image downloads (open); #429 - LCP in CI Lighthouse (open)
-**PR**: #433 merged to master as `c8cac4e`; #390 closed as superseded; #434 - project page LCP image (draft)
-**Branch**: perf/issue-395-project-lcp-image
+**Issue**: #395 - duplicate font and wasted LCP image downloads (open); #429 - LCP in CI Lighthouse (open)
+**PR**: #434 merged to master as `5814ffc`; #437 - font weight axis (draft); #438 - `/projects` preloads (draft)
+**Branch**: perf/issue-429-font-weight-axis (#437) and perf/issue-395-projects-preload (#438), both from master
 
 ---
 
 ## ✅ Completed This Session
 
-- **PR #433 merged** (squash, `c8cac4e`): per-route JavaScript 541KB to about 140KB. Before the merge the pages were
-  checked in Playwright Chromium against a production build at 1440px and 390px (all pages hydrate with 8 to 12
-  scripts, gallery, project, menu, contact form typing and browser back work, every navigation stays client-side),
-  and the E2E suite passed on Desktop Chrome, Mobile Chrome and Safari smoke.
-- **PR #390 closed** as superseded. Its branch `perf/reduce-client-js` is kept: it still holds the per-route
-  JavaScript budget check (`scripts/route-js-budget.mjs`), not brought over.
-- **Project page, first image** (`perf/issue-395-project-lcp-image`, commit `771a927`):
-  - The desktop carousel's main image is the LCP element. It was fetched at low priority: in Next 16.1.6 the
-    `priority` prop adds a preload but no `fetchpriority`. It now carries `fetchPriority="high"`.
-  - `sizes` was a fixed 800px, so every image was requested 828px wide: too large for a portrait image shown 493px
-    wide, too small for a landscape one shown 1070px wide. `sizes`, `width` and `height` now come from the asset's
-    own dimensions and mirror `.desktop-project-img` in `src/styles/desktop/project.css`.
-  - The neighbouring images are fetched after the first main image has loaded, with the same `sizes`, so stepping
-    to the next image reuses that request (checked in the browser: no new request for the shown image).
-  - The page no longer preloads the cover image, which neither layout shows first and which failed on CORS.
-- **Measured** (local production build on top of `c8cac4e`, CI Lighthouse settings, 5 runs per page, warm image cache):
+- **PR #434 merged** (squash, `5814ffc`): the project page's first image is fetched at high priority and at the size
+  it is shown. Master had moved (#436, Umami back on), so master was merged into the branch first; Jest passed
+  locally (1,299 tests) and in CI, and the E2E suite passed on Desktop Chrome, Mobile Chrome and Safari smoke, with
+  the new `analytics-resilience` job.
+- **CI Lighthouse on the final run of PR #434**, three runs per page:
 
-  | | LCP image | Before paint also | LCP before | LCP after |
-  |---|---|---|---|---|
-  | `composing-tones` (portrait) | 121KB low priority, now 86KB high | next image 41KB, now after paint | 3.0-4.5s (median 3.65s) | 3.2-3.7s (median 3.55s) |
-  | `what-if-the-future-is-made-of-salt` (landscape) | 41KB at 828px, now 61KB at 1080px | | 2.8-4.3s (median 3.45s) | 3.4-3.7s (median 3.62s) |
+  | | LCP |
+  |---|---|
+  | `/` | 5.11s, 3.20s, 3.74s |
+  | `/about` | 2.65s, 2.65s, 2.65s |
+  | `/contact` | 2.82s, 2.81s, 2.82s |
+  | project page | 4.96s, 3.41s, 3.43s |
 
-  The medians did not move. The spread narrowed: the worst run dropped by 0.6s to 0.8s, and on the landscape page the
-  best run rose because the image is now requested at the width it is shown (it was upscaled before). What is counted
-  before paint is now about 290KB to 310KB: document 20KB, font 48KB, LCP image 61-86KB, CSS 14KB, scripts 144KB.
-- **CI Lighthouse on PR #434** (run 43595519010), project page `what-if-the-future-is-made-of-salt`, three runs,
-  against the last run on PR #433: 4.90s, 3.43s, 3.42s against 4.42s, 3.80s, 3.80s. The two warm runs are 0.37s
-  lower; the first run is slow in both because CI starts with an empty image cache. Layout shift in the first run
-  went from 0.019 to 0. The other pages are unchanged (`/` 3.7s, `/about` 2.6s, `/contact` 2.8s).
-- A side effect on phones: the server renders the desktop layout first (#397), and its main image is now requested
-  128px wide there instead of 640px before the layout swap.
+  The first run of the two image pages is slow because CI starts with an empty image cache. Layout shift is 0 in
+  every run.
+- **The font, checked** (draft PR #437, commit `c73f275`). `public/fonts/inter-400.woff2` was already limited to the
+  Latin range: 230 code points, 518 glyphs. Its weight came from the weight axis, which ran from 100 to 900 while
+  the CSS declares 400 and 500 only. With the axis limited to 400-500 the file is 32,136 bytes, down from 48,256.
+  - Code points, glyphs, layout features and vertical metrics are unchanged (compared with fontTools).
+  - Rendered in Chromium under the site's two `@font-face` rules: weights 300 and 400 are pixel-identical, 500 and
+    600 keep the same line width and differ only in anti-aliasing.
+  - Dropping the unused layout features (`frac`, `tnum`, `pnum`, `numr`, `dnom`) would save 3KB more; not done.
+  - New test in `tests/unit/fonts-no-duplicates.test.ts`: the preloaded font stays within 36KB.
+- **`/projects` preloads** (draft PR #438, commit `39db32e`). The page shows the same galleries as home but
+  preloaded one image at a width and quality neither gallery requests, in CORS mode, so the preload failed and the
+  image was fetched again. Home's preload links moved into `src/components/server/GalleryImagePreloads.tsx` and
+  both pages render it. Home's output is unchanged.
+  - New test file `src/app/projects/__tests__/page.test.tsx` (5 tests; 4 failed before the change).
+  - Checked against a production build in Playwright Chromium at 1440x900 and 390x844: `/projects` and `/` make
+    the same 5 image requests, none twice, and no CORS error is logged.
 
 ## 🎯 Current Project State
 
-**Tests**: ✅ full Jest suite passes locally (1,283 tests, 23 skipped), type-check and lint clean. E2E not run locally; CI runs it once the PR is marked ready
-**Branch**: ✅ clean, pushed
-**CI/CD**: ✅ PR #434 (draft): Jest, Lighthouse audit, bundle size pass. E2E only runs once the PR is marked ready
+**Tests**: ✅ full Jest suite passes locally on both branches (1,295 tests on #438's branch before this handoff
+commit; the font branch's three font tests pass), type-check clean. E2E not run locally on the two new branches
+**Branch**: ✅ both clean and pushed
+**CI/CD**: 🔄 #437 and #438 are drafts; E2E only runs once a PR is marked ready. The production deploy of `5814ffc`
+succeeded (all five jobs); idaromme.dk serves the project page's first image with `fetchPriority="high"` and the new `sizes`
 
-**Not tested**: Firefox and Safari are not installed here. The project page change was checked in Playwright Chromium
-at 1440x900, 1350x940, 1024x700 and 390x844 (no layout shift on desktop, no console errors).
+**Not tested**: Firefox and Safari are not installed here. No Lighthouse run was made for #437 or #438; CI's
+Lighthouse will show the figures on each PR. CI's Chrome runs with web security off, so the failing `/projects`
+preload succeeded there: #438 will not show as a gain in CI, and `/projects` is not among the pages CI measures.
 
 ### Agent Validation Status
 
@@ -56,19 +58,22 @@ The named validation agents are not available in this environment and were not r
 
 ## 🚀 Next Session Priorities
 
-1. Draft PR #434: mark ready so E2E runs (not within a second of a push, see carry-forward notes), then merge
-2. Next levers for LCP on every page, by weight counted before paint: the font (48KB; whether the file holds
-   more than the Latin range the CSS declares was not checked, fontTools is not installed here), then the two shared
-   script chunks (62KB and 51KB)
-3. `/projects` still preloads a Sanity image with `crossorigin="anonymous"`; the CDN sends no CORS header for it, so
-   the preload fails in a normal browser and the image is fetched twice (#395)
-4. Home LCP 3.7s in CI: about 100KB of gallery images ahead of paint, plus three lazy ones (65KB) that start at
-   hydration
-5. LCP threshold in `lighthouserc.js` (last task of #429): draft PR #402 sets 2.5s; decide once CI shows the figure
-6. Project page layout swap on phones: #397
-7. Real iPhone check of `/contact`: tap the name field straight after load and type
-8. The older draft PRs (#386 to #405) mostly conflict with master and need a decision: rebase or close. #396 overlaps
-   with #431
+1. Look at a project page on idaromme.dk on a real desktop and phone: the deploy of `5814ffc` succeeded and the
+   HTML was checked, the page was not viewed in a browser
+2. Draft PRs #437 (font) and #438 (`/projects` preloads): review, mark ready so E2E runs, merge. Both carry this
+   same handoff file, so the second one merges cleanly after the first
+3. After the deploy that includes #436: open idaromme.dk without an ad blocker and confirm the visit under Realtime
+   in Umami (carried over from the #435 session)
+4. Next levers for LCP on every page: the two shared script chunks (62KB and 51KB)
+5. Home LCP 3.2s to 3.7s in CI on warm runs: about 100KB of gallery images ahead of paint, plus three lazy ones
+   (65KB) that start at hydration
+6. LCP threshold in `lighthouserc.js` (last task of #429): draft PR #402 sets 2.5s; `/about` and `/contact` are at
+   2.65s and 2.8s, the image pages at 3.2s to 3.7s
+7. Close #395 once #438 is merged: its three tasks are then done (the task list in the issue is unticked)
+8. Project page layout swap on phones: #397
+9. Real iPhone check of `/contact`: tap the name field straight after load and type
+10. The older draft PRs (#386 to #405) mostly conflict with master and need a decision: rebase or close. #396
+    overlaps with #431
 
 ### Possible follow-up
 
@@ -120,11 +125,18 @@ The named validation agents are not available in this environment and were not r
 - E2E tests that use the contact form should go through `ContactPage.goto()`, which waits for hydration and the
   layout swap. `#field-name` being visible does not mean the page is hydrated
 - Both home galleries are always in the HTML. Their image URLs, sizes and layout media queries live in
-  `src/utils/gallery-images.ts`; the page preloads and both gallery components read from it. The breakpoint there
+  `src/utils/gallery-images.ts`; the page preloads (`src/components/server/GalleryImagePreloads.tsx` once PR #438
+  is merged, used by `/` and `/projects`) and both gallery components read from it. The breakpoint there
   mirrors `src/components/adaptive/Gallery/index.module.css` (768px)
 - Eager gallery images sit in a `<picture>` with an empty `<source>` for the hidden layout. Do not swap this for
   `loading="lazy"`: Lighthouse's `lcp-lazy-loaded` audit fails on a lazy LCP image
-- Weights 400 and 500 of Inter are both served from `public/fonts/inter-400.woff2`
+- Weights 400 and 500 of Inter are both served from `public/fonts/inter-400.woff2`, a variable font whose weight
+  axis runs from 400 to 500 only (PR #437). Text set at 600 is the 500 face with synthetic bold, and 300 is the 400
+  face, as before. A third weight needs a wider axis and a third `@font-face` rule
+- To rebuild the font: `pip install fonttools brotli` in a venv, `fonttools varLib.instancer <file> wght=400:500`,
+  then `pyftsubset <out> --unicodes='*' --layout-features='*' --flavor=woff2`
+- Since #436 a local production build with the real `.env.local` loads Umami and records visits from localhost.
+  Block the analytics host in the browser when checking a local build (Playwright `page.route`)
 - Measuring locally with the CI Lighthouse settings: build, `npx next start -p 3100`, then `lhci collect` (0.12.x) with a
   config that reuses `lighthouserc.js` without `startServerCommand`, and `CHROME_PATH` set to Playwright's Chromium
 - `src/components/ui/ImageNoStyle.tsx` is not used by any component
@@ -138,78 +150,22 @@ The named validation agents are not available in this environment and were not r
 
 ## 📝 Startup Prompt for Next Session
 
-Read CLAUDE.md to understand our workflow, then continue from Issue #395 (draft PR #434: project page LCP image at high priority and at its shown size; PR #433 merged, #390 closed).
+Read CLAUDE.md to understand our workflow, then continue from PR #434 (✅ merged as `5814ffc`) with draft PRs #437 and #438 open.
 
-**Immediate priority**: mark PR #434 ready so E2E runs, merge it (1 hour)
-**Context**: CI LCP on the project page went from 3.8s to 3.4s in warm runs (first run 4.9s on a cold image cache); about 300KB is still counted before paint, half of it scripts
-**Reference docs**: SESSION_HANDOVER.md, issues #395 and #429, `src/components/desktop/Project/DesktopImageCarousel.tsx`, lighthouserc.js
-**Ready state**: branch perf/issue-395-project-lcp-image pushed and clean; master at `c8cac4e` with PR #433 merged
+**Immediate priority**: mark #437 and #438 ready, let E2E run, merge both (1 hour)
+**Context**: the font goes from 48KB to 32KB by limiting its weight axis to 400-500 (it was already Latin only); `/projects` gets home's gallery preloads instead of one that failed on CORS
+**Reference docs**: SESSION_HANDOVER.md, issues #395 and #429, `src/components/server/GalleryImagePreloads.tsx`, `tests/unit/fonts-no-duplicates.test.ts`
+**Ready state**: branches perf/issue-429-font-weight-axis and perf/issue-395-projects-preload pushed and clean; master at `5814ffc`
 
-**Expected scope**: merge the project page PR, then check whether the font file (48KB) can be cut to the Latin range, and remove the failing preload on `/projects`
+**Expected scope**: merge both PRs, close #395, confirm a visit in Umami Realtime, then look at the two shared script chunks (62KB and 51KB)
 
 ## 📚 Key Reference Documents
 
-- Issue #395 (duplicate font and image downloads), issue #429, PR #433 (merged), issue #397 (layout swap on project pages)
-- `src/components/desktop/Project/DesktopImageCarousel.tsx`, `src/app/project/[slug]/page.tsx`, `src/styles/desktop/project.css`
-- `src/utils/gallery-images.ts`, `src/app/page.tsx`
+- Issue #395, issue #429, PRs #434 and #436 (merged), PRs #437 and #438 (draft), issue #397 (layout swap on project pages)
+- `src/components/server/GalleryImagePreloads.tsx`, `src/utils/gallery-images.ts`, `src/app/page.tsx`, `src/app/projects/page.tsx`
+- `public/fonts/inter-400.woff2`, `src/styles/critical/critical.css` (the two `@font-face` rules)
+- `src/components/desktop/Project/DesktopImageCarousel.tsx`, `src/styles/desktop/project.css`
 - `lighthouserc.js`, `.github/workflows/lighthouse-ci.yml`
-
----
-
-# Parallel Session Handoff: Issue #435 - Umami analytics back on
-
-Appended rather than merged into the sections above: this work ran in parallel with the performance work on
-`perf/issue-395-project-lcp-image`, which rewrites those sections.
-
-**Date**: 2026-11-14
-**Issue**: #435 - feat: turn Umami analytics back on without letting it affect the page
-**PR**: #436 merged to master as `d6414a6`
-**Branch**: feat/issue-435-reenable-umami-analytics (worktree at `../textile-showcase-analytics`)
-
-## ✅ Completed Work (#435)
-
-- Removed the #263 hotfix in `src/app/components/analytics-provider.tsx`. The Umami script is added only when
-  `NEXT_PUBLIC_UMAMI_URL` and `NEXT_PUBLIC_UMAMI_WEBSITE_ID` are both set in a production build, after the window
-  `load` event and in idle time, once, with the CSP nonce.
-- `src/utils/analytics.ts`: `trackEvent` contains exceptions and rejected sends. It is called ahead of navigation in
-  click handlers and effects, so a throwing tracker used to stop the navigation behind it.
-  `src/lib/web-vitals.ts` reports through `trackEvent`.
-- Tests written first: `tests/e2e/analytics-resilience.spec.ts` (reproduces #263 four ways, plus script tag and nonce),
-  `tests/integration/analytics-provider.test.tsx` (7 unskipped, 4 added, 1 tightened),
-  `tests/unit/utils/analytics.test.ts` (5 tests).
-- `.github/workflows/production-deploy.yml`: `ANALYTICS_ENABLED: 'true'`, comment cites #263.
-  `.github/workflows/e2e-tests.yml`: new `analytics-resilience` job (production build, placeholder website ID).
-  `playwright.config.ts`: no dev server is started when `E2E_BASE_URL` is set.
-
-## 🎯 State (#435)
-
-**Tests**: Jest 1290 passed, 16 skipped. The E2E spec passes 18 of 18 on Desktop Chrome and Mobile Chrome against a
-local production build; 9 of 9 failed before the change.
-**Branch**: clean, pushed
-**Agent validation**: not run. The agents named in CLAUDE.md were not available in the session; the PR stays a draft
-until Doctor Hubert decides whether to run them or review directly.
-
-## 🚀 Next Steps (#435)
-
-1. Check CI on PR #436. The `analytics-resilience` job has not run in CI yet: E2E jobs skip draft PRs.
-2. Review, mark ready, merge.
-3. After the deploy, open idaromme.dk in a browser without an ad blocker and confirm the visit under Realtime in Umami.
-   The production smoke tests mock the analytics host: they confirm the script tag and the CSP, not a recorded visit.
-
-Not done here:
-
-- A local `npm run build && npm start` with the real `.env.local` sends visits from localhost to Umami, as it did
-  before the hotfix. `data-domains` on the script tag would prevent that.
-- `tests/e2e/analytics-integration.spec.ts` only asserts when the script is present, so it asserts nothing against the
-  dev server. It could move to the production-build job.
-
-## 📝 Startup Prompt (#435)
-
-Read CLAUDE.md to understand our workflow, then continue from Issue #435 (Umami analytics back on, PR #436 open as draft).
-
-**Immediate priority**: get PR #436 through CI and merged, then verify a visit in Umami Realtime (under 1 hour)
-**Context**: the #263 hotfix is removed; four Umami failure modes are covered by tests that failed before the change
-**Reference docs**: SESSION_HANDOVER.md (this section), tests/e2e/analytics-resilience.spec.ts, issue #263
-**Ready state**: branch feat/issue-435-reenable-umami-analytics pushed and clean
-
-**Expected scope**: fix anything CI turns up in the new analytics-resilience job, merge, confirm tracking in production
+- #435 (Umami back on, merged in #436): `tests/e2e/analytics-resilience.spec.ts`, issue #263. Left open there:
+  `data-domains` on the script tag would stop local builds recording visits, and
+  `tests/e2e/analytics-integration.spec.ts` asserts nothing against the dev server
