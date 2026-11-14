@@ -2,7 +2,7 @@
 
 **Date**: 2026-11-14
 **Issue**: #388 - forced vendor chunking (closed); #395 - duplicate font and wasted LCP image downloads (open); #429 - LCP in CI Lighthouse (open)
-**PR**: #433 merged to master as `c8cac4e`; #390 closed as superseded; PR for `perf/issue-395-project-lcp-image` (draft)
+**PR**: #433 merged to master as `c8cac4e`; #390 closed as superseded; #434 - project page LCP image (draft)
 **Branch**: perf/issue-395-project-lcp-image
 
 ---
@@ -41,7 +41,7 @@
 
 **Tests**: ✅ full Jest suite passes locally (1,283 tests, 23 skipped), type-check and lint clean. E2E not run locally; CI runs it once the PR is marked ready
 **Branch**: ✅ clean, pushed
-**CI/CD**: 🔄 draft PR just opened; see the PR for the Lighthouse figures from CI
+**CI/CD**: 🔄 draft PR #434 opened; Lighthouse figures from CI not read yet
 
 **Not tested**: Firefox and Safari are not installed here. The project page change was checked in Playwright Chromium
 at 1440x900, 1350x940, 1024x700 and 390x844 (no layout shift on desktop, no console errors).
@@ -52,7 +52,7 @@ The named validation agents are not available in this environment and were not r
 
 ## 🚀 Next Session Priorities
 
-1. The draft PR for `perf/issue-395-project-lcp-image`: read the CI Lighthouse figures for the project page against
+1. Draft PR #434: read the CI Lighthouse figures for the project page against
    PR #433's (3.6s, 4.7s, 5.7s), mark ready so E2E runs, merge
 2. Next levers for LCP on every page, by weight counted before paint: the font (48KB; whether the file holds
    more than the Latin range the CSS declares was not checked, fontTools is not installed here), then the two shared
@@ -133,7 +133,7 @@ The named validation agents are not available in this environment and were not r
 
 ## 📝 Startup Prompt for Next Session
 
-Read CLAUDE.md to understand our workflow, then continue from Issue #395 (draft PR on `perf/issue-395-project-lcp-image`: project page LCP image at high priority and at its shown size; PR #433 merged, #390 closed).
+Read CLAUDE.md to understand our workflow, then continue from Issue #395 (draft PR #434: project page LCP image at high priority and at its shown size; PR #433 merged, #390 closed).
 
 **Immediate priority**: read the PR's CI Lighthouse figures, mark it ready so E2E runs, merge it (1 hour)
 **Context**: local medians stayed at 3.5-3.6s while the spread narrowed to 3.2-3.7s; about 300KB is still counted before paint, half of it scripts
