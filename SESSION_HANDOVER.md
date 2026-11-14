@@ -34,6 +34,10 @@
   The medians did not move. The spread narrowed: the worst run dropped by 0.6s to 0.8s, and on the landscape page the
   best run rose because the image is now requested at the width it is shown (it was upscaled before). What is counted
   before paint is now about 290KB to 310KB: document 20KB, font 48KB, LCP image 61-86KB, CSS 14KB, scripts 144KB.
+- **CI Lighthouse on PR #434** (run 43595519010), project page `what-if-the-future-is-made-of-salt`, three runs,
+  against the last run on PR #433: 4.90s, 3.43s, 3.42s against 4.42s, 3.80s, 3.80s. The two warm runs are 0.37s
+  lower; the first run is slow in both because CI starts with an empty image cache. Layout shift in the first run
+  went from 0.019 to 0. The other pages are unchanged (`/` 3.7s, `/about` 2.6s, `/contact` 2.8s).
 - A side effect on phones: the server renders the desktop layout first (#397), and its main image is now requested
   128px wide there instead of 640px before the layout swap.
 
@@ -41,7 +45,7 @@
 
 **Tests**: ✅ full Jest suite passes locally (1,283 tests, 23 skipped), type-check and lint clean. E2E not run locally; CI runs it once the PR is marked ready
 **Branch**: ✅ clean, pushed
-**CI/CD**: 🔄 draft PR #434 opened; Lighthouse figures from CI not read yet
+**CI/CD**: ✅ PR #434 (draft): Jest, Lighthouse audit, bundle size pass. E2E only runs once the PR is marked ready
 
 **Not tested**: Firefox and Safari are not installed here. The project page change was checked in Playwright Chromium
 at 1440x900, 1350x940, 1024x700 and 390x844 (no layout shift on desktop, no console errors).
@@ -52,8 +56,7 @@ The named validation agents are not available in this environment and were not r
 
 ## 🚀 Next Session Priorities
 
-1. Draft PR #434: read the CI Lighthouse figures for the project page against
-   PR #433's (3.6s, 4.7s, 5.7s), mark ready so E2E runs, merge
+1. Draft PR #434: mark ready so E2E runs (not within a second of a push, see carry-forward notes), then merge
 2. Next levers for LCP on every page, by weight counted before paint: the font (48KB; whether the file holds
    more than the Latin range the CSS declares was not checked, fontTools is not installed here), then the two shared
    script chunks (62KB and 51KB)
@@ -88,6 +91,8 @@ The named validation agents are not available in this environment and were not r
   they serve the old page HTML, so check the port before measuring (this session used 3111).
 - A rebuild keeps `.next/cache/images`, but an image width that was never requested is generated on first request
   (1.3s to 1.5s here). Request each page once before measuring, or the first Lighthouse run is an outlier.
+- The CI Lighthouse figures per run are in the bot's "Lighthouse Performance Report" comment on the PR. GitHub's
+  storage host for artifacts and job logs timed out from this machine on 2026-11-14.
 - `gh` here is 2.4.0: no `gh pr checks --watch`, no `gh run list --branch`. Use `gh api repos/.../actions/runs`.
 - Pushing and marking a PR ready within a second of each other cancels the E2E run for the "ready" event; re-run it
   with `gh api -X POST repos/maxrantil/textile-showcase/actions/runs/<id>/rerun`.
@@ -135,8 +140,8 @@ The named validation agents are not available in this environment and were not r
 
 Read CLAUDE.md to understand our workflow, then continue from Issue #395 (draft PR #434: project page LCP image at high priority and at its shown size; PR #433 merged, #390 closed).
 
-**Immediate priority**: read the PR's CI Lighthouse figures, mark it ready so E2E runs, merge it (1 hour)
-**Context**: local medians stayed at 3.5-3.6s while the spread narrowed to 3.2-3.7s; about 300KB is still counted before paint, half of it scripts
+**Immediate priority**: mark PR #434 ready so E2E runs, merge it (1 hour)
+**Context**: CI LCP on the project page went from 3.8s to 3.4s in warm runs (first run 4.9s on a cold image cache); about 300KB is still counted before paint, half of it scripts
 **Reference docs**: SESSION_HANDOVER.md, issues #395 and #429, `src/components/desktop/Project/DesktopImageCarousel.tsx`, lighthouserc.js
 **Ready state**: branch perf/issue-395-project-lcp-image pushed and clean; master at `c8cac4e` with PR #433 merged
 
