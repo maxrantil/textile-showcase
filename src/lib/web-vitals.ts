@@ -2,6 +2,7 @@
 // Issue #41: Performance Excellence - tracks LCP, FID, CLS, FCP, TTFB
 
 import type { Metric } from 'web-vitals'
+import { trackEvent } from '@/utils/analytics'
 
 export interface WebVitalsMetric {
   name: string
@@ -46,14 +47,10 @@ function flushMetricsQueue(): void {
     return
   }
 
-  const umami = window.umami as {
-    track: (event: string, data?: Record<string, unknown>) => void
-  }
-
   // Flush all queued metrics
   while (metricsQueue.length > 0) {
     const queuedMetric = metricsQueue.shift()!
-    umami.track('web-vital', {
+    trackEvent('web-vital', {
       metric: queuedMetric.name,
       value: Math.round(queuedMetric.value),
       rating: queuedMetric.rating,
@@ -74,15 +71,11 @@ function flushMetricsQueue(): void {
 function reportToAnalytics(metric: WebVitalsMetric): void {
   // Report to Umami if available
   if (typeof window !== 'undefined' && 'umami' in window) {
-    const umami = window.umami as {
-      track: (event: string, data?: Record<string, unknown>) => void
-    }
-
     // Flush any queued metrics first
     flushMetricsQueue()
 
     // Report current metric
-    umami.track('web-vital', {
+    trackEvent('web-vital', {
       metric: metric.name,
       value: Math.round(metric.value),
       rating: metric.rating,

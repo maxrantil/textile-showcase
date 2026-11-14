@@ -107,3 +107,73 @@ jobs:
             test-results/**/*.webm
             test-results/**/*.zip
           retention-days: 7
+
+  # Issue #263 regression: the Umami script is only added in a production build
+  # with analytics configured, which the dev server used by the job above is not.
+  # The tests intercept every request to the analytics host, so nothing reaches
+  # the real Umami; the website ID is a placeholder.
+  analytics-resilience:
+    name: Umami failure isolation (production build)
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    if: |
+      github.actor != 'dependabot[bot]' && (
+        github.event.pull_request.draft == false ||
+        contains(github.event.pull_request.labels.*.name, 'test-e2e')
+      )
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_SANITY_PROJECT_ID }}
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: 2023-05-03
+      NEXT_PUBLIC_UMAMI_URL: https://analytics.idaromme.dk
+      NEXT_PUBLIC_UMAMI_WEBSITE_ID: 00000000-0000-0000-0000-000000000000
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Build for production with analytics configured
+        run: npm run build
+
+      - name: Start production server
+        run: |
+          PORT=3000 npm start > server.log 2>&1 &
+          for attempt in $(seq 1 60); do
+            if curl --silent --fail --output /dev/null http://localhost:3000/; then
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Server did not start within 60 seconds"
+          cat server.log
+          exit 1
+
+      - name: Run analytics resilience tests
+        run: npx playwright test tests/e2e/analytics-resilience.spec.ts --project="Desktop Chrome" --project="Mobile Chrome"
+        env:
+          CI: true
+          ANALYTICS_BUILD: 'true'
+          E2E_BASE_URL: http://localhost:3000
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results-analytics-resilience
+          path: |
+            test-results/
+            playwright-report/
+            server.log
+          retention-days: 7

@@ -8,14 +8,27 @@ interface AnalyticsData {
 declare global {
   interface Window {
     umami?: {
-      track: (event: string, data?: AnalyticsData) => void
+      // Umami's tracker returns a promise for the send request
+      track: (event: string, data?: AnalyticsData) => unknown
     }
   }
 }
 
+// Tracking is called from click handlers and effects, ahead of the work that
+// matters (navigation, form submission). It must never throw or reject into
+// its caller, whatever state the tracker is in (Issue #263).
 export function trackEvent(eventName: string, data?: AnalyticsData) {
-  if (typeof window !== 'undefined' && window.umami) {
-    window.umami.track(eventName, data)
+  if (typeof window === 'undefined' || !window.umami) {
+    return
+  }
+
+  try {
+    const sent = window.umami.track(eventName, data)
+    if (sent instanceof Promise) {
+      sent.catch(() => {})
+    }
+  } catch {
+    // A broken tracker loses the event, nothing else
   }
 }
 

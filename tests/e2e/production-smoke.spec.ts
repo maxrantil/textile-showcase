@@ -19,9 +19,8 @@ const shouldRunProductionTests =
   !process.env.CI
 
 // Skip analytics tests unless analytics is explicitly enabled.
-// Analytics is currently disabled via hotfix (Issue #262: server down).
-// Set ANALYTICS_ENABLED=true in CI when analytics.idaromme.dk is restored
-// and the early-return hotfix in analytics-provider.tsx is removed.
+// production-deploy.yml sets ANALYTICS_ENABLED=true; the Issue #263 hotfix
+// that kept the script from loading is removed (Issue #435).
 const analyticsEnabled = process.env.ANALYTICS_ENABLED === 'true'
 
 test.describe('Production Smoke Tests', () => {
@@ -178,7 +177,7 @@ test.describe('Production Smoke Tests', () => {
   })
 
   test.describe('Production Analytics Script Loading', () => {
-    test.skip(!analyticsEnabled, 'Analytics disabled (Issue #262) - set ANALYTICS_ENABLED=true to run')
+    test.skip(!analyticsEnabled, 'Analytics tests not enabled - set ANALYTICS_ENABLED=true to run')
 
     test('should load analytics script without CSP violations', async ({
       page,
@@ -324,7 +323,7 @@ test.describe('Production Smoke Tests', () => {
   })
 
   test.describe('Production Analytics Functionality', () => {
-    test.skip(!analyticsEnabled, 'Analytics disabled (Issue #262) - set ANALYTICS_ENABLED=true to run')
+    test.skip(!analyticsEnabled, 'Analytics tests not enabled - set ANALYTICS_ENABLED=true to run')
 
     test('should track page views on production', async ({ page }) => {
       // Note: This test verifies analytics loads but doesn't verify dashboard

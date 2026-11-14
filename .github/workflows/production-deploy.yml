@@ -279,9 +279,9 @@ jobs:
           NEXT_PUBLIC_SANITY_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_SANITY_PROJECT_ID }}
           NEXT_PUBLIC_SANITY_DATASET: production
           NEXT_PUBLIC_SANITY_API_VERSION: 2023-05-03
-          # Analytics disabled: analytics.idaromme.dk server down (Issue #262).
-          # Set to 'true' when server is restored and hotfix in analytics-provider.tsx is removed.
-          ANALYTICS_ENABLED: 'false'
+          # Analytics is on again: the Issue #263 hotfix in analytics-provider.tsx is removed (Issue #435).
+          # Set to 'false' to skip the analytics smoke tests if analytics is ever turned off.
+          ANALYTICS_ENABLED: 'true'
         run: npx playwright test tests/e2e/production-smoke.spec.ts --project="Desktop Chrome" --project="Desktop Firefox"
       - name: Upload test results on failure
         if: failure()
