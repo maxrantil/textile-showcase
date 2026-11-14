@@ -156,3 +156,63 @@ Read CLAUDE.md to understand our workflow, then continue from Issue #388 (draft 
 - Issue #388 and PR #433, PR #431 (merged), issue #429, issue #395 (duplicate font and image downloads), issue #397 (layout swap on project pages)
 - `src/utils/gallery-images.ts`, `src/app/page.tsx`
 - `lighthouserc.js`, `.github/workflows/lighthouse-ci.yml`
+
+---
+
+# Parallel Session Handoff: Issue #435 - Umami analytics back on
+
+Appended rather than merged into the sections above: this work ran in parallel with the performance work on
+`perf/issue-395-project-lcp-image`, which rewrites those sections.
+
+**Date**: 2026-11-14
+**Issue**: #435 - feat: turn Umami analytics back on without letting it affect the page
+**PR**: #436 (draft)
+**Branch**: feat/issue-435-reenable-umami-analytics (worktree at `../textile-showcase-analytics`)
+
+## ✅ Completed Work (#435)
+
+- Removed the #263 hotfix in `src/app/components/analytics-provider.tsx`. The Umami script is added only when
+  `NEXT_PUBLIC_UMAMI_URL` and `NEXT_PUBLIC_UMAMI_WEBSITE_ID` are both set in a production build, after the window
+  `load` event and in idle time, once, with the CSP nonce.
+- `src/utils/analytics.ts`: `trackEvent` contains exceptions and rejected sends. It is called ahead of navigation in
+  click handlers and effects, so a throwing tracker used to stop the navigation behind it.
+  `src/lib/web-vitals.ts` reports through `trackEvent`.
+- Tests written first: `tests/e2e/analytics-resilience.spec.ts` (reproduces #263 four ways, plus script tag and nonce),
+  `tests/integration/analytics-provider.test.tsx` (7 unskipped, 4 added, 1 tightened),
+  `tests/unit/utils/analytics.test.ts` (5 tests).
+- `.github/workflows/production-deploy.yml`: `ANALYTICS_ENABLED: 'true'`, comment cites #263.
+  `.github/workflows/e2e-tests.yml`: new `analytics-resilience` job (production build, placeholder website ID).
+  `playwright.config.ts`: no dev server is started when `E2E_BASE_URL` is set.
+
+## 🎯 State (#435)
+
+**Tests**: Jest 1290 passed, 16 skipped. The E2E spec passes 18 of 18 on Desktop Chrome and Mobile Chrome against a
+local production build; 9 of 9 failed before the change.
+**Branch**: clean, pushed
+**Agent validation**: not run. The agents named in CLAUDE.md were not available in the session; the PR stays a draft
+until Doctor Hubert decides whether to run them or review directly.
+
+## 🚀 Next Steps (#435)
+
+1. Check CI on PR #436. The `analytics-resilience` job has not run in CI yet: E2E jobs skip draft PRs.
+2. Review, mark ready, merge.
+3. After the deploy, open idaromme.dk in a browser without an ad blocker and confirm the visit under Realtime in Umami.
+   The production smoke tests mock the analytics host: they confirm the script tag and the CSP, not a recorded visit.
+
+Not done here:
+
+- A local `npm run build && npm start` with the real `.env.local` sends visits from localhost to Umami, as it did
+  before the hotfix. `data-domains` on the script tag would prevent that.
+- `tests/e2e/analytics-integration.spec.ts` only asserts when the script is present, so it asserts nothing against the
+  dev server. It could move to the production-build job.
+
+## 📝 Startup Prompt (#435)
+
+Read CLAUDE.md to understand our workflow, then continue from Issue #435 (Umami analytics back on, PR #436 open as draft).
+
+**Immediate priority**: get PR #436 through CI and merged, then verify a visit in Umami Realtime (under 1 hour)
+**Context**: the #263 hotfix is removed; four Umami failure modes are covered by tests that failed before the change
+**Reference docs**: SESSION_HANDOVER.md (this section), tests/e2e/analytics-resilience.spec.ts, issue #263
+**Ready state**: branch feat/issue-435-reenable-umami-analytics pushed and clean
+
+**Expected scope**: fix anything CI turns up in the new analytics-resilience job, merge, confirm tracking in production
