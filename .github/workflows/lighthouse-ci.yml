@@ -15,7 +15,7 @@ on:
       - 'utils/**'
       - 'package.json'
       - 'package-lock.json'
-      - 'next.config.js'
+      - 'next.config.ts'
       - 'lighthouserc.js'
   push:
     branches: [master]
@@ -28,7 +28,7 @@ on:
       - 'utils/**'
       - 'package.json'
       - 'package-lock.json'
-      - 'next.config.js'
+      - 'next.config.ts'
       - 'lighthouserc.js'
 
 # Limit concurrent runs to prevent resource conflicts
