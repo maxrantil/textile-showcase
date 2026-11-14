@@ -28,6 +28,15 @@ describe('self-hosted fonts', () => {
     expect(duplicates).toEqual([])
   })
 
+  // The file is a variable font. The CSS declares weights 400 and 500 only, so
+  // the file carries the weight axis from 400 to 500 and no more. A full 100 to
+  // 900 axis is about 48KB, and the font is downloaded ahead of first paint
+  it('keeps the preloaded font within the size of a 400 to 500 weight axis', () => {
+    const { size } = statSync(path.join(FONTS_DIR, 'inter-400.woff2'))
+
+    expect(size).toBeLessThanOrEqual(36 * 1024)
+  })
+
   it('only preloads font files that exist', () => {
     const layout = readFileSync(
       path.join(process.cwd(), 'src/app/layout.tsx'),
