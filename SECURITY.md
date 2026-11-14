@@ -96,7 +96,7 @@ For detailed security implementation and deployment guidelines:
 ### Content Security Policy (CSP)
 
 **Implementation:** Nonce-based strict CSP for scripts, permissive CSP for styles
-**Location:** `middleware.ts:203-230`
+**Location:** `src/proxy.ts` (the `cspDirectives` block)
 **Security Risk Score:** 7.5/10 (Good - Industry Standard)
 
 #### CSP Directives
