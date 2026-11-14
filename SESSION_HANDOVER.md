@@ -1,76 +1,54 @@
-# Session Handoff: Issue #429 - LCP spread explained, per-route JavaScript (#388)
+# Session Handoff: Issue #388 merged, project page LCP image (#395, #429)
 
 **Date**: 2026-11-14
-**Issue**: #429 - perf: home page LCP is 5-10s in CI Lighthouse while FCP is 1.1s (open); #388 - forced vendor chunking
-**PR**: #431 merged to master as `9c53155`; #433 - perf: remove forced vendor chunking (draft)
-**Branch**: perf/issue-388-route-chunks
+**Issue**: #388 - forced vendor chunking (closed); #395 - duplicate font and wasted LCP image downloads (open); #429 - LCP in CI Lighthouse (open)
+**PR**: #433 merged to master as `c8cac4e`; #390 closed as superseded; #434 - project page LCP image (draft)
+**Branch**: perf/issue-395-project-lcp-image
 
 ---
 
 ## ✅ Completed This Session
 
-- **PR #431 merged** (squash, `9c53155`) after the E2E suite passed on Desktop Chrome, Mobile Chrome and Safari smoke.
-  PR #430 closed as superseded.
-- **The LCP spread is explained.** It is produced by Lighthouse's network simulation, not by the pages:
-  - In the 12 CI runs of PR #431 every run of a page made the same requests with the same sizes. The browser painted
-    the LCP element at 0.11s to 0.24s in 10 of the 12 runs.
-  - Lighthouse then replays, at 1.6 Mbps, the requests that had finished before that paint. On localhost the 43 script
-    chunks (541KB) finish within the same 0.1s to 0.2s, so a paint 60ms later counts several hundred KB more.
-  - `/contact` in CI: 151KB finished before paint gave 2.8s, 305KB gave 3.7s, 493KB gave 6.4s. `/about`: 150KB 2.7s,
-    301KB 3.8s, 418KB 5.5s. Home and the project page follow the same order.
-  - The upper end of the spread is therefore the page weight: 663KB on `/contact`, 847KB on home.
-- **The chunking change from draft PR #390 tested on its own**, on top of master (local production build, CI Lighthouse
-  settings, 5 runs per page, before and after):
+- **PR #433 merged** (squash, `c8cac4e`): per-route JavaScript 541KB to about 140KB. Before the merge the pages were
+  checked in Playwright Chromium against a production build at 1440px and 390px (all pages hydrate with 8 to 12
+  scripts, gallery, project, menu, contact form typing and browser back work, every navigation stays client-side),
+  and the E2E suite passed on Desktop Chrome, Mobile Chrome and Safari smoke.
+- **PR #390 closed** as superseded. Its branch `perf/reduce-client-js` is kept: it still holds the per-route
+  JavaScript budget check (`scripts/route-js-budget.mjs`), not brought over.
+- **Project page, first image** (`perf/issue-395-project-lcp-image`, commit `771a927`):
+  - The desktop carousel's main image is the LCP element. It was fetched at low priority: in Next 16.1.6 the
+    `priority` prop adds a preload but no `fetchpriority`. It now carries `fetchPriority="high"`.
+  - `sizes` was a fixed 800px, so every image was requested 828px wide: too large for a portrait image shown 493px
+    wide, too small for a landscape one shown 1070px wide. `sizes`, `width` and `height` now come from the asset's
+    own dimensions and mirror `.desktop-project-img` in `src/styles/desktop/project.css`.
+  - The neighbouring images are fetched after the first main image has loaded, with the same `sizes`, so stepping
+    to the next image reuses that request (checked in the browser: no new request for the shown image).
+  - The page no longer preloads the cover image, which neither layout shows first and which failed on CORS.
+- **Measured** (local production build on top of `c8cac4e`, CI Lighthouse settings, 5 runs per page, warm image cache):
 
-  | | JavaScript | Page weight | Time to interactive | LCP range (median) |
+  | | LCP image | Before paint also | LCP before | LCP after |
   |---|---|---|---|---|
-  | `/contact` before | 541KB, 43 scripts | 663KB | 8.0-8.5s | 1.7-2.9s (2.2s) |
-  | `/contact` after | 136KB, 10 scripts | 257KB | 3.2-3.7s | 1.6-2.9s (2.3s) |
-  | `/` before | 541KB, 43 scripts | 814KB | 5.9-9.0s | 2.3-5.4s (4.3s) |
-  | `/` after | 141KB, 11 scripts | 413KB | 3.4-3.7s | 2.9-4.3s (3.5s) |
+  | `composing-tones` (portrait) | 121KB low priority, now 86KB high | next image 41KB, now after paint | 3.0-4.5s (median 3.65s) | 3.2-3.7s (median 3.55s) |
+  | `what-if-the-future-is-made-of-salt` (landscape) | 41KB at 828px, now 61KB at 1080px | | 2.8-4.3s (median 3.45s) | 3.4-3.7s (median 3.62s) |
 
-  This machine paints later than the CI runner (0.2s to 0.5s), so the local `/contact` runs never reached the slow end
-  seen in CI and its LCP range did not move. On home the worst run dropped from 5.4s to 4.3s. The change lowers the
-  ceiling; it does not remove the run-to-run variation locally.
-- **CI Lighthouse on PR #433** (run 43569766855), three runs per page, against PR #431's run:
-
-  | | PR #431 | PR #433 |
-  |---|---|---|
-  | `/contact` | 2.8s, 3.7s, 6.4s | 2.80s, 2.81s, 2.81s |
-  | `/about` | 2.7s, 3.8s, 5.5s | 2.65s, 2.65s, 2.66s |
-  | `/` | 4.2s, 6.0s, 8.4s | 3.7s, 3.7s, 5.2s |
-  | project page | 2.7s, 6.3s, 6.5s | 3.6s, 4.7s, 5.7s |
-
-  The spread on the text pages is gone: all of each page's 10 or so scripts now finish before paint in every run, so
-  the same weight is counted each time. Time to interactive went from about 7.4s to 2.7s. The slow home and project runs
-  (5.2s, 5.7s) are the first run of each, where the server took 0.3s to 0.4s to answer and paint came at 0.8s.
-- `.github/workflows/lighthouse-ci.yml` listed `next.config.js` in its path filter; the file is `next.config.ts`, so a
-  config-only change skipped the Lighthouse audit. Fixed in PR #433.
-- **Decision on #390**: its chunking commit is the right change, but the PR carries 17 commits stacked on #386 and #387
-  and conflicts with master. The one commit is now on `perf/issue-388-route-chunks` from master (`next.config.ts` and
-  two tests). #390 still holds the per-route JavaScript budget check (`scripts/route-js-budget.mjs`), not brought over.
+  The medians did not move. The spread narrowed: the worst run dropped by 0.6s to 0.8s, and on the landscape page the
+  best run rose because the image is now requested at the width it is shown (it was upscaled before). What is counted
+  before paint is now about 290KB to 310KB: document 20KB, font 48KB, LCP image 61-86KB, CSS 14KB, scripts 144KB.
+- **CI Lighthouse on PR #434** (run 43595519010), project page `what-if-the-future-is-made-of-salt`, three runs,
+  against the last run on PR #433: 4.90s, 3.43s, 3.42s against 4.42s, 3.80s, 3.80s. The two warm runs are 0.37s
+  lower; the first run is slow in both because CI starts with an empty image cache. Layout shift in the first run
+  went from 0.019 to 0. The other pages are unchanged (`/` 3.7s, `/about` 2.6s, `/contact` 2.8s).
+- A side effect on phones: the server renders the desktop layout first (#397), and its main image is now requested
+  128px wide there instead of 640px before the layout swap.
 
 ## 🎯 Current Project State
 
-**Tests**: ✅ the two changed suites pass (16 tests), type-check clean. Full Jest and E2E not run locally on this branch; CI runs them
+**Tests**: ✅ full Jest suite passes locally (1,283 tests, 23 skipped), type-check and lint clean. E2E not run locally; CI runs it once the PR is marked ready
 **Branch**: ✅ clean, pushed
-**CI/CD**: ✅ PR #433 (draft): Jest, Lighthouse audit, bundle size pass. E2E only runs once the PR is marked ready
+**CI/CD**: ✅ PR #434 (draft): Jest, Lighthouse audit, bundle size pass. E2E only runs once the PR is marked ready
 
-**Checked in a browser** (Playwright Chromium against a production build of this branch, 1440px and 390px with touch):
-`/`, `/about`, `/contact`, `/projects`, two project pages and the 404 page all load and hydrate with 8 to 12 scripts
-and no script errors. Gallery to project page, next image, the header and phone menu links, typing in the contact
-form with its email validation, "Show email", the arrow key on the desktop gallery and browser back all work, and
-every one of those navigations stayed client-side (one document load per session). The contact form was not submitted.
-
-**Not tested**: Firefox and Safari are not installed here.
-
-**Seen during the check, already on master and on the live site, not changed here**:
-- `/projects` and the project pages preload a Sanity image with `crossorigin="anonymous"`; the CDN sends no CORS
-  header for it, so the preload fails with a console error and the image is fetched again without CORS.
-- The project pages preload the first home gallery image (`300a68a5...jpg?w=800&q=80&fm=webp`), which the page
-  does not show. Both belong with #395 task 3.
-- A `next start` from an earlier session may still be listening on ports 3001, 3100 and 3101. After a rebuild it
-  serves the old page HTML (44 scripts), so check the port before measuring.
+**Not tested**: Firefox and Safari are not installed here. The project page change was checked in Playwright Chromium
+at 1440x900, 1350x940, 1024x700 and 390x844 (no layout shift on desktop, no console errors).
 
 ### Agent Validation Status
 
@@ -78,14 +56,18 @@ The named validation agents are not available in this environment and were not r
 
 ## 🚀 Next Session Priorities
 
-1. PR #433: check the pages by hand at desktop and phone widths, mark ready (starts E2E), then merge
-2. Close #390 once #388 is merged; decide whether to bring over its route JavaScript budget check as its own PR
-3. Home LCP is now 3.7s in CI with about 250KB of images and fonts counted before paint, and the project page 3.6s to
-   4.7s. Next lever is the image weight ahead of the LCP image (#429, #395 task 3)
-4. LCP threshold in `lighthouserc.js` (last task of #429): draft PR #402 sets 2.5s; decide once CI shows the figure
-5. Project page LCP: #395 task 3 and #397
-6. Real iPhone check of `/contact`: tap the name field straight after load and type
-7. The older draft PRs (#386 to #405) mostly conflict with master and need a decision: rebase or close. #396 overlaps
+1. Draft PR #434: mark ready so E2E runs (not within a second of a push, see carry-forward notes), then merge
+2. Next levers for LCP on every page, by weight counted before paint: the font (48KB; whether the file holds
+   more than the Latin range the CSS declares was not checked, fontTools is not installed here), then the two shared
+   script chunks (62KB and 51KB)
+3. `/projects` still preloads a Sanity image with `crossorigin="anonymous"`; the CDN sends no CORS header for it, so
+   the preload fails in a normal browser and the image is fetched twice (#395)
+4. Home LCP 3.7s in CI: about 100KB of gallery images ahead of paint, plus three lazy ones (65KB) that start at
+   hydration
+5. LCP threshold in `lighthouserc.js` (last task of #429): draft PR #402 sets 2.5s; decide once CI shows the figure
+6. Project page layout swap on phones: #397
+7. Real iPhone check of `/contact`: tap the name field straight after load and type
+8. The older draft PRs (#386 to #405) mostly conflict with master and need a decision: rebase or close. #396 overlaps
    with #431
 
 ### Possible follow-up
@@ -102,6 +84,20 @@ The named validation agents are not available in this environment and were not r
   steps to the last one.
 
 ### Carry-forward notes
+
+- CI's Lighthouse runs Chrome with `--disable-web-security`, so a preload that fails on CORS in a normal browser
+  succeeds there and its bytes are counted.
+- `next start` processes from earlier sessions may still be listening on ports 3001, 3100 and 3101. After a rebuild
+  they serve the old page HTML, so check the port before measuring (this session used 3111).
+- A rebuild keeps `.next/cache/images`, but an image width that was never requested is generated on first request
+  (1.3s to 1.5s here). Request each page once before measuring, or the first Lighthouse run is an outlier.
+- The CI Lighthouse figures per run are in the bot's "Lighthouse Performance Report" comment on the PR. GitHub's
+  storage host for artifacts and job logs timed out from this machine on 2026-11-14.
+- `gh` here is 2.4.0: no `gh pr checks --watch`, no `gh run list --branch`. Use `gh api repos/.../actions/runs`.
+- Pushing and marking a PR ready within a second of each other cancels the E2E run for the "ready" event; re-run it
+  with `gh api -X POST repos/maxrantil/textile-showcase/actions/runs/<id>/rerun`.
+- The carousel's `sizes` in `DesktopImageCarousel.tsx` repeats the 200px and 280px from `.desktop-project-img` in
+  `src/styles/desktop/project.css`; they must stay in step.
 
 - CI workflows only run on PRs that target master. For a stacked PR: merge master into its branch, retarget it to master,
   then mark it ready. A retarget of an already-ready PR without a new push skips Jest and the Lighthouse audit.
@@ -142,18 +138,19 @@ The named validation agents are not available in this environment and were not r
 
 ## 📝 Startup Prompt for Next Session
 
-Read CLAUDE.md to understand our workflow, then continue from Issue #388 (draft PR #433: per-route JavaScript 541KB to about 140KB; CI LCP on `/contact` and `/about` now 2.7-2.8s in every run).
+Read CLAUDE.md to understand our workflow, then continue from Issue #395 (draft PR #434: project page LCP image at high priority and at its shown size; PR #433 merged, #390 closed).
 
-**Immediate priority**: check pages by hand, mark PR #433 ready so E2E runs, merge it, then close #390 (1-2 hours)
-**Context**: the 3s-9s LCP spread comes from Lighthouse replaying whatever finished before paint at 1.6 Mbps; less JavaScript lowers the ceiling
-**Reference docs**: SESSION_HANDOVER.md, PR #433, issue #429, draft PR #390, lighthouserc.js
-**Ready state**: branch perf/issue-388-route-chunks pushed and clean; master at `9c53155` with PR #431 merged
+**Immediate priority**: mark PR #434 ready so E2E runs, merge it (1 hour)
+**Context**: CI LCP on the project page went from 3.8s to 3.4s in warm runs (first run 4.9s on a cold image cache); about 300KB is still counted before paint, half of it scripts
+**Reference docs**: SESSION_HANDOVER.md, issues #395 and #429, `src/components/desktop/Project/DesktopImageCarousel.tsx`, lighthouserc.js
+**Ready state**: branch perf/issue-395-project-lcp-image pushed and clean; master at `c8cac4e` with PR #433 merged
 
-**Expected scope**: merge #433, then cut the image weight ahead of the LCP image on home (3.7s) and the project page (3.6-4.7s)
+**Expected scope**: merge the project page PR, then check whether the font file (48KB) can be cut to the Latin range, and remove the failing preload on `/projects`
 
 ## 📚 Key Reference Documents
 
-- Issue #388 and PR #433, PR #431 (merged), issue #429, issue #395 (duplicate font and image downloads), issue #397 (layout swap on project pages)
+- Issue #395 (duplicate font and image downloads), issue #429, PR #433 (merged), issue #397 (layout swap on project pages)
+- `src/components/desktop/Project/DesktopImageCarousel.tsx`, `src/app/project/[slug]/page.tsx`, `src/styles/desktop/project.css`
 - `src/utils/gallery-images.ts`, `src/app/page.tsx`
 - `lighthouserc.js`, `.github/workflows/lighthouse-ci.yml`
 
@@ -166,7 +163,7 @@ Appended rather than merged into the sections above: this work ran in parallel w
 
 **Date**: 2026-11-14
 **Issue**: #435 - feat: turn Umami analytics back on without letting it affect the page
-**PR**: #436 (draft)
+**PR**: #436 merged to master as `d6414a6`
 **Branch**: feat/issue-435-reenable-umami-analytics (worktree at `../textile-showcase-analytics`)
 
 ## ✅ Completed Work (#435)
