@@ -56,8 +56,21 @@
 **Branch**: ✅ clean, pushed
 **CI/CD**: ✅ PR #433 (draft): Jest, Lighthouse audit, bundle size pass. E2E only runs once the PR is marked ready
 
-**Not tested**: the chunking change in a browser by hand (PR #390 records a Chromium check of the same commit on its
-own base, at 1440px and 390px). Firefox and Safari not installed here.
+**Checked in a browser** (Playwright Chromium against a production build of this branch, 1440px and 390px with touch):
+`/`, `/about`, `/contact`, `/projects`, two project pages and the 404 page all load and hydrate with 8 to 12 scripts
+and no script errors. Gallery to project page, next image, the header and phone menu links, typing in the contact
+form with its email validation, "Show email", the arrow key on the desktop gallery and browser back all work, and
+every one of those navigations stayed client-side (one document load per session). The contact form was not submitted.
+
+**Not tested**: Firefox and Safari are not installed here.
+
+**Seen during the check, already on master and on the live site, not changed here**:
+- `/projects` and the project pages preload a Sanity image with `crossorigin="anonymous"`; the CDN sends no CORS
+  header for it, so the preload fails with a console error and the image is fetched again without CORS.
+- The project pages preload the first home gallery image (`300a68a5...jpg?w=800&q=80&fm=webp`), which the page
+  does not show. Both belong with #395 task 3.
+- A `next start` from an earlier session may still be listening on ports 3001, 3100 and 3101. After a rebuild it
+  serves the old page HTML (44 scripts), so check the port before measuring.
 
 ### Agent Validation Status
 
