@@ -28,7 +28,7 @@
     "@sanity/image-url": "^1.1.0",
     "critters": "^0.0.23",
     "next": "^16.4.6",
-    "next-sanity": "^11.6.12",
+    "next-sanity": "^13.4.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "react-is": "^19.3.1",
