@@ -1,13 +1,7 @@
 import { Metadata } from 'next'
 import Gallery from '@/components/adaptive/Gallery'
 import { TextileDesign } from '@/types/textile'
-import {
-  DESKTOP_EAGER_IMAGE_COUNT,
-  DESKTOP_GALLERY_MEDIA,
-  MOBILE_GALLERY_MEDIA,
-  desktopGalleryImage,
-  mobileGalleryImageUrl,
-} from '@/utils/gallery-images'
+import { GalleryImagePreloads } from '@/components/server/GalleryImagePreloads'
 import { generatePortfolioFAQSchema } from '@/app/metadata/faq-schema'
 
 // Enhanced metadata with structured data - optimized for search visibility
@@ -103,52 +97,13 @@ export default async function Home() {
   // EMERGENCY FIX: Move data fetching to server-side to eliminate TTI delays
   const designs = await getDesigns()
 
-  // Issue #363: Preload the phone LCP image via direct Sanity CDN URL.
-  // MobileGalleryItem uses unoptimized={isPriority} so the LCP <img> fetches the Sanity
-  // CDN URL directly — the preload href must match this URL exactly.
-  // Previously preloaded /_next/image proxy URLs (Issue #345) but proxy overhead
-  // added ~1.5–2s to CI LCP; the preload and the actual <img> src now match.
-  const lcpImageUrl = mobileGalleryImageUrl(designs[0])
-
-  // Issue #429: both galleries are in the HTML and CSS shows one of them. Each
-  // preload is scoped to the layout that shows its image, so a viewport never
-  // downloads the hidden gallery's images.
-  const desktopImages = designs
-    .slice(0, DESKTOP_EAGER_IMAGE_COUNT)
-    .map((design) => ({ id: design._id, ...desktopGalleryImage(design) }))
-
   return (
     <>
       {/* CRITICAL: Preconnect to Sanity CDN for faster image loading (Issue #94 Phase 2) */}
       <link rel="preconnect" href="https://cdn.sanity.io" />
       <link rel="dns-prefetch" href="https://cdn.sanity.io" />
 
-      {/* Issue #363: Preload LCP image directly from Sanity CDN — no /_next/image proxy.
-          MobileGalleryItem uses unoptimized={isPriority} so the src URL exactly matches
-          this href; the browser reuses the preloaded resource with no cache miss. */}
-      {lcpImageUrl && (
-        <link
-          rel="preload"
-          as="image"
-          href={lcpImageUrl}
-          media={MOBILE_GALLERY_MEDIA}
-          fetchPriority="high"
-        />
-      )}
-
-      {/* Issue #429: the two desktop images on screen at arrival, with the exact
-          srcset and sizes of their <img> so the preloaded response is reused */}
-      {desktopImages.map((image) => (
-        <link
-          key={image.id}
-          rel="preload"
-          as="image"
-          imageSrcSet={image.srcSet}
-          imageSizes={image.sizes}
-          media={DESKTOP_GALLERY_MEDIA}
-          fetchPriority="high"
-        />
-      ))}
+      <GalleryImagePreloads designs={designs} />
 
       {/* Structured data for SEO - Person schema */}
       <script

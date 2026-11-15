@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
 import Gallery from '@/components/adaptive/Gallery'
 import { TextileDesign } from '@/types/textile'
-import { getOptimizedImageUrl } from '@/utils/image-helpers'
+import { GalleryImagePreloads } from '@/components/server/GalleryImagePreloads'
 import { generateBreadcrumbSchema } from '@/app/metadata/breadcrumb-schema'
 
 // Enhanced metadata for projects page - optimized for portfolio discovery
@@ -91,48 +91,14 @@ export default async function ProjectsPage() {
   // Server-side data fetching to eliminate TTI delays
   const designs = await getDesigns()
 
-  // Get first design for FirstImage component
-  const firstDesign = designs[0]
-
-  // Generate preload URLs for LCP image using helper (webp - avif removed, Sanity 400s on ?fm=avif)
-  const imageSource = firstDesign?.image || firstDesign?.images?.[0]?.asset
-  const preloadUrl = imageSource
-    ? getOptimizedImageUrl(imageSource, {
-        width: 640,
-        quality: 40,
-        format: 'webp',
-      })
-    : null
-
-  const preloadSrcSet = imageSource
-    ? [
-        `${getOptimizedImageUrl(imageSource, { width: 480, quality: 40, format: 'webp' })} 480w`,
-        `${getOptimizedImageUrl(imageSource, { width: 640, quality: 40, format: 'webp' })} 640w`,
-        `${getOptimizedImageUrl(imageSource, { width: 960, quality: 40, format: 'webp' })} 960w`,
-      ].join(', ')
-    : null
-
   return (
     <>
       {/* CRITICAL: Preconnect to Sanity CDN for faster image loading */}
       <link rel="preconnect" href="https://cdn.sanity.io" />
       <link rel="dns-prefetch" href="https://cdn.sanity.io" />
 
-      {/* Preload LCP image for immediate browser discovery
-          Critical for Core Web Vitals - reduces Load Delay
-          Issue #41: imageSizes for LCP image preload */}
-      {preloadUrl && (
-        <link
-          rel="preload"
-          as="image"
-          href={preloadUrl}
-          imageSrcSet={preloadSrcSet || undefined}
-          imageSizes="(max-width: 480px) 100vw, (max-width: 768px) 90vw, 640px"
-          type="image/webp"
-          fetchPriority="high"
-          crossOrigin="anonymous"
-        />
-      )}
+      {/* The same galleries as home, so the same preloads (Issue #395) */}
+      <GalleryImagePreloads designs={designs} />
 
       {/* Breadcrumb structured data for rich snippets */}
       <script
