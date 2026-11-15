@@ -36,6 +36,8 @@ const config: Config = {
     '<rootDir>/tests/e2e/',
     '<rootDir>/tests/performance/bundle',
     '<rootDir>/__tests__/deployment/production-config',
+    // Vendored skill tests use node:test (run with `node --test`), not Jest
+    '<rootDir>/.claude/',
   ],
 }
 
