@@ -62,7 +62,7 @@
     "@types/react-dom": "^19",
     "@types/webpack": "^5.28.5",
     "eslint": "^9",
-    "eslint-config-next": "16.1.6",
+    "eslint-config-next": "^16.4.6",
     "glob": "^11.1.0",
     "jest": "^30.0.0",
     "jest-axe": "^10.0.0",
