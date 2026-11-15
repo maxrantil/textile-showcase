@@ -130,6 +130,36 @@ describe('GET /api/projects/[slug]', () => {
     jest.clearAllMocks()
   })
 
+  it.each([
+    ['path traversal', '../etc/passwd'],
+    ['whitespace', 'has space'],
+    ['quotes', 'a"b'],
+    ['too long', 'a'.repeat(201)],
+    ['empty', ''],
+  ])(
+    'should reject invalid slug (%s) with 400 without querying Sanity',
+    async (_, slug) => {
+      const request = createMockRequest({ method: 'GET' })
+      const response = await getProjectBySlug(request, {
+        params: Promise.resolve({ slug }),
+      })
+
+      expect(response.status).toBe(400)
+      expect(mockResilientFetch).not.toHaveBeenCalled()
+    }
+  )
+
+  it('should accept slugs containing Danish letters', async () => {
+    mockResilientFetch.mockResolvedValue(null)
+    const request = createMockRequest({ method: 'GET' })
+    const response = await getProjectBySlug(request, {
+      params: Promise.resolve({ slug: 'blå-tæppe_2024' }),
+    })
+
+    expect(response.status).toBe(404)
+    expect(mockResilientFetch).toHaveBeenCalled()
+  })
+
   it('should return project with navigation successfully', async () => {
     const mockProject = {
       _id: '1',

@@ -2,7 +2,7 @@
 
 **Date**: 2026-11-15
 **Issue**: #395, #429 (perf, open); #389, #397, #399, #404 (open, fixes in the Nov 6 stack)
-**PR**: #437, #438, #432, #403 merged; #439 combines the 14 Dependabot PRs; Nov 6 stack being re-landed
+**PR**: #437, #438, #432, #403, #439 (14 Dependabot bumps) merged; Nov 6 stack being re-landed, #386 first
 **Branch**: claude/hopeful-galileo-o7vj4m
 
 ---
@@ -12,9 +12,13 @@
 - **Merged (squash)**: #437 font weight axis 400-500 (`8043011`), #438 `/projects` gallery preloads (`edba094`),
   #432 docs `middleware.ts` → `src/proxy.ts` (`e82631d`), #403 Cloudflare security-audit skill (`06947d5`).
   #432's body footer tripped the "AI attribution in PR body" check and was removed before merging.
-- **#439**: the 14 Dependabot PRs (#369-#385) applied as one lockfile commit. All 14 merged onto master without
-  conflicts; locally `npm ci`, type-check, lint (0 errors) and Jest (1,305 passed) pass. The Dependabot PRs are
-  closed with a pointer once #439 merges.
+- **#439 merged** (`9a71f4e`): the 14 Dependabot PRs (#369-#385) applied as one lockfile commit; all CI green
+  including E2E. The 14 Dependabot PRs are closed with a pointer to #439.
+- **#386 re-landed** as its own PR: dependencies redone with npm on current master (next 16.4.6, react 19.3.1,
+  zod 4.6.7, sharp 0.35.5, `npm update` + `npm audit fix`); eslint-config-next stays 16.1.6 until the #387
+  re-land. Conflicts resolved: the contact route keeps values raw and escapes at render, so `replyTo: email`
+  covers what #409 added; the deploy workflow keeps Node 24 (#408) and gains #386's SSH host verification and
+  least-privilege token; `/projects` keeps #438's preloads.
 - **Nov 6 stack mapped**: #386 → #387 → #391 → #396 → #398 → #400 → #401 → #402 → #405 are stacked (each
   branch contains the previous one), plus #392 alone. All conflict with master's 18 later commits; #386's
   commits conflict in `eslint.config.mjs`, `src/app/api/contact/route.ts`, `production-deploy.yml`,

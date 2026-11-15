@@ -64,7 +64,8 @@ const GalleryItem = memo(function GalleryItem({
       href={projectUrl}
       className={`desktop-gallery-item ${isActive ? 'active' : ''}`}
       onClick={handleClick}
-      aria-label={`View ${design.title}${design.year ? ` from ${design.year}` : ''} project details`}
+      // Starts with the visible caption so the spoken name matches the screen (WCAG 2.5.3)
+      aria-label={`${design.title}${design.year ? `, ${design.year}` : ''}, view project`}
       data-testid={`gallery-item-${index}`}
       data-active={isActive}
     >
@@ -107,12 +108,6 @@ export default function Gallery({ designs }: GalleryProps) {
   const isScrollingRef = useRef(false)
   const hasRestoredRef = useRef(false)
   const focusTimeoutRef = useRef<NodeJS.Timeout | null>(null) // Track focus management timeout for cleanup
-
-  // Phase 4: Hide static first image AFTER first gallery image loads AND minimum display time
-  // Issue #132: Ensures FirstImage visible for minimum time (allows E2E tests to verify + prevents CLS flash)
-  // Issue #136: Fixed race condition on slow 3G - network-aware timing + proper image load detection
-  // Issue #236: Removed DOM polling for FirstImage hiding - now handled by CSS animation
-  // This eliminates 2-20s JavaScript overhead on Safari
 
   // Scroll to specific index
   const scrollToIndex = useCallback(

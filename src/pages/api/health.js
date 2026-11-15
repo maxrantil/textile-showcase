@@ -1,7 +1,75 @@
 // ABOUTME: Production health check endpoint for monitoring and deployment validation
-// Provides comprehensive system status including database, security services, and SSE connectivity
+// Reports database, security and SSE status; upstream Sanity check is cached for 30s
 
 // Sanity client created dynamically to avoid bundling in main chunks
+
+/** How long a Sanity connectivity result is reused before re-checking */
+const DB_CHECK_TTL_MS = 30_000
+const DB_CHECK_TIMEOUT_MS = 5_000
+
+let sanityClient = null
+let dbCheck = { status: 'unknown', checkedAt: 0, pending: null }
+
+async function getSanityClient() {
+  if (sanityClient) return sanityClient
+
+  // Dynamic import to avoid bundling Sanity in main chunks
+  const { createClient } = await import('next-sanity')
+
+  const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID
+  if (!projectId) {
+    throw new Error(
+      'NEXT_PUBLIC_SANITY_PROJECT_ID is required but not configured'
+    )
+  }
+
+  sanityClient = createClient({
+    projectId,
+    dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || 'production',
+    apiVersion: process.env.NEXT_PUBLIC_SANITY_API_VERSION || '2023-05-03',
+    token: process.env.SANITY_API_TOKEN,
+    useCdn: false, // For health checks, always get fresh data
+  })
+  return sanityClient
+}
+
+async function runDbCheck() {
+  try {
+    const client = await getSanityClient()
+    let timer
+    await Promise.race([
+      client.fetch('*[_type == "textileDesign"][0]{_id}'),
+      new Promise((_, reject) => {
+        timer = setTimeout(
+          () => reject(new Error('Sanity health check timed out')),
+          DB_CHECK_TIMEOUT_MS
+        )
+      }),
+    ]).finally(() => clearTimeout(timer))
+    return 'healthy'
+  } catch (error) {
+    console.error('Database health check failed:', error)
+    return 'unhealthy'
+  }
+}
+
+/**
+ * Cached Sanity connectivity check. An unauthenticated endpoint must not
+ * translate every incoming request into an upstream API call.
+ */
+async function getDatabaseStatus() {
+  const now = Date.now()
+  if (dbCheck.checkedAt && now - dbCheck.checkedAt < DB_CHECK_TTL_MS) {
+    return dbCheck.status
+  }
+  if (!dbCheck.pending) {
+    dbCheck.pending = runDbCheck().then((status) => {
+      dbCheck = { status, checkedAt: Date.now(), pending: null }
+      return status
+    })
+  }
+  return dbCheck.pending
+}
 
 /**
  * Health check endpoint for production monitoring
@@ -9,6 +77,8 @@
  * @param {import('next').NextApiResponse} res
  */
 export default async function health(req, res) {
+  res.setHeader('Cache-Control', 'no-store')
+
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
@@ -16,34 +86,8 @@ export default async function health(req, res) {
   try {
     const startTime = Date.now()
 
-    // Check Sanity CMS connectivity
-    let databaseStatus = 'unknown'
-    try {
-      // Dynamic import to avoid bundling Sanity in main chunks
-      const { createClient } = await import('next-sanity')
-
-      const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID
-      if (!projectId) {
-        throw new Error(
-          'NEXT_PUBLIC_SANITY_PROJECT_ID is required but not configured'
-        )
-      }
-
-      const client = createClient({
-        projectId,
-        dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || 'production',
-        apiVersion: process.env.NEXT_PUBLIC_SANITY_API_VERSION || '2023-05-03',
-        token: process.env.SANITY_API_TOKEN,
-        useCdn: false, // For health checks, always get fresh data
-      })
-
-      const query = '*[_type == "project"][0]{_id}'
-      await client.fetch(query)
-      databaseStatus = 'healthy'
-    } catch (error) {
-      console.error('Database health check failed:', error)
-      databaseStatus = 'unhealthy'
-    }
+    // Check Sanity CMS connectivity (cached)
+    const databaseStatus = await getDatabaseStatus()
 
     // Check security service status
     let securityStatus = 'unknown'
@@ -96,15 +140,7 @@ export default async function health(req, res) {
         security: securityStatus,
         sse: sseStatus,
       },
-      uptime: process.uptime(),
-      memory: {
-        used:
-          Math.round((process.memoryUsage().heapUsed / 1024 / 1024) * 100) /
-          100,
-        total:
-          Math.round((process.memoryUsage().heapTotal / 1024 / 1024) * 100) /
-          100,
-      },
+      uptime: Math.round(process.uptime()),
     }
 
     // Return appropriate status code
