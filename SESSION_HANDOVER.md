@@ -34,6 +34,8 @@
 
 - **#444 merged** (`c73e574`), the #387 re-land; #387 closed. **#391 re-land** up next: Studio /studio fix (Sanity packages no longer mapped to null, unused Studio client removed, Sanity API origins allowed in CSP on /studio only), per-route JS budget check in CI, `check-bundle-size:strict` script. #391's vendor-chunking commit is already on master (#433).
 
+- **#446 merged** (`3cc4a0d`), the #391 re-land; #391 and issue #389 closed. **#398 re-land** next: phones get the mobile project view in the server HTML (user-agent hint), no desktop-layout flash (#397).
+
 ## 🎯 Current Project State
 
 **Tests**: ✅ Jest passes locally on #439's branch
