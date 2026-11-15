@@ -6,6 +6,7 @@ import { generateProjectBreadcrumbs } from '@/app/metadata/breadcrumb-schema'
 import { generateProjectStructuredData } from './utils/project-helpers'
 import { getProjectWithNavigation } from './hooks/use-project-data'
 import { ProjectContent } from './components/project-content'
+import { safeJsonLd } from '@/lib/safeJsonLd'
 
 interface ProjectPageProps {
   params: Promise<{
@@ -54,7 +55,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(breadcrumbSchema),
+          __html: safeJsonLd(breadcrumbSchema),
         }}
       />
 
@@ -62,7 +63,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(projectSchema),
+          __html: safeJsonLd(projectSchema),
         }}
       />
 

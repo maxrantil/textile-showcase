@@ -40,6 +40,8 @@
 
 - **#448 merged** (`1f210d7`), the #400 re-land; #400 and issue #399 closed. **#401 re-land** next: Sanity Studio 4 -> 6, next-sanity 11 -> 13, CLI 3 -> 8, @sanity/image-url 2; engines node >=22.12; supersedes Dependabot #445.
 
+- **#449 merged** (`0290a1d`), the #401 re-land (Sanity 6); #401 and Dependabot #445 closed. **Last re-land PR** combines #402 (LCP target 2.5s, warn-level), #405 (JSON-LD escaping, #404) and #392 (Lighthouse n/a with reason) as separate commits.
+
 ## 🎯 Current Project State
 
 **Tests**: ✅ Jest passes locally on #439's branch

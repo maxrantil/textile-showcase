@@ -1,3 +1,5 @@
+import { safeJsonLd } from '@/lib/safeJsonLd'
+
 // Enhanced organization structured data
 export const organizationStructuredData = {
   '@context': 'https://schema.org',
@@ -168,7 +170,7 @@ export function generateStructuredDataScript(
       nonce={nonce || undefined}
       suppressHydrationWarning
       dangerouslySetInnerHTML={{
-        __html: JSON.stringify(data),
+        __html: safeJsonLd(data),
       }}
     />
   )
