@@ -36,6 +36,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Fails on lint errors; warnings are reported but allowed
+      - name: Lint
+        run: npm run lint
+
       - name: Setup Environment Variables
         run: |
           echo "NEXT_PUBLIC_SANITY_PROJECT_ID=${{ secrets.NEXT_PUBLIC_SANITY_PROJECT_ID }}" >> $GITHUB_ENV

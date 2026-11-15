@@ -2,7 +2,7 @@
 
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useSyncExternalStore } from 'react'
 import Image from 'next/image'
 import { getOptimizedImageUrl } from '@/utils/image-helpers'
 import { ImageLoadingPlaceholder } from './LoadingSpinner'
@@ -42,6 +42,9 @@ interface OptimizedImageProps {
   isAboveFold?: boolean
 }
 
+// IntersectionObserver support cannot change at runtime
+const subscribeNoop = () => () => {}
+
 export function OptimizedImage({
   src,
   alt,
@@ -61,7 +64,14 @@ export function OptimizedImage({
 }: OptimizedImageProps) {
   const [isLoaded, setIsLoaded] = useState(false)
   const [isError, setIsError] = useState(false)
-  const [isInView, setIsInView] = useState(priority) // Start true if priority
+  const [isObserved, setIsInView] = useState(priority) // Start true if priority
+  // Without IntersectionObserver, load immediately (server assumes it exists)
+  const hasIntersectionObserver = useSyncExternalStore(
+    subscribeNoop,
+    () => typeof IntersectionObserver !== 'undefined',
+    () => true
+  )
+  const isInView = isObserved || !hasIntersectionObserver
 
   // Get object-fit CSS class for CSP compliance
   const getObjectFitClass = () => {
@@ -74,7 +84,6 @@ export function OptimizedImage({
     }
     return fitMap[objectFit]
   }
-  const [currentImageUrl, setCurrentImageUrl] = useState<string>('')
   const [usesFallback, setUsesFallback] = useState(false)
   const imgRef = useRef<HTMLDivElement>(null)
 
@@ -112,10 +121,16 @@ export function OptimizedImage({
       })
     : ''
 
-  // Set initial image URL
-  useEffect(() => {
+  // Current image URL starts at the primary URL and resets when src changes
+  // (state adjusted during render, not in an effect)
+  const [currentImageUrl, setCurrentImageUrl] =
+    useState<string>(primaryImageUrl)
+  const [urlSource, setUrlSource] = useState(primaryImageUrl)
+  if (urlSource !== primaryImageUrl) {
+    setUrlSource(primaryImageUrl)
     setCurrentImageUrl(primaryImageUrl)
-  }, [primaryImageUrl])
+    setUsesFallback(false)
+  }
 
   // Enhanced Intersection Observer with optimized configuration
   useEffect(() => {
@@ -124,8 +139,7 @@ export function OptimizedImage({
     }
 
     // Fallback: if IntersectionObserver is not available or fails, load immediately
-    if (typeof IntersectionObserver === 'undefined') {
-      setIsInView(true)
+    if (!hasIntersectionObserver) {
       return
     }
 
@@ -150,7 +164,7 @@ export function OptimizedImage({
       observer.disconnect()
       clearTimeout(fallbackTimeout)
     }
-  }, [priority, isInView, observerConfig])
+  }, [priority, isInView, hasIntersectionObserver, observerConfig])
 
   // Handle image load error - try fallback format
   const handleImageError = () => {
