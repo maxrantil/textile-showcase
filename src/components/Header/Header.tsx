@@ -71,7 +71,7 @@ export function Header() {
       >
         <div className="header__container">
           {/* Logo */}
-          <Link href="/" className="header__logo" aria-label="Home">
+          <Link href="/" className="header__logo" aria-label="Ida Romme, home">
             <span className="header__logo-text">Ida Romme</span>
           </Link>
 

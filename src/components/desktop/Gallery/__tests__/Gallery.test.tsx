@@ -53,6 +53,16 @@ describe('Desktop Gallery captions', () => {
     const heading = screen.getByRole('heading', { level: 2 })
     expect(heading.textContent).toBe(mockMinimalDesign.title)
   })
+
+  it('includes the visible caption in the link name (WCAG 2.5.3)', () => {
+    const design = mockDesigns[0]
+    render(<Gallery designs={[design]} />)
+
+    const link = screen.getByTestId('gallery-item-0')
+    expect(link.getAttribute('aria-label')).toContain(
+      `${design.title}, ${design.year}`
+    )
+  })
 })
 
 describe('Desktop Gallery image loading', () => {

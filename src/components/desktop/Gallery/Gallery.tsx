@@ -64,7 +64,8 @@ const GalleryItem = memo(function GalleryItem({
       href={projectUrl}
       className={`desktop-gallery-item ${isActive ? 'active' : ''}`}
       onClick={handleClick}
-      aria-label={`View ${design.title}${design.year ? ` from ${design.year}` : ''} project details`}
+      // Starts with the visible caption so the spoken name matches the screen (WCAG 2.5.3)
+      aria-label={`${design.title}${design.year ? `, ${design.year}` : ''}, view project`}
       data-testid={`gallery-item-${index}`}
       data-active={isActive}
     >

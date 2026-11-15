@@ -34,7 +34,9 @@ export default function MobileGalleryItem({
     `Textile design artwork: ${design.title}${design.year ? ` (${design.year})` : ''}`
 
   const projectUrl = `/project/${design.slug?.current || design._id}`
-  const ariaLabel = `View ${design.title} project${design.year ? ` from ${design.year}` : ''}`
+  // Starts with the visible caption ("Composing Tones, 2025") so the spoken name
+  // matches what is on screen (WCAG 2.5.3 Label in Name)
+  const ariaLabel = `${design.title}${design.year ? `, ${design.year}` : ''}, view project`
 
   const image = (
     <Image

@@ -157,6 +157,16 @@ describe('MobileGalleryItem', () => {
       expect(link).toHaveAttribute('aria-label')
     })
 
+    it('includes the visible title and year in the link name (WCAG 2.5.3)', () => {
+      const { container } = render(
+        <MobileGalleryItem design={mockSingleDesign} />
+      )
+
+      const link = container.querySelector('a')
+      const visible = `${mockSingleDesign.title}, ${mockSingleDesign.year}`
+      expect(link?.getAttribute('aria-label')).toContain(visible)
+    })
+
     it('should be keyboard accessible', () => {
       const { container } = render(
         <MobileGalleryItem design={mockSingleDesign} />

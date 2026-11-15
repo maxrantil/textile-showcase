@@ -59,4 +59,10 @@ describe('Header', () => {
       'true'
     )
   })
+
+  it('names the logo link with its visible text (WCAG 2.5.3)', () => {
+    render(<Header />)
+    const logo = screen.getByRole('link', { name: /ida romme/i })
+    expect(logo).toHaveAttribute('href', '/')
+  })
 })
