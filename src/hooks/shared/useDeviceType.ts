@@ -92,9 +92,12 @@ const subscribe = (onChange: () => void) => {
   }
 }
 
-// Default to desktop for SSR
-const getServerSnapshot = (): DeviceType => 'desktop'
-
-export function useDeviceType(): DeviceType {
-  return useSyncExternalStore(subscribe, detectDeviceType, getServerSnapshot)
+/**
+ * @param serverFallback value used during SSR and hydration (default 'desktop').
+ *   Pass the server's request-based guess so SSR renders the right view first.
+ */
+export function useDeviceType(
+  serverFallback: DeviceType = 'desktop'
+): DeviceType {
+  return useSyncExternalStore(subscribe, detectDeviceType, () => serverFallback)
 }
