@@ -2,7 +2,7 @@
 
 **Date**: 2026-11-15
 **Issue**: #395, #429 (perf, open); #389, #397, #399, #404 (open, fixes in the Nov 6 stack)
-**PR**: #437, #438, #432, #403, #439 (14 Dependabot bumps) merged; Nov 6 stack being re-landed, #386 first
+**PR**: #437, #438, #432, #403, #439 (14 Dependabot bumps), #440 (re-land of #386) merged; re-landing #387 next
 **Branch**: claude/hopeful-galileo-o7vj4m
 
 ---
@@ -24,6 +24,13 @@
   commits conflict in `eslint.config.mjs`, `src/app/api/contact/route.ts`, `production-deploy.yml`,
   `src/app/projects/page.tsx`. Doctor Hubert chose to re-land them one at a time through the claude/ branch,
   dropping what master already covers (#410 ESLint, #431/#433/#434 perf), and close the originals with a pointer.
+
+- **#440 merged** (`1569adb`), the #386 re-land. Its E2E first failed on axe-core 4.14's
+  `label-content-name-mismatch` (WCAG 2.5.3); the header logo and gallery links now start their
+  `aria-label` with the visible text ("Ida Romme, home", "X, 2025, view project"). #386 closed.
+- **#396 closed** as superseded (#425, #431, #434, #437); **issue #395 closed**.
+- **#387 re-land**: only DesktopImageCarousel and OptimizedImage still tripped the React Compiler rule;
+  eslint-config-next 16.4.6, unused `src/components/hydration` removed, `npm run lint` added to Unit Tests CI.
 
 ## 🎯 Current Project State
 
