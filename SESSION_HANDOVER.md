@@ -32,6 +32,8 @@
 - **#387 re-land**: only DesktopImageCarousel and OptimizedImage still tripped the React Compiler rule;
   eslint-config-next 16.4.6, unused `src/components/hydration` removed, `npm run lint` added to Unit Tests CI.
 
+- **#444 merged** (`c73e574`), the #387 re-land; #387 closed. **#391 re-land** up next: Studio /studio fix (Sanity packages no longer mapped to null, unused Studio client removed, Sanity API origins allowed in CSP on /studio only), per-route JS budget check in CI, `check-bundle-size:strict` script. #391's vendor-chunking commit is already on master (#433).
+
 ## 🎯 Current Project State
 
 **Tests**: ✅ Jest passes locally on #439's branch
