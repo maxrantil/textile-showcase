@@ -38,6 +38,8 @@
 
 - **#447 merged** (`68986b5`), the #398 re-land; #398 and issue #397 closed. **#400 re-land** next: a desktop project without gallery images shows its main image (#399).
 
+- **#448 merged** (`1f210d7`), the #400 re-land; #400 and issue #399 closed. **#401 re-land** next: Sanity Studio 4 -> 6, next-sanity 11 -> 13, CLI 3 -> 8, @sanity/image-url 2; engines node >=22.12; supersedes Dependabot #445.
+
 ## 🎯 Current Project State
 
 **Tests**: ✅ Jest passes locally on #439's branch
