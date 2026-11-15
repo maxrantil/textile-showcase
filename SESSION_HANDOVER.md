@@ -1,8 +1,9 @@
-# Session Handoff: PR sweep, merging the open PR backlog
+# Session Handoff: PR sweep, open PR backlog merged
 
 **Date**: 2026-11-15
-**Issue**: #395, #429 (perf, open); #389, #397, #399, #404 (open, fixes in the Nov 6 stack)
-**PR**: #437, #438, #432, #403, #439 (14 Dependabot bumps), #440 (re-land of #386) merged; re-landing #387 next
+**Issue**: #389, #395, #397, #399, #404 closed; #429 (perf, LCP in CI) is the only open issue
+**PR**: merged #437, #438, #432, #403, #439, #440, #444, #446, #447, #448, #449, #450 and the Dependabot combo
+(#441, #442, #443); closed #369-#385, #386, #387, #391, #392, #396, #398, #400, #401, #402, #405, #445
 **Branch**: claude/hopeful-galileo-o7vj4m
 
 ---
@@ -42,11 +43,17 @@
 
 - **#449 merged** (`0290a1d`), the #401 re-land (Sanity 6); #401 and Dependabot #445 closed. **Last re-land PR** combines #402 (LCP target 2.5s, warn-level), #405 (JSON-LD escaping, #404) and #392 (Lighthouse n/a with reason) as separate commits.
 
+- **#450 merged** (`6d50331`): #402, #405 and #392 re-landed together; issue #404 closed. All 11 JSON-LD
+  scripts use `safeJsonLd`; the Lighthouse report shows n/a with a reason instead of a 0% "Unknown URL" row.
+- **Dependabot combo**: glob 14 (#443; lockfile regenerated after Sanity 6), pytest 9.0.3 (#442) and
+  pygments 2.20.0 (#441) in one PR.
+
 ## 🎯 Current Project State
 
-**Tests**: ✅ Jest passes locally on #439's branch
+**Tests**: ✅ lint 0 errors, type-check clean, Jest 1,380 passed / 16 skipped; E2E green on every merged PR
 **Branch**: ✅ clean and pushed
-**CI/CD**: 🔄 #439 running; all checks green except E2E still running when this was written
+**CI/CD**: ✅ every PR merged with all checks green. The "AI attribution in PR body" check fails once on each
+new PR because the PR tool adds a footer; editing the body re-runs it green
 
 ### Agent Validation Status
 
@@ -54,11 +61,13 @@ The named validation agents are not available in this environment and were not r
 
 ## 🚀 Next Session Priorities
 
-1. Finish re-landing the Nov 6 stack in order: #386, #387, #391, #396, #398, #400, #401, #402, #405, then #392
-2. Close #389, #397, #399, #404 as their fixes land; close #395 (its three tasks are done with #438)
-3. Look at a project page on idaromme.dk on a real desktop and phone after the next deploy
-4. Confirm a visit under Realtime in Umami (carried over)
-5. Next LCP levers: the two shared script chunks (62KB and 51KB)
+1. Production deploy of today's merges: watch the deploy run, then look at a project page and `/studio` on
+   idaromme.dk on a real desktop and phone (Sanity 6 Studio, mobile view rendered on the server)
+2. Optional deploy hardening from #440: add `VULTR_KNOWN_HOSTS` and `VULTR_HOST_FINGERPRINT` to the
+   production environment secrets (the deploy log warns "SSH host key is NOT verified" until then)
+3. Send one contact-form message and check that Reply goes to the sender
+4. #429: home and project-page LCP 3.1-3.8s in CI against the new 2.5s (warn-level) target
+5. Confirm a visit under Realtime in Umami (carried over)
 
 ### Possible follow-up
 
@@ -135,14 +144,14 @@ The named validation agents are not available in this environment and were not r
 
 ## 📝 Startup Prompt for Next Session
 
-Read CLAUDE.md to understand our workflow, then continue the PR backlog sweep (#437, #438, #432, #403 merged; #439 Dependabot combo).
+Read CLAUDE.md to understand our workflow, then continue from the PR backlog sweep (✅ complete: every open PR merged or closed, only issue #429 open).
 
-**Immediate priority**: re-land the Nov 6 stack one PR at a time on a fresh claude/ branch from master (several hours)
-**Context**: the stack conflicts with 18 later master commits; drop what #410/#431/#433/#434 already did
-**Reference docs**: SESSION_HANDOVER.md, PRs #386-#405 and #392
-**Ready state**: master includes everything merged above; check whether #439 merged
+**Immediate priority**: verify the production deploy of today's merges on idaromme.dk (30 min), then #429 LCP (2-4 hours)
+**Context**: Sanity 6, next 16.4.6, the Studio fix, mobile project view rendered on the server and JSON-LD escaping all landed today
+**Reference docs**: SESSION_HANDOVER.md, PR #440 (deploy follow-ups), issue #429, `lighthouserc.js`
+**Ready state**: master clean, all CI green, no open PRs
 
-**Expected scope**: land #386 (security hardening) and #387 (lint fixes), close the originals with a pointer
+**Expected scope**: confirm the deploy, add the SSH host-verification secrets if wanted, then cut home LCP toward 2.5s
 
 ## 📚 Key Reference Documents
 
