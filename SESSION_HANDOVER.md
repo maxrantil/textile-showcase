@@ -36,6 +36,8 @@
 
 - **#446 merged** (`3cc4a0d`), the #391 re-land; #391 and issue #389 closed. **#398 re-land** next: phones get the mobile project view in the server HTML (user-agent hint), no desktop-layout flash (#397).
 
+- **#447 merged** (`68986b5`), the #398 re-land; #398 and issue #397 closed. **#400 re-land** next: a desktop project without gallery images shows its main image (#399).
+
 ## 🎯 Current Project State
 
 **Tests**: ✅ Jest passes locally on #439's branch
