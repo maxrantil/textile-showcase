@@ -27,27 +27,11 @@ const NextStudio = dynamic(
   }
 )
 
-// PERFORMANCE: Lazy load all studio dependencies to minimize bundle impact
+// PERFORMANCE: Lazy load the studio configuration (schemas, plugins).
+// NextStudio creates its own authenticated client from this config.
 async function loadStudioDependencies() {
-  // Load studio configuration and client factory in parallel
-  const [configModule, { createStudioClient }, { getStudioUtilities }] =
-    await Promise.all([
-      import('../../../../sanity.config'),
-      import('../../../sanity/studio-client'),
-      import('../../../sanity/studio-client'),
-    ])
-
-  // Initialize client and get utilities
-  const [client, utilities] = await Promise.all([
-    createStudioClient(),
-    getStudioUtilities(),
-  ])
-
-  return {
-    config: configModule.default,
-    client,
-    utilities,
-  }
+  const configModule = await import('../../../../sanity.config')
+  return { config: configModule.default }
 }
 
 export default function StudioPage() {

@@ -33,6 +33,31 @@ describe('proxy security headers', () => {
   })
 })
 
+describe('proxy CSP for the embedded Sanity Studio (Issue #389)', () => {
+  const connectSrc = async (path: string) => {
+    const response = await proxy(new NextRequest(`https://idaromme.dk${path}`))
+    const csp = response.headers.get('Content-Security-Policy') || ''
+    return csp.split(';').find((d) => d.trim().startsWith('connect-src')) || ''
+  }
+
+  it('allows the Studio to reach the Sanity project API and realtime listener', async () => {
+    const directive = await connectSrc('/studio/structure')
+    expect(directive).toContain('https://testproject.api.sanity.io')
+    expect(directive).toContain('wss://testproject.api.sanity.io')
+    expect(directive).toContain('https://api.sanity.io')
+  })
+
+  it('keeps public pages restricted to the image CDN', async () => {
+    const directive = await connectSrc('/about')
+    expect(directive).not.toContain('api.sanity.io')
+    expect(directive).toContain('https://cdn.sanity.io')
+  })
+
+  it('does not widen CSP for paths that merely start with "studio"', async () => {
+    expect(await connectSrc('/studiofoo')).not.toContain('api.sanity.io')
+  })
+})
+
 describe('next.config.ts headers', () => {
   let rules: HeaderRule[]
 
