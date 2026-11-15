@@ -32,8 +32,8 @@
 **Best for:** Remote access with proper authentication
 
 ```typescript
-// Add to src/middleware.ts
-export function middleware(request: NextRequest) {
+// Add to src/proxy.ts
+export function proxy(request: NextRequest) {
   // Protect /security routes
   if (request.nextUrl.pathname.startsWith('/security')) {
     const token = request.headers.get('authorization')
