@@ -1,56 +1,31 @@
-# Session Handoff: PR #434 merged, font weight axis (#429), /projects preloads (#395)
+# Session Handoff: PR sweep, merging the open PR backlog
 
-**Date**: 2026-11-14
-**Issue**: #395 - duplicate font and wasted LCP image downloads (open); #429 - LCP in CI Lighthouse (open)
-**PR**: #434 merged to master as `5814ffc`; #437 - font weight axis (draft); #438 - `/projects` preloads (draft)
-**Branch**: perf/issue-429-font-weight-axis (#437) and perf/issue-395-projects-preload (#438), both from master
+**Date**: 2026-11-15
+**Issue**: #395, #429 (perf, open); #389, #397, #399, #404 (open, fixes in the Nov 6 stack)
+**PR**: #437, #438, #432, #403 merged; #439 combines the 14 Dependabot PRs; Nov 6 stack being re-landed
+**Branch**: claude/hopeful-galileo-o7vj4m
 
 ---
 
 ## ✅ Completed This Session
 
-- **PR #434 merged** (squash, `5814ffc`): the project page's first image is fetched at high priority and at the size
-  it is shown. Master had moved (#436, Umami back on), so master was merged into the branch first; Jest passed
-  locally (1,299 tests) and in CI, and the E2E suite passed on Desktop Chrome, Mobile Chrome and Safari smoke, with
-  the new `analytics-resilience` job.
-- **CI Lighthouse on the final run of PR #434**, three runs per page:
-
-  | | LCP |
-  |---|---|
-  | `/` | 5.11s, 3.20s, 3.74s |
-  | `/about` | 2.65s, 2.65s, 2.65s |
-  | `/contact` | 2.82s, 2.81s, 2.82s |
-  | project page | 4.96s, 3.41s, 3.43s |
-
-  The first run of the two image pages is slow because CI starts with an empty image cache. Layout shift is 0 in
-  every run.
-- **The font, checked** (draft PR #437, commit `c73f275`). `public/fonts/inter-400.woff2` was already limited to the
-  Latin range: 230 code points, 518 glyphs. Its weight came from the weight axis, which ran from 100 to 900 while
-  the CSS declares 400 and 500 only. With the axis limited to 400-500 the file is 32,136 bytes, down from 48,256.
-  - Code points, glyphs, layout features and vertical metrics are unchanged (compared with fontTools).
-  - Rendered in Chromium under the site's two `@font-face` rules: weights 300 and 400 are pixel-identical, 500 and
-    600 keep the same line width and differ only in anti-aliasing.
-  - Dropping the unused layout features (`frac`, `tnum`, `pnum`, `numr`, `dnom`) would save 3KB more; not done.
-  - New test in `tests/unit/fonts-no-duplicates.test.ts`: the preloaded font stays within 36KB.
-- **`/projects` preloads** (draft PR #438, commit `39db32e`). The page shows the same galleries as home but
-  preloaded one image at a width and quality neither gallery requests, in CORS mode, so the preload failed and the
-  image was fetched again. Home's preload links moved into `src/components/server/GalleryImagePreloads.tsx` and
-  both pages render it. Home's output is unchanged.
-  - New test file `src/app/projects/__tests__/page.test.tsx` (5 tests; 4 failed before the change).
-  - Checked against a production build in Playwright Chromium at 1440x900 and 390x844: `/projects` and `/` make
-    the same 5 image requests, none twice, and no CORS error is logged.
+- **Merged (squash)**: #437 font weight axis 400-500 (`8043011`), #438 `/projects` gallery preloads (`edba094`),
+  #432 docs `middleware.ts` → `src/proxy.ts` (`e82631d`), #403 Cloudflare security-audit skill (`06947d5`).
+  #432's body footer tripped the "AI attribution in PR body" check and was removed before merging.
+- **#439**: the 14 Dependabot PRs (#369-#385) applied as one lockfile commit. All 14 merged onto master without
+  conflicts; locally `npm ci`, type-check, lint (0 errors) and Jest (1,305 passed) pass. The Dependabot PRs are
+  closed with a pointer once #439 merges.
+- **Nov 6 stack mapped**: #386 → #387 → #391 → #396 → #398 → #400 → #401 → #402 → #405 are stacked (each
+  branch contains the previous one), plus #392 alone. All conflict with master's 18 later commits; #386's
+  commits conflict in `eslint.config.mjs`, `src/app/api/contact/route.ts`, `production-deploy.yml`,
+  `src/app/projects/page.tsx`. Doctor Hubert chose to re-land them one at a time through the claude/ branch,
+  dropping what master already covers (#410 ESLint, #431/#433/#434 perf), and close the originals with a pointer.
 
 ## 🎯 Current Project State
 
-**Tests**: ✅ full Jest suite passes locally on both branches (1,295 tests on #438's branch before this handoff
-commit; the font branch's three font tests pass), type-check clean. E2E not run locally on the two new branches
-**Branch**: ✅ both clean and pushed
-**CI/CD**: 🔄 #437 and #438 are drafts; E2E only runs once a PR is marked ready. The production deploy of `5814ffc`
-succeeded (all five jobs); idaromme.dk serves the project page's first image with `fetchPriority="high"` and the new `sizes`
-
-**Not tested**: Firefox and Safari are not installed here. No Lighthouse run was made for #437 or #438; CI's
-Lighthouse will show the figures on each PR. CI's Chrome runs with web security off, so the failing `/projects`
-preload succeeded there: #438 will not show as a gain in CI, and `/projects` is not among the pages CI measures.
+**Tests**: ✅ Jest passes locally on #439's branch
+**Branch**: ✅ clean and pushed
+**CI/CD**: 🔄 #439 running; all checks green except E2E still running when this was written
 
 ### Agent Validation Status
 
@@ -58,22 +33,11 @@ The named validation agents are not available in this environment and were not r
 
 ## 🚀 Next Session Priorities
 
-1. Look at a project page on idaromme.dk on a real desktop and phone: the deploy of `5814ffc` succeeded and the
-   HTML was checked, the page was not viewed in a browser
-2. Draft PRs #437 (font) and #438 (`/projects` preloads): review, mark ready so E2E runs, merge. Both carry this
-   same handoff file, so the second one merges cleanly after the first
-3. After the deploy that includes #436: open idaromme.dk without an ad blocker and confirm the visit under Realtime
-   in Umami (carried over from the #435 session)
-4. Next levers for LCP on every page: the two shared script chunks (62KB and 51KB)
-5. Home LCP 3.2s to 3.7s in CI on warm runs: about 100KB of gallery images ahead of paint, plus three lazy ones
-   (65KB) that start at hydration
-6. LCP threshold in `lighthouserc.js` (last task of #429): draft PR #402 sets 2.5s; `/about` and `/contact` are at
-   2.65s and 2.8s, the image pages at 3.2s to 3.7s
-7. Close #395 once #438 is merged: its three tasks are then done (the task list in the issue is unticked)
-8. Project page layout swap on phones: #397
-9. Real iPhone check of `/contact`: tap the name field straight after load and type
-10. The older draft PRs (#386 to #405) mostly conflict with master and need a decision: rebase or close. #396
-    overlaps with #431
+1. Finish re-landing the Nov 6 stack in order: #386, #387, #391, #396, #398, #400, #401, #402, #405, then #392
+2. Close #389, #397, #399, #404 as their fixes land; close #395 (its three tasks are done with #438)
+3. Look at a project page on idaromme.dk on a real desktop and phone after the next deploy
+4. Confirm a visit under Realtime in Umami (carried over)
+5. Next LCP levers: the two shared script chunks (62KB and 51KB)
 
 ### Possible follow-up
 
@@ -150,14 +114,14 @@ The named validation agents are not available in this environment and were not r
 
 ## 📝 Startup Prompt for Next Session
 
-Read CLAUDE.md to understand our workflow, then continue from PR #434 (✅ merged as `5814ffc`) with draft PRs #437 and #438 open.
+Read CLAUDE.md to understand our workflow, then continue the PR backlog sweep (#437, #438, #432, #403 merged; #439 Dependabot combo).
 
-**Immediate priority**: mark #437 and #438 ready, let E2E run, merge both (1 hour)
-**Context**: the font goes from 48KB to 32KB by limiting its weight axis to 400-500 (it was already Latin only); `/projects` gets home's gallery preloads instead of one that failed on CORS
-**Reference docs**: SESSION_HANDOVER.md, issues #395 and #429, `src/components/server/GalleryImagePreloads.tsx`, `tests/unit/fonts-no-duplicates.test.ts`
-**Ready state**: branches perf/issue-429-font-weight-axis and perf/issue-395-projects-preload pushed and clean; master at `5814ffc`
+**Immediate priority**: re-land the Nov 6 stack one PR at a time on a fresh claude/ branch from master (several hours)
+**Context**: the stack conflicts with 18 later master commits; drop what #410/#431/#433/#434 already did
+**Reference docs**: SESSION_HANDOVER.md, PRs #386-#405 and #392
+**Ready state**: master includes everything merged above; check whether #439 merged
 
-**Expected scope**: merge both PRs, close #395, confirm a visit in Umami Realtime, then look at the two shared script chunks (62KB and 51KB)
+**Expected scope**: land #386 (security hardening) and #387 (lint fixes), close the originals with a pointer
 
 ## 📚 Key Reference Documents
 
