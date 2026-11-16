@@ -1,29 +1,38 @@
-# Session Handoff: security audit SEC-01/SEC-02, image optimizer limits (#452)
+# Session Handoff: #453 merged, production deploy unblocked (#456), SEC-12 (#454)
 
-**Date**: 2026-11-15
-**Issue**: #452 (open, closes when #453 merges)
-**PR**: #453 (draft): `dangerouslyAllowSVG: false`, 256 MB image disk cache cap, 10 MB source cap
-**Branch**: fix/issue-452-image-optimizer-limits (worktree `../textile-sec02`)
+**Date**: 2026-11-16
+**Issue**: #452 closed (#453 merged); #456 (deploy test step) closes with #457; #454 (SEC-12) closes with #455
+**PR**: #453 merged (`09337fd`); #457 deploy fix; #455 CSP `script-src` without `https: http:`
+**Branch**: fix/issue-456-deploy-test-ignore (worktree `../textile-sec02`), fix/issue-454-csp-script-fallback (`../textile-sec12`)
 
 ---
 
 ## ✅ Completed This Session
 
-- A read-only security audit (`docs/guides/SECURITY-AUDIT-2026-11-15.md`, 15 findings) ran on the stale
-  `perf/issue-429-font-weight-axis` checkout. Checked against master: the Next.js 16.4.6 / Sharp 0.35.5 upgrade
-  (#440) and JSON-LD escaping (SEC-03, #450) were already merged, and the audit doc now says so at the top.
-- #452/#453: `next.config.ts` turns SVG optimization off, caps `maximumDiskCacheSize` at 256 MB and
-  `maximumResponseBody` at 10 MB. `tests/unit/next-config-images.test.ts` (TDD: 3 failures before the change).
-- Verified locally: full Jest suite (1384 passed, 16 skipped), type-check, lint, prettier, `next build`. With
-  `next start`, a Sanity JPEG through `/_next/image` returns 200 and `q=90` returns 400, because Next 16's default
-  `qualities` is `[75]` and no component passes `quality`.
+- **#453 merged** (`09337fd`): master merged into the branch first (only `SESSION_HANDOVER.md` conflicted; the #452
+  text was kept). CI E2E green on all three projects after a re-run (see the push/ready race note below).
+- **Production had not deployed since #437** (`8043011`, 2026-11-15 08:41). Every Production Deploy since #403
+  failed in its `test` job: the workflow's CLI `--testPathIgnorePatterns` replaces jest.config's list, so the
+  vendored `.claude/skills/security-audit/*.test.cjs` (node:test files) ran under Jest. #457 repeats the config's
+  entries (`/\.claude/|/node_modules/|/\.next/`) in the workflow pattern. The step's exact command passes locally.
+  Merging #457 deploys 13 master commits at once, including #440 (Next 16.4.6 / Sharp 0.35.5, SEC-01) and #449 (Sanity 6).
+- **SEC-12** (#454 → #455): `script-src` is `'self' 'nonce-…' 'strict-dynamic' https://analytics.idaromme.dk`.
+  `csp-nonce.test.ts` asserts that the fallback is absent (failed first); `csp-analytics.test.ts` now compares whole
+  sources (its `toContain('https:')` was matching `https://analytics…`). `X-XSS-Protection: 0` was already set.
+- **SEC-04** needed no change: master's IndexNow POST already has a bearer secret (`INDEXNOW_API_SECRET`, fails closed
+  with 503), a 100-URL cap, dedupe and a 10 s timeout (#440). The audit read the stale branch.
+- **`npm audit` on master** (`09337fd`): `--omit=dev` 19 (4 low, 15 moderate, 0 high, 0 critical); all 42
+  (4 low, 38 moderate). The audit's 54/73 came from the stale branch. What is left: minimatch ReDoS via the Sanity
+  CLI/oclif tooling (build/CLI, not request path) and deepmerge via `resend` → `html-to-text` (our own templates).
+  npm's only "fix" for both is a major downgrade, so neither is actionable yet.
+- The stale handoff edit and audit doc in `../textile-showcase` were discarded (the committed versions superseded them).
+  That checkout is on master now (another session switched it on 2026-11-16 07:01).
 
 ## 🎯 Current Project State
 
-**Tests**: ✅ local suite green; CI Jest green on #453; Lighthouse/bundle were still running at handoff
-**Branch**: ✅ #453 branch clean and pushed. The old checkout `../textile-showcase` (perf/issue-429) still has the
-uncommitted pre-audit handoff edits. They are superseded by this file and the audit doc on #453, so discard them.
-**CI/CD**: 🔄 #453 draft; E2E runs once it is marked ready
+**Tests**: ✅ Jest 1380+ passing on #455 and #457; E2E green on #453 and #455
+**Branch**: ✅ worktrees clean and pushed
+**CI/CD**: 🔄 #457 waiting for merge → first successful deploy since #437. Then #455.
 
 ### Agent Validation Status
 
@@ -31,11 +40,13 @@ The named validation agents are not available in this environment and were not r
 
 ## 🚀 Next Session Priorities
 
-1. Mark #453 ready, wait for E2E, merge, deploy. Then look at `.next/cache/images` on the VPS and check that project images still load
-2. Re-run `npm audit --omit=dev` / `npm audit` on master. The audit's counts (54/73) came from the stale branch
-3. SEC-12 (remove `https: http:` from CSP `script-src`) and SEC-04 (IndexNow POST unauthenticated, no limits)
+1. If not already done: merge #457, confirm the deploy succeeds and the site serves Next 16.4.6
+   (`/_next/image` with an SVG `url` returns 400), then merge #455 and check the live `script-src` has no `https: http:`
+2. SEC-07: set `VULTR_KNOWN_HOSTS` (`ssh-keyscan <host>`) and `VULTR_HOST_FINGERPRINT` on the `production`
+   environment. Neither is set, so the deploy's SSH host key is not verified (it warns and continues)
+3. Confirm the VPS Node version is >= 22.12 (Sanity 6 `engines`); the deploy log prints it in "Deploy on VPS"
 4. SEC-05/06, SEC-08 (pin actions to SHAs), SEC-09 (blocking audit gate), SEC-10/11 (verify live headers and nonce), SEC-13–15
-5. Carried over: confirm a visit under Realtime in Umami; next LCP levers (the two shared script chunks)
+5. Look at `.next/cache/images` on the VPS after the #453 deploy; carried over: Umami Realtime check, LCP levers
 
 ### Possible follow-up
 
@@ -61,8 +72,12 @@ The named validation agents are not available in this environment and were not r
 - The CI Lighthouse figures per run are in the bot's "Lighthouse Performance Report" comment on the PR. GitHub's
   storage host for artifacts and job logs timed out from this machine on 2026-11-14.
 - `gh` here is 2.4.0: no `gh pr checks --watch`, no `gh run list --branch`. Use `gh api repos/.../actions/runs`.
-- Pushing and marking a PR ready within a second of each other cancels the E2E run for the "ready" event; re-run it
-  with `gh api -X POST repos/maxrantil/textile-showcase/actions/runs/<id>/rerun`.
+- Pushing and marking a PR ready close together races: the push run passes the draft gate, then the "ready" run
+  cancels it and itself skips as draft. Re-run the cancelled push run (`gh run rerun <id>`).
+- Production Deploy runs on every push to master. Check it after a merge: a failed `test` job skips `deploy` silently
+  (that is how #403–#453 went undeployed). Its test step passes its own `--testPathIgnorePatterns`, which replaces
+  jest.config's list; a new ignore entry in jest.config must also go into `production-deploy.yml`.
+- Local Jest runs with many suites can time out the contact-form suites (17–34 s each); they pass alone and in CI.
 - The carousel's `sizes` in `DesktopImageCarousel.tsx` repeats the 200px and 280px from `.desktop-project-img` in
   `src/styles/desktop/project.css`; they must stay in step.
 
@@ -112,14 +127,14 @@ The named validation agents are not available in this environment and were not r
 
 ## 📝 Startup Prompt for Next Session
 
-Read CLAUDE.md to understand our workflow, then finish #452 (draft PR #453: image optimizer limits, SVG off).
+Read CLAUDE.md to understand our workflow, then continue the security follow-up after the deploy fix (#457) and SEC-12 (#455).
 
-**Immediate priority**: mark #453 ready, merge after E2E, deploy, then do SEC-12 + SEC-04 from the audit (2-3 hours)
-**Context**: the audit ran on a stale branch. Master already has Next 16.4.6/Sharp 0.35.5 (#440) and safe JSON-LD (#450)
-**Reference docs**: docs/guides/SECURITY-AUDIT-2026-11-15.md (status note at top), SESSION_HANDOVER.md
-**Ready state**: work in worktree ../textile-sec02; discard the stale uncommitted docs in ../textile-showcase
+**Immediate priority**: verify production runs current master (Next 16.4.6, SVG optimization off, CSP without `https: http:`), then SEC-07 host key secrets (1-2 hours)
+**Context**: production was stuck on #437 because the deploy test step ran `.claude/` node:test files; #457 fixed it
+**Reference docs**: SESSION_HANDOVER.md, docs/guides/SECURITY-AUDIT-2026-11-15.md, `.github/workflows/production-deploy.yml`
+**Ready state**: master in ../textile-showcase; worktrees ../textile-sec02 and ../textile-sec12 can be removed once #457/#455 are merged
 
-**Expected scope**: #453 merged and deployed, `npm audit` re-run on master, CSP fallback origins removed, IndexNow protected
+**Expected scope**: production verified, SEC-07 closed, then SEC-08/SEC-09 (pinned actions, blocking audit gate)
 
 ## 📚 Key Reference Documents
 
