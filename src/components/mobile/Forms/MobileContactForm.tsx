@@ -44,7 +44,6 @@ export function MobileContactFormView({ form }: { form: ContactFormState }) {
       onSubmit={handleSubmit}
       noValidate
     >
-      <HoneypotField />
       {showSuccess && (
         <div className="mobile-form-success">
           <p>✓ Message sent successfully!</p>
@@ -99,6 +98,7 @@ export function MobileContactFormView({ form }: { form: ContactFormState }) {
           Send Message
         </MobileButton>
       </div>
+      <HoneypotField />
     </form>
   )
 }

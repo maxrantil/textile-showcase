@@ -36,7 +36,6 @@ export function DesktopContactFormView({ form }: { form: ContactFormState }) {
 
   return (
     <form className="desktop-contact-form" onSubmit={handleSubmit}>
-      <HoneypotField />
       <div className="desktop-form-grid">
         <DesktopFormField
           label="Name"
@@ -75,6 +74,7 @@ export function DesktopContactFormView({ form }: { form: ContactFormState }) {
           Send Message
         </DesktopButton>
       </div>
+      <HoneypotField />
     </form>
   )
 }
