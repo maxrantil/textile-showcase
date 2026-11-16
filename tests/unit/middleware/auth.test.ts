@@ -14,9 +14,8 @@ const mockNextRequest = (url: string, headers: Record<string, string> = {}) => {
       pathname: urlObj.pathname,
       search: urlObj.search,
     },
-    headers: {
-      get: jest.fn((key: string) => headers[key] || null),
-    },
+    // A real Headers object: the proxy copies it into the forwarded request
+    headers: new Headers(headers),
   }
 }
 

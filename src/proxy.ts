@@ -36,6 +36,16 @@ export async function proxy(request: NextRequest) {
   // Generate CSP nonce for this request
   const nonce = generateNonce()
 
+  // Forward the nonce and CSP on the request, as Next.js documents: the root
+  // layout reads x-nonce with headers(), which sees the request, not the
+  // response (Issue #475, audit SEC-11)
+  const csp = buildContentSecurityPolicy(nonce, request)
+  const requestHeaders = new Headers(request.headers)
+  requestHeaders.set('x-nonce', nonce)
+  requestHeaders.set('Content-Security-Policy', csp)
+  const forward = () =>
+    NextResponse.next({ request: { headers: requestHeaders } })
+
   // Check if this is a security-related route
   const isSecurityRoute =
     pathname.startsWith('/security') || pathname.startsWith('/api/security')
@@ -61,20 +71,21 @@ export async function proxy(request: NextRequest) {
       } else if (!hasSecurityRole(user)) {
         response = NextResponse.redirect(new URL('/unauthorized', request.url))
       } else {
-        response = NextResponse.next()
+        response = forward()
       }
     } else {
-      response = NextResponse.next()
+      response = forward()
     }
   } else {
-    response = NextResponse.next()
+    response = forward()
   }
 
   // Add security headers to all responses (only if headers are modifiable)
   if (response.headers) {
-    addSecurityHeaders(response, nonce, request)
+    addSecurityHeaders(response, csp, request)
 
-    // Add nonce to response headers for use in the app
+    // Also expose the nonce on the response (the app reads the forwarded
+    // request header above; tests and CSP diagnostics read this one)
     response.headers.set('x-nonce', nonce)
   }
 
@@ -162,7 +173,7 @@ function derivePermissions(roles: string[]): string[] {
  */
 function addSecurityHeaders(
   response: NextResponse,
-  nonce: string,
+  csp: string,
   request: NextRequest
 ): void {
   // Prevent clickjacking attacks
@@ -208,6 +219,16 @@ function addSecurityHeaders(
     )
   }
 
+  response.headers.set('Content-Security-Policy', csp)
+}
+
+/**
+ * Build the Content Security Policy for this request with its nonce
+ */
+function buildContentSecurityPolicy(
+  nonce: string,
+  request: NextRequest
+): string {
   // Content Security Policy with nonce for inline scripts
   const isDevelopment = process.env.NODE_ENV === 'development'
 
@@ -274,7 +295,7 @@ function addSecurityHeaders(
     cspDirectives.push(`report-uri ${cspReportUri}`)
   }
 
-  response.headers.set('Content-Security-Policy', cspDirectives.join('; '))
+  return cspDirectives.join('; ')
 }
 
 /**

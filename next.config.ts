@@ -162,9 +162,12 @@ const nextConfig = {
           },
         ],
       },
-      // Icons and manifest
+      // Icon files in public/. The old '/(favicon|apple-touch-icon|icon)*' matched
+      // '/' (zero repetitions) and no icon file, so the home page was cached
+      // immutable for a year (Issue #475, audit SEC-10)
       {
-        source: '/(favicon|apple-touch-icon|icon)*',
+        source:
+          '/:icon(favicon\\.ico|apple-touch-icon\\.(?:png|webp)|icon-\\d+x\\d+\\.(?:png|webp))',
         headers: [
           {
             key: 'Cache-Control',
