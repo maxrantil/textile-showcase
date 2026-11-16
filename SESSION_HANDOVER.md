@@ -42,11 +42,8 @@ The named validation agents are not available in this environment and were not r
      interpreter args `--max-old-space-size=1024`, max memory restart 838860800 (800M), fork mode, Node 24.22.2,
      0 restarts. Heap ~55 MiB in use at idle.
    - ✅ `free -m`: 1968 MB total, 553 used, 1414 available; swap 5399 MB, 374 used. Plenty of headroom.
-   - ❓ `pm2 startup` as `deploy` only prints the root command to run; that does not say whether it is already
-     set up. Check `systemctl is-enabled pm2-deploy`; if it is not enabled, run as root:
-     `env PATH=$PATH:/usr/local/bin /usr/local/lib/node_modules/pm2/bin/pm2 startup systemd -u deploy --hp /home/deploy`
-   - `sudo: unable to resolve host vps-sto-1`: `/etc/hosts` lacks the hostname (harmless, but every sudo waits on
-     DNS). Fix: add `127.0.1.1 vps-sto-1` to `/etc/hosts`.
+   - ✅ `systemctl is-enabled pm2-deploy`: enabled, so `pm2 save` brings the site back after a reboot.
+   - ✅ `/etc/hosts` now has the `vps-sto-1` hostname (sudo warned it could not resolve it).
 3. Optional deploy speed-ups: carry `.next/cache/images` from the old build into the new one (the swap
    drops it, so every image is re-optimised after each deploy); cache Playwright browsers in production-validation
    (~27 s); PM2 cluster mode + `pm2 reload` for zero downtime (check `nproc`).
@@ -58,7 +55,7 @@ The named validation agents are not available in this environment and were not r
 
 Read CLAUDE.md to understand our workflow, then verify the second deploy of #467's faster VPS deploy script.
 
-**Immediate priority**: check the "Deploy on VPS" time of the Production Deployment for the handoff merge, and whether `pm2-deploy` is enabled in systemd (30 min)
+**Immediate priority**: check the "Deploy on VPS" time of the Production Deployment for the handoff merge (15 min)
 **Context**: #466 and #468 are merged and deployed; the first deploy took 36 s with `npm ci`, and the second should skip it
 **Reference docs**: SESSION_HANDOVER.md, scripts/deploy/vps-release.sh, ecosystem.config.js
 **Ready state**: master clean, production green
