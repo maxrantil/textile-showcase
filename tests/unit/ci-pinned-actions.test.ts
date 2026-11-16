@@ -51,4 +51,13 @@ describe('CI supply chain pinning (Issue #462)', () => {
     )
     expect(config).toMatch(/package-ecosystem:\s*['"]?github-actions/)
   })
+
+  // Jobs without their own block inherit this instead of the repo default,
+  // which grants read on every scope (Issue #465)
+  it('declares workflow-level permissions in every workflow', () => {
+    const missing = workflows
+      .filter(({ text }) => !/^permissions:/m.test(text))
+      .map(({ file }) => file)
+    expect(missing).toEqual([])
+  })
 })

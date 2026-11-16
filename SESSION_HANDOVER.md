@@ -1,44 +1,44 @@
-# Session Handoff: production deployed again (#457), SEC-12 live (#455), SEC-07 waiting on secrets (#459)
+# Session Handoff: security audit follow-up, SEC-07/08/09/12 live, deploys fixed
 
 **Date**: 2026-11-16
-**Issue**: #452, #454, #456 closed; #458 (SEC-07) open, closes with #459
-**PR**: merged #453 (`09337fd`), #457 (`887e26e`), #455 (`1749bb1`); #459 draft (deploy fails without host key secrets)
-**Branch**: fix/issue-458-ssh-host-verification (worktree `../textile-sec02`)
+**Issue**: closed #452, #454, #456, #458, #460, #462; #465 (workflow permissions) closes with this PR
+**PR**: merged #453, #457, #455, #459, #461, #463; this PR: workflow-level read-only permissions (#465)
+**Branch**: fix/issue-465-workflow-permissions (worktree `../textile-sec08`)
 
 ---
 
 ## ✅ Completed This Session
 
-- **#453 merged**: image optimizer limits and SVG off (#452).
-- **Production was stuck on #437** (`8043011`, 2026-11-15 08:41): every Production Deploy since #403 failed in its
-  `test` job, because the workflow's CLI `--testPathIgnorePatterns` replaces jest.config's list and so ran the
-  vendored `.claude/` node:test files. **#457** repeats the config's entries in the workflow. Its deploy
-  (run 43841367319) shipped all 13 pending commits, including #440 (Next 16.4.6 / Sharp 0.35.5, SEC-01) and #449
-  (Sanity 6). The VPS runs Node v24.22.2 (Sanity 6 needs >= 22.12).
-- **SEC-12** (#454 → #455, deploy run 43842525810): live `script-src` is
-  `'self' 'nonce-…' 'strict-dynamic' https://analytics.idaromme.dk`, without `https: http:`.
-- **SEC-04** needed no change: master's IndexNow POST already has a bearer secret, a 100-URL cap, dedupe and a timeout (#440).
-- **`npm audit` on master**: `--omit=dev` 19 (4 low, 15 moderate, 0 high, 0 critical); all 42. What is left is
-  minimatch via the Sanity CLI tooling and deepmerge via `resend`; npm's only "fix" is a major downgrade for both.
-- **SEC-07** (#458 → draft #459): the host verification step now fails unless `VULTR_KNOWN_HOSTS` and
-  `VULTR_HOST_FINGERPRINT` are both set. `tests/unit/deploy-ssh-host-verification.test.ts` runs the step's script
-  with bash (3 of 6 failed on the old workflow).
-
-- **SEC-09** (#460): `scripts/audit-gate.js` fails on high/critical advisories in production dependencies unless
-  `.github/audit-exceptions.json` lists them with a reason and an unexpired `expires` date (expired or incomplete
-  entries fail too). It gates Production Deploy (`security-scan`, a `needs` of `deploy`), Unit Tests on PRs, and the
-  weekly monitor, which now opens or comments on an open "Weekly npm audit gate failing" issue (#45 is closed).
-
-- **SEC-08** (#462): every `uses:` (54) is pinned to a full commit SHA with the version in a comment; the shared
-  `maxrantil/.github` reusable workflows are pinned to `0075ab5` (master, 2026-11-09), so changes there now need a
-  bump here. `@lhci/cli@0.12.0` exact. `.github/dependabot.yml` updates `github-actions` weekly in one grouped PR.
-  `tests/unit/ci-pinned-actions.test.ts` fails on any unpinned `uses:` or ranged `npm install -g`.
+- **Production deploys were broken since #403** (stuck on #437, `8043011`): the deploy's CLI
+  `--testPathIgnorePatterns` replaced jest.config's list, so Jest ran the vendored `.claude/` node:test files.
+  **#457** fixed it and shipped 13 pending commits, incl. #440 (Next 16.4.6 / Sharp 0.35.5, SEC-01) and #449 (Sanity 6).
+- **#453** (SEC-01/02 config): SVG optimization off, image disk cache 256 MB, source 10 MB.
+- **SEC-12** (#455): live `script-src` has no `https: http:` fallback.
+- **SEC-04**: already fixed on master by #440 (bearer secret, fails closed, URL cap, timeout); no change.
+- **SEC-07** (#459): the deploy fails unless `VULTR_KNOWN_HOSTS` and `VULTR_HOST_FINGERPRINT` are set on the
+  `production` environment. Both are set (2026-11-16), checked against the Vultr console: known_hosts has the
+  ED25519 and ECDSA keys for `70.34.205.18,idaromme.dk`; the fingerprint is **ECDSA**
+  (`SHA256:wzd1YXe3sDEoWyL7/qhNGjyN4vI1/A/IhtAFXGFNVdw`) because appleboy/ssh-action's Go client prefers
+  ecdsa-sha2-nistp256 over ssh-ed25519. If the VPS host keys are ever regenerated, update both secrets.
+- **SEC-09** (#461): `scripts/audit-gate.js` fails on high/critical production advisories unless
+  `.github/audit-exceptions.json` lists them with `advisory`, `reason` and `expires` (YYYY-MM-DD). It gates
+  Production Deploy (`security-scan`), Unit Tests on PRs, and the weekly monitor (opens/comments on an open
+  "Weekly npm audit gate failing" issue). First deploy run: 19 total, 0 high, 0 critical.
+- **SEC-08** (#463): all 54 `uses:` pinned to commit SHAs (version in a comment); shared `maxrantil/.github`
+  workflows pinned to `0075ab5`; `@lhci/cli@0.12.0`; `.github/dependabot.yml` bumps github-actions weekly (grouped).
+- **#465** (this PR): every workflow has a workflow-level `permissions: contents: read`; `bundle-size-check` is
+  explicitly read-only. Its PR comment has never posted (no write permission) and stays off by Doctor Hubert's
+  decision. Every existing job-level `write` grant was checked against the shared workflows and is used.
+- `tests/unit/ci-pinned-actions.test.ts` fails on an unpinned `uses:`, a ranged `npm install -g`, a missing
+  Dependabot config, or a workflow without workflow-level `permissions:`.
+- `npm audit` on master: `--omit=dev` 19 (4 low, 15 moderate); all deps 42. Remaining: minimatch via the Sanity CLI
+  tooling and deepmerge via `resend`; npm's only "fix" is a major downgrade for both.
 
 ## 🎯 Current Project State
 
-**Tests**: ✅ Jest 1390 passed / 16 skipped on #459; production deploys green
-**Branch**: ✅ worktrees clean and pushed; `../textile-sec12` (#455, merged) can be removed
-**CI/CD**: ✅ production on `1749bb1`; ⏸️ #459 must not merge before both secrets are set on the `production` environment
+**Tests**: ✅ Jest 1403 passed / 16 skipped on this branch
+**Branch**: ✅ clean and pushed; `../textile-sec02` (merged #459 branch) and `../textile-sec08` can be removed after merge
+**CI/CD**: ✅ production on `3c58f2e` (#463), every deploy job green, host key verified, audit gate passing
 
 ### Agent Validation Status
 
@@ -46,13 +46,19 @@ The named validation agents are not available in this environment and were not r
 
 ## 🚀 Next Session Priorities
 
-1. SEC-07: Doctor Hubert checks the host key on the Vultr console (`ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub`;
-   the 2026-11-16 scan saw ED25519 `SHA256:QjynehVtlq1cUETAKfWsMmAeRvRfuXvZ633OevMgKHE`), sets both secrets, then
-   #459 is marked ready, merged, and its deploy watched. A fingerprint the Go SSH client does not pick (it may
-   negotiate ECDSA) fails the "Deploy on VPS" step after rsync; the live site is untouched in that case
-2. SEC-08 (pin actions to SHAs), SEC-09 (blocking `npm audit` gate)
-3. SEC-05/06, SEC-10/11 (verify live headers and nonce), SEC-13–15; `set -e` for the VPS deploy script (separate change)
-4. Look at `.next/cache/images` on the VPS after #453; carried over: Umami Realtime check, LCP levers
+1. **Faster deploys on the 2 GB VPS** (Doctor Hubert asked; not started). Measured on run 43861604493: site live
+   after ~2.5 min (tests/audit/build in parallel ~76 s, rsync ~19 s, "Deploy on VPS" ~40 s); smoke tests add ~3.5 min
+   after that. Ideas, best first:
+   - Skip `rm -rf node_modules && npm ci --omit=dev` on the VPS when `package-lock.json` is unchanged (store its hash).
+     PM2 is stopped *before* `npm ci`, so this also cuts the downtime window from ~30 s to a few seconds.
+   - `ecosystem.config.js` still has 1 GB values (`--max-old-space-size=512`, `max_memory_restart: '400M'`); ~1024 /
+     ~800M fit 2 GB. Check `pm2 describe idaromme-website` first: the deploy restarts an existing process, so it is
+     unknown whether ecosystem.config.js is in effect.
+   - Optional: PM2 cluster mode, 2 instances + `pm2 reload` for zero downtime (depends on the vCPU count).
+   - Cache Playwright browsers in production-validation (~31 s, after go-live).
+2. Remaining audit items: SEC-05/06, SEC-10/11 (verify live headers and nonce), SEC-13–15; `set -e` for the VPS script
+3. The actions inside `maxrantil/.github`'s reusable workflows still use tags (change in that repo)
+4. Carried over: `.next/cache/images` on the VPS after #453, Umami Realtime check, LCP levers
 
 ### Possible follow-up
 
@@ -133,14 +139,14 @@ The named validation agents are not available in this environment and were not r
 
 ## 📝 Startup Prompt for Next Session
 
-Read CLAUDE.md to understand our workflow, then finish SEC-07 (#458, draft PR #459: deploy fails without the VPS host key).
+Read CLAUDE.md to understand our workflow, then speed up production deploys for the 2 GB VPS (security follow-up #452–#465 complete).
 
-**Immediate priority**: once both host key secrets are set on the `production` environment, mark #459 ready, merge, watch the deploy; then SEC-08/SEC-09 (2-3 hours)
-**Context**: production runs current master again (#457 fixed the deploy test step); SEC-12 is live, SEC-04 was already fixed
-**Reference docs**: SESSION_HANDOVER.md, docs/guides/SECURITY-AUDIT-2026-11-15.md, `.github/workflows/production-deploy.yml`
-**Ready state**: master in ../textile-showcase; #459 in ../textile-sec02; ../textile-sec12 can be removed
+**Immediate priority**: skip the VPS `npm ci` when `package-lock.json` is unchanged, and update `ecosystem.config.js` memory limits for 2 GB after checking `pm2 describe` (2-3 hours)
+**Context**: deploys work again (#457), host key pinned (SEC-07), audit gate blocking (SEC-09), actions SHA-pinned (SEC-08)
+**Reference docs**: SESSION_HANDOVER.md (timings in Next Session Priorities), `.github/workflows/production-deploy.yml`, `ecosystem.config.js`
+**Ready state**: master in ../textile-showcase, production on the latest master, all deploys green
 
-**Expected scope**: #459 merged with a verified host key, actions pinned to SHAs, `npm audit` gate blocking in CI
+**Expected scope**: "Deploy on VPS" under ~15 s for lockfile-unchanged deploys with a shorter downtime window, memory limits fitted to 2 GB
 
 ## 📚 Key Reference Documents
 
