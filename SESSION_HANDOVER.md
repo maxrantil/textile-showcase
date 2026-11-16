@@ -1,32 +1,38 @@
-# Session Handoff: faster VPS deploys (#467) — merged and deployed
+# Session Handoff: production-validation readiness poll (#470); faster VPS deploys (#467) landed
 
 **Date**: 2026-11-16
-**Issue**: #467 closed; #465 closed
-**PR**: merged #466 (`8bd0d79`, workflow permissions) then #468 (`1344370`, faster VPS deploys, rebased on #466); this PR: handoff only (also the second deploy of the new script)
-**Branch**: docs/issue-467-deploy-handoff
+**Issue**: #470 (open, closes with this PR); #465 and #467 closed
+**PR**: this PR (#470 readiness poll); merged #466 (`8bd0d79`), #468 (`1344370`), #469 (`ed70168`, handoff)
+**Branch**: perf/issue-470-readiness-poll
 
 ---
 
 ## ✅ Completed This Session
 
-- **#466 merged first** (`8bd0d79`); its Production Deployment (run 43877543407) passed every job.
-- **#468 rebased on it**: only `SESSION_HANDOVER.md` conflicted; `production-deploy.yml` merged cleanly and keeps
-  #466's workflow-level `permissions: contents: read`. All PR checks green. Lighthouse Performance CI did not run:
-  it is path-filtered to `src/`, `public/`, `package*.json` etc., which #468 does not touch.
-- **First deploy of `scripts/deploy/vps-release.sh`** (run 43878817878, `1344370`): all jobs green.
-  "Deploy on VPS" took **36 s** (13:47:34–13:48:10 UTC). It still ran `npm ci`, as expected: there was no
-  `node_modules/.deploy-lock-hash` on the VPS yet. Rsync 8 s; production-validation ~3 min (Install
-  dependencies 26 s, Install Playwright 27 s, stabilize wait 30 s, smoke tests 89 s).
-- Earlier (previous session, in #468): `vps-release.sh` reinstalls production dependencies only when
-  sha256(`package-lock.json` + `node --version`) changes; PM2 restarts from `ecosystem.config.js`
-  (`pm2 delete` + `pm2 start ecosystem.config.js --only idaromme-website` + `pm2 save`) with
-  `--max-old-space-size=1024` and `max_memory_restart: '800M'`; the process runs as user **`deploy`**.
+- **#470 (this PR)**: production-validation's fixed `sleep 30` ("Wait for deployment to stabilize") is replaced by
+  "Wait for production to answer": `curl --fail --max-time 10` on `https://idaromme.dk/` every 2 s, up to 30
+  attempts, then `::error::` and exit 1. The deploy job only ends after PM2 has started the new build, and the
+  poll runs after `npm ci` and the Playwright install (~45 s later), so it should answer on attempt 1 and save
+  ~30 s per deploy. `tests/unit/deploy-production-readiness.test.ts` (6) runs the step with stub `curl`/`sleep`.
+- **Playwright browser cache considered and dropped**: of the 25 s "Install Playwright" step (run 43883724418),
+  ~16.5 s is apt system deps (`--with-deps`, not cacheable) and ~8 s browser downloads, about what an Actions
+  cache restore of the same files costs.
+- **#466 merged first** (`8bd0d79`), then **#468 rebased on it** and merged (`1344370`). Only
+  `SESSION_HANDOVER.md` conflicted; `production-deploy.yml` keeps #466's `permissions: contents: read`.
+  Lighthouse Performance CI does not run on PRs that only touch deploy files (path filter).
+- **"Deploy on VPS" timings**: ~40 s before #468 (run 43861604493); **36 s** on the first deploy of
+  `scripts/deploy/vps-release.sh` (run 43878817878, `npm ci` ran: no stamp yet); **3 s** on the second
+  (run 43883724418, `ed70168`, `npm ci` skipped). All jobs green on all three.
+- **VPS checked** (Doctor Hubert, after the first deploy): `pm2 describe idaromme-website` (as `deploy`) runs
+  `node_modules/next/dist/bin/next start` with `--max-old-space-size=1024`, max memory restart 800M, fork mode,
+  Node 24.22.2, ~55 MiB heap at idle. `free -m`: 1968 MB total, 1414 available; swap 374 of 5399 MB used.
+  `pm2-deploy` is enabled in systemd. `/etc/hosts` now has the `vps-sto-1` hostname.
 
 ## 🎯 Current Project State
 
-**Tests**: ✅ all PR checks green on #468; deploy and pinned-actions tests 22/22 locally after the rebase
-**Branch**: ✅ master at `1344370`; this branch only changes this file
-**CI/CD**: ✅ production on `1344370`. The merge of this PR is the second deploy of the new script, and should skip `npm ci`
+**Tests**: ✅ deploy and pinned-actions tests 34/34 locally; shellcheck clean on the poll; full CI on the PR
+**Branch**: ✅ clean and pushed
+**CI/CD**: ✅ production on `ed70168`; #470 not deployed yet
 
 ### Agent Validation Status
 
@@ -34,34 +40,26 @@ The named validation agents are not available in this environment and were not r
 
 ## 🚀 Next Session Priorities
 
-1. **Check the second deploy** (the Production Deployment run for this PR's merge): "Deploy on VPS" should be
-   under ~15 s (36 s with `npm ci`; ~40 s before #468 on run 43861604493). If it is still ~35 s, the stamp
-   check is not matching: compare `cat node_modules/.deploy-lock-hash` on the VPS with the script's hash.
-2. **VPS checked** (Doctor Hubert, 2026-11-16, after the first deploy):
-   - ✅ `pm2 describe idaromme-website` (as `deploy`): script `/var/www/idaromme.dk/node_modules/next/dist/bin/next start`,
-     interpreter args `--max-old-space-size=1024`, max memory restart 838860800 (800M), fork mode, Node 24.22.2,
-     0 restarts. Heap ~55 MiB in use at idle.
-   - ✅ `free -m`: 1968 MB total, 553 used, 1414 available; swap 5399 MB, 374 used. Plenty of headroom.
-   - ✅ `systemctl is-enabled pm2-deploy`: enabled, so `pm2 save` brings the site back after a reboot.
-   - ✅ `/etc/hosts` now has the `vps-sto-1` hostname (sudo warned it could not resolve it).
-3. Optional deploy speed-ups: carry `.next/cache/images` from the old build into the new one (the swap
-   drops it, so every image is re-optimised after each deploy); cache Playwright browsers in production-validation
-   (~27 s); PM2 cluster mode + `pm2 reload` for zero downtime (check `nproc`).
-4. Remaining audit items: SEC-05/06, SEC-10/11 (verify live headers and nonce), SEC-13–15
-5. The actions inside `maxrantil/.github`'s reusable workflows still use tags (change in that repo)
-6. Carried over: Umami Realtime check, LCP levers
+1. **After #470 merges**: its own Production Deployment is the first run of the poll. Check that
+   "Wait for production to answer" takes ~1 s ("answered on attempt 1") and production-validation is ~30 s shorter
+   (~2 min 44 s on run 43883724418).
+2. Optional deploy speed-ups: carry `.next/cache/images` from the old build into the new one (the swap
+   drops it, so every image is re-optimised after each deploy); PM2 cluster mode + `pm2 reload` for zero downtime
+   (check `nproc`); smoke tests take ~85 s (Desktop Chrome + Desktop Firefox).
+3. Remaining audit items: SEC-05/06, SEC-10/11 (verify live headers and nonce), SEC-13–15
+4. The actions inside `maxrantil/.github`'s reusable workflows still use tags (change in that repo)
+5. Carried over: Umami Realtime check, LCP levers
 
 ## 📝 Startup Prompt for Next Session
 
-Read CLAUDE.md to understand our workflow, then verify the second deploy of #467's faster VPS deploy script.
+Read CLAUDE.md to understand our workflow, then confirm the #470 readiness poll on its first production deploy.
 
-**Immediate priority**: check the "Deploy on VPS" time of the Production Deployment for the handoff merge (15 min)
-**Context**: #466 and #468 are merged and deployed; the first deploy took 36 s with `npm ci`, and the second should skip it
-**Reference docs**: SESSION_HANDOVER.md, scripts/deploy/vps-release.sh, ecosystem.config.js
+**Immediate priority**: check "Wait for production to answer" in the Production Deployment for #470's merge (15 min)
+**Context**: VPS deploys now take 3 s for "Deploy on VPS"; #470 removes a fixed 30 s sleep from production-validation
+**Reference docs**: SESSION_HANDOVER.md, .github/workflows/production-deploy.yml
 **Ready state**: master clean, production green
 
-**Expected scope**: "Deploy on VPS" under ~15 s (PM2 already verified: Next with the 1024 MB heap); then pick the next deploy speed-up or audit item
-
+**Expected scope**: poll answers on attempt 1 and production-validation is ~30 s shorter; then pick the next deploy speed-up or an audit item
 
 ### Possible follow-up
 
