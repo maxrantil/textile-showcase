@@ -1,44 +1,33 @@
-# Session Handoff: security audit follow-up, SEC-07/08/09/12 live, deploys fixed
+# Session Handoff: faster VPS deploys (#467) — draft PR, not deployed yet
 
 **Date**: 2026-11-16
-**Issue**: closed #452, #454, #456, #458, #460, #462; #465 (workflow permissions) closes with this PR
-**PR**: merged #453, #457, #455, #459, #461, #463; this PR: workflow-level read-only permissions (#465)
-**Branch**: fix/issue-465-workflow-permissions (worktree `../textile-sec08`)
+**Issue**: #467 (open, closes with the PR)
+**PR**: draft #468 `feat/issue-467-fast-vps-deploy`; #466 (#465, workflow permissions) merged first as `8bd0d79`, this branch rebased on it
+**Branch**: feat/issue-467-fast-vps-deploy
 
 ---
 
 ## ✅ Completed This Session
 
-- **Production deploys were broken since #403** (stuck on #437, `8043011`): the deploy's CLI
-  `--testPathIgnorePatterns` replaced jest.config's list, so Jest ran the vendored `.claude/` node:test files.
-  **#457** fixed it and shipped 13 pending commits, incl. #440 (Next 16.4.6 / Sharp 0.35.5, SEC-01) and #449 (Sanity 6).
-- **#453** (SEC-01/02 config): SVG optimization off, image disk cache 256 MB, source 10 MB.
-- **SEC-12** (#455): live `script-src` has no `https: http:` fallback.
-- **SEC-04**: already fixed on master by #440 (bearer secret, fails closed, URL cap, timeout); no change.
-- **SEC-07** (#459): the deploy fails unless `VULTR_KNOWN_HOSTS` and `VULTR_HOST_FINGERPRINT` are set on the
-  `production` environment. Both are set (2026-11-16), checked against the Vultr console: known_hosts has the
-  ED25519 and ECDSA keys for `70.34.205.18,idaromme.dk`; the fingerprint is **ECDSA**
-  (`SHA256:wzd1YXe3sDEoWyL7/qhNGjyN4vI1/A/IhtAFXGFNVdw`) because appleboy/ssh-action's Go client prefers
-  ecdsa-sha2-nistp256 over ssh-ed25519. If the VPS host keys are ever regenerated, update both secrets.
-- **SEC-09** (#461): `scripts/audit-gate.js` fails on high/critical production advisories unless
-  `.github/audit-exceptions.json` lists them with `advisory`, `reason` and `expires` (YYYY-MM-DD). It gates
-  Production Deploy (`security-scan`), Unit Tests on PRs, and the weekly monitor (opens/comments on an open
-  "Weekly npm audit gate failing" issue). First deploy run: 19 total, 0 high, 0 critical.
-- **SEC-08** (#463): all 54 `uses:` pinned to commit SHAs (version in a comment); shared `maxrantil/.github`
-  workflows pinned to `0075ab5`; `@lhci/cli@0.12.0`; `.github/dependabot.yml` bumps github-actions weekly (grouped).
-- **#465** (this PR): every workflow has a workflow-level `permissions: contents: read`; `bundle-size-check` is
-  explicitly read-only. Its PR comment has never posted (no write permission) and stays off by Doctor Hubert's
-  decision. Every existing job-level `write` grant was checked against the shared workflows and is used.
-- `tests/unit/ci-pinned-actions.test.ts` fails on an unpinned `uses:`, a ranged `npm install -g`, a missing
-  Dependabot config, or a workflow without workflow-level `permissions:`.
-- `npm audit` on master: `--omit=dev` 19 (4 low, 15 moderate); all deps 42. Remaining: minimatch via the Sanity CLI
-  tooling and deepmerge via `resend`; npm's only "fix" is a major downgrade for both.
+- **`scripts/deploy/vps-release.sh`**: the "Deploy on VPS" step now only pulls the source, writes `.env.local`
+  and runs this script. It reinstalls production dependencies (stopping PM2 first, #302) only when
+  sha256(`package-lock.json` + `node --version`) differs from `node_modules/.deploy-lock-hash`; otherwise PM2 keeps
+  serving until the swap. `.next` is backed up with `mv` (was `cp -r`) right before the restart.
+- **PM2 on the VPS** (`pm2 describe`, 2026-11-16): runs as user **`deploy`** (not `max`), script `npm start`,
+  started by the deploy's fallback, so `ecosystem.config.js` was never in effect and no memory limit applied (with
+  npm as the process, the limits would have hit npm, not Next). The script now runs `pm2 delete` +
+  `pm2 start ecosystem.config.js --only idaromme-website` + `pm2 save` on every deploy, because `pm2 restart`
+  keeps a process's first options.
+- **`ecosystem.config.js`**: `--max-old-space-size=1024`, `max_memory_restart: '800M'`; the `/home/max` log
+  paths are dropped (PM2 default: `/home/deploy/.pm2/logs/idaromme-website-*.log`, the same files as today).
+- **Tests**: `tests/unit/deploy-vps-release.test.ts` (17) runs the real script with stub `npm`/`pm2`/`node`;
+  shellcheck clean.
 
 ## 🎯 Current Project State
 
-**Tests**: ✅ Jest 1403 passed / 16 skipped on this branch
-**Branch**: ✅ clean and pushed; `../textile-sec02` (merged #459 branch) and `../textile-sec08` can be removed after merge
-**CI/CD**: ✅ production on `3c58f2e` (#463), every deploy job green, host key verified, audit gate passing
+**Tests**: ✅ deploy tests 26/26 locally; full CI on the draft PR
+**Branch**: ✅ clean and pushed
+**CI/CD**: production on `3c58f2e`; nothing from #467 deployed yet
 
 ### Agent Validation Status
 
@@ -46,19 +35,30 @@ The named validation agents are not available in this environment and were not r
 
 ## 🚀 Next Session Priorities
 
-1. **Faster deploys on the 2 GB VPS** (Doctor Hubert asked; not started). Measured on run 43861604493: site live
-   after ~2.5 min (tests/audit/build in parallel ~76 s, rsync ~19 s, "Deploy on VPS" ~40 s); smoke tests add ~3.5 min
-   after that. Ideas, best first:
-   - Skip `rm -rf node_modules && npm ci --omit=dev` on the VPS when `package-lock.json` is unchanged (store its hash).
-     PM2 is stopped *before* `npm ci`, so this also cuts the downtime window from ~30 s to a few seconds.
-   - `ecosystem.config.js` still has 1 GB values (`--max-old-space-size=512`, `max_memory_restart: '400M'`); ~1024 /
-     ~800M fit 2 GB. Check `pm2 describe idaromme-website` first: the deploy restarts an existing process, so it is
-     unknown whether ecosystem.config.js is in effect.
-   - Optional: PM2 cluster mode, 2 instances + `pm2 reload` for zero downtime (depends on the vCPU count).
-   - Cache Playwright browsers in production-validation (~31 s, after go-live).
-2. Remaining audit items: SEC-05/06, SEC-10/11 (verify live headers and nonce), SEC-13–15; `set -e` for the VPS script
-3. The actions inside `maxrantil/.github`'s reusable workflows still use tags (change in that repo)
-4. Carried over: `.next/cache/images` on the VPS after #453, Umami Realtime check, LCP levers
+1. **Merge #466 or #468 first, rebase the other** (both edit `production-deploy.yml`). Then watch the #468 deploy:
+   - First deploy still runs `npm ci` (no stamp on the VPS yet); the one after it should skip it. Target:
+     "Deploy on VPS" under ~15 s (was ~40 s on run 43861604493).
+   - After it: `sudo -u deploy -i pm2 describe idaromme-website` should show script path
+     `.../node_modules/next/dist/bin/next` and the 1024 MB heap in `node_args`; the site answers on 3001.
+   - Check `free -m` on the VPS (not yet seen) and whether 800M/1024 leave room for anything else on the box.
+   - Check that `pm2 startup` is set up for `deploy`, or `pm2 save` will not bring the site back after a reboot.
+2. Optional deploy speed-ups: carry `.next/cache/images` from the old build into the new one (the swap
+   drops it, so every image is re-optimised after each deploy); cache Playwright browsers in production-validation
+   (~31 s); PM2 cluster mode + `pm2 reload` for zero downtime (check `nproc`).
+3. Remaining audit items: SEC-05/06, SEC-10/11 (verify live headers and nonce), SEC-13–15
+4. The actions inside `maxrantil/.github`'s reusable workflows still use tags (change in that repo)
+5. Carried over: Umami Realtime check, LCP levers
+
+## 📝 Startup Prompt for Next Session
+
+Read CLAUDE.md to understand our workflow, then land #468 (faster VPS deploys, Issue #467).
+
+**Immediate priority**: merge #466/#468 in order, rebase the second, watch two production deploys (1 hour)
+**Context**: the VPS skips `npm ci` when the lockfile is unchanged; PM2 now starts from ecosystem.config.js (2 GB limits)
+**Reference docs**: SESSION_HANDOVER.md, scripts/deploy/vps-release.sh, ecosystem.config.js
+**Ready state**: branch feat/issue-467-fast-vps-deploy pushed, draft PR open, production on 3c58f2e
+
+**Expected scope**: "Deploy on VPS" under ~15 s on the second deploy; `pm2 describe` (as `deploy`) shows Next with the 1024 MB heap
 
 ### Possible follow-up
 
@@ -139,14 +139,14 @@ The named validation agents are not available in this environment and were not r
 
 ## 📝 Startup Prompt for Next Session
 
-Read CLAUDE.md to understand our workflow, then speed up production deploys for the 2 GB VPS (security follow-up #452–#465 complete).
+Read CLAUDE.md to understand our workflow, then finish SEC-07 (#458, draft PR #459: deploy fails without the VPS host key).
 
-**Immediate priority**: skip the VPS `npm ci` when `package-lock.json` is unchanged, and update `ecosystem.config.js` memory limits for 2 GB after checking `pm2 describe` (2-3 hours)
-**Context**: deploys work again (#457), host key pinned (SEC-07), audit gate blocking (SEC-09), actions SHA-pinned (SEC-08)
-**Reference docs**: SESSION_HANDOVER.md (timings in Next Session Priorities), `.github/workflows/production-deploy.yml`, `ecosystem.config.js`
-**Ready state**: master in ../textile-showcase, production on the latest master, all deploys green
+**Immediate priority**: once both host key secrets are set on the `production` environment, mark #459 ready, merge, watch the deploy; then SEC-08/SEC-09 (2-3 hours)
+**Context**: production runs current master again (#457 fixed the deploy test step); SEC-12 is live, SEC-04 was already fixed
+**Reference docs**: SESSION_HANDOVER.md, docs/guides/SECURITY-AUDIT-2026-11-15.md, `.github/workflows/production-deploy.yml`
+**Ready state**: master in ../textile-showcase; #459 in ../textile-sec02; ../textile-sec12 can be removed
 
-**Expected scope**: "Deploy on VPS" under ~15 s for lockfile-unchanged deploys with a shorter downtime window, memory limits fitted to 2 GB
+**Expected scope**: #459 merged with a verified host key, actions pinned to SHAs, `npm audit` gate blocking in CI
 
 ## 📚 Key Reference Documents
 
