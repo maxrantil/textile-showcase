@@ -1,13 +1,29 @@
-# Session Handoff: SEC-10 and SEC-11 fixed (#475); deploy speed-ups landed (#467, #470, #473)
+# Session Handoff: security audit follow-up — SEC-05 (#477); SEC-10/11 live (#475)
 
 **Date**: 2026-11-16
-**Issue**: #475 (open, closes with this PR); #465, #467, #470, #473 closed
-**PR**: this PR (#475); merged #466, #468, #469, #471, #472, #474 (`c78516d`)
-**Branch**: fix/issue-475-cache-and-nonce
+**Issue**: #477 (open, closes with this PR); #465, #467, #470, #473, #475 closed
+**PR**: this PR (#477); merged #466, #468, #469, #471, #472, #474, #476 (`fb7d9ed`)
+**Branch**: fix/issue-477-contact-honeypot-timeout
 
 ---
 
 ## ✅ Completed This Session
+
+- **Audit status on master** (docs/guides/SECURITY-AUDIT-2026-11-15.md): fixed SEC-01–04, 07–12, SEC-05 with this
+  PR; **SEC-14 was already fixed** (control characters stripped from the subject, `tests/api/contact.test.ts`
+  "should strip control characters"). Remaining: SEC-06 (partly done), SEC-13, SEC-15. Doctor Hubert asked to work
+  through them one by one without waiting for input (2026-11-16).
+- **SEC-05 (this PR)**: hidden `website` honeypot in both contact-form layouts
+  (`src/components/shared/Forms/HoneypotField.tsx`, name in `src/lib/honeypot.ts`; off-screen, `aria-hidden`,
+  `tabIndex=-1`, `autocomplete=off`). The hook sends it only when filled; the API answers a filled one with the
+  normal success body, sends nothing and does not count it against the global cap. The Resend send is raced
+  against `RESEND_TIMEOUT_MS` (10 s, in `src/lib/rateLimit.ts`: route files may only export handlers). Tests: 4 in
+  `tests/api/contact.test.ts`, 4 in `AdaptiveContactForm.test.tsx`; 275/275 across the contact-form suites;
+  local build checked (markup present, honeypot POST → success, no email).
+- **SEC-05 proxy trust verified live**: 25 POSTs of `{}` to `/api/csp-report` (same `getClientIp`, 20/min), each
+  with a different forged `X-Forwarded-For`/`X-Real-IP`, gave 20× 204 then 429: Nginx appends the real address.
+- **#476 deployed** (run 43913955413): `/` is `private, no-cache, no-store`; 19 nonced scripts, none missing.
+  production-validation **2 min 31 s** (npm cache restored: `npm ci` 22 s; image pull 36 s; smoke tests 85 s).
 
 - **SEC-10 (this PR)**: the catch-all Cache-Control was already gone, but production served `/` with
   `public, max-age=31536000, immutable`. Cause: the icon rule `source: '/(favicon|apple-touch-icon|icon)*'` in
@@ -66,9 +82,9 @@
 
 ## 🎯 Current Project State
 
-**Tests**: ✅ middleware, next-config and analytics-provider suites 108/108 locally; local production build OK
+**Tests**: ✅ contact-form suites 275/275 locally; local production build OK
 **Branch**: ✅ clean and pushed
-**CI/CD**: ✅ production on `c78516d`; #475 not deployed yet
+**CI/CD**: ✅ production on `fb7d9ed`; #477 not deployed yet
 
 ### Agent Validation Status
 
@@ -76,26 +92,26 @@ The named validation agents are not available in this environment and were not r
 
 ## 🚀 Next Session Priorities
 
-1. **After #475 deploys**: `curl -sI https://idaromme.dk/ | grep -i cache-control` should be `private, no-cache,
-   no-store…`, and the page's script nonces should match the CSP header. On that same run, production-validation's
-   `npm ci` should restore the `/root/.npm` cache (~20 s, not 74 s).
+1. **Next audit items**: SEC-06 (CSP reports: require a report content type, drop query strings/fragments from
+   logged URIs; size caps and 20/min limit already exist), SEC-13 (`/api/health` public body down to `status`),
+   SEC-15 (privacy notice: needs Doctor Hubert's input on wording and Umami settings).
 2. Optional deploy speed-ups: the build job (~2 min) gates go-live; carry `.next/cache/images` from the old build
    into the new one (the swap drops it, so every image is re-optimised after each deploy); PM2 cluster mode +
    `pm2 reload` for zero downtime (check `nproc`); smoke tests take ~85–93 s (Desktop Chrome + Desktop Firefox).
-3. Remaining audit items: SEC-05/06, SEC-13–15; then a full re-audit (a prompt for that was drafted in chat)
+3. After SEC-15: a full re-audit (a prompt for that was drafted in chat)
 4. The actions inside `maxrantil/.github`'s reusable workflows still use tags (change in that repo)
 5. Carried over: Umami Realtime check, LCP levers
 
 ## 📝 Startup Prompt for Next Session
 
-Read CLAUDE.md to understand our workflow, then confirm #475 (SEC-10/SEC-11) in production and pick the next audit item.
+Read CLAUDE.md to understand our workflow, then continue the security audit follow-up with SEC-06.
 
-**Immediate priority**: check `/` is no longer cached immutable and nonces match on the live site; check the container `npm ci` hit its cache (15 min)
-**Context**: SEC-01–04, 07–12 are fixed; SEC-05, 06, 13, 14, 15 remain (docs/guides/SECURITY-AUDIT-2026-11-15.md)
+**Immediate priority**: SEC-06 CSP-report hardening, then SEC-13 health endpoint (1–2 hours)
+**Context**: SEC-01–05, 07–12, 14 are fixed; SEC-06, 13, 15 remain (docs/guides/SECURITY-AUDIT-2026-11-15.md)
 **Reference docs**: SESSION_HANDOVER.md, docs/guides/SECURITY-AUDIT-2026-11-15.md
 **Ready state**: master clean, production green on the latest merge
 
-**Expected scope**: SEC-05 + SEC-06 (contact rate limiting behind Nginx, bounded CSP reports) as one issue + PR with tests
+**Expected scope**: one issue + PR with tests per finding; SEC-15 needs Doctor Hubert's wording
 
 ### Possible follow-up
 
