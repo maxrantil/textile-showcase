@@ -8,13 +8,39 @@ import {
   checkRateLimit,
   GLOBAL_CONTACT_LIMIT,
   GLOBAL_CONTACT_WINDOW_MS,
+  RESEND_TIMEOUT_MS,
 } from '@/lib/rateLimit'
 import { getClientIp } from '@/lib/clientIp'
+import { HONEYPOT_FIELD } from '@/lib/honeypot'
 
 /** Largest accepted request body; a max-length submission is well under this */
 const MAX_BODY_BYTES = 16 * 1024
 
 const GLOBAL_RATE_LIMIT_KEY = '__contact_global__'
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined
+  return Promise.race([
+    promise,
+    new Promise<never>((_, reject) => {
+      timer = setTimeout(
+        () => reject(new Error(`Resend did not answer within ${ms} ms`)),
+        ms
+      )
+    }),
+  ]).finally(() => clearTimeout(timer))
+}
+
+function filledHoneypot(body: unknown): boolean {
+  if (typeof body !== 'object' || body === null) return false
+  const value = (body as Record<string, unknown>)[HONEYPOT_FIELD]
+  return typeof value === 'string' && value.trim() !== ''
+}
+
+const SUCCESS_BODY = {
+  success: true,
+  message: 'Your message has been sent successfully!',
+}
 
 // HTML-escape user input before interpolating into the email body
 function escapeHtml(str: string): string {
@@ -90,6 +116,12 @@ export async function POST(request: NextRequest) {
       return jsonError('Invalid JSON', 400)
     }
 
+    // Answer like a real send so the bot learns nothing, and send no email
+    if (filledHoneypot(body)) {
+      console.warn('Contact form honeypot filled; message dropped')
+      return NextResponse.json(SUCCESS_BODY)
+    }
+
     // Validate with Zod schema
     const validation = contactFormSchema.safeParse(body)
     if (!validation.success) {
@@ -129,12 +161,13 @@ export async function POST(request: NextRequest) {
     const resend = new Resend(apiKey)
 
     // Send email
-    const { error } = await resend.emails.send({
-      from: 'contact@idaromme.dk',
-      to: [process.env.CONTACT_EMAIL || 'idaromme@gmail.com'],
-      replyTo: email,
-      subject: `New Contact Form Message from ${stripControlChars(name)}`,
-      html: `
+    const { error } = await withTimeout(
+      resend.emails.send({
+        from: 'contact@idaromme.dk',
+        to: [process.env.CONTACT_EMAIL || 'idaromme@gmail.com'],
+        replyTo: email,
+        subject: `New Contact Form Message from ${stripControlChars(name)}`,
+        html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #333;">New Contact Form Message</h2>
           <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin: 20px 0;">
@@ -150,17 +183,16 @@ export async function POST(request: NextRequest) {
           </div>
         </div>
       `,
-    })
+      }),
+      RESEND_TIMEOUT_MS
+    )
 
     if (error) {
       console.error('Resend error:', error)
       return jsonError('Failed to send message. Please try again.', 500)
     }
 
-    return NextResponse.json({
-      success: true,
-      message: 'Your message has been sent successfully!',
-    })
+    return NextResponse.json(SUCCESS_BODY)
   } catch (error) {
     console.error('Contact form error:', error)
     return jsonError('An unexpected error occurred. Please try again.', 500)

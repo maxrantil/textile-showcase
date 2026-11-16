@@ -3,6 +3,7 @@
 
 import { MobileFormField } from './MobileFormField'
 import { MobileButton } from '../UI/MobileButton'
+import { HoneypotField } from '@/components/shared/Forms/HoneypotField'
 import { useVirtualKeyboard } from '@/hooks/mobile/useVirtualKeyboard'
 import {
   useContactForm,
@@ -43,6 +44,7 @@ export function MobileContactFormView({ form }: { form: ContactFormState }) {
       onSubmit={handleSubmit}
       noValidate
     >
+      <HoneypotField />
       {showSuccess && (
         <div className="mobile-form-success">
           <p>✓ Message sent successfully!</p>

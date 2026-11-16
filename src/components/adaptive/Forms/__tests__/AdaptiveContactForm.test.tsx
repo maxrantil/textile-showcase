@@ -157,4 +157,68 @@ describe('Adaptive ContactForm', () => {
       await act(async () => root.unmount())
     })
   })
+
+  // SEC-05 (Issue #477): a field people never see or reach; bots fill it
+  describe('honeypot field', () => {
+    const honeypot = (container: HTMLElement) =>
+      container.querySelector('input[name="website"]') as HTMLInputElement
+
+    const fillAndSend = async (user: ReturnType<typeof userEvent.setup>) => {
+      await user.type(nameField(), 'Ida Romme')
+      await user.type(emailField(), 'ida@example.com')
+      await user.type(messageField(), 'A message long enough to send.')
+      await user.click(screen.getByRole('button', { name: /send message/i }))
+    }
+
+    const sentBody = (fetchMock: jest.Mock) =>
+      JSON.parse(fetchMock.mock.calls[0][1].body as string)
+
+    let fetchMock: jest.Mock
+    const originalFetch = global.fetch
+    beforeEach(() => {
+      fetchMock = jest.fn().mockResolvedValue({ ok: true })
+      global.fetch = fetchMock as unknown as typeof fetch
+    })
+    afterEach(() => {
+      global.fetch = originalFetch
+    })
+
+    it.each(['desktop', 'mobile'] as const)(
+      'is in the %s form, hidden from people and assistive tech',
+      async (layout) => {
+        if (layout === 'mobile') mockDeviceType = 'mobile'
+        const { container } = render(<ContactForm />)
+        const field = honeypot(container)
+
+        expect(field).toBeTruthy()
+        expect(field.tabIndex).toBe(-1)
+        expect(field.getAttribute('autocomplete')).toBe('off')
+        expect(field.closest('[aria-hidden="true"]')).toBeTruthy()
+        expect(
+          screen.queryByRole('textbox', { name: /website|empty/i })
+        ).toBeNull()
+      }
+    )
+
+    it('is not sent when a person submits', async () => {
+      const user = userEvent.setup()
+      render(<ContactForm />)
+      await fillAndSend(user)
+
+      expect(fetchMock).toHaveBeenCalledTimes(1)
+      expect(sentBody(fetchMock)).not.toHaveProperty('website')
+    })
+
+    it('is sent when something filled it', async () => {
+      const user = userEvent.setup()
+      const { container } = render(<ContactForm />)
+      honeypot(container).value = 'https://spam.example'
+      await fillAndSend(user)
+
+      expect(sentBody(fetchMock)).toHaveProperty(
+        'website',
+        'https://spam.example'
+      )
+    })
+  })
 })

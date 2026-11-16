@@ -696,5 +696,70 @@ describe('POST /api/contact', () => {
       expect(lastStatus).toBe(429)
       expect(mockResendSend).toHaveBeenCalledTimes(GLOBAL_CONTACT_LIMIT)
     })
+
+    // SEC-05 (Issue #477): bots fill every field, people never see this one
+    it('should answer a filled honeypot with success and send nothing', async () => {
+      const response = await POST(
+        createMockRequest({
+          body: { ...validBody, website: 'https://spam.example' },
+        })
+      )
+      const data = await extractResponseJson(response)
+
+      expect(response.status).toBe(200)
+      expect(data).toHaveProperty('success', true)
+      expect(mockResendSend).not.toHaveBeenCalled()
+    })
+
+    it('should send when the honeypot is present but empty', async () => {
+      mockResendSend.mockResolvedValueOnce({ data: { id: '1' }, error: null })
+
+      const response = await POST(
+        createMockRequest({ body: { ...validBody, website: '' } })
+      )
+
+      expect(response.status).toBe(200)
+      expect(mockResendSend).toHaveBeenCalledTimes(1)
+    })
+
+    it('should not count a honeypot hit against the global cap', async () => {
+      const { GLOBAL_CONTACT_LIMIT } = await import('@/lib/rateLimit')
+      mockResendSend.mockResolvedValue({ data: { id: '1' }, error: null })
+
+      for (let i = 0; i < GLOBAL_CONTACT_LIMIT; i++) {
+        await POST(
+          createMockRequest({
+            body: { ...validBody, website: 'x' },
+            headers: { 'x-forwarded-for': `203.0.113.${i}` },
+          })
+        )
+      }
+      const real = await POST(
+        createMockRequest({
+          body: validBody,
+          headers: { 'x-forwarded-for': '198.51.100.200' },
+        })
+      )
+
+      expect(real.status).toBe(200)
+      expect(mockResendSend).toHaveBeenCalledTimes(1)
+    })
+
+    it('should give up on Resend after the send timeout', async () => {
+      jest.useFakeTimers()
+      try {
+        const { RESEND_TIMEOUT_MS } = await import('@/lib/rateLimit')
+        mockResendSend.mockImplementationOnce(() => new Promise(() => {}))
+
+        const pending = POST(createMockRequest({ body: validBody }))
+        await jest.advanceTimersByTimeAsync(RESEND_TIMEOUT_MS + 1)
+        const response = await pending
+
+        expect(response.status).toBe(500)
+        expect(RESEND_TIMEOUT_MS).toBeLessThanOrEqual(15_000)
+      } finally {
+        jest.useRealTimers()
+      }
+    })
   })
 })

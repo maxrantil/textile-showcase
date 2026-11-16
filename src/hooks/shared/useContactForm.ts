@@ -5,6 +5,7 @@ import { useRef, useState } from 'react'
 import { FormValidator } from '@/utils/validation/formValidator'
 import { commonValidationRules } from '@/utils/validation/validators'
 import { UmamiEvents } from '@/utils/analytics'
+import { HONEYPOT_FIELD } from '@/lib/honeypot'
 
 interface ContactFormData {
   name: string
@@ -20,6 +21,19 @@ interface UseContactFormOptions {
 
 export type ContactFormState = ReturnType<typeof useContactForm>
 
+// The hidden honeypot is uncontrolled; read it from the submitted form
+function readHoneypot(e: React.FormEvent): string {
+  const form = e.currentTarget
+  if (
+    typeof HTMLFormElement === 'undefined' ||
+    !(form instanceof HTMLFormElement)
+  ) {
+    return ''
+  }
+  const value = new FormData(form).get(HONEYPOT_FIELD)
+  return typeof value === 'string' ? value : ''
+}
+
 export function useContactForm({
   onSuccess,
   onError,
@@ -33,7 +47,9 @@ export function useContactForm({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
 
-  const validatorRef = useRef(new FormValidator<ContactFormData>(commonValidationRules))
+  const validatorRef = useRef(
+    new FormValidator<ContactFormData>(commonValidationRules)
+  )
   const validator = validatorRef.current
 
   const handleFieldChange = (field: keyof ContactFormData, value: string) => {
@@ -62,6 +78,7 @@ export function useContactForm({
       return
     }
 
+    const honeypot = readHoneypot(e)
     setIsSubmitting(true)
     UmamiEvents.contactFormSubmit()
 
@@ -69,7 +86,10 @@ export function useContactForm({
       const response = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        // Only a bot fills the honeypot; people send exactly their three fields
+        body: JSON.stringify(
+          honeypot ? { ...formData, [HONEYPOT_FIELD]: honeypot } : formData
+        ),
       })
 
       if (response.ok) {
