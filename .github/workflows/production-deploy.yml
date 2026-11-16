@@ -198,17 +198,6 @@ jobs:
               exit 1
             fi
 
-            # Backup current build only if one exists.
-            # If there is no .next to back up we set HAS_BACKUP=false so that
-            # rollback paths below don't try to restore a non-existent backup.
-            if [ -d .next ]; then
-              echo "📦 Backing up current build..."
-              cp -r .next .next.backup
-              HAS_BACKUP=true
-            else
-              HAS_BACKUP=false
-            fi
-
             # Pull latest source (public/, config files, package.json, etc.)
             echo "📥 Pulling latest changes..."
             git fetch origin
@@ -228,47 +217,10 @@ jobs:
             # .env.local now holds a secret; keep it readable by the deploy user only.
             chmod 600 .env.local
 
-            # Stop PM2 before removing node_modules to release file locks (Issue #302).
-            echo "⏹️ Stopping PM2 to release node_modules file locks..."
-            pm2 stop idaromme-website 2>/dev/null || echo "⚠️ PM2 process not running (ok for first deploy)"
-
-            # Install production dependencies only — no devDependencies, no build.
-            # Build already happened on the GHA runner (fixes OOM, Issue #320).
-            echo "📦 Installing production dependencies..."
-            rm -rf node_modules
-            if npm ci --omit=dev; then
-              echo "✅ Production dependencies installed"
-
-              # Promote the rsync'd artifact into place
-              echo "🔁 Promoting build artifact..."
-              rm -rf .next
-              mv .next.incoming .next
-
-              # Start/restart PM2
-              echo "🔄 Starting application..."
-              if pm2 list | grep -q "idaromme-website"; then
-                echo "📋 PM2 process exists, restarting..."
-                pm2 restart idaromme-website || {
-                  echo "❌ PM2 restart failed, rolling back..."
-                  rm -rf .next
-                  [ "$HAS_BACKUP" = true ] && mv .next.backup .next || echo "⚠️ No backup to restore"
-                  pm2 start idaromme-website 2>/dev/null || echo "⚠️ Could not restore PM2 process"
-                  exit 1
-                }
-              else
-                echo "🚀 PM2 process not found, starting new instance..."
-                PORT=3001 pm2 start npm --name "idaromme-website" -- start
-                pm2 save
-              fi
-
-              # Cleanup
-              rm -rf .next.backup
-              echo "🎉 Deployment completed successfully!"
-            else
-              echo "❌ npm ci failed, rolling back..."
-              [ "$HAS_BACKUP" = true ] && pm2 start idaromme-website 2>/dev/null || echo "⚠️ Could not restore PM2 process"
-              exit 1
-            fi
+            # Install (only when package-lock.json or Node changed), promote
+            # .next.incoming, restart PM2, roll back on failure (Issue #467).
+            # Runs from the source just pulled, so script changes apply at once.
+            bash scripts/deploy/vps-release.sh
 
   production-validation:
     # Pinned: ubuntu-latest is now 26.04, which Playwright 1.56 does not support.
