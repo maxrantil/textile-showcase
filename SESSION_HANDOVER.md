@@ -1,14 +1,23 @@
-# Session Handoff: faster deploys landed and verified (#467, #470)
+# Session Handoff: Playwright container for production-validation (#473); faster deploys landed (#467, #470)
 
 **Date**: 2026-11-16
-**Issue**: #465, #467, #470 closed
-**PR**: merged #466 (`8bd0d79`), #468 (`1344370`), #469 (`ed70168`, handoff), #471 (`4f1649c`, readiness poll); this PR: handoff only
-**Branch**: docs/issue-470-deploy-handoff
+**Issue**: #473 (open, closes with this PR); #465, #467, #470 closed
+**PR**: merged #466 (`8bd0d79`), #468 (`1344370`), #469 (`ed70168`, handoff), #471 (`4f1649c`, readiness poll), #472 (`3b7a19a`, handoff); this PR: #473
+**Branch**: perf/issue-473-playwright-container
 
 ---
 
 ## ✅ Completed This Session
 
+- **#473 (this PR)**: production-validation runs in `mcr.microsoft.com/playwright:v1.65.1-noble` (pinned by digest,
+  `--ipc=host`, `HOME=/root` for Firefox as root); the "Install Playwright" step is gone. Reason: that step took
+  25 s, 49 s, 69 s on runs 43883724418, 43888666218, 43892053247; browser downloads stayed ~10 s, apt system
+  packages went ~16.5 s → ~38 s → ~57 s (Ubuntu mirror at 4 MB/s vs 13–18 MB/s). The image is ~1 GB compressed
+  and ships Node 26, curl and git; setup-node still installs Node 24 for `npm ci`.
+  `tests/unit/deploy-playwright-container.test.ts` (5) fails when the image tag differs from `@playwright/test` in
+  package-lock.json (a Dependabot Playwright bump needs the tag and digest updated too; the test has the curl
+  command for the digest). **Not yet run**: production-validation only runs on master, so the PR's CI cannot
+  exercise it.
 - **#470** (#471, `4f1649c`): production-validation's fixed `sleep 30` ("Wait for deployment to stabilize") is replaced by
   "Wait for production to answer": `curl --fail --max-time 10` on `https://idaromme.dk/` every 2 s, up to 30
   attempts, then `::error::` and exit 1. The deploy job only ends after PM2 has started the new build, and the
@@ -36,9 +45,9 @@
 
 ## 🎯 Current Project State
 
-**Tests**: ✅ all PR checks green on #471; deploy and pinned-actions tests 34/34 locally
-**Branch**: ✅ master at `4f1649c`; this branch only changes this file
-**CI/CD**: ✅ production on `4f1649c`, every job green. From merge to live ~2.5 min (build job ~2 min is the longest)
+**Tests**: ✅ deploy and pinned-actions tests 39/39 locally; full CI on the PR
+**Branch**: ✅ clean and pushed
+**CI/CD**: ✅ production on `3b7a19a` (run 43892053247: Deploy on VPS 3 s, poll 1 s, production-validation 3 min 47 s)
 
 ### Agent Validation Status
 
@@ -46,8 +55,9 @@ The named validation agents are not available in this environment and were not r
 
 ## 🚀 Next Session Priorities
 
-1. **Compare production-validation timings** over the next deploys (this PR's merge is one): the poll removes 30 s,
-   but runner speed varies by 30+ s between runs, so one run does not show the net saving.
+1. **After #473 merges, check its production-validation** (first run in the container): "Initialize containers"
+   (image pull) vs the old "Install Playwright" (25–69 s); Firefox and Chrome smoke tests both pass. If the job
+   fails in the container, revert the PR: the site is already live by then, only the validation is lost.
 2. Optional deploy speed-ups: the build job (~2 min) gates go-live; carry `.next/cache/images` from the old build
    into the new one (the swap drops it, so every image is re-optimised after each deploy); PM2 cluster mode +
    `pm2 reload` for zero downtime (check `nproc`); smoke tests take ~85–93 s (Desktop Chrome + Desktop Firefox).
@@ -57,14 +67,14 @@ The named validation agents are not available in this environment and were not r
 
 ## 📝 Startup Prompt for Next Session
 
-Read CLAUDE.md to understand our workflow, then pick the next item from SESSION_HANDOVER.md's priorities (deploy speed-up or audit item).
+Read CLAUDE.md to understand our workflow, then confirm #473 (production-validation in the Playwright container) on its first production deploy.
 
-**Immediate priority**: check production-validation timings on the latest deploys, then SEC-10/11 (verify live headers and CSP nonce) or the `.next/cache/images` carry-over (1–2 hours)
-**Context**: deploys are fast now: "Deploy on VPS" 3–4 s (was ~40 s), the readiness poll replaced a fixed 30 s sleep
-**Reference docs**: SESSION_HANDOVER.md, .github/workflows/production-deploy.yml, scripts/deploy/vps-release.sh
+**Immediate priority**: compare "Initialize containers" with the old "Install Playwright" (25–69 s) on the deploy for #473's merge; revert if the job fails (30 min)
+**Context**: "Deploy on VPS" is 3–4 s and the readiness poll 1 s; the Playwright install was the slowest, most variable step left
+**Reference docs**: SESSION_HANDOVER.md, .github/workflows/production-deploy.yml
 **Ready state**: master clean, production green on the latest merge
 
-**Expected scope**: one audit item or one deploy speed-up, as an issue + PR with tests
+**Expected scope**: decide whether the container stays, then one audit item (SEC-10/11) or the `.next/cache/images` carry-over
 
 ### Possible follow-up
 
