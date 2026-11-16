@@ -46,25 +46,28 @@ if [ -d .next ]; then
 fi
 mv .next.incoming .next
 
+# Recreate the process from ecosystem.config.js on every deploy: `pm2 restart`
+# keeps the options a process was first started with, so ecosystem changes
+# (memory limits, node_args) would never apply (Issue #467)
+start_app() {
+  pm2 delete "$APP" >/dev/null 2>&1 || echo "ℹ️ No PM2 process to replace"
+  pm2 start ecosystem.config.js --only "$APP"
+}
+
 echo "🔄 Starting application..."
-if pm2 list | grep -q "$APP"; then
-  echo "📋 PM2 process exists, restarting..."
-  if ! pm2 restart "$APP"; then
-    echo "❌ PM2 restart failed, rolling back..."
-    rm -rf .next
-    if [ "$HAS_BACKUP" = true ]; then
-      mv .next.backup .next
-    else
-      echo "⚠️ No backup to restore"
-    fi
-    pm2 start "$APP" 2>/dev/null || echo "⚠️ Could not restore PM2 process"
-    exit 1
+if ! start_app; then
+  echo "❌ PM2 start failed, rolling back..."
+  rm -rf .next
+  if [ "$HAS_BACKUP" = true ]; then
+    mv .next.backup .next
+  else
+    echo "⚠️ No backup to restore"
   fi
-else
-  echo "🚀 PM2 process not found, starting new instance..."
-  PORT=3001 pm2 start npm --name "$APP" -- start
-  pm2 save
+  start_app || echo "⚠️ Could not restore PM2 process"
+  exit 1
 fi
+# Persist the process list for `pm2 resurrect` after a reboot
+pm2 save
 
 rm -rf .next.backup
 echo "🎉 Deployment completed successfully!"

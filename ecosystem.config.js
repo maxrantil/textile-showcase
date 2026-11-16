@@ -1,5 +1,5 @@
 // ABOUTME: PM2 ecosystem configuration for production deployment on Vultr VPS
-// Optimized for 964Mi memory VPS with proper error handling and logging
+// Memory limits sized for the 2 GB VPS; error handling and logging
 
 module.exports = {
   apps: [
@@ -18,9 +18,9 @@ module.exports = {
         // NEXT_PUBLIC_* vars should be in .env.production.local on VPS
       },
 
-      // Memory management (VPS has 964Mi total, leave headroom)
-      max_memory_restart: '400M', // Restart if memory exceeds 400MB
-      node_args: '--max-old-space-size=512', // Node heap limit: 512MB
+      // Memory management (VPS has 2 GB total; nginx, PM2 and the OS need the rest)
+      max_memory_restart: '800M', // Restart if resident memory exceeds 800MB
+      node_args: '--max-old-space-size=1024', // Node heap limit: 1024MB
 
       // Auto-restart configuration
       autorestart: true,
@@ -28,9 +28,7 @@ module.exports = {
       min_uptime: '10s', // Minimum uptime before restart count resets
       restart_delay: 4000, // Wait 4s before restart after crash
 
-      // Logging
-      error_file: '/home/max/.pm2/logs/idaromme-website-error.log',
-      out_file: '/home/max/.pm2/logs/idaromme-website-out.log',
+      // Logging: PM2's default paths (~/.pm2/logs/idaromme-website-*.log of the deploy user)
       log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
       merge_logs: true,
 

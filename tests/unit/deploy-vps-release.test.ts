@@ -25,9 +25,9 @@ if [ "$1" = "ci" ]; then
 fi`,
   pm2: `#!/bin/bash
 echo "pm2 $*" >> "$CALLS"
-case "$1" in
-  list) [ "\${STUB_PM2_HAS_APP:-1}" = 1 ] && echo "idaromme-website" ;;
-  restart) [ "\${STUB_PM2_RESTART_FAIL:-}" = 1 ] && exit 1 ;;
+case "$1 $2" in
+  "delete "*) [ "\${STUB_PM2_HAS_APP:-1}" = 1 ] || exit 1 ;;
+  "start ecosystem.config.js") [ "\${STUB_PM2_START_FAIL:-}" = 1 ] && exit 1 ;;
 esac
 exit 0`,
 }
@@ -73,6 +73,8 @@ function makeSite(opts: { lock?: string } = {}): Site {
   }
 }
 
+const START = 'pm2 start ecosystem.config.js --only idaromme-website'
+
 const read = (site: Site, f: string) =>
   fs.readFileSync(path.join(site.dir, f), 'utf8')
 const exists = (site: Site, f: string) =>
@@ -87,7 +89,19 @@ describe('VPS release script (Issue #467)', () => {
     expect(read(site, '.next/BUILD_ID')).toBe('new')
     expect(exists(site, '.next.incoming')).toBe(false)
     expect(exists(site, '.next.backup')).toBe(false)
-    expect(site.calls()).toContain('pm2 restart idaromme-website')
+    expect(site.calls()).toContain(START)
+    expect(site.calls()).toContain('pm2 save')
+  })
+
+  it('recreates the PM2 process from ecosystem.config.js so its options apply', () => {
+    const site = makeSite()
+    site.run()
+    const calls = site.calls()
+    expect(calls).not.toContain('pm2 restart idaromme-website')
+    expect(calls.lastIndexOf('pm2 delete idaromme-website')).toBeGreaterThan(-1)
+    expect(calls.lastIndexOf('pm2 delete idaromme-website')).toBeLessThan(
+      calls.indexOf(START)
+    )
   })
 
   it('stops PM2 before reinstalling dependencies (Issue #302)', () => {
@@ -111,7 +125,7 @@ describe('VPS release script (Issue #467)', () => {
     expect(r.status).toBe(0)
     expect(site.calls()).not.toContain('npm ci --omit=dev')
     expect(site.calls()).not.toContain('pm2 stop idaromme-website')
-    expect(site.calls()).toContain('pm2 restart idaromme-website')
+    expect(site.calls()).toContain(START)
     expect(read(site, '.next/BUILD_ID')).toBe('newer')
     expect(exists(site, 'node_modules/installed')).toBe(true)
   })
@@ -153,12 +167,12 @@ describe('VPS release script (Issue #467)', () => {
     expect(site.calls()).toContain('pm2 start idaromme-website')
   })
 
-  it('restores the previous build when the PM2 restart fails', () => {
+  it('restores the previous build and starts it again when the PM2 start fails', () => {
     const site = makeSite()
-    const r = site.run({ STUB_PM2_RESTART_FAIL: '1' })
+    const r = site.run({ STUB_PM2_START_FAIL: '1' })
     expect(r.status).not.toBe(0)
     expect(read(site, '.next/BUILD_ID')).toBe('old')
-    expect(site.calls()).toContain('pm2 start idaromme-website')
+    expect(site.calls().filter((c) => c === START)).toHaveLength(2)
   })
 
   it('removes a .next.backup left over from an interrupted deploy', () => {
@@ -181,7 +195,7 @@ describe('VPS release script (Issue #467)', () => {
   it('starts a new PM2 process when none exists', () => {
     const site = makeSite()
     expect(site.run({ STUB_PM2_HAS_APP: '0' }).status).toBe(0)
-    expect(site.calls().some((c) => c.startsWith('pm2 start'))).toBe(true)
+    expect(site.calls()).toContain(START)
     expect(site.calls()).toContain('pm2 save')
   })
 })
@@ -199,5 +213,28 @@ describe('production deploy workflow runs the release script (Issue #467)', () =
   it('no longer reinstalls node_modules inline on every deploy', () => {
     expect(sshScript).not.toContain('rm -rf node_modules')
     expect(sshScript).not.toContain('cp -r .next .next.backup')
+  })
+})
+
+describe('ecosystem.config.js for the 2 GB VPS (Issue #467)', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const app = require(path.join(repoRoot, 'ecosystem.config.js')).apps[0]
+
+  it('runs Next directly so PM2 measures and limits the server process', () => {
+    expect(app.name).toBe('idaromme-website')
+    expect(app.script).toBe('node_modules/next/dist/bin/next')
+    expect(fs.existsSync(path.join(repoRoot, app.script))).toBe(true)
+    expect(app.args).toBe('start')
+    expect(app.env.PORT).toBe(3001)
+  })
+
+  it('sets memory limits sized for 2 GB', () => {
+    expect(app.node_args).toBe('--max-old-space-size=1024')
+    expect(app.max_memory_restart).toBe('800M')
+  })
+
+  it("leaves log paths to PM2's default under the deploy user's home", () => {
+    expect(app.error_file).toBeUndefined()
+    expect(app.out_file).toBeUndefined()
   })
 })
