@@ -28,6 +28,11 @@
 - The stale handoff edit and audit doc in `../textile-showcase` were discarded (the committed versions superseded them).
   That checkout is on master now (another session switched it on 2026-11-16 07:01).
 
+- **SEC-09** (#460): `scripts/audit-gate.js` fails on high/critical advisories in production dependencies unless
+  `.github/audit-exceptions.json` lists them with a reason and an unexpired `expires` date (expired or incomplete
+  entries fail too). It gates Production Deploy (`security-scan`, a `needs` of `deploy`), Unit Tests on PRs, and the
+  weekly monitor, which now opens or comments on an open "Weekly npm audit gate failing" issue (#45 is closed).
+
 ## 🎯 Current Project State
 
 **Tests**: ✅ Jest 1380+ passing on #455 and #457; E2E green on #453 and #455
