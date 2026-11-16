@@ -15,7 +15,8 @@
   through them one by one without waiting for input (2026-11-16).
 - **SEC-05 (this PR)**: hidden `website` honeypot in both contact-form layouts
   (`src/components/shared/Forms/HoneypotField.tsx`, name in `src/lib/honeypot.ts`; off-screen, `aria-hidden`,
-  `tabIndex=-1`, `autocomplete=off`). The hook sends it only when filled; the API answers a filled one with the
+  `tabIndex=-1`, `autocomplete=off`), placed **last** in the form: the design E2E test reads the form's first
+  input and label. The hook sends it only when filled; the API answers a filled one with the
   normal success body, sends nothing and does not count it against the global cap. The Resend send is raced
   against `RESEND_TIMEOUT_MS` (10 s, in `src/lib/rateLimit.ts`: route files may only export handlers). Tests: 4 in
   `tests/api/contact.test.ts`, 4 in `AdaptiveContactForm.test.tsx`; 275/275 across the contact-form suites;
