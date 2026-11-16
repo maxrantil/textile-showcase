@@ -3,6 +3,7 @@
 'use client'
 import { DesktopFormField } from './DesktopFormField'
 import { DesktopButton } from '../UI/DesktopButton'
+import { HoneypotField } from '@/components/shared/Forms/HoneypotField'
 import {
   useContactForm,
   type ContactFormState,
@@ -73,6 +74,7 @@ export function DesktopContactFormView({ form }: { form: ContactFormState }) {
           Send Message
         </DesktopButton>
       </div>
+      <HoneypotField />
     </form>
   )
 }
