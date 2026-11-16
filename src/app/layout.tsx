@@ -93,10 +93,6 @@ export default async function RootLayout({ children }: RootLayoutProps) {
         {/* Core Web Vitals optimization hints */}
         <meta name="color-scheme" content="light dark" />
 
-        {/* Resource hints for external services */}
-        <link rel="preconnect" href="https://www.google-analytics.com" />
-        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
-
         {/* Security headers */}
         <meta httpEquiv="X-Content-Type-Options" content="nosniff" />
 
