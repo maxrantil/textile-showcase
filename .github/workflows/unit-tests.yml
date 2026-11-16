@@ -40,6 +40,11 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      # High/critical production advisories fail the PR unless
+      # .github/audit-exceptions.json covers them (Issue #460, audit SEC-09)
+      - name: Audit production dependencies
+        run: node scripts/audit-gate.js
+
       - name: Setup Environment Variables
         run: |
           echo "NEXT_PUBLIC_SANITY_PROJECT_ID=${{ secrets.NEXT_PUBLIC_SANITY_PROJECT_ID }}" >> $GITHUB_ENV

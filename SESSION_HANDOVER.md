@@ -24,6 +24,11 @@
   `VULTR_HOST_FINGERPRINT` are both set. `tests/unit/deploy-ssh-host-verification.test.ts` runs the step's script
   with bash (3 of 6 failed on the old workflow).
 
+- **SEC-09** (#460): `scripts/audit-gate.js` fails on high/critical advisories in production dependencies unless
+  `.github/audit-exceptions.json` lists them with a reason and an unexpired `expires` date (expired or incomplete
+  entries fail too). It gates Production Deploy (`security-scan`, a `needs` of `deploy`), Unit Tests on PRs, and the
+  weekly monitor, which now opens or comments on an open "Weekly npm audit gate failing" issue (#45 is closed).
+
 ## 🎯 Current Project State
 
 **Tests**: ✅ Jest 1390 passed / 16 skipped on #459; production deploys green
