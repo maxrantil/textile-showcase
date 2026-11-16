@@ -11,22 +11,22 @@ jobs:
     name: Block AI Attribution in Issues
     permissions:
       issues: write
-    uses: maxrantil/.github/.github/workflows/issue-ai-attribution-check-reusable.yml@master
+    uses: maxrantil/.github/.github/workflows/issue-ai-attribution-check-reusable.yml@0075ab50113bff0183eeefcc15b6968f07df660e # master 2026-11-09
 
   format-check:
     name: Check Issue Format
     permissions:
       issues: write
-    uses: maxrantil/.github/.github/workflows/issue-format-check-reusable.yml@master
+    uses: maxrantil/.github/.github/workflows/issue-format-check-reusable.yml@0075ab50113bff0183eeefcc15b6968f07df660e # master 2026-11-09
 
   prd-reminder:
     name: PRD/PDR Reminder
     permissions:
       issues: write
-    uses: maxrantil/.github/.github/workflows/issue-prd-reminder-reusable.yml@master
+    uses: maxrantil/.github/.github/workflows/issue-prd-reminder-reusable.yml@0075ab50113bff0183eeefcc15b6968f07df660e # master 2026-11-09
 
   auto-label:
     name: Auto-label Issues
     permissions:
       issues: write
-    uses: maxrantil/.github/.github/workflows/issue-auto-label-reusable.yml@master
+    uses: maxrantil/.github/.github/workflows/issue-auto-label-reusable.yml@0075ab50113bff0183eeefcc15b6968f07df660e # master 2026-11-09

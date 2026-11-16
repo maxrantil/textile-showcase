@@ -1,0 +1,13 @@
+# ABOUTME: Dependabot version updates for the SHA-pinned GitHub Actions and reusable workflows
+# Pins are only moved through reviewed PRs (Issue #462, audit SEC-08)
+
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      github-actions:
+        patterns:
+          - '*'

@@ -8,6 +8,10 @@ on:
     branches:
       - master
 
+# No job calls the GitHub API (Issue #462, audit SEC-08)
+permissions:
+  contents: read
+
 jobs:
   block-direct-push:
     name: Block Direct Push to Master
@@ -51,7 +55,7 @@ jobs:
     if: github.event_name == 'pull_request'
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           fetch-depth: 0
 

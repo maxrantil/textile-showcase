@@ -29,6 +29,11 @@
   entries fail too). It gates Production Deploy (`security-scan`, a `needs` of `deploy`), Unit Tests on PRs, and the
   weekly monitor, which now opens or comments on an open "Weekly npm audit gate failing" issue (#45 is closed).
 
+- **SEC-08** (#462): every `uses:` (54) is pinned to a full commit SHA with the version in a comment; the shared
+  `maxrantil/.github` reusable workflows are pinned to `0075ab5` (master, 2026-11-09), so changes there now need a
+  bump here. `@lhci/cli@0.12.0` exact. `.github/dependabot.yml` updates `github-actions` weekly in one grouped PR.
+  `tests/unit/ci-pinned-actions.test.ts` fails on any unpinned `uses:` or ranged `npm install -g`.
+
 ## 🎯 Current Project State
 
 **Tests**: ✅ Jest 1390 passed / 16 skipped on #459; production deploys green
