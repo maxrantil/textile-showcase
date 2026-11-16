@@ -250,7 +250,9 @@ function addSecurityHeaders(
 
   const cspDirectives: string[] = [
     `default-src 'self'`,
-    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https://analytics.idaromme.dk ${isDevelopment ? "'unsafe-eval'" : ''} https: http:`,
+    // No https:/http: scheme fallback: browsers without strict-dynamic would
+    // otherwise run scripts from any origin (Issue #454, audit SEC-12)
+    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https://analytics.idaromme.dk ${isDevelopment ? "'unsafe-eval'" : ''}`,
     `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`,
     `img-src 'self' data: blob: https://cdn.sanity.io https://*.googleusercontent.com https://www.google-analytics.com`,
     `font-src 'self' data: https://fonts.gstatic.com ${studioFontSrc}`,

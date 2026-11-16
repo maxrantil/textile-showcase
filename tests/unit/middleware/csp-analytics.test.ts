@@ -353,10 +353,11 @@ describe('CSP Middleware - Analytics Configuration', () => {
       expect(scriptSrcDirective).not.toContain('https://*')
       expect(scriptSrcDirective).not.toContain('http://*')
 
-      // Should have strict-dynamic with scheme fallbacks
-      expect(scriptSrcDirective).toContain("'strict-dynamic'")
-      expect(scriptSrcDirective).toContain('https:')
-      expect(scriptSrcDirective).toContain('http:')
+      // Should have strict-dynamic and no bare scheme fallbacks (Issue #454)
+      const sources = scriptSrcDirective.split(/\s+/)
+      expect(sources).toContain("'strict-dynamic'")
+      expect(sources).not.toContain('https:')
+      expect(sources).not.toContain('http:')
     })
 
     it('should maintain strict CSP with nonce and strict-dynamic', async () => {
