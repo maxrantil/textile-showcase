@@ -11,6 +11,13 @@ const MAX_FIELD_LENGTH = 512
 const MAX_REPORTS_PER_REQUEST = 10
 const RATE_LIMIT = { limit: 20, windowMs: 60_000 }
 
+/** Media types browsers send reports with (legacy report-uri, Reporting API) */
+const REPORT_CONTENT_TYPES = [
+  'application/csp-report',
+  'application/reports+json',
+  'application/json',
+]
+
 type ReportFields = Record<string, unknown>
 
 interface NormalizedViolation {
@@ -30,6 +37,13 @@ function str(value: unknown): string | undefined {
     : undefined
 }
 
+// URIs in reports can carry personal data in query strings or fragments
+// (e.g. a prefilled form); log only scheme, host and path (audit SEC-06)
+function uri(value: unknown): string | undefined {
+  const text = str(value)
+  return text?.split(/[?#]/, 1)[0]
+}
+
 function num(value: unknown): number | undefined {
   return typeof value === 'number' && Number.isFinite(value) ? value : undefined
 }
@@ -37,11 +51,11 @@ function num(value: unknown): number | undefined {
 // Legacy `report-uri` format: { "csp-report": { "document-uri": ... } }
 function fromLegacy(r: ReportFields): NormalizedViolation {
   return {
-    documentUri: str(r['document-uri']),
+    documentUri: uri(r['document-uri']),
     violatedDirective: str(r['violated-directive']),
     effectiveDirective: str(r['effective-directive']),
-    blockedUri: str(r['blocked-uri']),
-    sourceFile: str(r['source-file']),
+    blockedUri: uri(r['blocked-uri']),
+    sourceFile: uri(r['source-file']),
     lineNumber: num(r['line-number']),
     columnNumber: num(r['column-number']),
     statusCode: num(r['status-code']),
@@ -51,10 +65,10 @@ function fromLegacy(r: ReportFields): NormalizedViolation {
 // Reporting API format: [{ type: "csp-violation", body: { documentURL: ... } }]
 function fromReportingApi(r: ReportFields): NormalizedViolation {
   return {
-    documentUri: str(r.documentURL),
+    documentUri: uri(r.documentURL),
     effectiveDirective: str(r.effectiveDirective),
-    blockedUri: str(r.blockedURL),
-    sourceFile: str(r.sourceFile),
+    blockedUri: uri(r.blockedURL),
+    sourceFile: uri(r.sourceFile),
     lineNumber: num(r.lineNumber),
     columnNumber: num(r.columnNumber),
     statusCode: num(r.statusCode),
@@ -90,6 +104,14 @@ const noContent = () => new NextResponse(null, { status: 204 })
 export async function POST(request: NextRequest) {
   if (!checkRateLimit(`csp:${getClientIp(request)}`, RATE_LIMIT)) {
     return new NextResponse(null, { status: 429 })
+  }
+
+  const mediaType = (request.headers.get('content-type') ?? '')
+    .split(';', 1)[0]
+    .trim()
+    .toLowerCase()
+  if (!REPORT_CONTENT_TYPES.includes(mediaType)) {
+    return new NextResponse(null, { status: 415 })
   }
 
   const declaredLength = Number(request.headers.get('content-length') || 0)

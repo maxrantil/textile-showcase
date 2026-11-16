@@ -105,6 +105,63 @@ describe('POST /api/csp-report', () => {
     }
     expect(statuses).toContain(429)
   })
+
+  // SEC-06: only report media types, and no query strings or fragments in logs
+  it.each(['text/plain', 'application/x-www-form-urlencoded', ''])(
+    'rejects content type %p with 415 and logs nothing',
+    async (type) => {
+      const response = await POST(
+        makeRequest(
+          JSON.stringify(report),
+          type ? { 'Content-Type': type } : {}
+        )
+      )
+      expect(response.status).toBe(415)
+      expect(errorSpy).not.toHaveBeenCalled()
+    }
+  )
+
+  it('accepts application/json reports', async () => {
+    const response = await POST(
+      makeRequest(JSON.stringify(report), {
+        'Content-Type': 'application/json; charset=utf-8',
+      })
+    )
+    expect(response.status).toBe(204)
+    expect(errorSpy).toHaveBeenCalled()
+  })
+
+  it('drops query strings and fragments from logged URIs', async () => {
+    const body = JSON.stringify({
+      'csp-report': {
+        'document-uri': 'https://idaromme.dk/contact?email=a@b.example#top',
+        'blocked-uri': 'https://evil.example/x.js?token=secret',
+        'source-file': 'https://idaromme.dk/_next/a.js?v=1#L2',
+        'violated-directive': 'script-src',
+      },
+    })
+    await POST(makeRequest(body))
+    const logged = errorSpy.mock.calls.find(
+      (c) => c[0] === 'CSP Violation:'
+    )![1]
+    expect(logged.documentUri).toBe('https://idaromme.dk/contact')
+    expect(logged.blockedUri).toBe('https://evil.example/x.js')
+    expect(logged.sourceFile).toBe('https://idaromme.dk/_next/a.js')
+  })
+
+  it('keeps CSP keywords in blocked-uri as they are', async () => {
+    const body = JSON.stringify({
+      'csp-report': {
+        'blocked-uri': 'inline',
+        'violated-directive': 'script-src',
+      },
+    })
+    await POST(makeRequest(body))
+    const logged = errorSpy.mock.calls.find(
+      (c) => c[0] === 'CSP Violation:'
+    )![1]
+    expect(logged.blockedUri).toBe('inline')
+  })
 })
 
 describe('OPTIONS /api/csp-report', () => {
