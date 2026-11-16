@@ -20,9 +20,9 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: '24'
           cache: 'npm'
@@ -42,9 +42,9 @@ jobs:
     runs-on: ubuntu-latest
     continue-on-error: true # Don't block deployment for upstream vulnerabilities
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: '24'
           cache: 'npm'
@@ -69,9 +69,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: '24'
           cache: 'npm'
@@ -131,7 +131,7 @@ jobs:
       - name: Run bundle size tests
         run: npm test -- --passWithNoTests tests/performance/bundle-size.test.ts tests/performance/bundle-debug.test.ts __tests__/deployment/production-config.test.js
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: build-files
           path: .next/
@@ -149,7 +149,7 @@ jobs:
       # Build artifact is already produced and uploaded by the 'build' job.
       # Download it here so we can rsync it to the VPS — no build on VPS (fixes OOM, Issue #320).
       - name: Download build artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: build-files
           path: .next/
@@ -186,7 +186,7 @@ jobs:
             ${{ secrets.VULTR_USERNAME }}@${{ secrets.VULTR_HOST }}:/var/www/idaromme.dk/.next.incoming/
 
       - name: Deploy on VPS
-        uses: appleboy/ssh-action@v1.2.0
+        uses: appleboy/ssh-action@7eaf76671a0d7eec5d98ee897acda4f968735a17 # v1.2.0
         with:
           host: ${{ secrets.VULTR_HOST }}
           username: ${{ secrets.VULTR_USERNAME }}
@@ -288,9 +288,9 @@ jobs:
     needs: [deploy]
     if: github.ref == 'refs/heads/master'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: '24'
           cache: 'npm'
@@ -312,7 +312,7 @@ jobs:
         run: npx playwright test tests/e2e/production-smoke.spec.ts --project="Desktop Chrome" --project="Desktop Firefox"
       - name: Upload test results on failure
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: production-smoke-test-results
           path: test-results/

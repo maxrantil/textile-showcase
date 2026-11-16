@@ -11,7 +11,7 @@ jobs:
     permissions:
       pull-requests: write
       contents: read
-    uses: maxrantil/.github/.github/workflows/commit-quality-check-reusable.yml@master
+    uses: maxrantil/.github/.github/workflows/commit-quality-check-reusable.yml@0075ab50113bff0183eeefcc15b6968f07df660e # master 2026-11-09
     with:
       base-branch: 'master'
       fail-on-fixups: false

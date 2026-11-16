@@ -28,6 +28,11 @@
 - The stale handoff edit and audit doc in `../textile-showcase` were discarded (the committed versions superseded them).
   That checkout is on master now (another session switched it on 2026-11-16 07:01).
 
+- **SEC-08** (#462): every `uses:` (54) is pinned to a full commit SHA with the version in a comment; the shared
+  `maxrantil/.github` reusable workflows are pinned to `0075ab5` (master, 2026-11-09), so changes there now need a
+  bump here. `@lhci/cli@0.12.0` exact. `.github/dependabot.yml` updates `github-actions` weekly in one grouped PR.
+  `tests/unit/ci-pinned-actions.test.ts` fails on any unpinned `uses:` or ranged `npm install -g`.
+
 ## 🎯 Current Project State
 
 **Tests**: ✅ Jest 1380+ passing on #455 and #457; E2E green on #453 and #455
