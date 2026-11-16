@@ -238,7 +238,7 @@ describe('CSP Nonce Middleware - TDD Implementation (Issue #204)', () => {
       expect(scriptSrcDirective).toContain("'strict-dynamic'")
     })
 
-    it('should include https: and http: fallback for older browsers', async () => {
+    it('should NOT include https: or http: scheme fallbacks in script-src (Issue #454)', async () => {
       Object.defineProperty(process.env, 'NODE_ENV', {
         writable: true,
         value: 'production',
@@ -253,10 +253,12 @@ describe('CSP Nonce Middleware - TDD Implementation (Issue #204)', () => {
       const scriptSrcMatch = cspHeader?.match(/script-src[^;]+/)
       const scriptSrcDirective = scriptSrcMatch?.[0] || ''
 
-      // TDD: This test will FAIL until we add fallback schemes
-      // Older browsers ignore strict-dynamic and fall back to https: http:
-      expect(scriptSrcDirective).toContain('https:')
-      expect(scriptSrcDirective).toContain('http:')
+      // Browsers without strict-dynamic support would fall back to these
+      // schemes and run scripts from any origin after an HTML injection
+      const sources = scriptSrcDirective.split(/\s+/)
+      expect(sources).not.toContain('https:')
+      expect(sources).not.toContain('http:')
+      expect(sources).toContain('https://analytics.idaromme.dk')
     })
   })
 
