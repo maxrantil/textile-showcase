@@ -162,21 +162,23 @@ jobs:
           chmod 700 ~/.ssh
           ( umask 077; printf '%s\n' "$VULTR_SSH_KEY" > ~/.ssh/deploy_key )
 
-      # Host key verification: store the VPS host key line(s) from
-      # `ssh-keyscan <host>` in the VULTR_KNOWN_HOSTS secret to prevent MITM.
-      # Without it, falls back to unverified connections (with a warning).
+      # Host key verification (Issue #458, audit SEC-07). Both secrets hold the
+      # VPS host key checked against the server console, never a same-run
+      # ssh-keyscan: VULTR_KNOWN_HOSTS (known_hosts lines, used by rsync) and
+      # VULTR_HOST_FINGERPRINT (SHA256 fingerprint, used by appleboy/ssh-action).
+      # The deploy stops here if either is missing.
       - name: Configure SSH host verification
         env:
           VULTR_KNOWN_HOSTS: ${{ secrets.VULTR_KNOWN_HOSTS }}
+          VULTR_HOST_FINGERPRINT: ${{ secrets.VULTR_HOST_FINGERPRINT }}
         run: |
-          if [ -n "$VULTR_KNOWN_HOSTS" ]; then
-            printf '%s\n' "$VULTR_KNOWN_HOSTS" > ~/.ssh/known_hosts
-            chmod 600 ~/.ssh/known_hosts
-            echo "SSH_HOST_OPTS=-o StrictHostKeyChecking=yes -o UserKnownHostsFile=$HOME/.ssh/known_hosts" >> "$GITHUB_ENV"
-          else
-            echo "::warning::VULTR_KNOWN_HOSTS secret not set - SSH host key is NOT verified"
-            echo "SSH_HOST_OPTS=-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" >> "$GITHUB_ENV"
+          if [ -z "$VULTR_KNOWN_HOSTS" ] || [ -z "$VULTR_HOST_FINGERPRINT" ]; then
+            echo "::error::VULTR_KNOWN_HOSTS and VULTR_HOST_FINGERPRINT must both be set on the production environment"
+            exit 1
           fi
+          printf '%s\n' "$VULTR_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+          echo "SSH_HOST_OPTS=-o StrictHostKeyChecking=yes -o UserKnownHostsFile=$HOME/.ssh/known_hosts" >> "$GITHUB_ENV"
 
       - name: Rsync build artifact to VPS staging area
         run: |
@@ -191,7 +193,7 @@ jobs:
           host: ${{ secrets.VULTR_HOST }}
           username: ${{ secrets.VULTR_USERNAME }}
           key: ${{ secrets.VULTR_SSH_KEY }}
-          # SHA256 host key fingerprint; verification is skipped when unset
+          # SHA256 host key fingerprint; the verification step above requires it
           fingerprint: ${{ secrets.VULTR_HOST_FINGERPRINT }}
           script: |
             echo "🚀 Starting deployment..."
