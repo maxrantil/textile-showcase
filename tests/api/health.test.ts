@@ -88,7 +88,7 @@ describe('GET /api/health', () => {
     await health({ method: 'GET' }, res)
 
     expect(res.statusCode).toBe(503)
-    expect(res.body?.services).toMatchObject({ database: 'unhealthy' })
+    expect(res.body).toEqual({ status: 'unhealthy' })
   })
 
   it('does not expose process memory details', async () => {
@@ -96,6 +96,29 @@ describe('GET /api/health', () => {
     const res = mockRes()
     await health({ method: 'GET' }, res)
     expect(res.body).not.toHaveProperty('memory')
+  })
+
+  // SEC-13: the public endpoint answers only up or down
+  it('returns only the status, with no version, environment, uptime or services', async () => {
+    process.env.SECURITY_LOGGING_ENABLED = 'true'
+    process.env.SSE_ENDPOINT_URL = 'https://sse.example'
+    const health = await load()
+    const res = mockRes()
+    await health({ method: 'GET' }, res)
+
+    expect(res.body).toEqual({ status: 'healthy' })
+  })
+
+  it('returns only the status when the check itself throws', async () => {
+    mockCreateClient.mockImplementationOnce(() => {
+      throw new Error('boom')
+    })
+    const health = await load()
+    const res = mockRes()
+    await health({ method: 'GET' }, res)
+
+    expect(res.statusCode).toBe(503)
+    expect(res.body).toEqual({ status: 'unhealthy' })
   })
 
   it('rejects non-GET methods', async () => {

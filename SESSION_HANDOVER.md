@@ -1,13 +1,31 @@
-# Session Handoff: security audit follow-up — SEC-05 (#477); SEC-10/11 live (#475)
+# Session Handoff: security audit follow-up — SEC-06, SEC-13, SEC-15 part 1 (#479–#481)
 
 **Date**: 2026-11-16
-**Issue**: #477 (open, closes with this PR); #465, #467, #470, #473, #475 closed
-**PR**: this PR (#477); merged #466, #468, #469, #471, #472, #474, #476 (`fb7d9ed`)
-**Branch**: fix/issue-477-contact-honeypot-timeout
+**Issue**: #479, #480, #481 (open, close with this PR); #482 (privacy notice, needs Doctor Hubert); #465, #467, #470, #473, #475, #477 closed
+**PR**: this PR (#479–#481); merged #466, #468, #469, #471, #472, #474, #476, #478 (`7d4b899`)
+**Branch**: fix/issue-479-480-481-audit-sec-06-13-15
 
 ---
 
 ## ✅ Completed This Session
+
+- **This PR, three commits, one per finding**:
+  - **SEC-06** (#479): `/api/csp-report` returns 415 unless the media type is `application/csp-report`,
+    `application/reports+json` or `application/json`; logged document/blocked/source URIs lose `?query` and
+    `#fragment` (CSP keywords such as `inline` stay). The live CSP has no `report-uri` (`CSP_REPORT_URI` unset), so
+    no browser posts reports today. 4 new tests in `tests/api/csp-report.test.ts`.
+  - **SEC-13** (#480): `/api/health` answers only `{"status":"healthy"}` (200) or `{"status":"unhealthy"}` (503) from
+    the cached Sanity check. Version, environment, uptime, response time and the security/SSE "statuses" (they
+    only reported env vars) are gone. Nothing in the repo read them.
+  - **SEC-15 part 1** (#481): removed `<link rel="preconnect" href="https://www.google-analytics.com">` and the
+    `googletagmanager` dns-prefetch from `src/app/layout.tsx` (live on every page: each visitor's browser
+    connected to Google though the site has no Google Analytics) and the two Google Analytics hosts from the CSP.
+    `*.googleusercontent.com` stays (Studio editor avatars). `tests/unit/no-unused-third-parties.test.ts`.
+- **SEC-15 part 2** (#482): the privacy notice needs Doctor Hubert's decisions (controller and contact, email
+  retention, Umami cookie/IP settings, language, placement); the issue lists the facts from the code.
+- **#478 deployed** (run 43919729313): honeypot live on `/contact`; a filled one gets the success body, no email.
+  First CI run failed: the design E2E test reads the form's first input/label, and the honeypot was first; it is
+  now last in the form. Local E2E needed `npx playwright install chromium` after `npm ci` moved Playwright to 1.65.1.
 
 - **Audit status on master** (docs/guides/SECURITY-AUDIT-2026-11-15.md): fixed SEC-01–04, 07–12, SEC-05 with this
   PR; **SEC-14 was already fixed** (control characters stripped from the subject, `tests/api/contact.test.ts`
@@ -83,9 +101,9 @@
 
 ## 🎯 Current Project State
 
-**Tests**: ✅ contact-form suites 275/275 locally; local production build OK
+**Tests**: ✅ full Jest suite on this branch: 1476 passed, 16 skipped (106 suites)
 **Branch**: ✅ clean and pushed
-**CI/CD**: ✅ production on `fb7d9ed`; #477 not deployed yet
+**CI/CD**: ✅ production on `7d4b899`; this PR not deployed yet
 
 ### Agent Validation Status
 
@@ -93,26 +111,26 @@ The named validation agents are not available in this environment and were not r
 
 ## 🚀 Next Session Priorities
 
-1. **Next audit items**: SEC-06 (CSP reports: require a report content type, drop query strings/fragments from
-   logged URIs; size caps and 20/min limit already exist), SEC-13 (`/api/health` public body down to `status`),
-   SEC-15 (privacy notice: needs Doctor Hubert's input on wording and Umami settings).
+1. **#482 privacy notice** once Doctor Hubert has decided the four points in the issue. After that, every
+   finding in the 2026-11-15 audit is addressed: run the full re-audit (prompt drafted in chat 2026-11-16).
+   Outside the repo: log retention for `/home/deploy/.pm2/logs/` (pm2-logrotate) and the Nginx `expires 1y` on
+   `manifest.json`.
 2. Optional deploy speed-ups: the build job (~2 min) gates go-live; carry `.next/cache/images` from the old build
    into the new one (the swap drops it, so every image is re-optimised after each deploy); PM2 cluster mode +
    `pm2 reload` for zero downtime (check `nproc`); smoke tests take ~85–93 s (Desktop Chrome + Desktop Firefox).
-3. After SEC-15: a full re-audit (a prompt for that was drafted in chat)
-4. The actions inside `maxrantil/.github`'s reusable workflows still use tags (change in that repo)
-5. Carried over: Umami Realtime check, LCP levers
+3. The actions inside `maxrantil/.github`'s reusable workflows still use tags (change in that repo)
+4. Carried over: Umami Realtime check, LCP levers
 
 ## 📝 Startup Prompt for Next Session
 
-Read CLAUDE.md to understand our workflow, then continue the security audit follow-up with SEC-06.
+Read CLAUDE.md to understand our workflow, then write the privacy notice (Issue #482) from Doctor Hubert's answers.
 
-**Immediate priority**: SEC-06 CSP-report hardening, then SEC-13 health endpoint (1–2 hours)
-**Context**: SEC-01–05, 07–12, 14 are fixed; SEC-06, 13, 15 remain (docs/guides/SECURITY-AUDIT-2026-11-15.md)
-**Reference docs**: SESSION_HANDOVER.md, docs/guides/SECURITY-AUDIT-2026-11-15.md
+**Immediate priority**: #482 privacy notice page + link (1–2 hours), then the full security re-audit
+**Context**: every other finding of docs/guides/SECURITY-AUDIT-2026-11-15.md is fixed and deployed
+**Reference docs**: SESSION_HANDOVER.md, Issue #482, docs/guides/SECURITY-AUDIT-2026-11-15.md
 **Ready state**: master clean, production green on the latest merge
 
-**Expected scope**: one issue + PR with tests per finding; SEC-15 needs Doctor Hubert's wording
+**Expected scope**: `/privacy` page with tests, linked from the footer and the contact form
 
 ### Possible follow-up
 
