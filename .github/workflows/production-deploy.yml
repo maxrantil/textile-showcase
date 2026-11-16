@@ -29,7 +29,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Run tests
-        run: npm test -- --testPathIgnorePatterns="bundle-size|production-config|bundle-debug|e2e|credential-manager|demo-mode|audit-logger|api-security|performance-security|middleware-security"
+        # A CLI --testPathIgnorePatterns replaces jest.config's list instead of
+        # adding to it, so the config's own entries (.claude/ node:test files,
+        # node_modules, .next) are repeated here (Issue #456)
+        run: npm test -- --testPathIgnorePatterns="/\.claude/|/node_modules/|/\.next/|bundle-size|production-config|bundle-debug|e2e|credential-manager|demo-mode|audit-logger|api-security|performance-security|middleware-security"
       - name: Run middleware build validation
         run: npm test -- tests/build/middleware-compilation.test.ts
       - name: Run type checking
