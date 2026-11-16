@@ -1,32 +1,33 @@
-# Session Handoff: #453 merged, production deploy unblocked (#456), SEC-12 (#454)
+# Session Handoff: production deployed again (#457), SEC-12 live (#455), SEC-07 waiting on secrets (#459)
 
 **Date**: 2026-11-16
-**Issue**: #452 closed (#453 merged); #456 (deploy test step) closes with #457; #454 (SEC-12) closes with #455
-**PR**: #453 merged (`09337fd`); #457 deploy fix; #455 CSP `script-src` without `https: http:`
-**Branch**: fix/issue-456-deploy-test-ignore (worktree `../textile-sec02`), fix/issue-454-csp-script-fallback (`../textile-sec12`)
+**Issue**: #452, #454, #456 closed; #458 (SEC-07) open, closes with #459
+**PR**: merged #453 (`09337fd`), #457 (`887e26e`), #455 (`1749bb1`); #459 draft (deploy fails without host key secrets)
+**Branch**: fix/issue-458-ssh-host-verification (worktree `../textile-sec02`)
 
 ---
 
 ## ✅ Completed This Session
 
-- **#453 merged** (`09337fd`): master merged into the branch first (only `SESSION_HANDOVER.md` conflicted; the #452
-  text was kept). CI E2E green on all three projects after a re-run (see the push/ready race note below).
-- **Production had not deployed since #437** (`8043011`, 2026-11-15 08:41). Every Production Deploy since #403
-  failed in its `test` job: the workflow's CLI `--testPathIgnorePatterns` replaces jest.config's list, so the
-  vendored `.claude/skills/security-audit/*.test.cjs` (node:test files) ran under Jest. #457 repeats the config's
-  entries (`/\.claude/|/node_modules/|/\.next/`) in the workflow pattern. The step's exact command passes locally.
-  Merging #457 deploys 13 master commits at once, including #440 (Next 16.4.6 / Sharp 0.35.5, SEC-01) and #449 (Sanity 6).
-- **SEC-12** (#454 → #455): `script-src` is `'self' 'nonce-…' 'strict-dynamic' https://analytics.idaromme.dk`.
-  `csp-nonce.test.ts` asserts that the fallback is absent (failed first); `csp-analytics.test.ts` now compares whole
-  sources (its `toContain('https:')` was matching `https://analytics…`). `X-XSS-Protection: 0` was already set.
-- **SEC-04** needed no change: master's IndexNow POST already has a bearer secret (`INDEXNOW_API_SECRET`, fails closed
-  with 503), a 100-URL cap, dedupe and a 10 s timeout (#440). The audit read the stale branch.
-- **`npm audit` on master** (`09337fd`): `--omit=dev` 19 (4 low, 15 moderate, 0 high, 0 critical); all 42
-  (4 low, 38 moderate). The audit's 54/73 came from the stale branch. What is left: minimatch ReDoS via the Sanity
-  CLI/oclif tooling (build/CLI, not request path) and deepmerge via `resend` → `html-to-text` (our own templates).
-  npm's only "fix" for both is a major downgrade, so neither is actionable yet.
-- The stale handoff edit and audit doc in `../textile-showcase` were discarded (the committed versions superseded them).
-  That checkout is on master now (another session switched it on 2026-11-16 07:01).
+- **#453 merged**: image optimizer limits and SVG off (#452).
+- **Production was stuck on #437** (`8043011`, 2026-11-15 08:41): every Production Deploy since #403 failed in its
+  `test` job, because the workflow's CLI `--testPathIgnorePatterns` replaces jest.config's list and so ran the
+  vendored `.claude/` node:test files. **#457** repeats the config's entries in the workflow. Its deploy
+  (run 43841367319) shipped all 13 pending commits, including #440 (Next 16.4.6 / Sharp 0.35.5, SEC-01) and #449
+  (Sanity 6). The VPS runs Node v24.22.2 (Sanity 6 needs >= 22.12).
+- **SEC-12** (#454 → #455, deploy run 43842525810): live `script-src` is
+  `'self' 'nonce-…' 'strict-dynamic' https://analytics.idaromme.dk`, without `https: http:`.
+- **SEC-04** needed no change: master's IndexNow POST already has a bearer secret, a 100-URL cap, dedupe and a timeout (#440).
+- **`npm audit` on master**: `--omit=dev` 19 (4 low, 15 moderate, 0 high, 0 critical); all 42. What is left is
+  minimatch via the Sanity CLI tooling and deepmerge via `resend`; npm's only "fix" is a major downgrade for both.
+- **SEC-07** (#458 → draft #459): the host verification step now fails unless `VULTR_KNOWN_HOSTS` and
+  `VULTR_HOST_FINGERPRINT` are both set. `tests/unit/deploy-ssh-host-verification.test.ts` runs the step's script
+  with bash (3 of 6 failed on the old workflow).
+
+- **SEC-09** (#460): `scripts/audit-gate.js` fails on high/critical advisories in production dependencies unless
+  `.github/audit-exceptions.json` lists them with a reason and an unexpired `expires` date (expired or incomplete
+  entries fail too). It gates Production Deploy (`security-scan`, a `needs` of `deploy`), Unit Tests on PRs, and the
+  weekly monitor, which now opens or comments on an open "Weekly npm audit gate failing" issue (#45 is closed).
 
 - **SEC-08** (#462): every `uses:` (54) is pinned to a full commit SHA with the version in a comment; the shared
   `maxrantil/.github` reusable workflows are pinned to `0075ab5` (master, 2026-11-09), so changes there now need a
@@ -35,9 +36,9 @@
 
 ## 🎯 Current Project State
 
-**Tests**: ✅ Jest 1380+ passing on #455 and #457; E2E green on #453 and #455
-**Branch**: ✅ worktrees clean and pushed
-**CI/CD**: 🔄 #457 waiting for merge → first successful deploy since #437. Then #455.
+**Tests**: ✅ Jest 1390 passed / 16 skipped on #459; production deploys green
+**Branch**: ✅ worktrees clean and pushed; `../textile-sec12` (#455, merged) can be removed
+**CI/CD**: ✅ production on `1749bb1`; ⏸️ #459 must not merge before both secrets are set on the `production` environment
 
 ### Agent Validation Status
 
@@ -45,13 +46,13 @@ The named validation agents are not available in this environment and were not r
 
 ## 🚀 Next Session Priorities
 
-1. If not already done: merge #457, confirm the deploy succeeds and the site serves Next 16.4.6
-   (`/_next/image` with an SVG `url` returns 400), then merge #455 and check the live `script-src` has no `https: http:`
-2. SEC-07: set `VULTR_KNOWN_HOSTS` (`ssh-keyscan <host>`) and `VULTR_HOST_FINGERPRINT` on the `production`
-   environment. Neither is set, so the deploy's SSH host key is not verified (it warns and continues)
-3. Confirm the VPS Node version is >= 22.12 (Sanity 6 `engines`); the deploy log prints it in "Deploy on VPS"
-4. SEC-05/06, SEC-08 (pin actions to SHAs), SEC-09 (blocking audit gate), SEC-10/11 (verify live headers and nonce), SEC-13–15
-5. Look at `.next/cache/images` on the VPS after the #453 deploy; carried over: Umami Realtime check, LCP levers
+1. SEC-07: Doctor Hubert checks the host key on the Vultr console (`ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub`;
+   the 2026-11-16 scan saw ED25519 `SHA256:QjynehVtlq1cUETAKfWsMmAeRvRfuXvZ633OevMgKHE`), sets both secrets, then
+   #459 is marked ready, merged, and its deploy watched. A fingerprint the Go SSH client does not pick (it may
+   negotiate ECDSA) fails the "Deploy on VPS" step after rsync; the live site is untouched in that case
+2. SEC-08 (pin actions to SHAs), SEC-09 (blocking `npm audit` gate)
+3. SEC-05/06, SEC-10/11 (verify live headers and nonce), SEC-13–15; `set -e` for the VPS deploy script (separate change)
+4. Look at `.next/cache/images` on the VPS after #453; carried over: Umami Realtime check, LCP levers
 
 ### Possible follow-up
 
@@ -132,14 +133,14 @@ The named validation agents are not available in this environment and were not r
 
 ## 📝 Startup Prompt for Next Session
 
-Read CLAUDE.md to understand our workflow, then continue the security follow-up after the deploy fix (#457) and SEC-12 (#455).
+Read CLAUDE.md to understand our workflow, then finish SEC-07 (#458, draft PR #459: deploy fails without the VPS host key).
 
-**Immediate priority**: verify production runs current master (Next 16.4.6, SVG optimization off, CSP without `https: http:`), then SEC-07 host key secrets (1-2 hours)
-**Context**: production was stuck on #437 because the deploy test step ran `.claude/` node:test files; #457 fixed it
+**Immediate priority**: once both host key secrets are set on the `production` environment, mark #459 ready, merge, watch the deploy; then SEC-08/SEC-09 (2-3 hours)
+**Context**: production runs current master again (#457 fixed the deploy test step); SEC-12 is live, SEC-04 was already fixed
 **Reference docs**: SESSION_HANDOVER.md, docs/guides/SECURITY-AUDIT-2026-11-15.md, `.github/workflows/production-deploy.yml`
-**Ready state**: master in ../textile-showcase; worktrees ../textile-sec02 and ../textile-sec12 can be removed once #457/#455 are merged
+**Ready state**: master in ../textile-showcase; #459 in ../textile-sec02; ../textile-sec12 can be removed
 
-**Expected scope**: production verified, SEC-07 closed, then SEC-08/SEC-09 (pinned actions, blocking audit gate)
+**Expected scope**: #459 merged with a verified host key, actions pinned to SHAs, `npm audit` gate blocking in CI
 
 ## 📚 Key Reference Documents
 

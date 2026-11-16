@@ -38,33 +38,19 @@ jobs:
       - name: Run type checking
         run: npm run type-check
 
+  # Blocks the deploy on high/critical advisories in production dependencies
+  # unless .github/audit-exceptions.json covers them (Issue #460, audit SEC-09)
   security-scan:
     runs-on: ubuntu-latest
-    continue-on-error: true # Don't block deployment for upstream vulnerabilities
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Setup Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: '24'
-          cache: 'npm'
-      - name: Install dependencies
-        run: npm ci
-      - name: Run security audit
-        id: security_audit
-        continue-on-error: true
-        run: |
-          echo "🔍 Running security audit (non-blocking)..."
-          npm audit --audit-level high || echo "⚠️ Security vulnerabilities detected - tracked in Issue #45"
-      - name: Run dependency check
-        continue-on-error: true
-        run: npx audit-ci --high || echo "⚠️ Dependency issues detected - tracked in Issue #45"
-      - name: Comment on security status
-        if: failure()
-        run: |
-          echo "⚠️ Security scan detected vulnerabilities. These are tracked in Issue #45."
-          echo "📝 Deployment will continue as these are upstream dependency issues."
-          echo "🔗 See https://github.com/maxrantil/textile-showcase/issues/45 for tracking"
+      # npm audit reads package-lock.json only, so no npm ci (no install scripts run here)
+      - name: Audit production dependencies
+        run: node scripts/audit-gate.js
 
   build:
     runs-on: ubuntu-latest
@@ -162,21 +148,23 @@ jobs:
           chmod 700 ~/.ssh
           ( umask 077; printf '%s\n' "$VULTR_SSH_KEY" > ~/.ssh/deploy_key )
 
-      # Host key verification: store the VPS host key line(s) from
-      # `ssh-keyscan <host>` in the VULTR_KNOWN_HOSTS secret to prevent MITM.
-      # Without it, falls back to unverified connections (with a warning).
+      # Host key verification (Issue #458, audit SEC-07). Both secrets hold the
+      # VPS host key checked against the server console, never a same-run
+      # ssh-keyscan: VULTR_KNOWN_HOSTS (known_hosts lines, used by rsync) and
+      # VULTR_HOST_FINGERPRINT (SHA256 fingerprint, used by appleboy/ssh-action).
+      # The deploy stops here if either is missing.
       - name: Configure SSH host verification
         env:
           VULTR_KNOWN_HOSTS: ${{ secrets.VULTR_KNOWN_HOSTS }}
+          VULTR_HOST_FINGERPRINT: ${{ secrets.VULTR_HOST_FINGERPRINT }}
         run: |
-          if [ -n "$VULTR_KNOWN_HOSTS" ]; then
-            printf '%s\n' "$VULTR_KNOWN_HOSTS" > ~/.ssh/known_hosts
-            chmod 600 ~/.ssh/known_hosts
-            echo "SSH_HOST_OPTS=-o StrictHostKeyChecking=yes -o UserKnownHostsFile=$HOME/.ssh/known_hosts" >> "$GITHUB_ENV"
-          else
-            echo "::warning::VULTR_KNOWN_HOSTS secret not set - SSH host key is NOT verified"
-            echo "SSH_HOST_OPTS=-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" >> "$GITHUB_ENV"
+          if [ -z "$VULTR_KNOWN_HOSTS" ] || [ -z "$VULTR_HOST_FINGERPRINT" ]; then
+            echo "::error::VULTR_KNOWN_HOSTS and VULTR_HOST_FINGERPRINT must both be set on the production environment"
+            exit 1
           fi
+          printf '%s\n' "$VULTR_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+          echo "SSH_HOST_OPTS=-o StrictHostKeyChecking=yes -o UserKnownHostsFile=$HOME/.ssh/known_hosts" >> "$GITHUB_ENV"
 
       - name: Rsync build artifact to VPS staging area
         run: |
@@ -191,7 +179,7 @@ jobs:
           host: ${{ secrets.VULTR_HOST }}
           username: ${{ secrets.VULTR_USERNAME }}
           key: ${{ secrets.VULTR_SSH_KEY }}
-          # SHA256 host key fingerprint; verification is skipped when unset
+          # SHA256 host key fingerprint; the verification step above requires it
           fingerprint: ${{ secrets.VULTR_HOST_FINGERPRINT }}
           script: |
             echo "🚀 Starting deployment..."
