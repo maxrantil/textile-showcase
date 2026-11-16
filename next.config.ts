@@ -30,7 +30,12 @@ const nextConfig = {
     minimumCacheTTL: 31536000, // Cache optimized images for 1 year (fixes Issue #308 cold-start slowness)
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    dangerouslyAllowSVG: true,
+    // Security audit 2026-11-15 SEC-01: SVG never reaches the native decoder
+    dangerouslyAllowSVG: false,
+    // SEC-02: bound the /_next/image disk cache (LRU-evicted) and the source fetch size.
+    // Sources are already resized by the Sanity CDN, so 10 MB is ample.
+    maximumDiskCacheSize: 256 * 1024 * 1024,
+    maximumResponseBody: 10 * 1024 * 1024,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
   experimental: {

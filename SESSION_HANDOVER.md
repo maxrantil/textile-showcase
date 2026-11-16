@@ -1,59 +1,29 @@
-# Session Handoff: PR sweep, open PR backlog merged
+# Session Handoff: security audit SEC-01/SEC-02, image optimizer limits (#452)
 
 **Date**: 2026-11-15
-**Issue**: #389, #395, #397, #399, #404 closed; #429 (perf, LCP in CI) is the only open issue
-**PR**: merged #437, #438, #432, #403, #439, #440, #444, #446, #447, #448, #449, #450 and the Dependabot combo
-(#441, #442, #443); closed #369-#385, #386, #387, #391, #392, #396, #398, #400, #401, #402, #405, #445
-**Branch**: claude/hopeful-galileo-o7vj4m
+**Issue**: #452 (open, closes when #453 merges)
+**PR**: #453 (draft): `dangerouslyAllowSVG: false`, 256 MB image disk cache cap, 10 MB source cap
+**Branch**: fix/issue-452-image-optimizer-limits (worktree `../textile-sec02`)
 
 ---
 
 ## ✅ Completed This Session
 
-- **Merged (squash)**: #437 font weight axis 400-500 (`8043011`), #438 `/projects` gallery preloads (`edba094`),
-  #432 docs `middleware.ts` → `src/proxy.ts` (`e82631d`), #403 Cloudflare security-audit skill (`06947d5`).
-  #432's body footer tripped the "AI attribution in PR body" check and was removed before merging.
-- **#439 merged** (`9a71f4e`): the 14 Dependabot PRs (#369-#385) applied as one lockfile commit; all CI green
-  including E2E. The 14 Dependabot PRs are closed with a pointer to #439.
-- **#386 re-landed** as its own PR: dependencies redone with npm on current master (next 16.4.6, react 19.3.1,
-  zod 4.6.7, sharp 0.35.5, `npm update` + `npm audit fix`); eslint-config-next stays 16.1.6 until the #387
-  re-land. Conflicts resolved: the contact route keeps values raw and escapes at render, so `replyTo: email`
-  covers what #409 added; the deploy workflow keeps Node 24 (#408) and gains #386's SSH host verification and
-  least-privilege token; `/projects` keeps #438's preloads.
-- **Nov 6 stack mapped**: #386 → #387 → #391 → #396 → #398 → #400 → #401 → #402 → #405 are stacked (each
-  branch contains the previous one), plus #392 alone. All conflict with master's 18 later commits; #386's
-  commits conflict in `eslint.config.mjs`, `src/app/api/contact/route.ts`, `production-deploy.yml`,
-  `src/app/projects/page.tsx`. Doctor Hubert chose to re-land them one at a time through the claude/ branch,
-  dropping what master already covers (#410 ESLint, #431/#433/#434 perf), and close the originals with a pointer.
-
-- **#440 merged** (`1569adb`), the #386 re-land. Its E2E first failed on axe-core 4.14's
-  `label-content-name-mismatch` (WCAG 2.5.3); the header logo and gallery links now start their
-  `aria-label` with the visible text ("Ida Romme, home", "X, 2025, view project"). #386 closed.
-- **#396 closed** as superseded (#425, #431, #434, #437); **issue #395 closed**.
-- **#387 re-land**: only DesktopImageCarousel and OptimizedImage still tripped the React Compiler rule;
-  eslint-config-next 16.4.6, unused `src/components/hydration` removed, `npm run lint` added to Unit Tests CI.
-
-- **#444 merged** (`c73e574`), the #387 re-land; #387 closed. **#391 re-land** up next: Studio /studio fix (Sanity packages no longer mapped to null, unused Studio client removed, Sanity API origins allowed in CSP on /studio only), per-route JS budget check in CI, `check-bundle-size:strict` script. #391's vendor-chunking commit is already on master (#433).
-
-- **#446 merged** (`3cc4a0d`), the #391 re-land; #391 and issue #389 closed. **#398 re-land** next: phones get the mobile project view in the server HTML (user-agent hint), no desktop-layout flash (#397).
-
-- **#447 merged** (`68986b5`), the #398 re-land; #398 and issue #397 closed. **#400 re-land** next: a desktop project without gallery images shows its main image (#399).
-
-- **#448 merged** (`1f210d7`), the #400 re-land; #400 and issue #399 closed. **#401 re-land** next: Sanity Studio 4 -> 6, next-sanity 11 -> 13, CLI 3 -> 8, @sanity/image-url 2; engines node >=22.12; supersedes Dependabot #445.
-
-- **#449 merged** (`0290a1d`), the #401 re-land (Sanity 6); #401 and Dependabot #445 closed. **Last re-land PR** combines #402 (LCP target 2.5s, warn-level), #405 (JSON-LD escaping, #404) and #392 (Lighthouse n/a with reason) as separate commits.
-
-- **#450 merged** (`6d50331`): #402, #405 and #392 re-landed together; issue #404 closed. All 11 JSON-LD
-  scripts use `safeJsonLd`; the Lighthouse report shows n/a with a reason instead of a 0% "Unknown URL" row.
-- **Dependabot combo**: glob 14 (#443; lockfile regenerated after Sanity 6), pytest 9.0.3 (#442) and
-  pygments 2.20.0 (#441) in one PR.
+- A read-only security audit (`docs/guides/SECURITY-AUDIT-2026-11-15.md`, 15 findings) ran on the stale
+  `perf/issue-429-font-weight-axis` checkout. Checked against master: the Next.js 16.4.6 / Sharp 0.35.5 upgrade
+  (#440) and JSON-LD escaping (SEC-03, #450) were already merged, and the audit doc now says so at the top.
+- #452/#453: `next.config.ts` turns SVG optimization off, caps `maximumDiskCacheSize` at 256 MB and
+  `maximumResponseBody` at 10 MB. `tests/unit/next-config-images.test.ts` (TDD: 3 failures before the change).
+- Verified locally: full Jest suite (1384 passed, 16 skipped), type-check, lint, prettier, `next build`. With
+  `next start`, a Sanity JPEG through `/_next/image` returns 200 and `q=90` returns 400, because Next 16's default
+  `qualities` is `[75]` and no component passes `quality`.
 
 ## 🎯 Current Project State
 
-**Tests**: ✅ lint 0 errors, type-check clean, Jest 1,380 passed / 16 skipped; E2E green on every merged PR
-**Branch**: ✅ clean and pushed
-**CI/CD**: ✅ every PR merged with all checks green. The "AI attribution in PR body" check fails once on each
-new PR because the PR tool adds a footer; editing the body re-runs it green
+**Tests**: ✅ local suite green; CI Jest green on #453; Lighthouse/bundle were still running at handoff
+**Branch**: ✅ #453 branch clean and pushed. The old checkout `../textile-showcase` (perf/issue-429) still has the
+uncommitted pre-audit handoff edits. They are superseded by this file and the audit doc on #453, so discard them.
+**CI/CD**: 🔄 #453 draft; E2E runs once it is marked ready
 
 ### Agent Validation Status
 
@@ -61,13 +31,11 @@ The named validation agents are not available in this environment and were not r
 
 ## 🚀 Next Session Priorities
 
-1. Production deploy of today's merges: watch the deploy run, then look at a project page and `/studio` on
-   idaromme.dk on a real desktop and phone (Sanity 6 Studio, mobile view rendered on the server)
-2. Optional deploy hardening from #440: add `VULTR_KNOWN_HOSTS` and `VULTR_HOST_FINGERPRINT` to the
-   production environment secrets (the deploy log warns "SSH host key is NOT verified" until then)
-3. Send one contact-form message and check that Reply goes to the sender
-4. #429: home and project-page LCP 3.1-3.8s in CI against the new 2.5s (warn-level) target
-5. Confirm a visit under Realtime in Umami (carried over)
+1. Mark #453 ready, wait for E2E, merge, deploy. Then look at `.next/cache/images` on the VPS and check that project images still load
+2. Re-run `npm audit --omit=dev` / `npm audit` on master. The audit's counts (54/73) came from the stale branch
+3. SEC-12 (remove `https: http:` from CSP `script-src`) and SEC-04 (IndexNow POST unauthenticated, no limits)
+4. SEC-05/06, SEC-08 (pin actions to SHAs), SEC-09 (blocking audit gate), SEC-10/11 (verify live headers and nonce), SEC-13–15
+5. Carried over: confirm a visit under Realtime in Umami; next LCP levers (the two shared script chunks)
 
 ### Possible follow-up
 
@@ -144,14 +112,14 @@ The named validation agents are not available in this environment and were not r
 
 ## 📝 Startup Prompt for Next Session
 
-Read CLAUDE.md to understand our workflow, then continue from the PR backlog sweep (✅ complete: every open PR merged or closed, only issue #429 open).
+Read CLAUDE.md to understand our workflow, then finish #452 (draft PR #453: image optimizer limits, SVG off).
 
-**Immediate priority**: verify the production deploy of today's merges on idaromme.dk (30 min), then #429 LCP (2-4 hours)
-**Context**: Sanity 6, next 16.4.6, the Studio fix, mobile project view rendered on the server and JSON-LD escaping all landed today
-**Reference docs**: SESSION_HANDOVER.md, PR #440 (deploy follow-ups), issue #429, `lighthouserc.js`
-**Ready state**: master clean, all CI green, no open PRs
+**Immediate priority**: mark #453 ready, merge after E2E, deploy, then do SEC-12 + SEC-04 from the audit (2-3 hours)
+**Context**: the audit ran on a stale branch. Master already has Next 16.4.6/Sharp 0.35.5 (#440) and safe JSON-LD (#450)
+**Reference docs**: docs/guides/SECURITY-AUDIT-2026-11-15.md (status note at top), SESSION_HANDOVER.md
+**Ready state**: work in worktree ../textile-sec02; discard the stale uncommitted docs in ../textile-showcase
 
-**Expected scope**: confirm the deploy, add the SSH host-verification secrets if wanted, then cut home LCP toward 2.5s
+**Expected scope**: #453 merged and deployed, `npm audit` re-run on master, CSP fallback origins removed, IndexNow protected
 
 ## 📚 Key Reference Documents
 
