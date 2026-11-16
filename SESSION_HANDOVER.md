@@ -1,13 +1,34 @@
-# Session Handoff: Playwright container for production-validation (#473); faster deploys landed (#467, #470)
+# Session Handoff: SEC-10 and SEC-11 fixed (#475); deploy speed-ups landed (#467, #470, #473)
 
 **Date**: 2026-11-16
-**Issue**: #473 (open, closes with this PR); #465, #467, #470 closed
-**PR**: merged #466 (`8bd0d79`), #468 (`1344370`), #469 (`ed70168`, handoff), #471 (`4f1649c`, readiness poll), #472 (`3b7a19a`, handoff); this PR: #473
-**Branch**: perf/issue-473-playwright-container
+**Issue**: #475 (open, closes with this PR); #465, #467, #470, #473 closed
+**PR**: this PR (#475); merged #466, #468, #469, #471, #472, #474 (`c78516d`)
+**Branch**: fix/issue-475-cache-and-nonce
 
 ---
 
 ## ✅ Completed This Session
+
+- **SEC-10 (this PR)**: the catch-all Cache-Control was already gone, but production served `/` with
+  `public, max-age=31536000, immutable`. Cause: the icon rule `source: '/(favicon|apple-touch-icon|icon)*'` in
+  `next.config.ts`; with Next's matcher `(…)*` is zero-or-more, so it matched `/` and `/favicon` and none of the
+  icon files. It now names the files (`favicon.ico`, `apple-touch-icon.(png|webp)`, `icon-NxN.(png|webp)`).
+  `tests/unit/next-config-cache-headers.test.ts` runs every Cache-Control rule through Next's `getPathMatch`:
+  none may match a page, API route, `sw.js` or `manifest.json`; each icon file in `public/` must match once.
+  Checked on a local production build: `/` is `private, no-cache, no-store`, icons `public, max-age=31536000, immutable`.
+- **SEC-11 (this PR)**: production already had a fresh nonce per request on all 19 nonced scripts, so it worked,
+  but `src/proxy.ts` set `x-nonce` only on the response while `layout.tsx` reads `headers()` (the request). The
+  proxy now forwards `x-nonce` and `Content-Security-Policy` with `NextResponse.next({ request: { headers } })`
+  (CSP building moved to `buildContentSecurityPolicy`). `tests/unit/middleware/csp-nonce-forwarding.test.ts` runs
+  the real proxy with real `next/server` classes. The older proxy suites' request mocks are now real `Headers`.
+  The home page's 2 project JSON-LD blocks have no nonce: they are data blocks, which CSP does not govern.
+- **Not in the repo**: `/favicon.ico`, `/apple-touch-icon.png` and `/manifest.json` also get
+  `max-age=31536000` + `public, immutable` from a second source on the VPS (likely Nginx `expires`). For
+  `manifest.json` that means changes reach browsers only after a year; check the Nginx site config.
+- **#474 deployed** (run 43906909396, `c78516d`): production-validation in the Playwright container passed.
+  "Initialize containers" (image pull) 21 s vs 25–69 s for the old install; smoke tests 79 s; total 3 min 13 s,
+  because `npm ci` took 74 s: `npm cache is not found` (the cache path is `/root/.npm` in the container, a
+  different Actions cache). That run saved the new cache; the next deploy should restore it (~2 min 15 s total).
 
 - **#473 (this PR)**: production-validation runs in `mcr.microsoft.com/playwright:v1.65.1-noble` (pinned by digest,
   `--ipc=host`, `HOME=/root` for Firefox as root); the "Install Playwright" step is gone. Reason: that step took
@@ -45,9 +66,9 @@
 
 ## 🎯 Current Project State
 
-**Tests**: ✅ deploy and pinned-actions tests 39/39 locally; full CI on the PR
+**Tests**: ✅ middleware, next-config and analytics-provider suites 108/108 locally; local production build OK
 **Branch**: ✅ clean and pushed
-**CI/CD**: ✅ production on `3b7a19a` (run 43892053247: Deploy on VPS 3 s, poll 1 s, production-validation 3 min 47 s)
+**CI/CD**: ✅ production on `c78516d`; #475 not deployed yet
 
 ### Agent Validation Status
 
@@ -55,26 +76,26 @@ The named validation agents are not available in this environment and were not r
 
 ## 🚀 Next Session Priorities
 
-1. **After #473 merges, check its production-validation** (first run in the container): "Initialize containers"
-   (image pull) vs the old "Install Playwright" (25–69 s); Firefox and Chrome smoke tests both pass. If the job
-   fails in the container, revert the PR: the site is already live by then, only the validation is lost.
+1. **After #475 deploys**: `curl -sI https://idaromme.dk/ | grep -i cache-control` should be `private, no-cache,
+   no-store…`, and the page's script nonces should match the CSP header. On that same run, production-validation's
+   `npm ci` should restore the `/root/.npm` cache (~20 s, not 74 s).
 2. Optional deploy speed-ups: the build job (~2 min) gates go-live; carry `.next/cache/images` from the old build
    into the new one (the swap drops it, so every image is re-optimised after each deploy); PM2 cluster mode +
    `pm2 reload` for zero downtime (check `nproc`); smoke tests take ~85–93 s (Desktop Chrome + Desktop Firefox).
-3. Remaining audit items: SEC-05/06, SEC-10/11 (verify live headers and nonce), SEC-13–15
+3. Remaining audit items: SEC-05/06, SEC-13–15; then a full re-audit (a prompt for that was drafted in chat)
 4. The actions inside `maxrantil/.github`'s reusable workflows still use tags (change in that repo)
 5. Carried over: Umami Realtime check, LCP levers
 
 ## 📝 Startup Prompt for Next Session
 
-Read CLAUDE.md to understand our workflow, then confirm #473 (production-validation in the Playwright container) on its first production deploy.
+Read CLAUDE.md to understand our workflow, then confirm #475 (SEC-10/SEC-11) in production and pick the next audit item.
 
-**Immediate priority**: compare "Initialize containers" with the old "Install Playwright" (25–69 s) on the deploy for #473's merge; revert if the job fails (30 min)
-**Context**: "Deploy on VPS" is 3–4 s and the readiness poll 1 s; the Playwright install was the slowest, most variable step left
-**Reference docs**: SESSION_HANDOVER.md, .github/workflows/production-deploy.yml
+**Immediate priority**: check `/` is no longer cached immutable and nonces match on the live site; check the container `npm ci` hit its cache (15 min)
+**Context**: SEC-01–04, 07–12 are fixed; SEC-05, 06, 13, 14, 15 remain (docs/guides/SECURITY-AUDIT-2026-11-15.md)
+**Reference docs**: SESSION_HANDOVER.md, docs/guides/SECURITY-AUDIT-2026-11-15.md
 **Ready state**: master clean, production green on the latest merge
 
-**Expected scope**: decide whether the container stays, then one audit item (SEC-10/11) or the `.next/cache/images` carry-over
+**Expected scope**: SEC-05 + SEC-06 (contact rate limiting behind Nginx, bounded CSP reports) as one issue + PR with tests
 
 ### Possible follow-up
 
