@@ -37,11 +37,16 @@ The named validation agents are not available in this environment and were not r
 1. **Check the second deploy** (the Production Deployment run for this PR's merge): "Deploy on VPS" should be
    under ~15 s (36 s with `npm ci`; ~40 s before #468 on run 43861604493). If it is still ~35 s, the stamp
    check is not matching: compare `cat node_modules/.deploy-lock-hash` on the VPS with the script's hash.
-2. **On the VPS** (no SSH host from the dev machine; Doctor Hubert runs these):
-   - `sudo -u deploy -i pm2 describe idaromme-website`: script path `.../node_modules/next/dist/bin/next`,
-     `--max-old-space-size=1024` in `node_args`; the site answers on 3001.
-   - `free -m`: whether 800M/1024 leave room for anything else on the box (not yet seen).
-   - `pm2 startup` set up for `deploy`, or `pm2 save` will not bring the site back after a reboot.
+2. **VPS checked** (Doctor Hubert, 2026-11-16, after the first deploy):
+   - ✅ `pm2 describe idaromme-website` (as `deploy`): script `/var/www/idaromme.dk/node_modules/next/dist/bin/next start`,
+     interpreter args `--max-old-space-size=1024`, max memory restart 838860800 (800M), fork mode, Node 24.22.2,
+     0 restarts. Heap ~55 MiB in use at idle.
+   - ✅ `free -m`: 1968 MB total, 553 used, 1414 available; swap 5399 MB, 374 used. Plenty of headroom.
+   - ❓ `pm2 startup` as `deploy` only prints the root command to run; that does not say whether it is already
+     set up. Check `systemctl is-enabled pm2-deploy`; if it is not enabled, run as root:
+     `env PATH=$PATH:/usr/local/bin /usr/local/lib/node_modules/pm2/bin/pm2 startup systemd -u deploy --hp /home/deploy`
+   - `sudo: unable to resolve host vps-sto-1`: `/etc/hosts` lacks the hostname (harmless, but every sudo waits on
+     DNS). Fix: add `127.0.1.1 vps-sto-1` to `/etc/hosts`.
 3. Optional deploy speed-ups: carry `.next/cache/images` from the old build into the new one (the swap
    drops it, so every image is re-optimised after each deploy); cache Playwright browsers in production-validation
    (~27 s); PM2 cluster mode + `pm2 reload` for zero downtime (check `nproc`).
@@ -53,12 +58,12 @@ The named validation agents are not available in this environment and were not r
 
 Read CLAUDE.md to understand our workflow, then verify the second deploy of #467's faster VPS deploy script.
 
-**Immediate priority**: check the "Deploy on VPS" time of the Production Deployment for the handoff merge, and the VPS PM2/memory checks (30 min)
+**Immediate priority**: check the "Deploy on VPS" time of the Production Deployment for the handoff merge, and whether `pm2-deploy` is enabled in systemd (30 min)
 **Context**: #466 and #468 are merged and deployed; the first deploy took 36 s with `npm ci`, and the second should skip it
 **Reference docs**: SESSION_HANDOVER.md, scripts/deploy/vps-release.sh, ecosystem.config.js
 **Ready state**: master clean, production green
 
-**Expected scope**: "Deploy on VPS" under ~15 s; `pm2 describe` (as `deploy`) shows Next with the 1024 MB heap; then pick the next deploy speed-up or audit item
+**Expected scope**: "Deploy on VPS" under ~15 s (PM2 already verified: Next with the 1024 MB heap); then pick the next deploy speed-up or audit item
 
 
 ### Possible follow-up
