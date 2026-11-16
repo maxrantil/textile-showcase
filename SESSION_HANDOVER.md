@@ -1,19 +1,25 @@
-# Session Handoff: production-validation readiness poll (#470); faster VPS deploys (#467) landed
+# Session Handoff: faster deploys landed and verified (#467, #470)
 
 **Date**: 2026-11-16
-**Issue**: #470 (open, closes with this PR); #465 and #467 closed
-**PR**: this PR (#470 readiness poll); merged #466 (`8bd0d79`), #468 (`1344370`), #469 (`ed70168`, handoff)
-**Branch**: perf/issue-470-readiness-poll
+**Issue**: #465, #467, #470 closed
+**PR**: merged #466 (`8bd0d79`), #468 (`1344370`), #469 (`ed70168`, handoff), #471 (`4f1649c`, readiness poll); this PR: handoff only
+**Branch**: docs/issue-470-deploy-handoff
 
 ---
 
 ## ✅ Completed This Session
 
-- **#470 (this PR)**: production-validation's fixed `sleep 30` ("Wait for deployment to stabilize") is replaced by
+- **#470** (#471, `4f1649c`): production-validation's fixed `sleep 30` ("Wait for deployment to stabilize") is replaced by
   "Wait for production to answer": `curl --fail --max-time 10` on `https://idaromme.dk/` every 2 s, up to 30
   attempts, then `::error::` and exit 1. The deploy job only ends after PM2 has started the new build, and the
   poll runs after `npm ci` and the Playwright install (~45 s later), so it should answer on attempt 1 and save
   ~30 s per deploy. `tests/unit/deploy-production-readiness.test.ts` (6) runs the step with stub `curl`/`sleep`.
+- **First deploy with the poll** (run 43888666218, `4f1649c`): all jobs green. "Wait for production to answer"
+  took **1 s** ("answered on attempt 1"; the `sleep 30` step took 31 s). "Deploy on VPS" 4 s. production-validation
+  was still **3 min 12 s** (2 min 44 s on run 43883724418) because the runner was slower on everything else:
+  Install Playwright 49 s (was 25 s), setup + checkout + Node + `npm ci` 39 s (was 23 s), smoke tests 93 s (was 85 s).
+- **#471 CI**: the first Lighthouse Performance Budget (mobile) run failed with `NO_NAVSTART` (Lighthouse could not
+  record the trace; it says to run again) and cancelled desktop. A re-run of the whole run (attempt 2) passed both.
 - **Playwright browser cache considered and dropped**: of the 25 s "Install Playwright" step (run 43883724418),
   ~16.5 s is apt system deps (`--with-deps`, not cacheable) and ~8 s browser downloads, about what an Actions
   cache restore of the same files costs.
@@ -30,9 +36,9 @@
 
 ## 🎯 Current Project State
 
-**Tests**: ✅ deploy and pinned-actions tests 34/34 locally; shellcheck clean on the poll; full CI on the PR
-**Branch**: ✅ clean and pushed
-**CI/CD**: ✅ production on `ed70168`; #470 not deployed yet
+**Tests**: ✅ all PR checks green on #471; deploy and pinned-actions tests 34/34 locally
+**Branch**: ✅ master at `4f1649c`; this branch only changes this file
+**CI/CD**: ✅ production on `4f1649c`, every job green. From merge to live ~2.5 min (build job ~2 min is the longest)
 
 ### Agent Validation Status
 
@@ -40,26 +46,25 @@ The named validation agents are not available in this environment and were not r
 
 ## 🚀 Next Session Priorities
 
-1. **After #470 merges**: its own Production Deployment is the first run of the poll. Check that
-   "Wait for production to answer" takes ~1 s ("answered on attempt 1") and production-validation is ~30 s shorter
-   (~2 min 44 s on run 43883724418).
-2. Optional deploy speed-ups: carry `.next/cache/images` from the old build into the new one (the swap
-   drops it, so every image is re-optimised after each deploy); PM2 cluster mode + `pm2 reload` for zero downtime
-   (check `nproc`); smoke tests take ~85 s (Desktop Chrome + Desktop Firefox).
+1. **Compare production-validation timings** over the next deploys (this PR's merge is one): the poll removes 30 s,
+   but runner speed varies by 30+ s between runs, so one run does not show the net saving.
+2. Optional deploy speed-ups: the build job (~2 min) gates go-live; carry `.next/cache/images` from the old build
+   into the new one (the swap drops it, so every image is re-optimised after each deploy); PM2 cluster mode +
+   `pm2 reload` for zero downtime (check `nproc`); smoke tests take ~85–93 s (Desktop Chrome + Desktop Firefox).
 3. Remaining audit items: SEC-05/06, SEC-10/11 (verify live headers and nonce), SEC-13–15
 4. The actions inside `maxrantil/.github`'s reusable workflows still use tags (change in that repo)
 5. Carried over: Umami Realtime check, LCP levers
 
 ## 📝 Startup Prompt for Next Session
 
-Read CLAUDE.md to understand our workflow, then confirm the #470 readiness poll on its first production deploy.
+Read CLAUDE.md to understand our workflow, then pick the next item from SESSION_HANDOVER.md's priorities (deploy speed-up or audit item).
 
-**Immediate priority**: check "Wait for production to answer" in the Production Deployment for #470's merge (15 min)
-**Context**: VPS deploys now take 3 s for "Deploy on VPS"; #470 removes a fixed 30 s sleep from production-validation
-**Reference docs**: SESSION_HANDOVER.md, .github/workflows/production-deploy.yml
-**Ready state**: master clean, production green
+**Immediate priority**: check production-validation timings on the latest deploys, then SEC-10/11 (verify live headers and CSP nonce) or the `.next/cache/images` carry-over (1–2 hours)
+**Context**: deploys are fast now: "Deploy on VPS" 3–4 s (was ~40 s), the readiness poll replaced a fixed 30 s sleep
+**Reference docs**: SESSION_HANDOVER.md, .github/workflows/production-deploy.yml, scripts/deploy/vps-release.sh
+**Ready state**: master clean, production green on the latest merge
 
-**Expected scope**: poll answers on attempt 1 and production-validation is ~30 s shorter; then pick the next deploy speed-up or an audit item
+**Expected scope**: one audit item or one deploy speed-up, as an issue + PR with tests
 
 ### Possible follow-up
 
