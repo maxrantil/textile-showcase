@@ -40,6 +40,10 @@ concurrency:
   group: lighthouse-${{ github.ref }}
   cancel-in-progress: true
 
+# Default for jobs without their own permissions block (Issue #465)
+permissions:
+  contents: read
+
 jobs:
   lighthouse:
     name: Lighthouse Performance Audit

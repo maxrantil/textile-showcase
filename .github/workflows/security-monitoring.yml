@@ -9,6 +9,10 @@ on:
     branches:
       - master # Run after deployments to track security status
 
+# Default for jobs without their own permissions block (Issue #465)
+permissions:
+  contents: read
+
 jobs:
   security-audit:
     runs-on: ubuntu-latest

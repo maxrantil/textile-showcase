@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [master]
 
+# Default for jobs without their own permissions block (Issue #465)
+permissions:
+  contents: read
+
 jobs:
   check-commit-quality:
     permissions:

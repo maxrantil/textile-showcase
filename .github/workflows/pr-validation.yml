@@ -7,6 +7,10 @@ on:
     branches: [master]
     types: [opened, edited, synchronize]
 
+# Default for jobs without their own permissions block (Issue #465)
+permissions:
+  contents: read
+
 jobs:
   pr-title:
     name: Check PR Title
