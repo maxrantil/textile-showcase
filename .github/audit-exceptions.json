@@ -1,1 +1,7 @@
-[]
+[
+  {
+    "advisory": "GHSA-fc5q-39xc-vjpf",
+    "reason": "picomatch ReDoS, no patched release (<=4.0.7). Only via @sanity/cli (Studio CLI); the Next.js server never loads it and no visitor input becomes a glob. Remove when picomatch ships a fix.",
+    "expires": "2026-12-15"
+  }
+]
