@@ -125,6 +125,18 @@
   border-bottom-color: currentColor;
 }
 
+/* Links inside running text: always underlined, so they never rely on hover
+   or color alone to be recognised (privacy notice, contact form note) */
+.nordic-link-inline {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.nordic-link-inline:hover {
+  color: var(--color-text-primary, #000);
+}
+
 .nordic-link-subtle {
   color: var(--color-text-light);
   transition: color 0.2s ease;
