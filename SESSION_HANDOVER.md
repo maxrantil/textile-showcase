@@ -1,13 +1,21 @@
-# Session Handoff: privacy notice (#482) — every 2026-11-15 audit finding addressed
+# Session Handoff: 2026-11-15 audit fully addressed; paused for a reboot
 
 **Date**: 2026-11-17
-**Issue**: #482 (open, closes with this PR); #479, #480, #481 and earlier closed
-**PR**: this PR (#482); merged #483 (`fc419fc`, SEC-06/13/15 part 1) and earlier
-**Branch**: feat/issue-482-privacy-page
+**Issue**: #482 and all earlier audit issues closed; none open from this session
+**PR**: merged #484 (`654aaa5`, /privacy) and earlier; this PR: handoff only; Dependabot #464 being recreated
+**Branch**: docs/handoff-after-482
 
 ---
 
 ## ✅ Completed This Session
+
+- **#484 deployed** (run 44044235230, `654aaa5`): `/privacy` 200 with `#english` and `#dansk` (`lang="da"`);
+  `/contact` links to it. Deploy on VPS 3 s; live ~3 min 21 s after the workflow started.
+- **Dependabot #464** (github-actions group, 37 `uses:` lines) is SHA-pinned already but was built on an old
+  master; `@dependabot recreate` was posted 2026-11-17. The bumps are **majors**: checkout v7.0.1, setup-node
+  v7.1.0, upload-artifact v7.0.2, download-artifact v8.0.2, github-script v9.0.0, codecov-action v7.1.1,
+  appleboy/ssh-action v1.2.5. Review the release notes (artifact v7/v8 must interoperate; ssh-action runs the
+  production deploy) and watch the first production deploy after merging.
 
 - **#482 (this PR)**: `/privacy` (`src/app/privacy/page.tsx`), English then Danish (`lang="da"` section, anchors
   `#english`/`#dansk`). Doctor Hubert's decisions (2026-11-17): controller Ida Romme; contact emails kept until
@@ -113,9 +121,9 @@
 
 ## 🎯 Current Project State
 
-**Tests**: ✅ privacy and contact page suites 14/14; local production build OK
-**Branch**: ✅ clean and pushed
-**CI/CD**: ✅ production on `fc419fc`; this PR not deployed yet
+**Tests**: ✅ all PR checks green on #484
+**Branch**: ✅ master clean at `654aaa5`; this branch only changes this file
+**CI/CD**: ✅ production on `654aaa5`, every deploy job green
 
 ### Agent Validation Status
 
@@ -123,25 +131,79 @@ The named validation agents are not available in this environment and were not r
 
 ## 🚀 Next Session Priorities
 
-1. **Full security re-audit** with the Kimi K3 prompt drafted in chat (2026-11-16): every finding of
-   docs/guides/SECURITY-AUDIT-2026-11-15.md is now fixed. Outside the repo: PM2 log rotation, Nginx `expires 1y`
-   on `manifest.json`, Nginx log retention (the privacy notice assumes it is bounded).
-2. Optional deploy speed-ups: the build job (~2 min) gates go-live; carry `.next/cache/images` from the old build
+1. **Merge this handoff PR** (it was pushed right before a reboot), then **review the recreated Dependabot #464**
+   (see above) and merge it only if CI is green and the release notes show nothing breaking.
+2. **Full security review with Kimi K3**: the prompt is in "Security review prompt" below. Doctor Hubert asked for a
+   full review rather than a read-only re-check; the auditor may open a draft PR with fixes but never merges.
+   Outside the repo: PM2 log rotation, Nginx `expires 1y` on `manifest.json`, Nginx log retention (the privacy
+   notice says logs are kept only as long as needed), a Danish read-through of /privacy.
+3. Optional deploy speed-ups: the build job (~2 min) gates go-live; carry `.next/cache/images` from the old build
    into the new one (the swap drops it, so every image is re-optimised after each deploy); PM2 cluster mode +
    `pm2 reload` for zero downtime (check `nproc`); smoke tests take ~85–93 s (Desktop Chrome + Desktop Firefox).
-3. The actions inside `maxrantil/.github`'s reusable workflows still use tags (change in that repo)
-4. Carried over: Umami Realtime check, LCP levers
+4. The actions inside `maxrantil/.github`'s reusable workflows still use tags (change in that repo)
+5. Carried over: Umami Realtime check, LCP levers
 
 ## 📝 Startup Prompt for Next Session
 
-Read CLAUDE.md to understand our workflow, then act on the results of the security re-audit of idaromme.dk.
+Read CLAUDE.md to understand our workflow, then merge the pending handoff PR and review the recreated Dependabot PR #464.
 
-**Immediate priority**: triage the re-audit report's findings into issues, fix High/Medium first (2–4 hours)
-**Context**: all 15 findings of the 2026-11-15 audit are fixed and deployed; the privacy notice is at /privacy
-**Reference docs**: SESSION_HANDOVER.md, docs/guides/SECURITY-AUDIT-2026-11-15.md, the new audit report
-**Ready state**: master clean, production green on the latest merge
+**Immediate priority**: handoff PR, then #464 (seven major action bumps; check release notes, CI and the first deploy) (1 hour)
+**Context**: every finding of the 2026-11-15 audit is fixed and deployed; /privacy is live in English and Danish
+**Reference docs**: SESSION_HANDOVER.md (incl. the security review prompt), docs/guides/SECURITY-AUDIT-2026-11-15.md
+**Ready state**: master clean at `654aaa5`, production green
 
-**Expected scope**: one issue + PR with tests per finding
+**Expected scope**: #464 merged and deployed, then hand the security review prompt to Kimi K3
+
+## 🔍 Security review prompt (for Kimi K3)
+
+Full review, not a read-only re-check. The safety rules protect production (a push to master deploys; the
+contact API emails the owner); the auditor may open a draft PR with fixes.
+
+```text
+You are doing a full security review of this repository and the live site it deploys: a Next.js 16 +
+Sanity CMS portfolio (https://idaromme.dk), self-hosted on a 2 GB Ubuntu VPS (Vultr) with PM2 behind
+Nginx, deployed by GitHub Actions on every push to master (.github/workflows/production-deploy.yml,
+scripts/deploy/vps-release.sh). Contact form email goes through Resend; analytics is self-hosted Umami.
+
+Scope: everything: application code, API routes, proxy/CSP, configuration, dependencies, CI/CD
+workflows and the deploy script, the live site's headers and behaviour, and privacy. Think like an
+attacker first: what would you try against this site, and does it hold?
+
+A previous audit is in docs/guides/SECURITY-AUDIT-2026-11-15.md (SEC-01 to SEC-15); all 15 are reported
+fixed. Treat that as one checklist inside the review: verify each against the code and the live site,
+without trusting commit messages, PR descriptions or this prompt.
+
+Safety rules (these protect production, not the repo)
+- Never push to master or merge anything: a push to master deploys to production.
+- Never POST to https://idaromme.dk/api/contact (it emails the site owner). Test the contact route locally
+  (`npm run build && npx next start -p 3111`) or with the Jest tests in tests/api/.
+- Against production: GET/HEAD requests to any public page are fine; at most 25 POSTs of `{}` to
+  /api/csp-report. No fuzzing, load tests, brute force or denial-of-service attempts.
+- Do not open .env* files or print secrets; mask anything that looks like a credential.
+
+Method
+1. Read README.md, CLAUDE.md, docs/guides/SECURITY-GUIDE.md, SECURITY-DEPLOYMENT-GUIDE.md,
+   SECURITY-CSP-DECISION-2025-11-19.md and the 2026-11-15 audit.
+2. Map the attack surface: every route and API endpoint, what each accepts, what it sends where, and
+   every secret the build, CI and VPS use.
+3. Review each area with evidence (file:line, command + output, or response header):
+   - input handling, injection, XSS, CSP and nonce delivery (src/proxy.ts, layouts, JSON-LD)
+   - abuse resistance: rate limits, client-IP trust, honeypot, request size limits, outbound timeouts
+   - caching headers on pages, APIs and assets; information leaked by errors and /api/health
+   - dependencies: `npm audit --omit=dev`, `npm audit`; reachable at runtime or build-only?
+   - CI/CD: action pinning, permissions, secrets exposure, the production-validation container image,
+     and what vps-release.sh does on the server with .env.local
+   - privacy: does /privacy match what the code actually sends and to whom?
+4. Write docs/guides/SECURITY-AUDIT-<today YYYY-MM-DD>.md, laid out like the previous audit: scope and
+   method, overall risk, findings table (ID, severity, title, location, status), one section per finding
+   with evidence and a concrete fix, "Checked and OK", prioritized remediation. Keep SEC-01..15 for the
+   old findings; number new ones from SEC-16.
+5. Optional, for clear-cut fixes only: on a new branch `security/review-<date>`, fix them with a failing
+   test first, one commit per finding, and open a DRAFT pull request against master that references the
+   report. Do not merge it. Leave anything needing a design decision as a recommendation in the report.
+6. End with a short summary: counts per severity and verdict, the top 3 risks, and what you fixed in
+   the draft PR (if anything).
+```
 
 ### Possible follow-up
 
