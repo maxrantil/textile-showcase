@@ -1,13 +1,26 @@
-# Session Handoff: 2026-11-15 audit fully addressed; paused for a reboot
+# Session Handoff: #464 action bumps merged; deploy blocked by a picomatch advisory
 
 **Date**: 2026-11-17
-**Issue**: #482 and all earlier audit issues closed; none open from this session
-**PR**: merged #484 (`654aaa5`, /privacy) and earlier; this PR: handoff only; Dependabot #464 being recreated
-**Branch**: docs/handoff-after-482
+**Issue**: none (CI unblock)
+**PR**: merged #485 (`513a34e`, handoff) and Dependabot #464 (`467dafa`); this PR #487: picomatch audit exception
+**Branch**: fix/audit-exception-picomatch
 
 ---
 
 ## ✅ Completed This Session
+
+- **#485 and #464 merged** by Doctor Hubert. Dependabot never acted on `@dependabot recreate`, but #464 still
+  covered all `uses:` lines on master and merged cleanly. Release notes checked against our workflows: no
+  `require('@actions/github')`/`getOctokit` redeclaration in github-script steps, no `pull_request_target` or
+  `workflow_run` triggers (checkout v6+), no `packageManager` field (setup-node v5+ auto-cache), GitHub-hosted
+  runners only (node24 actions need runner >= 2.327.1).
+- **Both deploys failed** (runs 44136530750 for #485, 44136548548 for #464) at "Audit production dependencies":
+  new high advisory **GHSA-fc5q-39xc-vjpf** (picomatch ReDoS, `<= 4.0.7`, no patched release). npm reports 23
+  high, all from this one advisory. In production deps picomatch comes only via `@sanity/cli`. Production stayed
+  on `654aaa5` and healthy. In run 44136548548 upload-artifact v7 worked; **download-artifact v8 and
+  ssh-action v1.2.5 have not run yet**.
+- **#487 (this PR)**: dated exception in `.github/audit-exceptions.json` (expires **2026-12-15**), approved by
+  Doctor Hubert. `node scripts/audit-gate.js` passes locally (1 excepted, 0 blocking).
 
 - **#484 deployed** (run 44044235230, `654aaa5`): `/privacy` 200 with `#english` and `#dansk` (`lang="da"`);
   `/contact` links to it. Deploy on VPS 3 s; live ~3 min 21 s after the workflow started.
@@ -121,9 +134,9 @@
 
 ## 🎯 Current Project State
 
-**Tests**: ✅ all PR checks green on #484
-**Branch**: ✅ master clean at `654aaa5`; this branch only changes this file
-**CI/CD**: ✅ production on `654aaa5`, every deploy job green
+**Tests**: ✅ all #487 checks green except "Verify Session Handoff" (fixed by this commit)
+**Branch**: ✅ master clean at `467dafa`; this branch changes the audit exceptions and this file
+**CI/CD**: ❌ deploys of `513a34e` and `467dafa` failed at the audit gate; production still on `654aaa5`, healthy
 
 ### Agent Validation Status
 
@@ -131,8 +144,10 @@ The named validation agents are not available in this environment and were not r
 
 ## 🚀 Next Session Priorities
 
-1. **Merge this handoff PR** (it was pushed right before a reboot), then **review the recreated Dependabot #464**
-   (see above) and merge it only if CI is green and the release notes show nothing breaking.
+1. **Merge #487 and watch the deploy**: the first real run of download-artifact v8 (digest mismatch now
+   errors) and `appleboy/ssh-action` v1.2.5 (host fingerprint). Then check `/`, `/privacy`, `/api/health`.
+   Before **2026-12-15**: drop the exception if picomatch ships a fix, or move `@sanity/cli` to
+   `devDependencies` (check the build and VPS don't need it).
 2. **Full security review with Kimi K3**: the prompt is in "Security review prompt" below. Doctor Hubert asked for a
    full review rather than a read-only re-check; the auditor may open a draft PR with fixes but never merges.
    Outside the repo: PM2 log rotation, Nginx `expires 1y` on `manifest.json`, Nginx log retention (the privacy
@@ -145,14 +160,14 @@ The named validation agents are not available in this environment and were not r
 
 ## 📝 Startup Prompt for Next Session
 
-Read CLAUDE.md to understand our workflow, then merge the pending handoff PR and review the recreated Dependabot PR #464.
+Read CLAUDE.md to understand our workflow, then confirm PR #487 (picomatch audit exception) is merged and its production deploy is green.
 
-**Immediate priority**: handoff PR, then #464 (seven major action bumps; check release notes, CI and the first deploy) (1 hour)
-**Context**: every finding of the 2026-11-15 audit is fixed and deployed; /privacy is live in English and Danish
-**Reference docs**: SESSION_HANDOVER.md (incl. the security review prompt), docs/guides/SECURITY-AUDIT-2026-11-15.md
-**Ready state**: master clean at `654aaa5`, production green
+**Immediate priority**: #487 deploy: first run of download-artifact v8 and ssh-action v1.2.5 from #464 (30 min)
+**Context**: #464's action bumps are on master, but deploys were blocked by GHSA-fc5q-39xc-vjpf (no fix exists); exception expires 2026-12-15
+**Reference docs**: SESSION_HANDOVER.md (incl. the security review prompt), `.github/audit-exceptions.json`, `.github/workflows/production-deploy.yml`
+**Ready state**: master at `467dafa` (or later with #487); production on `654aaa5`, healthy
 
-**Expected scope**: #464 merged and deployed, then hand the security review prompt to Kimi K3
+**Expected scope**: production on current master, then hand the security review prompt to Kimi K3
 
 ## 🔍 Security review prompt (for Kimi K3)
 
