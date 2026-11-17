@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import ContactForm from '@/components/adaptive/Forms'
 import { EmailRevealButton } from '@/components/shared/EmailReveal/EmailRevealButton'
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
@@ -104,6 +105,13 @@ export default function ContactPage() {
                       setSubmitStatus('error')
                     }}
                   />
+                  {/* Where personal data is collected (Issue #482) */}
+                  <p className="nordic-body-small nordic-spacing-top-md">
+                    How your message is handled:{' '}
+                    <Link href="/privacy" className="nordic-link-inline">
+                      Privacy
+                    </Link>
+                  </p>
                 </>
               )}
             </div>

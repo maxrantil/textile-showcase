@@ -48,4 +48,17 @@ describe('ContactPage', () => {
       'Contact'
     )
   })
+
+  // Issue #482: the form is where personal data is collected
+  it('links to the privacy notice next to the form', () => {
+    render(<ContactPage />)
+
+    const link = screen.getByRole('link', { name: /privacy/i })
+    expect(link).toHaveAttribute('href', '/privacy')
+    expect(link).toHaveClass('nordic-link-inline')
+    expect(
+      screen.getByTestId('contact-form').compareDocumentPosition(link) &
+        Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy()
+  })
 })
