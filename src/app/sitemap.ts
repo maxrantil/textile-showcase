@@ -69,7 +69,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     const projectPages: MetadataRoute.Sitemap = projects
       ? projects.map((project) => ({
-          url: `${baseUrl}/project/${project.slug}`,
+          // Next writes <loc> unescaped, so a CMS slug must stay one path
+          // segment (Issue #492)
+          url: `${baseUrl}/project/${encodeURIComponent(project.slug)}`,
           lastModified: new Date(project._updatedAt),
           changeFrequency: 'monthly' as const,
           priority: 0.7,

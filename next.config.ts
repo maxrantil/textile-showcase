@@ -7,6 +7,10 @@ const withBundleAnalyzer =
       require('@next/bundle-analyzer')({ enabled: true })
     : (config: unknown) => config
 
+// Read at build and at `next start` (both load .env files first)
+const sanityProjectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID
+const sanityDataset = process.env.NEXT_PUBLIC_SANITY_DATASET || 'production'
+
 const nextConfig = {
   // Modern JavaScript targeting for legacy JS elimination
   compiler: {
@@ -18,14 +22,18 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'cdn.sanity.io',
-        port: '',
-        pathname: '/images/**',
-      },
-    ],
+    // Only this project's dataset: /images/** let anyone proxy their own
+    // Sanity project's images through /_next/image (Issue #491)
+    remotePatterns: sanityProjectId
+      ? [
+          {
+            protocol: 'https',
+            hostname: 'cdn.sanity.io',
+            port: '',
+            pathname: `/images/${sanityProjectId}/${sanityDataset}/**`,
+          },
+        ]
+      : [],
     formats: ['image/webp'], // WebP only - avif encoding too slow on VPS (5+ second LCP overhead)
     minimumCacheTTL: 31536000, // Cache optimized images for 1 year (fixes Issue #308 cold-start slowness)
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],

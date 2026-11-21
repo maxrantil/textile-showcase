@@ -3,9 +3,8 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { TextileDesign } from '@/types/textile'
-
 // Sanity slugs: letters (incl. æøå), digits, '-', '_', '.'; schema maxLength 200
-const SLUG_PATTERN = /^[\p{L}\p{N}_.-]{1,200}$/u
+import { isValidSlug } from '@/lib/slug'
 
 interface RouteParams {
   params: Promise<{
@@ -16,7 +15,7 @@ interface RouteParams {
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const { slug } = await params
-    if (typeof slug !== 'string' || !SLUG_PATTERN.test(slug)) {
+    if (typeof slug !== 'string' || !isValidSlug(slug)) {
       return NextResponse.json({ error: 'Invalid slug' }, { status: 400 })
     }
 

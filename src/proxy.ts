@@ -315,12 +315,15 @@ interface User {
 export const config = {
   matcher: [
     /*
-     * Match all request paths except for the ones starting with:
+     * Match all request paths except these static assets:
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * - public folder files
+     * - public/images/ and public/fonts/
+     * - the app icons in public/ (apple-touch-icon, icon-NNxNN)
+     * Assets are listed by path, not by extension: an extension rule also
+     * skipped routes such as /studio/x.png, which then had no CSP (Issue #495)
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static/|_next/image$|favicon\\.ico$|images/|fonts/|apple-touch-icon\\.(?:png|webp)$|icon-\\d+x\\d+\\.(?:png|webp)$).*)',
   ],
 }

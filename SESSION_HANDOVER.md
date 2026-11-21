@@ -1,13 +1,67 @@
-# Session Handoff: #464 action bumps merged; deploy blocked by a picomatch advisory
+# Session Handoff: all eight audit triage issues (#488–#495) fixed in PR #497
 
-**Date**: 2026-11-17
-**Issue**: none (CI unblock)
-**PR**: merged #485 (`513a34e`, handoff) and Dependabot #464 (`467dafa`); this PR #487: picomatch audit exception
-**Branch**: fix/audit-exception-picomatch
+**Date**: 2026-11-21
+**Issue**: #488, #489, #490, #491, #492, #493, #494, #495 (all fixed in #497)
+**PR**: #497 (this branch, one commit per issue); #496 (audit docs and triage)
+**Branch**: fix/issue-490-contact-content-type
 
 ---
 
 ## ✅ Completed This Session
+
+- **#497: eight issues, one commit each, every fix test-first** (precedent #483; one PR avoids
+  `SESSION_HANDOVER.md` conflicts between parallel PRs):
+  - **#490** `/api/contact` requires the exact media type `application/json` (as `csp-report` does);
+    `text/plain; application/json` → 415.
+  - **#491** `images.remotePatterns` pinned to `/images/<NEXT_PUBLIC_SANITY_PROJECT_ID>/<dataset>/**`; no project
+    ID → no remote images. `next start` reads the VPS `.env.local`, so the pattern holds at runtime too.
+  - **#492** sitemap URL-encodes slugs (Next writes `<loc>` unescaped); new `src/lib/slug.ts` shared by the
+    projects API and a Studio validation rule on `textileDesign.slug` (relative import: the Sanity CLI has no `@/`).
+  - **#495** proxy matcher lists skipped assets by path (`_next/static/`, `_next/image`, `favicon.ico`, `images/`,
+    `fonts/`, app icons) instead of by extension. `tests/unit/middleware/matcher.test.ts` runs it through Next's
+    `getMiddlewareMatchers`.
+  - **#489** `checkRateLimit(..., { pinned: true })` keeps a counter in `pinnedRateLimitStore`, never evicted;
+    the contact global cap uses it.
+  - **#494** `vps-release.sh` moves `node_modules` to `node_modules.previous` before `npm ci`, restores it when
+    npm ci or the PM2 start fails, deletes it after a good start (needs disk for two trees briefly). The pm2
+    stub now refuses `start idaromme-website` without `node_modules/next/dist/bin/next`.
+  - **#493** the deploy resets the VPS to `github.sha`, checks `HEAD`, and stops before writing `.env.local` if
+    fetch, commit lookup or reset fails.
+  - **#488** each client may send `CONTACT_PER_CLIENT_HOURLY_LIMIT` = 3 messages an hour (counted only for
+    messages that would be sent, before the global cap); `clientRateLimitKey` in `src/lib/clientIp.ts` groups
+    IPv6 by /64 and maps `::ffff:a.b.c.d` to the IPv4. Doctor Hubert first chose proof-of-work, then the
+    per-client cap after I showed PoW costs an attacker under a second for 30 messages. The old per-minute tests
+    now use unsent (400) requests. Multi-IP attackers can still drain the global 30/h; Turnstile is the next step
+    if that ever happens.
+- **Verified**: Jest 1543 passed / 16 skipped (110 suites); lint 0 errors; local build on :3111: `/studio/x.png`
+  now has a CSP, `text/plain; application/json` → 415, own Sanity image 200, foreign project 400, sitemap renders;
+  Playwright Desktop Chrome: production-smoke, project-browsing, optimized-image-a11y, contact-form and
+  alignment-and-contact, 42 passed / 5 skipped.
+- **Seen in passing**: production sends HSTS twice (`...; preload, max-age=31536000`), presumably nginx and the
+  proxy both set it. Harmless; drop one.
+
+- **Triaged three model audits** of `62272db` (DeepSeek V4.1 Flash, GLM-5.3, Kimi K3.1 Pro; ~60 findings) in
+  `docs/guides/SECURITY-AUDIT-TRIAGE-2026-11-21.md`. Every claim re-checked against source and installed Next 16.4.6.
+  **No High/Critical survives**: 1 Medium, 9 Low, rest discarded with reasons.
+- **Claims disproved**: GLM's quality-axis multiplication (Next 16 default `qualities: [75]`); GLM's 300 MB bodies
+  (Next caps proxied bodies at 10 MB, `proxyClientMaxBodySize`); DeepSeek's "Next escapes sitemap XML" (it doesn't,
+  `resolve-route-data.js:112`); DeepSeek's "PM2 gives up after 10 OOMs" (`min_uptime: 10s`); Kimi's deploy "gate
+  bypass" High (master writers already deploy; kept as a Low reliability bug).
+- **Old launch-prep doc credentials** (`docs/implementation/PUBLIC-LAUNCH-PREPARATION-2025-11-02.md`, gitignored,
+  never committed): its Resend key differs from the current `.env.local` (hash compare), so likely rotated.
+  Sanity/Cloudinary revocation not verified.
+- **Issues opened**: #488 V-1 Medium (one IP exhausts the 30/h global contact cap in ~6 min, form locked for
+  everyone), #489 V-2 rate-limit eviction resets the global counter, #490 V-3 `text/plain; application/json`
+  passes the content-type check, #491 V-4 image optimizer accepts any Sanity project, #492 V-5 sitemap slug
+  not encoded, #493 V-6 deploy resets to `origin/master` not `github.sha`, #494 V-7 failed `npm ci` leaves no
+  `node_modules`, #495 V-8 proxy matcher skips CSP on `/studio/x.png`. V-9 (no negative cache on missing slugs)
+  and V-10 (body read before size check) have no issue yet.
+- **#487 deployed**: Production Deployment run 44143304443 for `62272db` succeeded (first runs of
+  download-artifact v8 and ssh-action v1.2.5). #486 (weekly audit gate failing, 2026-11-17) predates the
+  exception and can likely be closed after re-running the scan.
+
+### Earlier sessions
+
 
 - **#485 and #464 merged** by Doctor Hubert. Dependabot never acted on `@dependabot recreate`, but #464 still
   covered all `uses:` lines on master and merged cleanly. Release notes checked against our workflows: no
@@ -134,9 +188,10 @@
 
 ## 🎯 Current Project State
 
-**Tests**: ✅ all #487 checks green except "Verify Session Handoff" (fixed by this commit)
-**Branch**: ✅ master clean at `467dafa`; this branch changes the audit exceptions and this file
-**CI/CD**: ❌ deploys of `513a34e` and `467dafa` failed at the audit gate; production still on `654aaa5`, healthy
+**Tests**: ✅ all local (Jest, lint, build, E2E subset); #497 CI running at handoff time
+**Branch**: ✅ master clean at `62272db`; #496 and #497 open. Both change this file: if #496 merges first,
+  keep #497's version on rebase (it already contains #496's handoff)
+**CI/CD**: ✅ production on `62272db`, healthy. Dependabot alert #269 (1 moderate) on master
 
 ### Agent Validation Status
 
@@ -144,81 +199,34 @@ The named validation agents are not available in this environment and were not r
 
 ## 🚀 Next Session Priorities
 
-1. **Merge #487 and watch the deploy**: the first real run of download-artifact v8 (digest mismatch now
-   errors) and `appleboy/ssh-action` v1.2.5 (host fingerprint). Then check `/`, `/privacy`, `/api/health`.
-   Before **2026-12-15**: drop the exception if picomatch ships a fix, or move `@sanity/cli` to
-   `devDependencies` (check the build and VPS don't need it).
-2. **Full security review with Kimi K3**: the prompt is in "Security review prompt" below. Doctor Hubert asked for a
-   full review rather than a read-only re-check; the auditor may open a draft PR with fixes but never merges.
-   Outside the repo: PM2 log rotation, Nginx `expires 1y` on `manifest.json`, Nginx log retention (the privacy
-   notice says logs are kept only as long as needed), a Danish read-through of /privacy.
-3. Optional deploy speed-ups: the build job (~2 min) gates go-live; carry `.next/cache/images` from the old build
-   into the new one (the swap drops it, so every image is re-optimised after each deploy); PM2 cluster mode +
-   `pm2 reload` for zero downtime (check `nproc`); smoke tests take ~85–93 s (Desktop Chrome + Desktop Firefox).
-4. The actions inside `maxrantil/.github`'s reusable workflows still use tags (change in that repo)
-5. Carried over: Umami Realtime check, LCP levers
+1. **Merge #496, then #497, and watch the deploy**: #497 is the first deploy with the `github.sha` reset (#493)
+   and the `node_modules.previous` swap (#494). No lockfile change, so npm ci is skipped this time. Then check
+   `/studio/x.png` has a CSP, project images load, `/sitemap.xml` renders.
+2. **Watch the contact form after deploy**: a real visitor's 4th message within an hour now gets 429. If Ida
+   hears of that happening, raise `CONTACT_PER_CLIENT_HOURLY_LIMIT`.
+3. **On the VPS (Doctor Hubert)**: `ss -lntp | grep 3001`; `nginx -T | grep -E 'client_max_body_size|limit_req|proxy_add_x_forwarded_for|Strict-Transport'`.
+   Consider `args: 'start -H 127.0.0.1'` in `ecosystem.config.js`. Confirm old Sanity/Cloudinary keys revoked,
+   then redact the launch-prep doc. Drop the duplicate HSTS header.
+4. Triage leftovers without issues: V-9 (no negative cache for missing slugs, uncapped `QueryCache`), V-10
+   (body read before the size check; settle with the nginx check).
+5. Carried over: picomatch exception expires **2026-12-15** (drop it or move `@sanity/cli` to devDependencies);
+   Dependabot #269; close #486 if the weekly scan passes; PM2 log rotation; deploy speed-ups; Umami Realtime; LCP.
 
 ## 📝 Startup Prompt for Next Session
 
-Read CLAUDE.md to understand our workflow, then confirm PR #487 (picomatch audit exception) is merged and its production deploy is green.
+Read CLAUDE.md to understand our workflow, then confirm PRs #496 and #497 (audit triage and its fixes) are merged and the production deploy is green.
 
-**Immediate priority**: #487 deploy: first run of download-artifact v8 and ssh-action v1.2.5 from #464 (30 min)
-**Context**: #464's action bumps are on master, but deploys were blocked by GHSA-fc5q-39xc-vjpf (no fix exists); exception expires 2026-12-15
-**Reference docs**: SESSION_HANDOVER.md (incl. the security review prompt), `.github/audit-exceptions.json`, `.github/workflows/production-deploy.yml`
-**Ready state**: master at `467dafa` (or later with #487); production on `654aaa5`, healthy
+**Immediate priority**: watch the first deploy with the `github.sha` checkout and `node_modules.previous` swap, spot-check `/studio/x.png`, images and `/sitemap.xml` (30 min); then V-9 negative caching (1–2 hours)
+**Context**: all eight triage issues (#488–#495) fixed in #497, one commit each; only V-9/V-10 and host checks remain
+**Reference docs**: SESSION_HANDOVER.md, docs/guides/SECURITY-AUDIT-TRIAGE-2026-11-21.md, scripts/deploy/vps-release.sh
+**Ready state**: master at `62272db` until the merges; production healthy
 
-**Expected scope**: production on current master, then hand the security review prompt to Kimi K3
+**Expected scope**: #496 and #497 deployed and verified; an issue and fix for V-9 (missing-slug caching, capped `QueryCache`)
 
-## 🔍 Security review prompt (for Kimi K3)
+## 🔍 Security review prompt
 
-Full review, not a read-only re-check. The safety rules protect production (a push to master deploys; the
-contact API emails the owner); the auditor may open a draft PR with fixes.
-
-```text
-You are doing a full security review of this repository and the live site it deploys: a Next.js 16 +
-Sanity CMS portfolio (https://idaromme.dk), self-hosted on a 2 GB Ubuntu VPS (Vultr) with PM2 behind
-Nginx, deployed by GitHub Actions on every push to master (.github/workflows/production-deploy.yml,
-scripts/deploy/vps-release.sh). Contact form email goes through Resend; analytics is self-hosted Umami.
-
-Scope: everything: application code, API routes, proxy/CSP, configuration, dependencies, CI/CD
-workflows and the deploy script, the live site's headers and behaviour, and privacy. Think like an
-attacker first: what would you try against this site, and does it hold?
-
-A previous audit is in docs/guides/SECURITY-AUDIT-2026-11-15.md (SEC-01 to SEC-15); all 15 are reported
-fixed. Treat that as one checklist inside the review: verify each against the code and the live site,
-without trusting commit messages, PR descriptions or this prompt.
-
-Safety rules (these protect production, not the repo)
-- Never push to master or merge anything: a push to master deploys to production.
-- Never POST to https://idaromme.dk/api/contact (it emails the site owner). Test the contact route locally
-  (`npm run build && npx next start -p 3111`) or with the Jest tests in tests/api/.
-- Against production: GET/HEAD requests to any public page are fine; at most 25 POSTs of `{}` to
-  /api/csp-report. No fuzzing, load tests, brute force or denial-of-service attempts.
-- Do not open .env* files or print secrets; mask anything that looks like a credential.
-
-Method
-1. Read README.md, CLAUDE.md, docs/guides/SECURITY-GUIDE.md, SECURITY-DEPLOYMENT-GUIDE.md,
-   SECURITY-CSP-DECISION-2025-11-19.md and the 2026-11-15 audit.
-2. Map the attack surface: every route and API endpoint, what each accepts, what it sends where, and
-   every secret the build, CI and VPS use.
-3. Review each area with evidence (file:line, command + output, or response header):
-   - input handling, injection, XSS, CSP and nonce delivery (src/proxy.ts, layouts, JSON-LD)
-   - abuse resistance: rate limits, client-IP trust, honeypot, request size limits, outbound timeouts
-   - caching headers on pages, APIs and assets; information leaked by errors and /api/health
-   - dependencies: `npm audit --omit=dev`, `npm audit`; reachable at runtime or build-only?
-   - CI/CD: action pinning, permissions, secrets exposure, the production-validation container image,
-     and what vps-release.sh does on the server with .env.local
-   - privacy: does /privacy match what the code actually sends and to whom?
-4. Write docs/guides/SECURITY-AUDIT-<today YYYY-MM-DD>.md, laid out like the previous audit: scope and
-   method, overall risk, findings table (ID, severity, title, location, status), one section per finding
-   with evidence and a concrete fix, "Checked and OK", prioritized remediation. Keep SEC-01..15 for the
-   old findings; number new ones from SEC-16.
-5. Optional, for clear-cut fixes only: on a new branch `security/review-<date>`, fix them with a failing
-   test first, one commit per finding, and open a DRAFT pull request against master that references the
-   report. Do not merge it. Leave anything needing a design decision as a recommendation in the report.
-6. End with a short summary: counts per severity and verdict, the top 3 risks, and what you fixed in
-   the draft PR (if anything).
-```
+Used on 2026-11-20/21 for DeepSeek, GLM and Kimi; results triaged in `docs/guides/SECURITY-AUDIT-TRIAGE-2026-11-21.md`.
+The prompt text is in git history (`513a34e`).
 
 ### Possible follow-up
 
@@ -297,19 +305,9 @@ Method
 - `src/hooks/useHorizontalScroll.ts` and `src/hooks/gallery/useGalleryNavigation.ts` still centre every item, but no
   component uses them
 
-## 📝 Startup Prompt for Next Session
-
-Read CLAUDE.md to understand our workflow, then finish SEC-07 (#458, draft PR #459: deploy fails without the VPS host key).
-
-**Immediate priority**: once both host key secrets are set on the `production` environment, mark #459 ready, merge, watch the deploy; then SEC-08/SEC-09 (2-3 hours)
-**Context**: production runs current master again (#457 fixed the deploy test step); SEC-12 is live, SEC-04 was already fixed
-**Reference docs**: SESSION_HANDOVER.md, docs/guides/SECURITY-AUDIT-2026-11-15.md, `.github/workflows/production-deploy.yml`
-**Ready state**: master in ../textile-showcase; #459 in ../textile-sec02; ../textile-sec12 can be removed
-
-**Expected scope**: #459 merged with a verified host key, actions pinned to SHAs, `npm audit` gate blocking in CI
-
 ## 📚 Key Reference Documents
 
+- `docs/guides/SECURITY-AUDIT-TRIAGE-2026-11-21.md` (current security state; issues #488–#495) and the three model reports beside it
 - Issue #395, issue #429, PRs #434 and #436 (merged), PRs #437 and #438 (draft), issue #397 (layout swap on project pages)
 - `src/components/server/GalleryImagePreloads.tsx`, `src/utils/gallery-images.ts`, `src/app/page.tsx`, `src/app/projects/page.tsx`
 - `public/fonts/inter-400.woff2`, `src/styles/critical/critical.css` (the two `@font-face` rules)

@@ -1,6 +1,8 @@
 // src/sanity/schemaTypes/textileDesign.ts - Updated schema
 
 import { defineField, defineType } from 'sanity'
+// Relative path: the Sanity CLI does not resolve the @/ alias
+import { isValidSlug, SLUG_RULE_MESSAGE } from '../../lib/slug'
 
 export default defineType({
   name: 'textileDesign',
@@ -80,6 +82,13 @@ export default defineType({
         source: 'title',
         maxLength: 200,
       },
+      // The slug becomes a URL path segment and a sitemap <loc> (Issue #492)
+      validation: (Rule) =>
+        Rule.custom((slug?: { current?: string }) =>
+          !slug?.current || isValidSlug(slug.current)
+            ? true
+            : SLUG_RULE_MESSAGE
+        ),
     }),
     defineField({
       name: 'image',

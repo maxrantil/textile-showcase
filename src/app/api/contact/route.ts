@@ -6,11 +6,12 @@ import { Resend } from 'resend'
 import { z } from 'zod'
 import {
   checkRateLimit,
+  CONTACT_PER_CLIENT_HOURLY_LIMIT,
   GLOBAL_CONTACT_LIMIT,
   GLOBAL_CONTACT_WINDOW_MS,
   RESEND_TIMEOUT_MS,
 } from '@/lib/rateLimit'
-import { getClientIp } from '@/lib/clientIp'
+import { clientRateLimitKey, getClientIp } from '@/lib/clientIp'
 import { HONEYPOT_FIELD } from '@/lib/honeypot'
 
 /** Largest accepted request body; a max-length submission is well under this */
@@ -86,15 +87,22 @@ function jsonError(error: string, status: number) {
 }
 
 export async function POST(request: NextRequest) {
-  const ip = getClientIp(request)
+  // An IPv6 /64 counts as one client (Issue #488)
+  const client = clientRateLimitKey(getClientIp(request))
 
   // Per-IP rate limit
-  if (!checkRateLimit(ip)) {
+  if (!checkRateLimit(client)) {
     return jsonError('Too many requests. Please try again later.', 429)
   }
 
-  const contentType = request.headers.get('content-type') || ''
-  if (!contentType.toLowerCase().includes('application/json')) {
+  // Compare the media type exactly: a substring match accepted
+  // "text/plain; application/json", which browsers send cross-site without a
+  // CORS preflight (Issue #490)
+  const mediaType = (request.headers.get('content-type') ?? '')
+    .split(';', 1)[0]
+    .trim()
+    .toLowerCase()
+  if (mediaType !== 'application/json') {
     return jsonError('Unsupported content type', 415)
   }
 
@@ -143,11 +151,23 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Hourly cap per client, counted only for messages that would be sent,
+    // so one client cannot use up the global budget (Issue #488)
+    if (
+      !checkRateLimit(`contact-hour:${client}`, {
+        limit: CONTACT_PER_CLIENT_HOURLY_LIMIT,
+        windowMs: GLOBAL_CONTACT_WINDOW_MS,
+      })
+    ) {
+      return jsonError('Too many requests. Please try again later.', 429)
+    }
+
     // Global cap protects the mail quota against distributed spam
     if (
       !checkRateLimit(GLOBAL_RATE_LIMIT_KEY, {
         limit: GLOBAL_CONTACT_LIMIT,
         windowMs: GLOBAL_CONTACT_WINDOW_MS,
+        pinned: true,
       })
     ) {
       console.warn('Contact form global rate limit reached')

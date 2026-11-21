@@ -3,11 +3,21 @@
 # ABOUTME: Reinstalls production dependencies only when package-lock.json or the Node version changed
 
 # Run by the "Deploy on VPS" step of production-deploy.yml from the site
-# directory, after `git reset --hard origin/master` (Issue #467).
+# directory, after it checks out the commit the run built (Issues #467, #493).
 
 APP=idaromme-website
 # Kept inside node_modules so that removing node_modules also removes the stamp
 STAMP=node_modules/.deploy-lock-hash
+# The installed tree, set aside until the new one runs (Issue #494)
+PREVIOUS_MODULES=node_modules.previous
+
+restore_previous_modules() {
+  if [ -d "$PREVIOUS_MODULES" ]; then
+    rm -rf node_modules
+    mv "$PREVIOUS_MODULES" node_modules
+    echo "↩️ Restored the previous node_modules"
+  fi
+}
 
 if [ ! -d .next.incoming ]; then
   echo "❌ Build artifact (.next.incoming) not found — aborting"
@@ -25,10 +35,20 @@ else
   pm2 stop "$APP" 2>/dev/null || echo "⚠️ PM2 process not running (ok for first deploy)"
 
   # Production dependencies only; the build happened on the GHA runner (Issue #320)
+  # Set the installed tree aside rather than deleting it, so a failed
+  # install can put it back (Issue #494)
   echo "📦 Installing production dependencies..."
-  rm -rf node_modules
+  # An interrupted deploy may have left only the set-aside tree; keep it
+  if [ ! -d node_modules ] && [ -d "$PREVIOUS_MODULES" ]; then
+    mv "$PREVIOUS_MODULES" node_modules
+  fi
+  rm -rf "$PREVIOUS_MODULES"
+  if [ -d node_modules ]; then
+    mv node_modules "$PREVIOUS_MODULES"
+  fi
   if ! npm ci --omit=dev; then
     echo "❌ npm ci failed, restarting the current build..."
+    restore_previous_modules
     pm2 start "$APP" 2>/dev/null || echo "⚠️ Could not restore PM2 process"
     exit 1
   fi
@@ -63,11 +83,12 @@ if ! start_app; then
   else
     echo "⚠️ No backup to restore"
   fi
+  restore_previous_modules
   start_app || echo "⚠️ Could not restore PM2 process"
   exit 1
 fi
 # Persist the process list for `pm2 resurrect` after a reboot
 pm2 save
 
-rm -rf .next.backup
+rm -rf .next.backup "$PREVIOUS_MODULES"
 echo "🎉 Deployment completed successfully!"

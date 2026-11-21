@@ -20,14 +20,19 @@ const stubs: Record<string, string> = {
   npm: `#!/bin/bash
 echo "npm $*" >> "$CALLS"
 if [ "$1" = "ci" ]; then
-  [ "\${STUB_NPM_FAIL:-}" = 1 ] && exit 1
-  mkdir -p node_modules && touch node_modules/installed
+  if [ "\${STUB_NPM_FAIL:-}" = 1 ]; then
+    mkdir -p node_modules && touch node_modules/partial
+    exit 1
+  fi
+  mkdir -p node_modules/next/dist/bin && touch node_modules/installed
+  echo "\${STUB_NPM_TREE:-new}" > node_modules/next/dist/bin/next
 fi`,
   pm2: `#!/bin/bash
 echo "pm2 $*" >> "$CALLS"
 case "$1 $2" in
   "delete "*) [ "\${STUB_PM2_HAS_APP:-1}" = 1 ] || exit 1 ;;
   "start ecosystem.config.js") [ "\${STUB_PM2_START_FAIL:-}" = 1 ] && exit 1 ;;
+  "start idaromme-website") [ -f node_modules/next/dist/bin/next ] || exit 42 ;;
 esac
 exit 0`,
 }
@@ -167,6 +172,89 @@ describe('VPS release script (Issue #467)', () => {
     expect(site.calls()).toContain('pm2 start idaromme-website')
   })
 
+  // Issue #494: npm ci used to run after rm -rf node_modules, so a failed
+  // install left PM2 nothing to start
+  describe('when a dependency reinstall fails', () => {
+    function siteWithPreviousInstall(): Site {
+      const site = makeSite()
+      expect(site.run({ STUB_NPM_TREE: 'old' }).status).toBe(0)
+      fs.mkdirSync(path.join(site.dir, '.next.incoming'))
+      fs.writeFileSync(path.join(site.dir, '.next.incoming/BUILD_ID'), 'newer')
+      fs.writeFileSync(path.join(site.dir, 'package-lock.json'), 'lock-v2')
+      fs.writeFileSync(path.join(site.dir, '.calls'), '')
+      return site
+    }
+
+    it('restores the previous node_modules and restarts the running build', () => {
+      const site = siteWithPreviousInstall()
+      const stamp = read(site, 'node_modules/.deploy-lock-hash')
+
+      const r = site.run({ STUB_NPM_FAIL: '1' })
+
+      expect(r.status).not.toBe(0)
+      expect(read(site, 'node_modules/next/dist/bin/next').trim()).toBe('old')
+      expect(exists(site, 'node_modules/partial')).toBe(false)
+      expect(read(site, 'node_modules/.deploy-lock-hash')).toBe(stamp)
+      expect(read(site, '.next/BUILD_ID')).toBe('new')
+      expect(read(site, '.next.incoming/BUILD_ID')).toBe('newer')
+      expect(site.calls()).toContain('pm2 start idaromme-website')
+      expect(r.out).not.toContain('Could not restore PM2 process')
+      expect(exists(site, 'node_modules.previous')).toBe(false)
+    })
+
+    it('reinstalls on the next deploy, since the lockfile still differs', () => {
+      const site = siteWithPreviousInstall()
+      site.run({ STUB_NPM_FAIL: '1' })
+      fs.writeFileSync(path.join(site.dir, '.calls'), '')
+
+      expect(site.run().status).toBe(0)
+      expect(site.calls()).toContain('npm ci --omit=dev')
+      expect(read(site, 'node_modules/next/dist/bin/next').trim()).toBe('new')
+      expect(read(site, '.next/BUILD_ID')).toBe('newer')
+    })
+  })
+
+  it('restores the previous node_modules with the previous build when the PM2 start fails', () => {
+    const site = makeSite()
+    expect(site.run({ STUB_NPM_TREE: 'old' }).status).toBe(0)
+    fs.mkdirSync(path.join(site.dir, '.next.incoming'))
+    fs.writeFileSync(path.join(site.dir, '.next.incoming/BUILD_ID'), 'newer')
+    fs.writeFileSync(path.join(site.dir, 'package-lock.json'), 'lock-v2')
+
+    const r = site.run({ STUB_PM2_START_FAIL: '1' })
+
+    expect(r.status).not.toBe(0)
+    expect(read(site, '.next/BUILD_ID')).toBe('new')
+    expect(read(site, 'node_modules/next/dist/bin/next').trim()).toBe('old')
+    expect(exists(site, 'node_modules.previous')).toBe(false)
+  })
+
+  it('falls back to a node_modules.previous left by an interrupted deploy', () => {
+    const site = makeSite()
+    expect(site.run({ STUB_NPM_TREE: 'old' }).status).toBe(0)
+    fs.renameSync(
+      path.join(site.dir, 'node_modules'),
+      path.join(site.dir, 'node_modules.previous')
+    )
+    fs.mkdirSync(path.join(site.dir, '.next.incoming'))
+
+    const r = site.run({ STUB_NPM_FAIL: '1' })
+
+    expect(r.status).not.toBe(0)
+    expect(read(site, 'node_modules/next/dist/bin/next').trim()).toBe('old')
+  })
+
+  it('removes node_modules.previous after a successful deploy', () => {
+    const site = makeSite()
+    site.run()
+    fs.mkdirSync(path.join(site.dir, '.next.incoming'))
+    fs.writeFileSync(path.join(site.dir, 'package-lock.json'), 'lock-v2')
+
+    expect(site.run().status).toBe(0)
+    expect(exists(site, 'node_modules.previous')).toBe(false)
+    expect(exists(site, 'node_modules/installed')).toBe(true)
+  })
+
   it('restores the previous build and starts it again when the PM2 start fails', () => {
     const site = makeSite()
     const r = site.run({ STUB_PM2_START_FAIL: '1' })
@@ -203,11 +291,30 @@ describe('VPS release script (Issue #467)', () => {
 describe('production deploy workflow runs the release script (Issue #467)', () => {
   const sshScript = workflowText.slice(workflowText.indexOf('script: |'))
 
-  it('runs scripts/deploy/vps-release.sh after pulling the new source', () => {
-    const resetAt = sshScript.indexOf('git reset --hard origin/master')
+  // Issue #493: resetting to origin/master paired this run's build with
+  // whatever commit was newest on master at deploy time
+  it('checks out the commit this run built, and verifies it, before the release', () => {
+    const resetAt = sshScript.indexOf('git reset --hard "$EXPECTED_SHA"')
+    const verifyAt = sshScript.indexOf('"$(git rev-parse HEAD)" != "$EXPECTED_SHA"')
+    const envAt = sshScript.indexOf('cat > .env.local')
     const releaseAt = sshScript.indexOf('bash scripts/deploy/vps-release.sh')
+
+    expect(sshScript).toContain("EXPECTED_SHA='${{ github.sha }}'")
+    expect(sshScript).not.toMatch(/git reset --hard origin\/master/)
     expect(resetAt).toBeGreaterThan(-1)
-    expect(releaseAt).toBeGreaterThan(resetAt)
+    expect(verifyAt).toBeGreaterThan(resetAt)
+    expect(envAt).toBeGreaterThan(verifyAt)
+    expect(releaseAt).toBeGreaterThan(envAt)
+  })
+
+  it('stops the deploy when fetching or selecting the commit fails', () => {
+    expect(sshScript).toMatch(/if ! git fetch origin; then[\s\S]*?exit 1/)
+    expect(sshScript).toMatch(
+      /if ! git cat-file -e "\$EXPECTED_SHA\^\{commit\}"[\s\S]*?exit 1/
+    )
+    expect(sshScript).toMatch(
+      /if ! git reset --hard "\$EXPECTED_SHA"; then[\s\S]*?exit 1/
+    )
   })
 
   it('no longer reinstalls node_modules inline on every deploy', () => {
