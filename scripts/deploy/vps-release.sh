@@ -3,7 +3,7 @@
 # ABOUTME: Reinstalls production dependencies only when package-lock.json or the Node version changed
 
 # Run by the "Deploy on VPS" step of production-deploy.yml from the site
-# directory, after `git reset --hard origin/master` (Issue #467).
+# directory, after it checks out the commit the run built (Issues #467, #493).
 
 APP=idaromme-website
 # Kept inside node_modules so that removing node_modules also removes the stamp

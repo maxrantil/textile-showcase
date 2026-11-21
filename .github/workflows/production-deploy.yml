@@ -198,10 +198,28 @@ jobs:
               exit 1
             fi
 
-            # Pull latest source (public/, config files, package.json, etc.)
-            echo "📥 Pulling latest changes..."
-            git fetch origin
-            git reset --hard origin/master
+            # Check out the commit this run tested and built (public/, config
+            # files, package.json, the release script). origin/master could
+            # already be a newer commit whose own run has not finished, which
+            # paired this build with other source (Issue #493).
+            EXPECTED_SHA='${{ github.sha }}'
+            echo "📥 Checking out $EXPECTED_SHA..."
+            if ! git fetch origin; then
+              echo "❌ git fetch failed"
+              exit 1
+            fi
+            if ! git cat-file -e "$EXPECTED_SHA^{commit}" 2>/dev/null; then
+              echo "❌ Commit $EXPECTED_SHA is not available on the VPS"
+              exit 1
+            fi
+            if ! git reset --hard "$EXPECTED_SHA"; then
+              echo "❌ Could not check out $EXPECTED_SHA"
+              exit 1
+            fi
+            if [ "$(git rev-parse HEAD)" != "$EXPECTED_SHA" ]; then
+              echo "❌ Checked-out source does not match $EXPECTED_SHA"
+              exit 1
+            fi
 
             # Create production environment file
             echo "📝 Setting up production environment..."
@@ -219,7 +237,7 @@ jobs:
 
             # Install (only when package-lock.json or Node changed), promote
             # .next.incoming, restart PM2, roll back on failure (Issue #467).
-            # Runs from the source just pulled, so script changes apply at once.
+            # Runs from the checked-out commit, so script changes apply at once.
             bash scripts/deploy/vps-release.sh
 
   production-validation:

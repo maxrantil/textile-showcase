@@ -291,11 +291,30 @@ describe('VPS release script (Issue #467)', () => {
 describe('production deploy workflow runs the release script (Issue #467)', () => {
   const sshScript = workflowText.slice(workflowText.indexOf('script: |'))
 
-  it('runs scripts/deploy/vps-release.sh after pulling the new source', () => {
-    const resetAt = sshScript.indexOf('git reset --hard origin/master')
+  // Issue #493: resetting to origin/master paired this run's build with
+  // whatever commit was newest on master at deploy time
+  it('checks out the commit this run built, and verifies it, before the release', () => {
+    const resetAt = sshScript.indexOf('git reset --hard "$EXPECTED_SHA"')
+    const verifyAt = sshScript.indexOf('"$(git rev-parse HEAD)" != "$EXPECTED_SHA"')
+    const envAt = sshScript.indexOf('cat > .env.local')
     const releaseAt = sshScript.indexOf('bash scripts/deploy/vps-release.sh')
+
+    expect(sshScript).toContain("EXPECTED_SHA='${{ github.sha }}'")
+    expect(sshScript).not.toMatch(/git reset --hard origin\/master/)
     expect(resetAt).toBeGreaterThan(-1)
-    expect(releaseAt).toBeGreaterThan(resetAt)
+    expect(verifyAt).toBeGreaterThan(resetAt)
+    expect(envAt).toBeGreaterThan(verifyAt)
+    expect(releaseAt).toBeGreaterThan(envAt)
+  })
+
+  it('stops the deploy when fetching or selecting the commit fails', () => {
+    expect(sshScript).toMatch(/if ! git fetch origin; then[\s\S]*?exit 1/)
+    expect(sshScript).toMatch(
+      /if ! git cat-file -e "\$EXPECTED_SHA\^\{commit\}"[\s\S]*?exit 1/
+    )
+    expect(sshScript).toMatch(
+      /if ! git reset --hard "\$EXPECTED_SHA"; then[\s\S]*?exit 1/
+    )
   })
 
   it('no longer reinstalls node_modules inline on every deploy', () => {
