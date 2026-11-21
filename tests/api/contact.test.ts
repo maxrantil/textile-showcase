@@ -226,114 +226,47 @@ describe('POST /api/contact', () => {
     })
   })
 
+  // The per-minute limit counts every request, sent or not; these use a
+  // message that fails validation, so the hourly send cap (Issue #488)
+  // does not get in the way
   describe('Rate Limiting', () => {
-    it('should allow first 5 requests from same IP', async () => {
-      mockResendSend.mockResolvedValue({ data: { id: '123' }, error: null })
-
-      const ip = '192.168.1.1'
-
-      for (let i = 0; i < 5; i++) {
-        const request = createMockRequest({
+    const unsent = (ip: string) =>
+      POST(
+        createMockRequest({
           body: {
             name: 'Test User',
             email: 'test@example.com',
-            message: `This is test message number ${i + 1}.`,
+            message: 'short',
           },
-          headers: {
-            'x-forwarded-for': ip,
-          },
+          headers: { 'x-forwarded-for': ip },
         })
+      )
 
-        const response = await POST(request)
-        expect(response.status).toBe(200)
+    it('should allow first 5 requests from same IP', async () => {
+      for (let i = 0; i < 5; i++) {
+        expect((await unsent('192.168.1.1')).status).toBe(400)
       }
-
-      expect(mockResendSend).toHaveBeenCalledTimes(5)
     })
 
     it('should return 429 on 6th request within rate limit window', async () => {
-      mockResendSend.mockResolvedValue({ data: { id: '123' }, error: null })
+      for (let i = 0; i < 5; i++) await unsent('192.168.1.2')
 
-      const ip = '192.168.1.2'
-
-      // Make 5 successful requests
-      for (let i = 0; i < 5; i++) {
-        const request = createMockRequest({
-          body: {
-            name: 'Test User',
-            email: 'test@example.com',
-            message: `This is test message number ${i + 1}.`,
-          },
-          headers: {
-            'x-forwarded-for': ip,
-          },
-        })
-
-        await POST(request)
-      }
-
-      // 6th request should be rate limited
-      const request = createMockRequest({
-        body: {
-          name: 'Test User',
-          email: 'test@example.com',
-          message: 'This is the 6th message, should be blocked.',
-        },
-        headers: {
-          'x-forwarded-for': ip,
-        },
-      })
-
-      const response = await POST(request)
+      const response = await unsent('192.168.1.2')
       const data = await extractResponseJson(response)
 
       expect(response.status).toBe(429)
       expect(data).toHaveProperty('error')
       expect((data as { error: string }).error).toMatch(/too many requests/i)
-      expect(mockResendSend).toHaveBeenCalledTimes(5) // Should not have been called again
+      expect(mockResendSend).not.toHaveBeenCalled()
     })
 
     it('should track different IPs separately', async () => {
-      mockResendSend.mockResolvedValue({ data: { id: '123' }, error: null })
+      for (let i = 0; i < 5; i++) await unsent('192.168.1.3')
+      expect((await unsent('192.168.1.3')).status).toBe(429)
 
-      const ip1 = '192.168.1.3'
-      const ip2 = '192.168.1.4'
-
-      // 5 requests from IP1
       for (let i = 0; i < 5; i++) {
-        const request = createMockRequest({
-          body: {
-            name: 'User 1',
-            email: 'user1@example.com',
-            message: `Message ${i + 1} from IP1.`,
-          },
-          headers: {
-            'x-forwarded-for': ip1,
-          },
-        })
-
-        const response = await POST(request)
-        expect(response.status).toBe(200)
+        expect((await unsent('192.168.1.4')).status).toBe(400)
       }
-
-      // 5 requests from IP2 should also succeed
-      for (let i = 0; i < 5; i++) {
-        const request = createMockRequest({
-          body: {
-            name: 'User 2',
-            email: 'user2@example.com',
-            message: `Message ${i + 1} from IP2.`,
-          },
-          headers: {
-            'x-forwarded-for': ip2,
-          },
-        })
-
-        const response = await POST(request)
-        expect(response.status).toBe(200)
-      }
-
-      expect(mockResendSend).toHaveBeenCalledTimes(10)
     })
   })
 
@@ -622,9 +555,9 @@ describe('POST /api/contact', () => {
         statuses.push(response.status)
       }
 
-      expect(statuses.slice(0, 5)).toEqual([200, 200, 200, 200, 200])
-      expect(statuses[5]).toBe(429)
-      expect(mockResendSend).toHaveBeenCalledTimes(5)
+      // All six count as 203.0.113.7: three sends, then its hourly cap (Issue #488)
+      expect(statuses).toEqual([200, 200, 200, 429, 429, 429])
+      expect(mockResendSend).toHaveBeenCalledTimes(3)
     })
 
     it('should reject oversized request bodies with 413', async () => {
@@ -732,6 +665,77 @@ describe('POST /api/contact', () => {
 
       expect(lastStatus).toBe(429)
       expect(mockResendSend).toHaveBeenCalledTimes(GLOBAL_CONTACT_LIMIT)
+    })
+
+    // Issue #488: one IP used up the global budget in six minutes, locking
+    // the form for everyone; an hourly per-client cap stops that
+    describe('hourly per-client cap', () => {
+      const send = (ip: string, body: object = validBody) =>
+        POST(createMockRequest({ body, headers: { 'x-forwarded-for': ip } }))
+
+      beforeEach(() => {
+        jest.useFakeTimers({ doNotFake: ['nextTick', 'setImmediate'] })
+        jest.setSystemTime(new Date('2026-11-21T10:00:00Z'))
+        mockResendSend.mockResolvedValue({ data: { id: '1' }, error: null })
+      })
+      afterEach(() => jest.useRealTimers())
+
+      it('lets one client send its hourly allowance, then answers 429 for the hour', async () => {
+        const { CONTACT_PER_CLIENT_HOURLY_LIMIT } =
+          await import('@/lib/rateLimit')
+        for (let i = 0; i < CONTACT_PER_CLIENT_HOURLY_LIMIT; i++) {
+          expect((await send('198.51.100.1')).status).toBe(200)
+          jest.advanceTimersByTime(61_000) // past the 5/min window
+        }
+
+        expect((await send('198.51.100.1')).status).toBe(429)
+        jest.advanceTimersByTime(30 * 60_000)
+        expect((await send('198.51.100.1')).status).toBe(429)
+        expect(mockResendSend).toHaveBeenCalledTimes(
+          CONTACT_PER_CLIENT_HOURLY_LIMIT
+        )
+
+        jest.advanceTimersByTime(31 * 60_000)
+        expect((await send('198.51.100.1')).status).toBe(200)
+      })
+
+      it('leaves the global budget for everyone else', async () => {
+        const { CONTACT_PER_CLIENT_HOURLY_LIMIT } =
+          await import('@/lib/rateLimit')
+        for (let i = 0; i < 10; i++) {
+          await send('198.51.100.1')
+          jest.advanceTimersByTime(61_000)
+        }
+
+        expect((await send('203.0.113.50')).status).toBe(200)
+        expect(mockResendSend).toHaveBeenCalledTimes(
+          CONTACT_PER_CLIENT_HOURLY_LIMIT + 1
+        )
+      })
+
+      it('counts every address in one IPv6 /64 as the same client', async () => {
+        const { CONTACT_PER_CLIENT_HOURLY_LIMIT } =
+          await import('@/lib/rateLimit')
+        for (let i = 0; i < CONTACT_PER_CLIENT_HOURLY_LIMIT; i++) {
+          expect((await send(`2001:db8:7:7::${i + 1}`)).status).toBe(200)
+        }
+
+        expect((await send('2001:db8:7:7:ffff::9')).status).toBe(429)
+        expect((await send('2001:db8:7:8::1')).status).toBe(200)
+      })
+
+      it('does not count rejected or honeypot submissions', async () => {
+        const { CONTACT_PER_CLIENT_HOURLY_LIMIT } =
+          await import('@/lib/rateLimit')
+        await send('198.51.100.1', { ...validBody, email: 'not-an-email' })
+        await send('198.51.100.1', { ...validBody, website: 'https://spam' })
+        jest.advanceTimersByTime(61_000)
+
+        for (let i = 0; i < CONTACT_PER_CLIENT_HOURLY_LIMIT; i++) {
+          expect((await send('198.51.100.1')).status).toBe(200)
+          jest.advanceTimersByTime(61_000)
+        }
+      })
     })
 
     // Issue #489: thousands of new client IPs must not evict the global cap

@@ -21,6 +21,12 @@ export const RATE_LIMIT_MAX_KEYS = 10_000
 export const GLOBAL_CONTACT_LIMIT = 30
 export const GLOBAL_CONTACT_WINDOW_MS = 60 * 60 * 1000
 
+/**
+ * Contact-form emails per client per hour, so one client cannot use up the
+ * global budget and lock the form for everyone (Issue #488)
+ */
+export const CONTACT_PER_CLIENT_HOURLY_LIMIT = 3
+
 /** The Resend SDK has no abort option, so the contact send is raced against this (SEC-05) */
 export const RESEND_TIMEOUT_MS = 10_000
 
