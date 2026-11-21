@@ -1,9 +1,9 @@
-# Session Handoff: all eight audit triage issues (#488–#495) fixed in PR #497
+# Session Handoff: audit fixes #488–#495 (PR #497) and V-9 query cache (#498, PR stacked on #497)
 
 **Date**: 2026-11-21
-**Issue**: #488, #489, #490, #491, #492, #493, #494, #495 (all fixed in #497)
-**PR**: #497 (this branch, one commit per issue); #496 (audit docs and triage)
-**Branch**: fix/issue-490-contact-content-type
+**Issue**: #488–#495 (fixed in #497); #498 (V-9)
+**PR**: #497 (one commit per issue); #496 (audit docs and triage); V-9 PR based on #497's branch
+**Branch**: fix/v9-sanity-query-cache (based on fix/issue-490-contact-content-type)
 
 ---
 
@@ -33,6 +33,11 @@
     per-client cap after I showed PoW costs an attacker under a second for 30 messages. The old per-minute tests
     now use unsent (400) requests. Multi-IP attackers can still drain the global 30/h; Turnstile is the next step
     if that ever happens.
+- **#498 (V-9)** `src/sanity/dataFetcher.ts`: a successful `null` answer is cached for `NEGATIVE_CACHE_TTL_MS`
+  (60 s; failures still uncached); `QueryCache` holds at most `QUERY_CACHE_MAX_ENTRIES` (1,000; expired first,
+  then oldest insertion); identical concurrent fetches share one in-flight request. First test suite for the
+  file: `src/sanity/__tests__/dataFetcher.test.ts` (11). Local build: missing slug 250 ms first, 6–8 ms after;
+  50 concurrent requests for one missing slug 0.25 s; real project 200.
 - **Verified**: Jest 1543 passed / 16 skipped (110 suites); lint 0 errors; local build on :3111: `/studio/x.png`
   now has a CSP, `text/plain; application/json` → 415, own Sanity image 200, foreign project 400, sitemap renders;
   Playwright Desktop Chrome: production-smoke, project-browsing, optimized-image-a11y, contact-form and
@@ -207,21 +212,20 @@ The named validation agents are not available in this environment and were not r
 3. **On the VPS (Doctor Hubert)**: `ss -lntp | grep 3001`; `nginx -T | grep -E 'client_max_body_size|limit_req|proxy_add_x_forwarded_for|Strict-Transport'`.
    Consider `args: 'start -H 127.0.0.1'` in `ecosystem.config.js`. Confirm old Sanity/Cloudinary keys revoked,
    then redact the launch-prep doc. Drop the duplicate HSTS header.
-4. Triage leftovers without issues: V-9 (no negative cache for missing slugs, uncapped `QueryCache`), V-10
-   (body read before the size check; settle with the nginx check).
+4. Triage leftover: V-10 (body read before the size check; settle with the nginx check). V-9 is #498.
 5. Carried over: picomatch exception expires **2026-12-15** (drop it or move `@sanity/cli` to devDependencies);
    Dependabot #269; close #486 if the weekly scan passes; PM2 log rotation; deploy speed-ups; Umami Realtime; LCP.
 
 ## 📝 Startup Prompt for Next Session
 
-Read CLAUDE.md to understand our workflow, then confirm PRs #496 and #497 (audit triage and its fixes) are merged and the production deploy is green.
+Read CLAUDE.md to understand our workflow, then confirm PRs #496, #497 and the #498 PR (audit triage, its fixes, query cache) are merged in that order and the production deploy is green.
 
-**Immediate priority**: watch the first deploy with the `github.sha` checkout and `node_modules.previous` swap, spot-check `/studio/x.png`, images and `/sitemap.xml` (30 min); then V-9 negative caching (1–2 hours)
-**Context**: all eight triage issues (#488–#495) fixed in #497, one commit each; only V-9/V-10 and host checks remain
+**Immediate priority**: watch the first deploy with the `github.sha` checkout and `node_modules.previous` swap, spot-check `/studio/x.png`, images and `/sitemap.xml` (30 min); then retarget/rebase the #498 PR onto master if #497 was squash-merged (15 min)
+**Context**: triage issues #488–#495 fixed in #497 and V-9 in #498; only V-10 and the VPS host checks remain
 **Reference docs**: SESSION_HANDOVER.md, docs/guides/SECURITY-AUDIT-TRIAGE-2026-11-21.md, scripts/deploy/vps-release.sh
 **Ready state**: master at `62272db` until the merges; production healthy
 
-**Expected scope**: #496 and #497 deployed and verified; an issue and fix for V-9 (missing-slug caching, capped `QueryCache`)
+**Expected scope**: all three PRs deployed and verified on production; then V-10 once the nginx `client_max_body_size` is known
 
 ## 🔍 Security review prompt
 
