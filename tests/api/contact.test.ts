@@ -2,7 +2,7 @@
 // Tests validation, rate limiting, sanitization, email sending, and error handling
 
 import { POST } from '@/app/api/contact/route'
-import { rateLimitStore } from '@/lib/rateLimit'
+import { pinnedRateLimitStore, rateLimitStore } from '@/lib/rateLimit'
 import { createMockRequest, extractResponseJson } from './utils'
 
 // Create a shared mock for Resend send function
@@ -26,6 +26,7 @@ describe('POST /api/contact', () => {
     jest.clearAllMocks()
     mockResendSend.mockClear()
     rateLimitStore.clear() // Clear rate limit state between tests
+    pinnedRateLimitStore.clear()
     // Reset environment
     process.env = { ...originalEnv }
     process.env.RESEND_API_KEY = 'test_api_key'
@@ -730,6 +731,31 @@ describe('POST /api/contact', () => {
       }
 
       expect(lastStatus).toBe(429)
+      expect(mockResendSend).toHaveBeenCalledTimes(GLOBAL_CONTACT_LIMIT)
+    })
+
+    // Issue #489: thousands of new client IPs must not evict the global cap
+    it('should keep the global cap after the per-IP store fills up', async () => {
+      mockResendSend.mockResolvedValue({ data: { id: '1' }, error: null })
+      const { GLOBAL_CONTACT_LIMIT, RATE_LIMIT_MAX_KEYS, checkRateLimit } =
+        await import('@/lib/rateLimit')
+      const fromIp = (ip: string) =>
+        POST(
+          createMockRequest({
+            body: validBody,
+            headers: { 'x-forwarded-for': ip },
+          })
+        )
+
+      for (let i = 0; i < GLOBAL_CONTACT_LIMIT; i++) {
+        await fromIp(`198.51.100.${i}`)
+      }
+      for (let i = 0; i < RATE_LIMIT_MAX_KEYS; i++) {
+        checkRateLimit(`flood-${i}`)
+      }
+      const response = await fromIp('203.0.113.7')
+
+      expect(response.status).toBe(429)
       expect(mockResendSend).toHaveBeenCalledTimes(GLOBAL_CONTACT_LIMIT)
     })
 

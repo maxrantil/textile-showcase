@@ -154,6 +154,7 @@ export async function POST(request: NextRequest) {
       !checkRateLimit(GLOBAL_RATE_LIMIT_KEY, {
         limit: GLOBAL_CONTACT_LIMIT,
         windowMs: GLOBAL_CONTACT_WINDOW_MS,
+        pinned: true,
       })
     ) {
       console.warn('Contact form global rate limit reached')
