@@ -10,6 +10,16 @@ interface CacheEntry<T> {
   ttl: number
 }
 
+/** Most entries the query cache holds; the oldest go first (Issue #498) */
+export const QUERY_CACHE_MAX_ENTRIES = 1000
+
+/**
+ * How long "Sanity found nothing" is remembered, so a flood of requests for
+ * a missing slug does not become a flood of Sanity queries (Issue #498).
+ * Short, so a newly published project shows up within a minute.
+ */
+export const NEGATIVE_CACHE_TTL_MS = 60_000
+
 /**
  * In-memory cache for query results with lazy cleanup (no event loop blocking)
  * FIXED: Removed setInterval to prevent event loop leaks causing progressive timeouts
@@ -18,8 +28,12 @@ class QueryCache {
   private cache = new Map<string, CacheEntry<unknown>>()
 
   set<T>(key: string, data: T, ttl: number = 600000): void {
+    // Re-insert so the Map's insertion order stays oldest-first
+    this.cache.delete(key)
+
     // Lazy cleanup: Remove expired entries when setting new ones
     this.lazyCleanup()
+    this.evictOldest()
 
     this.cache.set(key, {
       data,
@@ -28,17 +42,18 @@ class QueryCache {
     })
   }
 
-  get<T>(key: string): T | null {
+  /** The live entry for a key, so a cached null can be told from a miss */
+  get<T>(key: string): CacheEntry<T> | undefined {
     const entry = this.cache.get(key)
-    if (!entry) return null
+    if (!entry) return undefined
 
     // Check if entry is expired
     if (Date.now() - entry.timestamp > entry.ttl) {
       this.cache.delete(key)
-      return null
+      return undefined
     }
 
-    return entry.data as T
+    return entry as CacheEntry<T>
   }
 
   clear(): void {
@@ -60,10 +75,21 @@ class QueryCache {
       }
     }
   }
+
+  /** Make room for one more entry by dropping the oldest insertions */
+  private evictOldest(): void {
+    for (const key of this.cache.keys()) {
+      if (this.cache.size < QUERY_CACHE_MAX_ENTRIES) return
+      this.cache.delete(key)
+    }
+  }
 }
 
 // Global cache instance
 const queryCache = new QueryCache()
+
+/** Fetches in progress, so identical concurrent requests share one (Issue #498) */
+const inFlight = new Map<string, Promise<unknown>>()
 
 /**
  * Options for resilient fetch
@@ -125,10 +151,49 @@ export async function resilientFetch<T = unknown>(
       if (process.env.NODE_ENV === 'development') {
         console.log('📋 Cache hit for query')
       }
-      return cached
+      return cached.data
     }
+
+    const pending = inFlight.get(cacheKey) as Promise<T | null> | undefined
+    if (pending) return pending
+
+    const request = fetchWithRetries<T>(query, params, {
+      retries,
+      timeout,
+      tags,
+      onResult: (result) =>
+        queryCache.set(
+          cacheKey,
+          result,
+          result ? cacheTTL : Math.min(cacheTTL, NEGATIVE_CACHE_TTL_MS)
+        ),
+    }).finally(() => inFlight.delete(cacheKey))
+    inFlight.set(cacheKey, request)
+    return request
   }
 
+  return fetchWithRetries<T>(query, params, { retries, timeout, tags })
+}
+
+/**
+ * Runs the query with retries and timeouts. onResult sees every answer
+ * Sanity gave, including null (nothing found), but not a failure.
+ */
+async function fetchWithRetries<T>(
+  query: string,
+  params: Record<string, unknown>,
+  {
+    retries,
+    timeout,
+    tags,
+    onResult,
+  }: {
+    retries: number
+    timeout: number
+    tags: string[]
+    onResult?: (result: T | null) => void
+  }
+): Promise<T | null> {
   for (let attempt = 1; attempt <= retries + 1; attempt++) {
     try {
       if (process.env.NODE_ENV === 'development') {
@@ -147,10 +212,8 @@ export async function resilientFetch<T = unknown>(
         console.log('✅ Sanity fetch successful')
       }
 
-      // Cache successful result
-      if (useCache && result) {
-        queryCache.set(cacheKey, result, cacheTTL)
-      }
+      // Cache the answer, including "nothing found" (briefly)
+      onResult?.(result ?? null)
 
       return result
     } catch (error) {
