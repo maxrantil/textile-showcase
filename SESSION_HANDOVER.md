@@ -1,7 +1,7 @@
-# Session Handoff: audit triage fixes #489–#495 in one PR; #488 waits on a decision
+# Session Handoff: all eight audit triage issues (#488–#495) fixed in PR #497
 
 **Date**: 2026-11-21
-**Issue**: #489, #490, #491, #492, #493, #494, #495 (fixed in #497); #488 open
+**Issue**: #488, #489, #490, #491, #492, #493, #494, #495 (all fixed in #497)
 **PR**: #497 (this branch, one commit per issue); #496 (audit docs and triage)
 **Branch**: fix/issue-490-contact-content-type
 
@@ -9,7 +9,7 @@
 
 ## ✅ Completed This Session
 
-- **#497: seven issues, one commit each, every fix test-first** (precedent #483; one PR avoids
+- **#497: eight issues, one commit each, every fix test-first** (precedent #483; one PR avoids
   `SESSION_HANDOVER.md` conflicts between parallel PRs):
   - **#490** `/api/contact` requires the exact media type `application/json` (as `csp-report` does);
     `text/plain; application/json` → 415.
@@ -27,6 +27,12 @@
     stub now refuses `start idaromme-website` without `node_modules/next/dist/bin/next`.
   - **#493** the deploy resets the VPS to `github.sha`, checks `HEAD`, and stops before writing `.env.local` if
     fetch, commit lookup or reset fails.
+  - **#488** each client may send `CONTACT_PER_CLIENT_HOURLY_LIMIT` = 3 messages an hour (counted only for
+    messages that would be sent, before the global cap); `clientRateLimitKey` in `src/lib/clientIp.ts` groups
+    IPv6 by /64 and maps `::ffff:a.b.c.d` to the IPv4. Doctor Hubert first chose proof-of-work, then the
+    per-client cap after I showed PoW costs an attacker under a second for 30 messages. The old per-minute tests
+    now use unsent (400) requests. Multi-IP attackers can still drain the global 30/h; Turnstile is the next step
+    if that ever happens.
 - **Verified**: Jest 1543 passed / 16 skipped (110 suites); lint 0 errors; local build on :3111: `/studio/x.png`
   now has a CSP, `text/plain; application/json` → 415, own Sanity image 200, foreign project 400, sitemap renders;
   Playwright Desktop Chrome: production-smoke, project-browsing, optimized-image-a11y, contact-form and
@@ -196,8 +202,8 @@ The named validation agents are not available in this environment and were not r
 1. **Merge #496, then #497, and watch the deploy**: #497 is the first deploy with the `github.sha` reset (#493)
    and the `node_modules.previous` swap (#494). No lockfile change, so npm ci is skipped this time. Then check
    `/studio/x.png` has a CSP, project images load, `/sitemap.xml` renders.
-2. **#488 needs Doctor Hubert's decision**: Turnstile/proof-of-work challenge vs. queueing messages once the
-   global cap is hit. A third-party challenge means a `/privacy` update.
+2. **Watch the contact form after deploy**: a real visitor's 4th message within an hour now gets 429. If Ida
+   hears of that happening, raise `CONTACT_PER_CLIENT_HOURLY_LIMIT`.
 3. **On the VPS (Doctor Hubert)**: `ss -lntp | grep 3001`; `nginx -T | grep -E 'client_max_body_size|limit_req|proxy_add_x_forwarded_for|Strict-Transport'`.
    Consider `args: 'start -H 127.0.0.1'` in `ecosystem.config.js`. Confirm old Sanity/Cloudinary keys revoked,
    then redact the launch-prep doc. Drop the duplicate HSTS header.
@@ -210,12 +216,12 @@ The named validation agents are not available in this environment and were not r
 
 Read CLAUDE.md to understand our workflow, then confirm PRs #496 and #497 (audit triage and its fixes) are merged and the production deploy is green.
 
-**Immediate priority**: watch the first deploy with the `github.sha` checkout and `node_modules.previous` swap, spot-check `/studio/x.png`, images and `/sitemap.xml` (30 min); then #488 once Doctor Hubert has chosen an approach (2–3 hours)
-**Context**: seven triage issues (#489–#495) fixed in #497, one commit each; #488 (global contact-cap lockout) is the last open finding
+**Immediate priority**: watch the first deploy with the `github.sha` checkout and `node_modules.previous` swap, spot-check `/studio/x.png`, images and `/sitemap.xml` (30 min); then V-9 negative caching (1–2 hours)
+**Context**: all eight triage issues (#488–#495) fixed in #497, one commit each; only V-9/V-10 and host checks remain
 **Reference docs**: SESSION_HANDOVER.md, docs/guides/SECURITY-AUDIT-TRIAGE-2026-11-21.md, scripts/deploy/vps-release.sh
 **Ready state**: master at `62272db` until the merges; production healthy
 
-**Expected scope**: #496 and #497 deployed and verified; #488 designed and implemented, or V-9 if #488 is still waiting
+**Expected scope**: #496 and #497 deployed and verified; an issue and fix for V-9 (missing-slug caching, capped `QueryCache`)
 
 ## 🔍 Security review prompt
 
