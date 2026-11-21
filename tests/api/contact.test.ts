@@ -649,6 +649,42 @@ describe('POST /api/contact', () => {
       expect(mockResendSend).not.toHaveBeenCalled()
     })
 
+    // A browser sends text/plain cross-site without a CORS preflight, so a
+    // substring match on "application/json" let other sites post (Issue #490)
+    it.each([
+      'text/plain; application/json',
+      'text/plain;charset=application/json',
+      'application/jsonp',
+      'application/json-seq',
+    ])('should reject the media type %p with 415', async (contentType) => {
+      const response = await POST(
+        createMockRequest({
+          body: validBody,
+          headers: { 'Content-Type': contentType },
+        })
+      )
+
+      expect(response.status).toBe(415)
+      expect(mockResendSend).not.toHaveBeenCalled()
+    })
+
+    it.each(['application/json; charset=utf-8', 'Application/JSON'])(
+      'should accept the media type %p',
+      async (contentType) => {
+        mockResendSend.mockResolvedValueOnce({ data: { id: '1' }, error: null })
+
+        const response = await POST(
+          createMockRequest({
+            body: validBody,
+            headers: { 'Content-Type': contentType },
+          })
+        )
+
+        expect(response.status).toBe(200)
+        expect(mockResendSend).toHaveBeenCalledTimes(1)
+      }
+    )
+
     it('should strip control characters (CR/LF) from the email subject', async () => {
       mockResendSend.mockResolvedValueOnce({ data: { id: '1' }, error: null })
 

@@ -93,8 +93,14 @@ export async function POST(request: NextRequest) {
     return jsonError('Too many requests. Please try again later.', 429)
   }
 
-  const contentType = request.headers.get('content-type') || ''
-  if (!contentType.toLowerCase().includes('application/json')) {
+  // Compare the media type exactly: a substring match accepted
+  // "text/plain; application/json", which browsers send cross-site without a
+  // CORS preflight (Issue #490)
+  const mediaType = (request.headers.get('content-type') ?? '')
+    .split(';', 1)[0]
+    .trim()
+    .toLowerCase()
+  if (mediaType !== 'application/json') {
     return jsonError('Unsupported content type', 415)
   }
 
